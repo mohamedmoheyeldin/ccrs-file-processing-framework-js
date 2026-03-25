@@ -23,6 +23,12 @@ The app now supports:
 - `Payment Authority Code` values that accept numeric input, auto-complete to 10 digits, and stay unique inside each JSON file
 - optional upload to `DEV`, `PPD`, and `SQA`
 
+## Technology Used
+- UI: Python `tkinter` with `customtkinter` for the desktop interface and styled controls
+- Uploads: `paramiko` for SSH/SFTP connections and file upload handling
+- Config import: Python standard library modules such as `configparser`, `json`, `shutil`, and `subprocess` for reading credentials files and WinSCP imports
+- Packaging: `PyInstaller` for building the Windows `.exe`
+
 ## Upload Setup
 The app uses:
 - [config/upload_credentials.json](/c:/across_file_systems/projects/coding/ccrs-file-processing-framework/config/upload_credentials.json)
