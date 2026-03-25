@@ -418,6 +418,9 @@ function updateTemplateSummary() {
   const referralLabel = `${referralsPerFile} referral${referralsPerFile === 1 ? "" : "s"} per file`;
   const totalLabel = `${totalReferrals} total referral${totalReferrals === 1 ? "" : "s"}`;
   elements.templateSummaryPill.textContent = `Generation setup: ${fileLabel} | ${referralLabel} | ${totalLabel}`;
+  elements.generatorFileCountDisplay.textContent = String(fileCount);
+  elements.generatorReferralsPerFileDisplay.textContent = String(referralsPerFile);
+  elements.generatorTotalReferralsDisplay.textContent = String(totalReferrals);
   updateTemplateMeta();
   syncGeneratorModeInputs();
 }
@@ -779,6 +782,9 @@ function cacheElements() {
     clearActivity: $("clear-activity"),
     clearOutput: $("clear-output"),
     generatorCard: $("generator-card"),
+    generatorFileCountDisplay: $("generator-file-count-display"),
+    generatorReferralsPerFileDisplay: $("generator-referrals-per-file-display"),
+    generatorTotalReferralsDisplay: $("generator-total-referrals-display"),
     fileCount: $("file-count"),
     fileModeMultiple: $("file-mode-multiple"),
     fileModeSingle: $("file-mode-single"),
