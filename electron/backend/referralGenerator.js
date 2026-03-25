@@ -4,7 +4,6 @@ const path = require("path");
 const { bundlePath } = require("./appPaths");
 
 const TEMPLATE_DIRECTORY = bundlePath("templates", "referrals");
-const ROTATE_ALL_TEMPLATES = "Rotate bundled examples";
 
 function getReferralTemplatePaths() {
   if (!fs.existsSync(TEMPLATE_DIRECTORY)) {
@@ -18,42 +17,39 @@ function getReferralTemplatePaths() {
     .sort();
 }
 
-function getReferralTemplateOptions() {
-  return [ROTATE_ALL_TEMPLATES, ...getReferralTemplatePaths().map((templatePath) => path.basename(templatePath))];
+function getGeneratorDefaults() {
+  const [firstTemplatePath] = getReferralTemplatePaths();
+  if (!firstTemplatePath) {
+    return {};
+  }
+
+  const templateData = JSON.parse(fs.readFileSync(firstTemplatePath, "utf8"));
+  const firstReferral = Array.isArray(templateData.Referrals) ? templateData.Referrals[0] || {} : {};
+  const patient = firstReferral.Patient || {};
+
+  return {
+    DOB: patient.DOB || "",
+    Network: firstReferral.Network || "",
+    ReferralCategory: firstReferral.ReferralCategory || "",
+    ReferralConsultId: firstReferral.ReferralConsultId || "",
+    ReferralDate: firstReferral.ReferralDate || "",
+    ReferralDateTime: firstReferral.ReferralDateTime || "",
+    ReferralExpirationDate: firstReferral.ReferralExpirationDate || "",
+    ReferralLastUpdateDate: firstReferral.ReferralLastUpdateDate || "",
+    ReferralNumber: firstReferral.ReferralNumber || "",
+    ReferralPeriod: firstReferral.ReferralPeriod || "",
+  };
 }
 
-function getReferralTemplateMetadata() {
-  return getReferralTemplatePaths().map((templatePath) => {
-    const data = JSON.parse(fs.readFileSync(templatePath, "utf8"));
-    const referrals = Array.isArray(data.Referrals) ? data.Referrals : [];
-    const firstReferral = referrals[0] || {};
-    return {
-      name: path.basename(templatePath),
-      path: templatePath,
-      referralCount: referrals.length,
-      network: firstReferral.Network || "",
-      category: firstReferral.ReferralCategory || "",
-    };
-  });
-}
-
-function buildGeneratedReferralSources(templateOption, fileCount, referralsPerFile) {
+function buildGeneratedReferralSources(fileCount, referralsPerFile) {
   const templatePaths = getReferralTemplatePaths();
   if (templatePaths.length === 0) {
     throw new Error("No bundled referral templates were found.");
   }
 
-  let selectedPaths = templatePaths;
-  if (templateOption && templateOption !== ROTATE_ALL_TEMPLATES) {
-    selectedPaths = templatePaths.filter((templatePath) => path.basename(templatePath) === templateOption);
-    if (selectedPaths.length === 0) {
-      throw new Error("The selected referral template was not found.");
-    }
-  }
-
   const generatedDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs_referral_generator_"));
   for (let fileIndex = 0; fileIndex < fileCount; fileIndex += 1) {
-    const templatePath = selectedPaths[fileIndex % selectedPaths.length];
+    const templatePath = templatePaths[fileIndex % templatePaths.length];
     const templateData = JSON.parse(fs.readFileSync(templatePath, "utf8"));
     const referrals = Array.isArray(templateData.Referrals) ? templateData.Referrals : [];
     if (referrals.length === 0) {
@@ -77,8 +73,6 @@ function buildGeneratedReferralSources(templateOption, fileCount, referralsPerFi
 }
 
 module.exports = {
-  ROTATE_ALL_TEMPLATES,
   buildGeneratedReferralSources,
-  getReferralTemplateMetadata,
-  getReferralTemplateOptions,
+  getGeneratorDefaults,
 };

@@ -17,6 +17,7 @@ const state = {
   sourceListDate: "",
   listDateTouched: false,
   optionalFieldsVisible: false,
+  liveListDateTimer: null,
 };
 
 const elements = {};
@@ -67,6 +68,13 @@ function readChecked(id) {
   return $(id).checked;
 }
 
+function setValueIfEmpty(id, value) {
+  if (!value || readValue(id)) {
+    return;
+  }
+  $(id).value = value;
+}
+
 function setTheme(themeName) {
   state.theme = themeName === "dark" ? "dark" : "light";
   document.body.classList.toggle("theme-dark", state.theme === "dark");
@@ -106,9 +114,6 @@ function setDateParts(dateText) {
 }
 
 function getListDateOverride() {
-  if (!state.listDateTouched) {
-    return "";
-  }
   const values = {};
   for (const part of DATE_PARTS) {
     values[part.key] = normalizeDigits(readValue(`list-date-${part.key}`), part.width).padStart(part.width, "0");
@@ -200,11 +205,8 @@ function sharedPayload() {
   };
 }
 
-function buildUploadSourceCopy() {
-  if (!state.info?.profileSource?.path) {
-    return "Upload profile source: no credentials file has been imported yet.";
-  }
-  return `Upload profile source: ${state.info.profileSource.kind} (${state.info.profileSource.path}). Edit this config directly to update hosts, users, or passwords.`;
+function getUploadReadyLabel() {
+  return state.info?.profileSource?.path ? "Upload config imported" : "No upload config imported";
 }
 
 function renderUploadTargets(targets) {
@@ -246,51 +248,29 @@ function renderUploadTargets(targets) {
   }
 }
 
-function getSelectedTemplateMetadata() {
-  if (!state.info?.templateMetadata?.length) {
-    return null;
-  }
+function applyGeneratorDefaults() {
+  const defaults = state.info?.generatorDefaults || {};
 
-  const selected = readValue("template-option");
-  return state.info.templateMetadata.find((item) => item.name === selected) || null;
-}
-
-function updateTemplateMeta() {
-  const metadata = getSelectedTemplateMetadata();
-  if (!metadata) {
-    elements.templateMeta.textContent = "Template details will appear here.";
-    return;
-  }
-
-  const details = [
-    `${metadata.referralCount || 0} bundled referral${metadata.referralCount === 1 ? "" : "s"}`,
-  ];
-  if (metadata.network) {
-    details.push(`Network ${metadata.network}`);
-  }
-  if (metadata.category) {
-    details.push(`Category ${metadata.category}`);
-  }
-
-  elements.templateMeta.textContent = details.join(" | ");
+  setValueIfEmpty("referral-code", defaults.ReferralNumber);
+  setValueIfEmpty("override-network", defaults.Network);
+  setValueIfEmpty("override-referral-period", defaults.ReferralPeriod);
+  setValueIfEmpty("override-dob", defaults.DOB);
+  setValueIfEmpty("override-referral-category", defaults.ReferralCategory);
+  setValueIfEmpty("override-referral-date", defaults.ReferralDate);
+  setValueIfEmpty("override-referral-date-time", defaults.ReferralDateTime);
+  setValueIfEmpty("override-referral-expiration-date", defaults.ReferralExpirationDate);
+  setValueIfEmpty("override-referral-last-update-date", defaults.ReferralLastUpdateDate);
+  setValueIfEmpty("override-referral-consult-id", defaults.ReferralConsultId);
 }
 
 function applyInfo(info) {
   state.info = info;
-  elements.uploadProfileSource.textContent = buildUploadSourceCopy();
-  elements.uploadReadyPill.textContent = info.profileSource?.path ? "Credentials ready from config file" : "Waiting for imported upload profiles";
-
-  elements.templateOption.innerHTML = "";
-  for (const option of info.templateOptions || []) {
-    const item = document.createElement("option");
-    item.value = option;
-    item.textContent = option;
-    elements.templateOption.appendChild(item);
-  }
+  elements.uploadReadyPill.textContent = getUploadReadyLabel();
 
   renderUploadTargets(info.uploadTargets || []);
-  updateTemplateMeta();
+  applyGeneratorDefaults();
   updateTemplateSummary();
+  updatePreviews();
 }
 
 function applySourceInspection(inspection) {
@@ -305,41 +285,17 @@ function applySourceInspection(inspection) {
     ? `Source ListDate: ${state.sourceListDate}`
     : "No source ListDate found yet.";
 
-  if (!state.listDateTouched && state.sourceListDate) {
-    setDateParts(state.sourceListDate);
-  }
-
   const defaults = inspection?.defaults || {};
-  if (!readValue("referral-code") && defaults.ReferralNumber) {
-    elements.referralCode.value = defaults.ReferralNumber;
-  }
-  if (!readValue("override-network") && defaults.Network) {
-    elements.overrideNetwork.value = defaults.Network;
-  }
-  if (!readValue("override-referral-period") && defaults.ReferralPeriod) {
-    elements.overrideReferralPeriod.value = defaults.ReferralPeriod;
-  }
-  if (!readValue("override-dob") && defaults.DOB) {
-    elements.overrideDob.value = defaults.DOB;
-  }
-  if (!readValue("override-referral-category") && defaults.ReferralCategory) {
-    elements.overrideReferralCategory.value = defaults.ReferralCategory;
-  }
-  if (!readValue("override-referral-date") && defaults.ReferralDate) {
-    elements.overrideReferralDate.value = defaults.ReferralDate;
-  }
-  if (!readValue("override-referral-date-time") && defaults.ReferralDateTime) {
-    elements.overrideReferralDateTime.value = defaults.ReferralDateTime;
-  }
-  if (!readValue("override-referral-expiration-date") && defaults.ReferralExpirationDate) {
-    elements.overrideReferralExpirationDate.value = defaults.ReferralExpirationDate;
-  }
-  if (!readValue("override-referral-last-update-date") && defaults.ReferralLastUpdateDate) {
-    elements.overrideReferralLastUpdateDate.value = defaults.ReferralLastUpdateDate;
-  }
-  if (!readValue("override-referral-consult-id") && defaults.ReferralConsultId) {
-    elements.overrideReferralConsultId.value = defaults.ReferralConsultId;
-  }
+  setValueIfEmpty("referral-code", defaults.ReferralNumber);
+  setValueIfEmpty("override-network", defaults.Network);
+  setValueIfEmpty("override-referral-period", defaults.ReferralPeriod);
+  setValueIfEmpty("override-dob", defaults.DOB);
+  setValueIfEmpty("override-referral-category", defaults.ReferralCategory);
+  setValueIfEmpty("override-referral-date", defaults.ReferralDate);
+  setValueIfEmpty("override-referral-date-time", defaults.ReferralDateTime);
+  setValueIfEmpty("override-referral-expiration-date", defaults.ReferralExpirationDate);
+  setValueIfEmpty("override-referral-last-update-date", defaults.ReferralLastUpdateDate);
+  setValueIfEmpty("override-referral-consult-id", defaults.ReferralConsultId);
 
   updatePreviews();
   updateSummary();
@@ -410,7 +366,6 @@ function updateTemplateSummary() {
   elements.generatorFileCountDisplay.textContent = String(fileCount);
   elements.generatorReferralsPerFileDisplay.textContent = String(referralsPerFile);
   elements.generatorTotalReferralsDisplay.textContent = String(totalReferrals);
-  updateTemplateMeta();
 }
 
 function updateSummary() {
@@ -441,28 +396,44 @@ function updateSummary() {
     : "Upload: disabled";
 }
 
+function updateLiveListDate() {
+  if (state.listDateTouched) {
+    return;
+  }
+  setDateParts(nowAsListDate());
+}
+
+function startLiveListDateClock() {
+  if (state.liveListDateTimer) {
+    clearInterval(state.liveListDateTimer);
+  }
+  updateLiveListDate();
+  state.liveListDateTimer = setInterval(updateLiveListDate, 1000);
+}
+
 function syncWorkflowText() {
   const isReferral = state.mainTab === "referral";
   const isGenerate = state.subTab === "generate" && isReferral;
+  const isOther = state.mainTab === "other";
 
   elements.heroTitle.textContent = isReferral ? "CCRS File Processing" : "Other CCRS File Processing";
   elements.heroSubtitle.textContent = isReferral
     ? "Use the tabs below to work with referral files and related CCRS processing workflows."
-    : "Use the existing-file editor to process non-referral CCRS JSON payloads with the same standalone JavaScript engine.";
+    : "This area is reserved for future CCRS workflow implementations.";
   elements.mainTabCopy.textContent = isReferral
     ? "Choose source files, apply targeted JSON updates, and export clean output in one pass."
-    : "Use the shared editor workflow for additional CCRS JSON file types without leaving the desktop app.";
+    : "Future CCRS file types will appear here.";
   elements.workflowTitle.textContent = isGenerate
     ? "CCRS Referral Generation"
     : isReferral
       ? "CCRS Referral Processing"
-      : "CCRS Existing File Processing";
+      : "Future Workflows";
   elements.workflowSubtitle.textContent = isGenerate
-    ? "Create fresh referral JSON files from bundled templates, then process and package them."
+    ? "Create fresh referral JSON files, then process and package them."
     : "Choose source files, apply targeted JSON updates, and export clean output in one pass.";
   elements.sourceTitle.textContent = isGenerate ? "Template Output" : "Source";
   elements.sourceSubtitle.textContent = isGenerate
-    ? "Generator mode creates fresh files from bundled examples, so no source folder is required."
+    ? "Generator mode creates fresh files directly, so no source folder is required."
     : "Pick the folder that contains the incoming JSON files.";
   elements.outputSubtitle.textContent = isGenerate
     ? "Choose where the generated referral JSON files should be saved and how the final output should be kept."
@@ -470,11 +441,22 @@ function syncWorkflowText() {
 
   elements.subtabRow.classList.toggle("hidden", !isReferral);
   elements.generatorCard.classList.toggle("hidden", !isGenerate);
-  elements.sourceCard.classList.toggle("hidden", isGenerate);
-  elements.runProcess.classList.toggle("hidden", isGenerate);
-  elements.runGenerate.classList.toggle("hidden", !isGenerate);
-  elements.templateSummaryPill.classList.toggle("hidden", !isGenerate);
+  elements.workflowCard.classList.toggle("hidden", isOther);
+  elements.futureCard.classList.toggle("hidden", !isOther);
+  elements.sourceCard.classList.toggle("hidden", isGenerate || isOther);
+  elements.referralDetailsCard.classList.toggle("hidden", isOther);
+  elements.outputCard.classList.toggle("hidden", isOther);
+  elements.uploadCard.classList.toggle("hidden", isOther);
+  elements.summaryCard.classList.toggle("hidden", isOther);
+  elements.runProcess.classList.toggle("hidden", isGenerate || isOther);
+  elements.runGenerate.classList.toggle("hidden", !isGenerate || isOther);
+  elements.templateSummaryPill.classList.toggle("hidden", !isGenerate || isOther);
+
+  if (isGenerate) {
+    applyGeneratorDefaults();
+  }
   updateSummary();
+  updatePreviews();
 }
 
 function setupTabs() {
@@ -509,6 +491,7 @@ function toggleOptionalFields() {
   state.optionalFieldsVisible = !state.optionalFieldsVisible;
   elements.optionalFields.classList.toggle("hidden", !state.optionalFieldsVisible);
   elements.toggleOptionalFields.textContent = state.optionalFieldsVisible ? "Hide Optional Fields" : "Show Optional Fields";
+  elements.toggleOptionalFields.classList.toggle("is-active", state.optionalFieldsVisible);
 }
 
 function wireDateControls() {
@@ -608,7 +591,6 @@ async function runGenerate() {
   setDateParts(generatedListDate);
   const payload = {
     ...sharedPayload(),
-    templateOption: readValue("template-option"),
     fileCount: Number(readValue("file-count")),
     referralsPerFile: Number(readValue("referrals-per-file")),
   };
@@ -673,14 +655,17 @@ function setupEventHandlers() {
     });
   }
 
+  elements.overrideNetwork.addEventListener("change", () => {
+    updateSummary();
+    updatePreviews();
+  });
+
   elements.inputDir.addEventListener("change", inspectSourceFolder);
   elements.inputDir.addEventListener("blur", inspectSourceFolder);
   elements.keepProcessedJson.addEventListener("change", updateSummary);
   elements.clearOutput.addEventListener("change", updateSummary);
   elements.keepExistingFiles.addEventListener("change", updateSummary);
   elements.uploadEnabled.addEventListener("change", updateSummary);
-  elements.templateOption.addEventListener("change", updateTemplateSummary);
-  elements.templateOption.addEventListener("change", updateSummary);
   elements.toggleOptionalFields.addEventListener("click", toggleOptionalFields);
   elements.runProcess.addEventListener("click", runProcess);
   elements.runGenerate.addEventListener("click", runGenerate);
@@ -731,6 +716,7 @@ function cacheElements() {
     generatorReferralsPerFileDisplay: $("generator-referrals-per-file-display"),
     generatorTotalReferralsDisplay: $("generator-total-referrals-display"),
     fileCount: $("file-count"),
+    futureCard: $("future-card"),
     heroSubtitle: $("hero-subtitle"),
     heroTitle: $("hero-title"),
     importUploadSource: $("import-upload-source"),
@@ -755,6 +741,7 @@ function cacheElements() {
     paymentAuthorityCodePreview: $("payment-authority-code-preview"),
     referralCode: $("referral-code"),
     referralPreview: $("referral-preview"),
+    referralDetailsCard: $("referral-details-card"),
     referralsPerFile: $("referrals-per-file"),
     runGenerate: $("run-generate"),
     runProcess: $("run-process"),
@@ -766,28 +753,29 @@ function cacheElements() {
     statusBadge: $("status-badge"),
     statusMessage: $("status-message"),
     subtabRow: $("subtab-row"),
+    summaryCard: $("summary-card"),
     summaryArchive: $("summary-archive"),
     summaryOutput: $("summary-output"),
     summaryRetention: $("summary-retention"),
     summarySource: $("summary-source"),
     summaryUpload: $("summary-upload"),
-    templateOption: $("template-option"),
-    templateMeta: $("template-meta"),
     templateSummaryPill: $("template-summary-pill"),
     toggleOptionalFields: $("toggle-optional-fields"),
     uploadEnabled: $("upload-enabled"),
-    uploadProfileSource: $("upload-profile-source"),
+    uploadCard: $("upload-card"),
     uploadReadyPill: $("upload-ready-pill"),
     uploadTargets: $("upload-targets"),
+    workflowCard: $("workflow-card"),
     workflowSubtitle: $("workflow-subtitle"),
     workflowTitle: $("workflow-title"),
+    outputCard: $("output-card"),
   });
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
   cacheElements();
   setTheme("light");
-  setDateParts("0000-00-00 00:00:00");
+  startLiveListDateClock();
   setupEventHandlers();
   syncWorkflowText();
   await refreshInfo();

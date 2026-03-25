@@ -50,7 +50,7 @@
           </div>
 
           <section class="content-stack">
-            <article class="content-card glass-card">
+            <article id="workflow-card" class="content-card glass-card">
               <div class="section-head section-head-hero">
                 <div class="section-head-copy centered-copy">
                   <h2 id="workflow-title">CCRS Referral Processing</h2>
@@ -59,6 +59,15 @@
                   </p>
                 </div>
                 <div id="template-summary-pill" class="pill-note hidden"></div>
+              </div>
+            </article>
+
+            <article id="future-card" class="content-card glass-card hidden">
+              <div class="section-head section-head-hero">
+                <div class="section-head-copy centered-copy">
+                  <h2>Other CCRS File Types</h2>
+                  <p>This area is reserved for future implementations.</p>
+                </div>
               </div>
             </article>
 
@@ -108,12 +117,7 @@
                 </div>
               </div>
 
-              <div class="form-grid three-col">
-                <label class="field-block">
-                  <span>Template</span>
-                  <select id="template-option"></select>
-                  <small id="template-meta" class="helper-text">Template details will appear here.</small>
-                </label>
+              <div class="form-grid two-col generator-form-grid">
                 <label class="field-block">
                   <span>Number of JSON files to generate</span>
                   <input id="file-count" type="number" min="1" value="1" />
@@ -127,7 +131,7 @@
               </div>
             </article>
 
-            <article class="content-card glass-card">
+            <article id="referral-details-card" class="content-card glass-card">
               <div class="section-head">
                 <div>
                   <h2>Referral Details</h2>
@@ -145,13 +149,14 @@
                 <label class="field-block">
                   <span>SSN Override</span>
                   <input id="ssn-value" type="text" value="999-99-0001" />
+                  <small class="helper-text">Default test SSN applied unless you replace it.</small>
                 </label>
               </div>
 
               <div class="date-grid">
                 <div class="date-label-row">
                   <span>List Date</span>
-                  <small>Use the source ListDate by default, or adjust any segment below.</small>
+                  <small>Current date and time stays live until you edit any segment below.</small>
                 </div>
                 <div class="date-segments">
                   <div class="date-field" data-date-part="year">
@@ -223,7 +228,14 @@
                   </label>
                   <label class="field-block">
                     <span>Network</span>
-                    <input id="override-network" type="text" placeholder="Example: CCN1" />
+                    <select id="override-network">
+                      <option value="">Select Network</option>
+                      <option value="CCN1">CCN1</option>
+                      <option value="CCN2">CCN2</option>
+                      <option value="CCN3">CCN3</option>
+                      <option value="CCN4">CCN4</option>
+                      <option value="CCN5">CCN5</option>
+                    </select>
                   </label>
                   <label class="field-block">
                     <span>DOB</span>
@@ -257,7 +269,7 @@
               </div>
             </article>
 
-            <article class="content-card glass-card">
+            <article id="output-card" class="content-card glass-card">
               <div class="section-head">
                 <div>
                   <h2>Output</h2>
@@ -267,8 +279,8 @@
                 </div>
               </div>
 
-              <div class="form-grid two-col">
-                <label class="field-block">
+              <div class="form-grid two-col output-grid">
+                <label class="field-block field-span-2">
                   <span>Save processed files to</span>
                   <div class="field-row">
                     <input id="output-dir" type="text" placeholder="Choose where JSON and .gz files should be written" />
@@ -285,7 +297,7 @@
                   <input id="archive-basename" type="text" value="processed_files" />
                   <small id="archive-preview" class="helper-text">Preview: processed_files.gz</small>
                 </label>
-                <div class="field-block">
+                <div class="field-block field-span-2 output-retention-card">
                   <span>If save folder already has files</span>
                   <div class="toggle-row">
                     <label class="radio-chip">
@@ -308,7 +320,7 @@
               </div>
             </article>
 
-            <article class="content-card glass-card">
+            <article id="upload-card" class="content-card glass-card">
               <div class="section-head">
                 <div>
                   <h2>Upload</h2>
@@ -321,22 +333,18 @@
               </div>
               <div class="upload-config-card">
                 <div class="upload-config-copy">
-                  <div class="upload-config-head">
-                    <h3>Credentials & Config</h3>
-                    <div id="upload-ready-pill" class="pill-note">Waiting for upload profiles</div>
-                  </div>
-                  <p id="upload-profile-source" class="upload-copy"></p>
+                  <div id="upload-ready-pill" class="pill-note">No upload config imported</div>
                 </div>
                 <button id="import-upload-source" class="toolbar-button primary">Import To Config</button>
               </div>
               <div id="upload-targets" class="upload-targets"></div>
             </article>
 
-            <article class="content-card glass-card">
+            <article id="summary-card" class="content-card glass-card">
               <div class="section-head">
                 <div>
                   <h2>Run Summary</h2>
-                  <p>Review the current workflow setup before you start.</p>
+                  <p>Quick review before you run.</p>
                 </div>
               </div>
               <div class="summary-grid">

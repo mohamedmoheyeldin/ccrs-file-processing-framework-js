@@ -16,10 +16,8 @@ const { getFiles } = require("./fileHandler");
 const { setupLogger } = require("./logger");
 const { processFiles } = require("./processor");
 const {
-  ROTATE_ALL_TEMPLATES,
   buildGeneratedReferralSources,
-  getReferralTemplateMetadata,
-  getReferralTemplateOptions,
+  getGeneratorDefaults,
 } = require("./referralGenerator");
 const {
   getServerDisplayForTarget,
@@ -54,16 +52,14 @@ function getInfo() {
       path: profileSourcePath,
       kind: profileSourceKind,
     },
-    templateOptions: getReferralTemplateOptions(),
-    templateMetadata: getReferralTemplateMetadata(),
     uploadTargets: buildUploadTargets(profiles),
+    generatorDefaults: getGeneratorDefaults(),
     constants: {
       listDateFormat: LIST_DATE_FORMAT,
       referralNumberPrefix: REFERRAL_NUMBER_PREFIX,
       referralNumberDigits: REFERRAL_NUMBER_DIGIT_COUNT,
       stationIdMaxLength: STATION_ID_MAX_LENGTH,
       paymentAuthorityCodeLength: PAYMENT_AUTHORITY_CODE_LENGTH,
-      rotateAllTemplatesLabel: ROTATE_ALL_TEMPLATES,
       defaultArchiveBasename: DEFAULT_ARCHIVE_BASENAME,
     },
     docs: {
@@ -207,7 +203,6 @@ async function runProcess(payload, emitProgress) {
 }
 
 async function runGenerate(payload, emitProgress) {
-  const templateOption = (payload.templateOption || "").trim() || ROTATE_ALL_TEMPLATES;
   const fileCount = Number(payload.fileCount || 0);
   const referralsPerFile = Number(payload.referralsPerFile || 0);
   if (fileCount <= 0) {
@@ -224,7 +219,7 @@ async function runGenerate(payload, emitProgress) {
 
   let generatedInputDir = "";
   try {
-    generatedInputDir = buildGeneratedReferralSources(templateOption, fileCount, referralsPerFile);
+    generatedInputDir = buildGeneratedReferralSources(fileCount, referralsPerFile);
     const message = await processFiles(
       generatedInputDir,
       args.outputDir,
