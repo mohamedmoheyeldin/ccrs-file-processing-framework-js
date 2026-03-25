@@ -52,7 +52,14 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo Installing build dependencies...
+where npm >nul 2>nul
+if %errorlevel% neq 0 (
+    echo npm is not installed or not available in PATH.
+    pause
+    exit /b 1
+)
+
+echo Installing Python build dependencies...
 %PY_CMD% -m pip install -r requirements.txt
 if errorlevel 1 (
     echo Failed to install requirements.
@@ -60,12 +67,21 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo Cleaning previous build output...
-if exist build rmdir /s /q build
-if exist dist rmdir /s /q dist
+echo Installing Electron dependencies...
+npm install
+if errorlevel 1 (
+    echo Failed to install npm dependencies.
+    pause
+    exit /b 1
+)
 
-echo Building portable application...
-%PY_CMD% -m PyInstaller --noconfirm "CCRS_File_Processing_Framework.spec"
+echo Cleaning previous build output...
+if exist build-python rmdir /s /q build-python
+if exist dist-python rmdir /s /q dist-python
+if exist dist-electron rmdir /s /q dist-electron
+
+echo Building Electron application and bundled Python backend...
+npm run dist
 if errorlevel 1 (
     echo Build failed.
     pause
@@ -76,8 +92,9 @@ set "DESKTOP_SHORTCUT=%USERPROFILE%\Desktop\CCRS File Processing.lnk"
 
 echo.
 echo Build completed.
-echo Share this file:
-echo dist\CCRS File Processing Framework.exe
+echo Share one of these files:
+echo dist-electron\CCRS File Processing Framework Setup 1.0.0.exe
+echo dist-electron\CCRS File Processing Framework 1.0.0.exe
 echo.
 if exist "%DESKTOP_SHORTCUT%" (
     echo Desktop shortcut detected:

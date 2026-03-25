@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CCRS File Processing Framework</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Electron Edition</p>
+          <h1>CCRS File Processing Framework</h1>
+          <p class="hero-copy">
+            Existing Python processing logic is preserved behind this desktop shell so we can ship a shareable Windows app.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="open-runtime-root" class="ghost-button">Open Runtime Folder</button>
+          <button id="import-upload-source" class="primary-button">Import WinSCP.ini / JSON</button>
+        </div>
+      </header>
+
+      <section class="layout-grid">
+        <aside class="panel stack">
+          <div class="panel-header">
+            <h2>Environment</h2>
+          </div>
+          <div class="info-list">
+            <div>
+              <span class="label">Runtime Root</span>
+              <p id="runtime-root">Loading...</p>
+            </div>
+            <div>
+              <span class="label">Upload Source</span>
+              <p id="upload-source">Not configured</p>
+            </div>
+          </div>
+          <div class="status-card" id="status-card">
+            <span class="status-badge" id="status-badge">Idle</span>
+            <p id="status-message">Choose a workflow, then run processing.</p>
+          </div>
+          <div class="log-panel">
+            <div class="panel-header compact">
+              <h2>Activity</h2>
+              <button id="clear-activity" class="link-button">Clear</button>
+            </div>
+            <div id="activity-log" class="activity-log"></div>
+          </div>
+        </aside>
+
+        <main class="stack">
+          <section class="panel stack">
+            <div class="panel-header">
+              <h2>Shared Options</h2>
+            </div>
+            <div class="form-grid">
+              <label>
+                <span>Output Folder</span>
+                <div class="field-row">
+                  <input id="output-dir" type="text" placeholder="Choose where JSON and .gz files should be written" />
+                  <button data-pick="output-dir" class="ghost-button">Browse</button>
+                </div>
+              </label>
+              <label>
+                <span>Output JSON Filename Base</span>
+                <input id="replacement-code" type="text" placeholder="Example: referrals_batch_20260325" />
+              </label>
+              <label>
+                <span>Final .gz Name</span>
+                <input id="archive-basename" type="text" placeholder="processed_files" />
+              </label>
+              <label>
+                <span>Referral Number Start</span>
+                <input id="referral-code" type="text" placeholder="Example: VA0000000001 or 1" />
+              </label>
+              <label>
+                <span>SSN Override</span>
+                <input id="ssn-value" type="text" value="999-99-0001" />
+              </label>
+              <label>
+                <span>ListDate Override</span>
+                <input id="list-date-override" type="text" placeholder="YYYY-MM-DD HH:mm:ss" />
+              </label>
+              <label>
+                <span>Station ID</span>
+                <input id="override-station-id" type="text" placeholder="Auto-completes to 5 chars" />
+              </label>
+              <label>
+                <span>Payment Authority Code</span>
+                <input id="override-payment-authority-code" type="text" placeholder="Auto-completes to 10 digits" />
+              </label>
+              <label>
+                <span>Referral Period</span>
+                <input id="override-referral-period" type="text" />
+              </label>
+              <label>
+                <span>Network</span>
+                <input id="override-network" type="text" placeholder="Example: CCN1" />
+              </label>
+            </div>
+            <div class="toggle-row">
+              <label class="checkbox"><input id="clear-output" type="checkbox" /> Clear output folder first</label>
+              <label class="checkbox"><input id="keep-processed-json" type="checkbox" checked /> Keep processed JSON files after gzip</label>
+            </div>
+          </section>
+
+          <section class="panel stack">
+            <div class="panel-header">
+              <h2>Upload</h2>
+              <label class="checkbox"><input id="upload-enabled" type="checkbox" /> Enable upload after gzip</label>
+            </div>
+            <div id="upload-targets" class="stack"></div>
+          </section>
+
+          <section class="panel stack">
+            <div class="tabs">
+              <button class="tab is-active" data-tab="process">Edit Existing Files</button>
+              <button class="tab" data-tab="generate">Generate New Files</button>
+            </div>
+
+            <div class="tab-panel is-active" data-panel="process">
+              <div class="form-grid single">
+                <label>
+                  <span>Source Folder</span>
+                  <div class="field-row">
+                    <input id="input-dir" type="text" placeholder="Choose the folder that contains source JSON files" />
+                    <button data-pick="input-dir" class="ghost-button">Browse</button>
+                  </div>
+                </label>
+              </div>
+              <div class="action-row">
+                <button id="run-process" class="primary-button">Run Processing</button>
+              </div>
+            </div>
+
+            <div class="tab-panel" data-panel="generate">
+              <div class="form-grid">
+                <label>
+                  <span>Template</span>
+                  <select id="template-option"></select>
+                </label>
+                <label>
+                  <span>Files To Generate</span>
+                  <input id="file-count" type="number" min="1" value="1" />
+                </label>
+                <label>
+                  <span>Referrals Per File</span>
+                  <input id="referrals-per-file" type="number" min="1" value="1" />
+                </label>
+              </div>
+              <div class="action-row">
+                <button id="run-generate" class="primary-button">Generate And Process</button>
+              </div>
+            </div>
+          </section>
+        </main>
+      </section>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

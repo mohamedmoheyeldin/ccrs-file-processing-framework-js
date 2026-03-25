@@ -1,0 +1,64 @@
+{
+  "name": "ccrs-file-processing-framework",
+  "version": "1.0.0",
+  "description": "Electron shell for the CCRS File Processing Framework with the existing Python processing engine preserved.",
+  "main": "electron/main.js",
+  "author": "OpenAI Codex",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "backend:build": "py -3 -m PyInstaller --noconfirm --distpath dist-python --workpath build-python CCRS_Backend.spec",
+    "dist": "npm run backend:build && electron-builder",
+    "dist:portable": "npm run backend:build && electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.ccrs.fileprocessingframework",
+    "productName": "CCRS File Processing Framework",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "dist-python/ccrs_backend.exe",
+        "to": "backend/ccrs_backend.exe"
+      },
+      {
+        "from": "config",
+        "to": "config"
+      },
+      {
+        "from": "docs",
+        "to": "docs"
+      },
+      {
+        "from": "assets",
+        "to": "assets"
+      },
+      {
+        "from": "templates",
+        "to": "templates"
+      },
+      {
+        "from": "upload_import",
+        "to": "upload_import"
+      }
+    ],
+    "win": {
+      "icon": "assets/icons/ccrs_app_icon.ico",
+      "signAndEditExecutable": false,
+      "verifyUpdateCodeSignature": false,
+      "target": [
+        "portable",
+        "nsis"
+      ]
+    }
+  }
+}

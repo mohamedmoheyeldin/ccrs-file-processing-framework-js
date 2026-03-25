@@ -1,75 +1,52 @@
-# CCRS File Processing Framework (CFPF)
+# CCRS File Processing Framework
 
-CFPF is an internal team utility for working with CCRS files. It already supports referral JSON processing and upload workflows, and it is intended to grow into a broader tool for additional CCRS file operations over time.
+This project now targets an Electron desktop app with JavaScript for the UI while keeping the existing Python processing logic intact behind a packaged backend.
 
-## End User Run
-For a Windows end user, use the packaged application:
-- `CCRS File Processing Framework.exe`
+## Architecture
+- Electron provides the desktop shell, window management, dialogs, and Windows packaging.
+- The existing Python modules in [src](/c:/Projects/projects/coding/ccrs-file-processing-framework-js/src) still handle file processing, referral generation, upload profile import, gzip creation, and optional upload behavior.
+- [src/backend_api.py](/c:/Projects/projects/coding/ccrs-file-processing-framework-js/src/backend_api.py) is the bridge that Electron calls.
 
-On first run, the app creates local folders next to the `.exe` for:
+## Developer Run
+Install dependencies:
+- `py -3 -m pip install -r requirements.txt`
+- `npm install`
+
+Run the Electron app:
+- `npm start`
+
+Optional: build the packaged Python backend only:
+- `npm run backend:build`
+
+## Build Shareable Windows Executables
+Run:
+- [build_release.bat](/c:/Projects/projects/coding/ccrs-file-processing-framework-js/build_release.bat)
+
+That script builds:
+- a bundled Python backend executable in `dist-python`
+- a packaged Electron app in `dist-electron`
+
+The main shareable outputs are:
+- `dist-electron\CCRS File Processing Framework Setup 1.0.0.exe`
+- `dist-electron\CCRS File Processing Framework 1.0.0.exe`
+
+The portable `.exe` is the simplest file to hand to end users. The setup `.exe` provides an installer experience.
+
+## Runtime Files
+On first run, the app creates or reuses these folders next to the packaged runtime:
 - `config`
 - `upload_import`
 - `logs`
+- `docs`
+- `assets`
 
-The app now supports:
-- any source file ending with `.json`
-- generating new referral JSON files without needing a source folder
-- a main `Referral Files` area with separate `Edit Existing Files` and `Generate New Files` workflows
-- user-chosen output JSON names
-- a user-chosen final `.gz` name
-- live previews for `Referral Number`, `Station ID`, `Payment Authority Code`, output JSON names, and the final `.gz` name
-- `Referral Number` values that start with `VA` and stay unique across referrals
-- `Station ID` values that accept alphanumeric input, auto-complete to 5 characters, and stay unique inside each JSON file
-- `Payment Authority Code` values that accept numeric input, auto-complete to 10 digits, and stay unique inside each JSON file
-- optional upload to `DEV`, `PPD`, and `SQA`
+## Supported Workflows
+- Process existing CCRS referral JSON files
+- Generate new referral JSON files from bundled templates
+- Override referral number, SSN, station ID, payment authority code, and selected optional fields
+- Produce final `.gz` archives
+- Import upload settings from `WinSCP.ini` or credentials JSON
+- Upload final archives to configured `DEV`, `PPD`, and `SQA` targets
 
-## Technology Used
-- UI: Python `tkinter` with `customtkinter` for the desktop interface and styled controls
-- Uploads: `paramiko` for SSH/SFTP connections and file upload handling
-- Config import: Python standard library modules such as `configparser`, `json`, `shutil`, and `subprocess` for reading credentials files and WinSCP imports
-- Packaging: `PyInstaller` for building the Windows `.exe`
-
-## Upload Setup
-The app uses:
-- [config/upload_credentials.json](/c:/across_file_systems/projects/coding/ccrs-file-processing-framework/config/upload_credentials.json)
-
-Users can either:
-- edit that credentials file directly, or
-- click `Import To Config` in the app and choose `WinSCP.ini`
-
-When `WinSCP.ini` is imported, the app converts the saved WinSCP sessions in the backend and stores the final result in `config\upload_credentials.json`.
-
-## Developer Run
-Run CLI:
-- `python src/main.py`
-
-Run GUI:
-- `python src/gui.py`
-
-Helper launcher:
-- [run_app.bat](/c:/across_file_systems/projects/coding/ccrs-file-processing-framework/run_app.bat)
-
-## Share With Other PCs
-To package everything into a shareable Windows app:
-
-1. Run [build_release.bat](/c:/across_file_systems/projects/coding/ccrs-file-processing-framework/build_release.bat)
-2. Wait for the build to finish
-3. Share:
-   `dist\CCRS File Processing Framework.exe`
-
-The `.exe` includes:
-- the Python runtime
-- the app code
-- installed dependencies
-- bundled default config files
-- bundled upload import support
-
-The other PC does not need Python installed separately.
-
-## User Guide PDF
-End-user documentation lives here:
-- [USER_GUIDE.md](/c:/across_file_systems/projects/coding/ccrs-file-processing-framework/docs/USER_GUIDE.md)
-- [CCRS_File_Processing_Framework_User_Guide.pdf](/c:/across_file_systems/projects/coding/ccrs-file-processing-framework/docs/CCRS_File_Processing_Framework_User_Guide.pdf)
-
-To rebuild the PDF after documentation changes:
-- `python scripts/generate_user_guide_pdf.py`
+## Legacy Files
+The older `tkinter` GUI source is still in the repo for reference, but the new distribution path is the Electron app.

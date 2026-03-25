@@ -1,0 +1,599 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+2 0 obj
+<< /Length 2674 >>
+stream
+BT
+/F1 10 Tf
+54 738 Td
+(CCRS FILE PROCESSING FRAMEWORK USER GUIDE) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(PURPOSE) Tj
+0 -14 Td
+(This application is an internal team tool that helps staff work with CCRS files more ) Tj
+0 -14 Td
+(efficiently. Today it supports referral JSON processing, value updates, output ) Tj
+0 -14 Td
+(packaging, and optional upload workflows, and it is designed to expand over time to ) Tj
+0 -14 Td
+(support additional CCRS file types and internal use cases.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(WHAT THE APP CAN DO) Tj
+0 -14 Td
+(- Read any source file that ends with `.json`) Tj
+0 -14 Td
+(- Generate new referral JSON files without needing a source folder) Tj
+0 -14 Td
+(- Save processed JSON files using a user-chosen output name) Tj
+0 -14 Td
+(- Create one `.gz` file using a user-chosen archive name) Tj
+0 -14 Td
+(- Update referral-related JSON values) Tj
+0 -14 Td
+(- Show live previews for `Referral Number`, `Station ID`, `Payment Authority Code`, ) Tj
+0 -14 Td
+(output JSON names, and the final `.gz` name) Tj
+0 -14 Td
+(- Keep or remove processed JSON files after the `.gz` file is created) Tj
+0 -14 Td
+(- Optionally upload the `.gz` file to `DEV`, `PPD`, or `SQA`) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(BEFORE YOU START) Tj
+0 -14 Td
+(Make sure you have:) Tj
+0 -14 Td
+(- a source folder containing CCRS `.json` files for the workflow you are running) Tj
+0 -14 Td
+(- an output folder where processed files should be saved) Tj
+0 -14 Td
+(- a valid `WinSCP.ini` file or a ready-to-use `config\\upload_credentials.json` file if ) Tj
+0 -14 Td
+(you plan to use upload) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(HOW TO RUN THE APP) Tj
+0 -14 Td
+(This guide assumes users are running the packaged Windows application.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(To start the app:) Tj
+0 -14 Td
+(- open the folder that contains `CCRS File Processing Framework.exe`) Tj
+0 -14 Td
+(- double-click `CCRS File Processing Framework.exe`) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(On first run, the app creates local folders next to the `.exe`, including:) Tj
+0 -14 Td
+(- `config`) Tj
+0 -14 Td
+(- `logs`) Tj
+0 -14 Td
+(- `upload_import`) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Users should update the files in that generated `config` folder next to the `.exe`, not ) Tj
+0 -14 Td
+(the source-code folder.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(MAIN WORKFLOW) Tj
+0 -14 Td
+(The main `Referral Files` area now has two sub-tabs:) Tj
+0 -14 Td
+(- `Edit Existing Files` for updating existing JSON files from a source folder) Tj
+0 -14 Td
+(- `Generate New Files` for creating new referral JSON files from scratch) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(1. CHOOSE SOURCE FOLDER) Tj
+0 -14 Td
+(Use the `Source` section to choose the folder that contains the input `.json` files.) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Length 2303 >>
+stream
+BT
+/F1 10 Tf
+54 738 Td
+() Tj
+0 -14 Td
+(The app:) Tj
+0 -14 Td
+(- reads any `.json` filename) Tj
+0 -14 Td
+(- ignores non-JSON files) Tj
+0 -14 Td
+(- loads defaults from the first JSON file it finds) Tj
+0 -14 Td
+(- updates the output-name preview based on how many source files were found) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(GENERATE NEW FILES) Tj
+0 -14 Td
+(Use the `Generate New Files` tab when you want the app to create files from scratch.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(In that tab you can:) Tj
+0 -14 Td
+(- choose how many files to generate) Tj
+0 -14 Td
+(- choose how many `Referrals` each file should contain) Tj
+0 -14 Td
+(- use the same output naming and JSON value update options as the normal referral-) Tj
+0 -14 Td
+(processing workflow) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(This workflow does not require a source folder and does not include upload options.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(2. CHOOSE OUTPUT FOLDER) Tj
+0 -14 Td
+(Use the `Output` section to pick where processed files should be saved.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(3. ENTER FULL OUTPUT JSON NAME) Tj
+0 -14 Td
+(In `Full output JSON name`, enter only the actual name you want to use for processed ) Tj
+0 -14 Td
+(JSON files.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(The app adds `.json` automatically.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Examples:) Tj
+0 -14 Td
+(- if you enter `test101` and there is one file, the app creates `test101.json`) Tj
+0 -14 Td
+(- if you enter `test101` and there are multiple files, the app creates `test101_1.json`,) Tj
+0 -14 Td
+( `test101_2.json`, `test101_3.json`) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(The preview line under the textbox shows the exact filename pattern that will be used.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(4. ENTER FINAL GZ FILE NAME) Tj
+0 -14 Td
+(In `Name for the final .gz file`, enter only the actual name you want to use for the ) Tj
+0 -14 Td
+(final archive.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(The app adds `.gz` automatically.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Example:) Tj
+0 -14 Td
+(- if you enter `referrals_batch_20260323`, the app creates `referrals_batch_20260323.gz`) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(The gzip payload also uses the matching internal JSON name:) Tj
+0 -14 Td
+(- `referrals_batch_20260323.json`) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(The preview line under the textbox shows the exact archive filename that will be ) Tj
+0 -14 Td
+(created.) Tj
+ET
+endstream
+endobj
+4 0 obj
+<< /Length 2225 >>
+stream
+BT
+/F1 10 Tf
+54 738 Td
+() Tj
+0 -14 Td
+(5. CHOOSE FILE RETENTION) Tj
+0 -14 Td
+(After creating the `.gz` file, choose whether to:) Tj
+0 -14 Td
+(- keep the processed JSON files) Tj
+0 -14 Td
+(- keep only the `.gz` file) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(REFERRAL NUMBER) Tj
+0 -14 Td
+(Use the `Referral Number` textbox to enter only the user-controlled part of the value.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Important rules:) Tj
+0 -14 Td
+(- the app adds `VA` automatically) Tj
+0 -14 Td
+(- the final value always stays 12 characters total, including `VA`) Tj
+0 -14 Td
+(- the app accepts letters and numbers) Tj
+0 -14 Td
+(- the app keeps lowercase or uppercase exactly as typed) Tj
+0 -14 Td
+(- if you enter fewer characters, the app fills the remaining space automatically) Tj
+0 -14 Td
+(- the preview line shows the first generated value live while you type) Tj
+0 -14 Td
+(- every updated `ReferralNumber` is unique, even when one JSON file contains multiple ) Tj
+0 -14 Td
+(items in `Referrals`) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Examples:) Tj
+0 -14 Td
+(- input `1` becomes `VA0000000001`) Tj
+0 -14 Td
+(- the next referral record becomes `VA0000000002`) Tj
+0 -14 Td
+(- input `eldin` becomes `VA00000eldin`) Tj
+0 -14 Td
+(- later values keep the user text as long as possible by removing leading zeros first) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(LIST DATE) Tj
+0 -14 Td
+(Use the `List Date` section to change the generated `ListDate` value.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(If you do not change it, the app keeps the value loaded from the source JSON.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(OPTIONAL FIELDS) Tj
+0 -14 Td
+(Click `Show Optional Fields` to reveal additional editable values.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(If a field is left blank, the app keeps the original value from each JSON file unless ) Tj
+0 -14 Td
+(the field says it auto-generates.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Optional fields include:) Tj
+0 -14 Td
+(- `SSN`) Tj
+0 -14 Td
+(- `Station ID`) Tj
+0 -14 Td
+(- `Payment Authority Code`) Tj
+0 -14 Td
+(- `DOB`) Tj
+0 -14 Td
+(- `Network`) Tj
+0 -14 Td
+(- `Referral Category`) Tj
+0 -14 Td
+(- `Referral Date`) Tj
+0 -14 Td
+(- `Referral Date Time`) Tj
+0 -14 Td
+(- `Referral Expiration Date`) Tj
+0 -14 Td
+(- `Referral Last Update Date`) Tj
+0 -14 Td
+(- `Referral Period`) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Length 2352 >>
+stream
+BT
+/F1 10 Tf
+54 738 Td
+(- `Referral Consult ID`) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(NETWORK DROPDOWN) Tj
+0 -14 Td
+(`Network` is a dropdown with these options:) Tj
+0 -14 Td
+(- `CCN1`) Tj
+0 -14 Td
+(- `CCN2`) Tj
+0 -14 Td
+(- `CCN3`) Tj
+0 -14 Td
+(- `CCN4`) Tj
+0 -14 Td
+(- `CCN5`) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(If you do not select a `Network`, the existing value in each JSON file is left ) Tj
+0 -14 Td
+(unchanged.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(STATION ID) Tj
+0 -14 Td
+(- `Station ID` accepts letters and numbers only) Tj
+0 -14 Td
+(- users can enter up to 5 characters) Tj
+0 -14 Td
+(- if users enter fewer than 5 characters, the app fills the rest automatically) Tj
+0 -14 Td
+(- if users leave it blank, the app generates all 5 characters) Tj
+0 -14 Td
+(- the preview stays stable after the field finishes generating) Tj
+0 -14 Td
+(- each referral inside the same JSON file gets a unique `StationID`) Tj
+0 -14 Td
+(- if the last entered character is a letter, later referrals switch the changing tail to) Tj
+0 -14 Td
+( numbers) Tj
+0 -14 Td
+(- if the last entered character is a number, later referrals switch the changing tail to) Tj
+0 -14 Td
+( letters) Tj
+0 -14 Td
+(- if users enter all 5 characters, the app still adjusts later referrals automatically ) Tj
+0 -14 Td
+(so values stay unique inside the file) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(PAYMENT AUTHORITY CODE) Tj
+0 -14 Td
+(- `Payment Authority Code` accepts numbers only) Tj
+0 -14 Td
+(- users can enter up to 10 digits) Tj
+0 -14 Td
+(- if users enter fewer than 10 digits, the app fills the rest automatically) Tj
+0 -14 Td
+(- if users leave it blank, the app generates all 10 digits) Tj
+0 -14 Td
+(- the preview stays stable after the field finishes generating) Tj
+0 -14 Td
+(- each referral inside the same JSON file gets a unique `PaymentAuthorityCode`) Tj
+0 -14 Td
+(- if users enter all 10 digits, the app still adjusts later referrals automatically so ) Tj
+0 -14 Td
+(values stay unique inside the file) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(UPLOAD) Tj
+0 -14 Td
+(Turn on upload only if you want the app to send the final `.gz` file to a server after ) Tj
+0 -14 Td
+(processing.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Supported environments:) Tj
+0 -14 Td
+(- `DEV`) Tj
+0 -14 Td
+(- `PPD`) Tj
+0 -14 Td
+(- `SQA`) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(DEFAULT REMOTE PATH) Tj
+0 -14 Td
+(Each environment starts with this default remote upload location:) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Length 1886 >>
+stream
+BT
+/F1 10 Tf
+54 738 Td
+(- `/CCRA_Uploads`) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(UPLOAD CREDENTIALS) Tj
+0 -14 Td
+(The app uses this file as the main upload credential source:) Tj
+0 -14 Td
+(- `config\\upload_credentials.json`) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Users can edit that file directly in the same folder as the `.exe`.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Expected format:) Tj
+0 -14 Td
+([) Tj
+0 -14 Td
+(  {) Tj
+0 -14 Td
+(    "Environment": "DEV",) Tj
+0 -14 Td
+(    "Session": "C-DEV/ccrauser@DEV",) Tj
+0 -14 Td
+(    "UserName": "ccrauser",) Tj
+0 -14 Td
+(    "Host": "dev-dropzone.ccrs.va.gov",) Tj
+0 -14 Td
+(    "Password": "") Tj
+0 -14 Td
+(  }) Tj
+0 -14 Td
+(]) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(IMPORT TO CONFIG) Tj
+0 -14 Td
+(If you do not already have `config\\upload_credentials.json`, use the `Import To Config` ) Tj
+0 -14 Td
+(button.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(You can choose either:) Tj
+0 -14 Td
+(- a credentials JSON file) Tj
+0 -14 Td
+(- `WinSCP.ini`) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(If you choose `WinSCP.ini`, the app:) Tj
+0 -14 Td
+(- copies the selected INI into `upload_import`) Tj
+0 -14 Td
+(- converts the saved WinSCP sessions in the backend) Tj
+0 -14 Td
+(- saves the final credentials into `config\\upload_credentials.json`) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Important notes:) Tj
+0 -14 Td
+(- after import, `config\\upload_credentials.json` is the only credentials file users need) Tj
+0 -14 Td
+(- temporary `winscp_credentials.json` files are backend-only and are cleaned up by the ) Tj
+0 -14 Td
+(app) Tj
+0 -14 Td
+(- uploads to `PROD` remain disabled in the app) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(OUTPUT FORMAT) Tj
+0 -14 Td
+(The final `.gz` contains one combined JSON object, not an array of files.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(Top-level structure:) Tj
+0 -14 Td
+({) Tj
+0 -14 Td
+(  "ListDate": "YYYY-MM-DD hh:mm:ss",) Tj
+0 -14 Td
+(  "Referrals": [) Tj
+0 -14 Td
+(    {}) Tj
+0 -14 Td
+(  ]) Tj
+0 -14 Td
+(}) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Length 551 >>
+stream
+BT
+/F1 10 Tf
+54 738 Td
+() Tj
+0 -14 Td
+(This format is required by the receiving referral application.) Tj
+0 -14 Td
+() Tj
+0 -14 Td
+(COMMON NOTES) Tj
+0 -14 Td
+(- Generated JSON filenames always use lowercase `.json`) Tj
+0 -14 Td
+(- The app creates one `.gz` file for the current run based on the name entered by the ) Tj
+0 -14 Td
+(user) Tj
+0 -14 Td
+(- Older `.gz` files in the folder are not deleted automatically) Tj
+0 -14 Td
+(- The app can keep the generated `.json` files or keep only the `.gz`, depending on the ) Tj
+0 -14 Td
+(selected option) Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Pages /Kids [9 0 R 10 0 R 11 0 R 12 0 R 13 0 R 14 0 R] /Count 6 >>
+endobj
+9 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+10 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 3 0 R >>
+endobj
+11 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+12 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 5 0 R >>
+endobj
+13 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 6 0 R >>
+endobj
+14 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 7 0 R >>
+endobj
+15 0 obj
+<< /Type /Catalog /Pages 8 0 R >>
+endobj
+xref
+0 16
+0000000000 65535 f 
+0000000009 00000 n 
+0000000077 00000 n 
+0000002803 00000 n 
+0000005158 00000 n 
+0000007435 00000 n 
+0000009839 00000 n 
+0000011777 00000 n 
+0000012379 00000 n 
+0000012471 00000 n 
+0000012597 00000 n 
+0000012724 00000 n 
+0000012851 00000 n 
+0000012978 00000 n 
+0000013105 00000 n 
+0000013232 00000 n 
+trailer
+<< /Size 16 /Root 15 0 R >>
+startxref
+13282
+%%EOF
