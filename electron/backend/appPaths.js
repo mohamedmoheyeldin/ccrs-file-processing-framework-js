@@ -1,16 +1,20 @@
 const fs = require("fs");
 const path = require("path");
-const { app } = require("electron");
+const electron = require("electron");
+
+function isPackagedApp() {
+  return Boolean(electron.app && electron.app.isPackaged);
+}
 
 function getBundleRoot() {
-  if (app.isPackaged) {
+  if (isPackagedApp()) {
     return process.resourcesPath;
   }
   return path.resolve(__dirname, "..", "..");
 }
 
 function getRuntimeRoot() {
-  if (app.isPackaged) {
+  if (isPackagedApp()) {
     return path.dirname(process.execPath);
   }
   return path.resolve(__dirname, "..", "..");

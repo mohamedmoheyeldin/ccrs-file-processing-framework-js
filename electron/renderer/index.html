@@ -8,152 +8,384 @@
   </head>
   <body>
     <div class="app-shell">
-      <header class="hero">
-        <div>
-          <p class="eyebrow">Electron Edition</p>
-          <h1>CCRS File Processing Framework</h1>
-          <p class="hero-copy">
-            Existing Python processing logic is preserved behind this desktop shell so we can ship a shareable Windows app.
-          </p>
-        </div>
-        <div class="hero-actions">
-          <button id="open-runtime-root" class="ghost-button">Open Runtime Folder</button>
-          <button id="import-upload-source" class="primary-button">Import WinSCP.ini / JSON</button>
+      <header class="topbar glass-card">
+        <button id="open-user-guide" class="toolbar-button primary-soft">User Guide</button>
+        <div class="theme-picker">
+          <span>Theme</span>
+          <div class="segmented-control compact">
+            <button class="segment is-active" data-theme="light">Light</button>
+            <button class="segment" data-theme="dark">Dark</button>
+          </div>
         </div>
       </header>
 
-      <section class="layout-grid">
-        <aside class="panel stack">
-          <div class="panel-header">
-            <h2>Environment</h2>
-          </div>
-          <div class="info-list">
-            <div>
-              <span class="label">Runtime Root</span>
-              <p id="runtime-root">Loading...</p>
-            </div>
-            <div>
-              <span class="label">Upload Source</span>
-              <p id="upload-source">Not configured</p>
-            </div>
-          </div>
-          <div class="status-card" id="status-card">
-            <span class="status-badge" id="status-badge">Idle</span>
-            <p id="status-message">Choose a workflow, then run processing.</p>
-          </div>
-          <div class="log-panel">
-            <div class="panel-header compact">
-              <h2>Activity</h2>
-              <button id="clear-activity" class="link-button">Clear</button>
-            </div>
-            <div id="activity-log" class="activity-log"></div>
-          </div>
-        </aside>
+      <section class="hero glass-card">
+        <div class="hero-copy">
+          <p class="eyebrow">CCRS Desktop Workflow</p>
+          <h1 id="hero-title">CCRS File Processing</h1>
+          <p id="hero-subtitle">
+            Use the tabs below to work with referral files and related CCRS processing workflows.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="import-upload-source" class="toolbar-button primary">Import To Config</button>
+        </div>
+      </section>
 
-        <main class="stack">
-          <section class="panel stack">
-            <div class="panel-header">
-              <h2>Shared Options</h2>
+      <section class="main-tabs">
+        <div class="segmented-control centered">
+          <button class="segment is-active" data-main-tab="referral">Referral Files</button>
+          <button class="segment" data-main-tab="other">Other CCRS File Types</button>
+        </div>
+        <div id="main-tab-copy" class="tab-copy">
+          Choose source files, apply targeted JSON updates, and export clean output in one pass.
+        </div>
+      </section>
+
+      <section class="workspace">
+        <main class="content">
+          <div id="subtab-row" class="subtab-row">
+            <div class="segmented-control">
+              <button class="segment is-active" data-sub-tab="edit">Edit Existing Files</button>
+              <button class="segment" data-sub-tab="generate">Generate New Files</button>
             </div>
-            <div class="form-grid">
-              <label>
-                <span>Output Folder</span>
+          </div>
+
+          <section class="content-stack">
+            <article class="content-card glass-card">
+              <div class="section-head section-head-hero">
+                <div class="section-head-copy centered-copy">
+                  <h2 id="workflow-title">CCRS Referral Processing</h2>
+                  <p id="workflow-subtitle">
+                    Choose source files, apply targeted JSON updates, and export clean output in one pass.
+                  </p>
+                </div>
+                <div id="template-summary-pill" class="pill-note hidden"></div>
+              </div>
+            </article>
+
+            <article id="source-card" class="content-card glass-card">
+              <div class="section-head">
+                <div>
+                  <h2 id="source-title">Source</h2>
+                  <p id="source-subtitle">Pick the folder that contains the incoming JSON files.</p>
+                </div>
+              </div>
+              <label class="field-block" id="source-folder-field">
+                <span>Source Folder</span>
                 <div class="field-row">
-                  <input id="output-dir" type="text" placeholder="Choose where JSON and .gz files should be written" />
-                  <button data-pick="output-dir" class="ghost-button">Browse</button>
+                  <input id="input-dir" type="text" placeholder="Choose the folder that contains source JSON files" />
+                  <button data-pick="input-dir" class="toolbar-button">Browse</button>
                 </div>
               </label>
-              <label>
-                <span>Output JSON Filename Base</span>
-                <input id="replacement-code" type="text" placeholder="Example: referrals_batch_20260325" />
-              </label>
-              <label>
-                <span>Final .gz Name</span>
-                <input id="archive-basename" type="text" placeholder="processed_files" />
-              </label>
-              <label>
-                <span>Referral Number Start</span>
-                <input id="referral-code" type="text" placeholder="Example: VA0000000001 or 1" />
-              </label>
-              <label>
-                <span>SSN Override</span>
-                <input id="ssn-value" type="text" value="999-99-0001" />
-              </label>
-              <label>
-                <span>ListDate Override</span>
-                <input id="list-date-override" type="text" placeholder="YYYY-MM-DD HH:mm:ss" />
-              </label>
-              <label>
-                <span>Station ID</span>
-                <input id="override-station-id" type="text" placeholder="Auto-completes to 5 chars" />
-              </label>
-              <label>
-                <span>Payment Authority Code</span>
-                <input id="override-payment-authority-code" type="text" placeholder="Auto-completes to 10 digits" />
-              </label>
-              <label>
-                <span>Referral Period</span>
-                <input id="override-referral-period" type="text" />
-              </label>
-              <label>
-                <span>Network</span>
-                <input id="override-network" type="text" placeholder="Example: CCN1" />
-              </label>
-            </div>
-            <div class="toggle-row">
-              <label class="checkbox"><input id="clear-output" type="checkbox" /> Clear output folder first</label>
-              <label class="checkbox"><input id="keep-processed-json" type="checkbox" checked /> Keep processed JSON files after gzip</label>
-            </div>
-          </section>
+              <div class="info-chips">
+                <span id="source-file-count" class="info-chip">No source folder selected.</span>
+                <span id="list-date-source-value" class="info-chip">Default ListDate will appear after you choose a source folder.</span>
+              </div>
+            </article>
 
-          <section class="panel stack">
-            <div class="panel-header">
-              <h2>Upload</h2>
-              <label class="checkbox"><input id="upload-enabled" type="checkbox" /> Enable upload after gzip</label>
-            </div>
-            <div id="upload-targets" class="stack"></div>
-          </section>
+            <article class="content-card glass-card">
+              <div class="section-head">
+                <div>
+                  <h2>Output</h2>
+                  <p id="output-subtitle">
+                    Choose where the processed JSON files should be saved and how the final output should be kept.
+                  </p>
+                </div>
+              </div>
 
-          <section class="panel stack">
-            <div class="tabs">
-              <button class="tab is-active" data-tab="process">Edit Existing Files</button>
-              <button class="tab" data-tab="generate">Generate New Files</button>
-            </div>
-
-            <div class="tab-panel is-active" data-panel="process">
-              <div class="form-grid single">
-                <label>
-                  <span>Source Folder</span>
+              <div class="form-grid two-col">
+                <label class="field-block">
+                  <span>Save processed files to</span>
                   <div class="field-row">
-                    <input id="input-dir" type="text" placeholder="Choose the folder that contains source JSON files" />
-                    <button data-pick="input-dir" class="ghost-button">Browse</button>
+                    <input id="output-dir" type="text" placeholder="Choose where JSON and .gz files should be written" />
+                    <button data-pick="output-dir" class="toolbar-button">Save To</button>
                   </div>
                 </label>
+                <label class="field-block">
+                  <span>Name for the processed JSON files</span>
+                  <input id="replacement-code" type="text" placeholder="Leave blank to keep original JSON names" />
+                  <small id="output-json-preview" class="helper-text">Preview: original JSON names will be used</small>
+                </label>
+                <label class="field-block">
+                  <span>Name for the final .gz file</span>
+                  <input id="archive-basename" type="text" value="processed_files" />
+                  <small id="archive-preview" class="helper-text">Preview: processed_files.gz</small>
+                </label>
+                <div class="field-block">
+                  <span>If save folder already has files</span>
+                  <div class="toggle-row">
+                    <label class="radio-chip">
+                      <input id="keep-existing-files" name="output-mode" type="radio" checked />
+                      <span>Keep existing files</span>
+                    </label>
+                    <label class="radio-chip">
+                      <input id="clear-output" name="output-mode" type="radio" />
+                      <span>Delete everything first</span>
+                    </label>
+                  </div>
+                  <small class="helper-text">After creating the .gz file</small>
+                  <div class="toggle-row">
+                    <label class="checkbox-chip">
+                      <input id="keep-processed-json" type="checkbox" checked />
+                      <span>Keep formatted JSON files</span>
+                    </label>
+                  </div>
+                </div>
               </div>
-              <div class="action-row">
-                <button id="run-process" class="primary-button">Run Processing</button>
-              </div>
-            </div>
+            </article>
 
-            <div class="tab-panel" data-panel="generate">
-              <div class="form-grid">
-                <label>
+            <article class="content-card glass-card">
+              <div class="section-head">
+                <div>
+                  <h2>Referral Details</h2>
+                  <p>Set the first referral number and ListDate behavior for this run.</p>
+                </div>
+                <button id="toggle-optional-fields" class="toolbar-button">Show Optional Fields</button>
+              </div>
+
+              <div class="form-grid two-col">
+                <label class="field-block">
+                  <span>Referral Number</span>
+                  <input id="referral-code" type="text" placeholder="Enter the starting referral number" />
+                  <small id="referral-preview" class="helper-text">Preview: default referral numbers from source files</small>
+                </label>
+                <label class="field-block">
+                  <span>SSN Override</span>
+                  <input id="ssn-value" type="text" value="999-99-0001" />
+                </label>
+              </div>
+
+              <div class="date-grid">
+                <div class="date-label-row">
+                  <span>List Date</span>
+                  <small>Use the source ListDate by default, or adjust any segment below.</small>
+                </div>
+                <div class="date-segments">
+                  <div class="date-field" data-date-part="year">
+                    <label>Year</label>
+                    <div class="date-control">
+                      <button type="button" class="date-step" data-step="-1">-</button>
+                      <input id="list-date-year" maxlength="4" value="0000" />
+                      <button type="button" class="date-step" data-step="1">+</button>
+                    </div>
+                  </div>
+                  <div class="date-field" data-date-part="month">
+                    <label>Month</label>
+                    <div class="date-control">
+                      <button type="button" class="date-step" data-step="-1">-</button>
+                      <input id="list-date-month" maxlength="2" value="00" />
+                      <button type="button" class="date-step" data-step="1">+</button>
+                    </div>
+                  </div>
+                  <div class="date-field" data-date-part="day">
+                    <label>Day</label>
+                    <div class="date-control">
+                      <button type="button" class="date-step" data-step="-1">-</button>
+                      <input id="list-date-day" maxlength="2" value="00" />
+                      <button type="button" class="date-step" data-step="1">+</button>
+                    </div>
+                  </div>
+                  <div class="date-field" data-date-part="hour">
+                    <label>Hour</label>
+                    <div class="date-control">
+                      <button type="button" class="date-step" data-step="-1">-</button>
+                      <input id="list-date-hour" maxlength="2" value="00" />
+                      <button type="button" class="date-step" data-step="1">+</button>
+                    </div>
+                  </div>
+                  <div class="date-field" data-date-part="minute">
+                    <label>Minute</label>
+                    <div class="date-control">
+                      <button type="button" class="date-step" data-step="-1">-</button>
+                      <input id="list-date-minute" maxlength="2" value="00" />
+                      <button type="button" class="date-step" data-step="1">+</button>
+                    </div>
+                  </div>
+                  <div class="date-field" data-date-part="second">
+                    <label>Second</label>
+                    <div class="date-control">
+                      <button type="button" class="date-step" data-step="-1">-</button>
+                      <input id="list-date-second" maxlength="2" value="00" />
+                      <button type="button" class="date-step" data-step="1">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="optional-fields" class="optional-fields hidden">
+                <div class="form-grid two-col">
+                  <label class="field-block">
+                    <span>Station ID</span>
+                    <input id="override-station-id" type="text" placeholder="Auto-completes to 5 chars" />
+                    <small id="station-id-preview" class="helper-text">Preview: no Station ID override</small>
+                  </label>
+                  <label class="field-block">
+                    <span>Payment Authority Code</span>
+                    <input id="override-payment-authority-code" type="text" placeholder="Auto-completes to 10 digits" />
+                    <small id="payment-authority-code-preview" class="helper-text">Preview: no Payment Authority Code override</small>
+                  </label>
+                  <label class="field-block">
+                    <span>Referral Period</span>
+                    <input id="override-referral-period" type="text" />
+                  </label>
+                  <label class="field-block">
+                    <span>Network</span>
+                    <input id="override-network" type="text" placeholder="Example: CCN1" />
+                  </label>
+                  <label class="field-block">
+                    <span>DOB</span>
+                    <input id="override-dob" type="text" placeholder="YYYY-MM-DD" />
+                  </label>
+                  <label class="field-block">
+                    <span>Referral Category</span>
+                    <input id="override-referral-category" type="text" />
+                  </label>
+                  <label class="field-block">
+                    <span>Referral Date</span>
+                    <input id="override-referral-date" type="text" placeholder="YYYY-MM-DD" />
+                  </label>
+                  <label class="field-block">
+                    <span>Referral DateTime</span>
+                    <input id="override-referral-date-time" type="text" placeholder="YYYY-MM-DD HH:mm:ss" />
+                  </label>
+                  <label class="field-block">
+                    <span>Referral Expiration Date</span>
+                    <input id="override-referral-expiration-date" type="text" placeholder="YYYY-MM-DD" />
+                  </label>
+                  <label class="field-block">
+                    <span>Referral Last Update Date</span>
+                    <input id="override-referral-last-update-date" type="text" placeholder="YYYY-MM-DD" />
+                  </label>
+                  <label class="field-block">
+                    <span>Referral Consult ID</span>
+                    <input id="override-referral-consult-id" type="text" />
+                  </label>
+                </div>
+              </div>
+            </article>
+
+            <article id="generator-card" class="content-card glass-card hidden">
+              <div class="section-head">
+                <div>
+                  <h2>Generator Setup</h2>
+                  <p>Choose how many files and referrals you want to generate.</p>
+                </div>
+              </div>
+
+              <div class="generator-modes">
+                <div class="generator-mode-card">
+                  <span class="generator-mode-label">JSON output</span>
+                  <div class="toggle-row">
+                    <label class="radio-chip">
+                      <input id="file-mode-single" name="file-mode" type="radio" checked />
+                      <span>Single JSON file</span>
+                    </label>
+                    <label class="radio-chip">
+                      <input id="file-mode-multiple" name="file-mode" type="radio" />
+                      <span>Multiple JSON files</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="generator-mode-card">
+                  <span class="generator-mode-label">Referral count</span>
+                  <div class="toggle-row">
+                    <label class="radio-chip">
+                      <input id="referral-mode-single" name="referral-mode" type="radio" checked />
+                      <span>One referral</span>
+                    </label>
+                    <label class="radio-chip">
+                      <input id="referral-mode-multiple" name="referral-mode" type="radio" />
+                      <span>Multiple referrals</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-grid three-col">
+                <label class="field-block">
                   <span>Template</span>
                   <select id="template-option"></select>
+                  <small id="template-meta" class="helper-text">Template details will appear here.</small>
                 </label>
-                <label>
-                  <span>Files To Generate</span>
+                <label class="field-block">
+                  <span>Files to generate</span>
                   <input id="file-count" type="number" min="1" value="1" />
                 </label>
-                <label>
-                  <span>Referrals Per File</span>
+                <label class="field-block">
+                  <span>Referrals per file</span>
                   <input id="referrals-per-file" type="number" min="1" value="1" />
                 </label>
               </div>
-              <div class="action-row">
-                <button id="run-generate" class="primary-button">Generate And Process</button>
+            </article>
+
+            <article class="content-card glass-card">
+              <div class="section-head">
+                <div>
+                  <h2>Upload</h2>
+                  <p>Optionally upload the final .gz file to one or more saved environment profiles.</p>
+                </div>
+                <label class="checkbox-chip">
+                  <input id="upload-enabled" type="checkbox" />
+                  <span>Upload the .gz file after processing</span>
+                </label>
               </div>
-            </div>
+              <div class="upload-meta-row">
+                <div id="upload-ready-pill" class="pill-note">Waiting for upload profiles</div>
+                <p id="upload-profile-source" class="upload-copy"></p>
+              </div>
+              <div id="upload-targets" class="upload-targets"></div>
+            </article>
+
+            <article class="content-card glass-card">
+              <div class="section-head">
+                <div>
+                  <h2>Run Summary</h2>
+                  <p>Review the current workflow setup before you start.</p>
+                </div>
+              </div>
+              <div class="summary-grid">
+                <div class="summary-item">
+                  <span>Source</span>
+                  <p id="summary-source">Source files: none selected</p>
+                </div>
+                <div class="summary-item">
+                  <span>Output</span>
+                  <p id="summary-output">Output JSON: original JSON names</p>
+                </div>
+                <div class="summary-item">
+                  <span>Archive</span>
+                  <p id="summary-archive">Archive: processed_files.gz</p>
+                </div>
+                <div class="summary-item">
+                  <span>Retention</span>
+                  <p id="summary-retention">JSON retention: keep formatted JSON files</p>
+                </div>
+                <div class="summary-item">
+                  <span>Upload</span>
+                  <p id="summary-upload">Upload: disabled</p>
+                </div>
+              </div>
+              <div class="footer-grid">
+                <div class="run-panel">
+                  <div class="status-panel inline-status">
+                    <span id="status-badge" class="status-badge idle">Idle</span>
+                    <p id="status-message">Choose a workflow, then run processing.</p>
+                  </div>
+                  <div class="action-row">
+                    <button id="run-process" class="toolbar-button primary">Run Processing</button>
+                    <button id="run-generate" class="toolbar-button primary hidden">Generate Files</button>
+                  </div>
+                </div>
+                <div class="activity-panel">
+                  <div class="section-head compact">
+                    <h2>Activity</h2>
+                    <button id="clear-activity" class="link-button">Clear</button>
+                  </div>
+                  <div id="activity-log" class="activity-log compact-log"></div>
+                </div>
+              </div>
+            </article>
           </section>
         </main>
       </section>

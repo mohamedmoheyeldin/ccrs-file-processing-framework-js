@@ -5,23 +5,6 @@ cd /d "%~dp0"
 title Build CCRS File Processing Framework
 
 set "CUSTOM_ICON_ICO=%CD%\assets\icons\ccrs_app_icon.ico"
-set "CUSTOM_ICON_PNG=%CD%\assets\icons\ccrs_app_icon.png"
-
-set "PY_CMD=python"
-where py >nul 2>nul
-if %errorlevel%==0 (
-    set "PY_CMD=py -3"
-)
-
-where python >nul 2>nul
-if not %errorlevel%==0 (
-    if "%PY_CMD%"=="python" (
-        echo Python 3 is not installed or not available in PATH.
-        pause
-        exit /b 1
-    )
-)
-
 if not exist "%CUSTOM_ICON_ICO%" (
     echo Missing custom icon file:
     echo %CUSTOM_ICON_ICO%
@@ -31,38 +14,13 @@ if not exist "%CUSTOM_ICON_ICO%" (
     exit /b 1
 )
 
-if not exist "%CUSTOM_ICON_PNG%" (
-    echo Missing custom PNG icon file:
-    echo %CUSTOM_ICON_PNG%
-    echo.
-    echo Add your PNG icon file before running the release build.
-    pause
-    exit /b 1
-)
-
 echo Using custom application icon:
 echo %CUSTOM_ICON_ICO%
 echo.
 
-echo Generating Windows icon from custom PNG...
-%PY_CMD% scripts\generate_icon.py "%CUSTOM_ICON_PNG%" "%CUSTOM_ICON_ICO%"
-if errorlevel 1 (
-    echo Failed to generate the Windows icon file.
-    pause
-    exit /b 1
-)
-
 where npm >nul 2>nul
 if %errorlevel% neq 0 (
     echo npm is not installed or not available in PATH.
-    pause
-    exit /b 1
-)
-
-echo Installing Python build dependencies...
-%PY_CMD% -m pip install -r requirements.txt
-if errorlevel 1 (
-    echo Failed to install requirements.
     pause
     exit /b 1
 )
@@ -76,11 +34,9 @@ if errorlevel 1 (
 )
 
 echo Cleaning previous build output...
-if exist build-python rmdir /s /q build-python
-if exist dist-python rmdir /s /q dist-python
 if exist dist-electron rmdir /s /q dist-electron
 
-echo Building Electron application and bundled Python backend...
+echo Building pure JavaScript Electron application...
 npm run dist
 if errorlevel 1 (
     echo Build failed.

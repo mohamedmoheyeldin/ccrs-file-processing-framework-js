@@ -1,9 +1,22 @@
 const fs = require("fs");
 const path = require("path");
-const { dataPath } = require("./appPaths");
+const { bundlePath, dataPath } = require("./appPaths");
 
-const rules = JSON.parse(fs.readFileSync(dataPath("config", "rules.json"), "utf8"));
 const INVALID_FILENAME_CHARS = /[<>:"/\\|?*]+/g;
+
+function loadRules() {
+  const runtimePath = dataPath("config", "rules.json");
+  if (fs.existsSync(runtimePath)) {
+    return JSON.parse(fs.readFileSync(runtimePath, "utf8"));
+  }
+
+  const bundledPath = bundlePath("config", "rules.json");
+  if (fs.existsSync(bundledPath)) {
+    return JSON.parse(fs.readFileSync(bundledPath, "utf8"));
+  }
+
+  return { rename: [] };
+}
 
 function sanitizeFilenameBase(value) {
   let sanitized = (value || "").trim();
@@ -17,6 +30,7 @@ function sanitizeFilenameBase(value) {
 }
 
 function renameFile(filePath, replacementCode, fileIndex, totalFiles) {
+  const rules = loadRules();
   let filename = path.basename(filePath);
 
   if (replacementCode) {

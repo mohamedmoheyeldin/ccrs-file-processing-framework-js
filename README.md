@@ -1,39 +1,34 @@
 # CCRS File Processing Framework
 
-This project now targets an Electron desktop app with JavaScript for the UI while keeping the existing Python processing logic intact behind a packaged backend.
+This app now runs as a pure JavaScript Electron desktop application. The desktop shell, processing logic, referral generation, gzip creation, upload profile handling, and packaging flow are all driven from JavaScript in the Electron app.
 
 ## Architecture
-- Electron provides the desktop shell, window management, dialogs, and Windows packaging.
-- The existing Python modules in [src](/c:/Projects/projects/coding/ccrs-file-processing-framework-js/src) still handle file processing, referral generation, upload profile import, gzip creation, and optional upload behavior.
-- [src/backend_api.py](/c:/Projects/projects/coding/ccrs-file-processing-framework-js/src/backend_api.py) is the bridge that Electron calls.
+- Electron handles the desktop window, dialogs, IPC, and Windows packaging.
+- The runtime logic lives under [electron/backend](/c:/Projects/projects/coding/ccrs-file-processing-framework-js/electron/backend).
+- The UI lives under [electron/renderer](/c:/Projects/projects/coding/ccrs-file-processing-framework-js/electron/renderer).
 
 ## Developer Run
 Install dependencies:
-- `py -3 -m pip install -r requirements.txt`
 - `npm install`
 
-Run the Electron app:
+Run the desktop app:
 - `npm start`
-
-Optional: build the packaged Python backend only:
-- `npm run backend:build`
 
 ## Build Shareable Windows Executables
 Run:
 - [build_release.bat](/c:/Projects/projects/coding/ccrs-file-processing-framework-js/build_release.bat)
 
-That script builds:
-- a bundled Python backend executable in `dist-python`
-- a packaged Electron app in `dist-electron`
+Or directly:
+- `npm run dist`
 
-The main shareable outputs are:
+The build outputs are:
 - `dist-electron\CCRS File Processing Framework Setup 1.0.0.exe`
 - `dist-electron\CCRS File Processing Framework 1.0.0.exe`
 
-The portable `.exe` is the simplest file to hand to end users. The setup `.exe` provides an installer experience.
+The portable `.exe` is the easiest file to hand to end users. The setup `.exe` provides an installer flow.
 
 ## Runtime Files
-On first run, the app creates or reuses these folders next to the packaged runtime:
+On first run, the app creates or reuses these folders next to the packaged executable:
 - `config`
 - `upload_import`
 - `logs`
@@ -47,6 +42,3 @@ On first run, the app creates or reuses these folders next to the packaged runti
 - Produce final `.gz` archives
 - Import upload settings from `WinSCP.ini` or credentials JSON
 - Upload final archives to configured `DEV`, `PPD`, and `SQA` targets
-
-## Legacy Files
-The older `tkinter` GUI source is still in the repo for reference, but the new distribution path is the Electron app.

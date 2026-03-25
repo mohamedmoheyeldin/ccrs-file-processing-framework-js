@@ -1,7 +1,6 @@
 config/upload_credentials.json
 upload_import/WinSCP.ini
+templates/referrals/
 node_modules/
 dist-electron/
-dist-python/
-build-python/
 src/__pycache__/
