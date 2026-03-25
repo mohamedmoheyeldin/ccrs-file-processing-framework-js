@@ -461,3 +461,20 @@
 2026-03-25 14:41:28,237 - INFO - Cleared existing files from: output\electron_verify
 2026-03-25 14:41:28,243 - INFO - Processed: C:\Users\MOHEYE~1\AppData\Local\Temp\ccrs_referral_generator_aove7_ih\generated_template_1.json -> electron_test.json
 2026-03-25 14:41:28,248 - INFO - Created gzip file: output\electron_verify\electron_test_archive.gz
+2026-03-25T18:59:48.413Z - INFO - Processed: C:\Users\MOHEYE~1\AppData\Local\Temp\ccrs_referral_generator_DQV8Yv\generated_template_1.json -> js_test.json
+2026-03-25T18:59:48.420Z - INFO - Created gzip file: output\js_verify\js_archive.gz
+2026-03-25T19:14:40.868Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCN1_Referral_2026_03_23T12_53_41_729Z.json -> ui_parity_batch_1.json
+2026-03-25T19:14:40.869Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCN1_Referral_2026_03_23T12_54_19_937Z.json -> ui_parity_batch_2.json
+2026-03-25T19:14:40.872Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCN1_Referral_2026_03_23T13_01_11_609Z.json -> ui_parity_batch_3.json
+2026-03-25T19:14:40.873Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCN2_Referral_2026_03_23T12_59_42_189Z.json -> ui_parity_batch_4.json
+2026-03-25T19:14:40.876Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCN5_Referral_2026_03_23T12_57_37_635Z.json -> ui_parity_batch_5.json
+2026-03-25T19:14:40.877Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCN5_Referral_2026_03_23T13_02_28_999Z.json -> ui_parity_batch_6.json
+2026-03-25T19:14:40.878Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> ui_parity_batch_7.json
+2026-03-25T19:14:40.879Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> ui_parity_batch_8.json
+2026-03-25T19:14:40.880Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> ui_parity_batch_9.json
+2026-03-25T19:14:40.881Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> ui_parity_batch_10.json
+2026-03-25T19:14:40.881Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> ui_parity_batch_11.json
+2026-03-25T19:14:40.882Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> ui_parity_batch_12.json
+2026-03-25T19:14:40.883Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCRS_DTL_VA25S1DMVP45_MVIP.JSON -> ui_parity_batch_13.json
+2026-03-25T19:14:40.883Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCRS_DTL_VA25S1DMVP46_MVIP.JSON -> ui_parity_batch_14.json
+2026-03-25T19:14:40.892Z - INFO - Created gzip file: C:\Projects\projects\coding\ccrs-file-processing-framework-js\output\ui_parity_verify\ui_parity_archive.gz
