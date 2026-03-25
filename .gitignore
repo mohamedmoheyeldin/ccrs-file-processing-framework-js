@@ -2,5 +2,4 @@ config/upload_credentials.json
 upload_import/WinSCP.ini
 templates/referrals/
 node_modules/
-dist-electron/
 src/__pycache__/
