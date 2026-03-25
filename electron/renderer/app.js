@@ -255,16 +255,6 @@ function getSelectedTemplateMetadata() {
   return state.info.templateMetadata.find((item) => item.name === selected) || null;
 }
 
-function syncGeneratorModeInputs() {
-  const fileCount = Math.max(Number(readValue("file-count") || 1), 1);
-  const referralsPerFile = Math.max(Number(readValue("referrals-per-file") || 1), 1);
-
-  elements.fileModeSingle.checked = fileCount <= 1;
-  elements.fileModeMultiple.checked = fileCount > 1;
-  elements.referralModeSingle.checked = referralsPerFile <= 1;
-  elements.referralModeMultiple.checked = referralsPerFile > 1;
-}
-
 function updateTemplateMeta() {
   const metadata = getSelectedTemplateMetadata();
   if (!metadata) {
@@ -300,7 +290,6 @@ function applyInfo(info) {
 
   renderUploadTargets(info.uploadTargets || []);
   updateTemplateMeta();
-  syncGeneratorModeInputs();
   updateTemplateSummary();
 }
 
@@ -422,7 +411,6 @@ function updateTemplateSummary() {
   elements.generatorReferralsPerFileDisplay.textContent = String(referralsPerFile);
   elements.generatorTotalReferralsDisplay.textContent = String(totalReferrals);
   updateTemplateMeta();
-  syncGeneratorModeInputs();
 }
 
 function updateSummary() {
@@ -515,48 +503,6 @@ function setupTabs() {
       syncWorkflowText();
     });
   }
-}
-
-function setupGeneratorControls() {
-  elements.fileModeSingle.addEventListener("change", () => {
-    if (!elements.fileModeSingle.checked) {
-      return;
-    }
-    elements.fileCount.value = "1";
-    updateTemplateSummary();
-    updateSummary();
-  });
-
-  elements.fileModeMultiple.addEventListener("change", () => {
-    if (!elements.fileModeMultiple.checked) {
-      return;
-    }
-    if (Math.max(Number(readValue("file-count") || 1), 1) < 2) {
-      elements.fileCount.value = "2";
-    }
-    updateTemplateSummary();
-    updateSummary();
-  });
-
-  elements.referralModeSingle.addEventListener("change", () => {
-    if (!elements.referralModeSingle.checked) {
-      return;
-    }
-    elements.referralsPerFile.value = "1";
-    updateTemplateSummary();
-    updateSummary();
-  });
-
-  elements.referralModeMultiple.addEventListener("change", () => {
-    if (!elements.referralModeMultiple.checked) {
-      return;
-    }
-    if (Math.max(Number(readValue("referrals-per-file") || 1), 1) < 2) {
-      elements.referralsPerFile.value = "2";
-    }
-    updateTemplateSummary();
-    updateSummary();
-  });
 }
 
 function toggleOptionalFields() {
@@ -688,7 +634,6 @@ async function runJob(command, payload, label) {
 
 function setupEventHandlers() {
   setupTabs();
-  setupGeneratorControls();
   wireDateControls();
 
   for (const button of document.querySelectorAll("[data-theme]")) {
@@ -786,8 +731,6 @@ function cacheElements() {
     generatorReferralsPerFileDisplay: $("generator-referrals-per-file-display"),
     generatorTotalReferralsDisplay: $("generator-total-referrals-display"),
     fileCount: $("file-count"),
-    fileModeMultiple: $("file-mode-multiple"),
-    fileModeSingle: $("file-mode-single"),
     heroSubtitle: $("hero-subtitle"),
     heroTitle: $("hero-title"),
     importUploadSource: $("import-upload-source"),
@@ -811,8 +754,6 @@ function cacheElements() {
     overrideReferralPeriod: $("override-referral-period"),
     paymentAuthorityCodePreview: $("payment-authority-code-preview"),
     referralCode: $("referral-code"),
-    referralModeMultiple: $("referral-mode-multiple"),
-    referralModeSingle: $("referral-mode-single"),
     referralPreview: $("referral-preview"),
     referralsPerFile: $("referrals-per-file"),
     runGenerate: $("run-generate"),

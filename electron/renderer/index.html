@@ -30,12 +30,6 @@
         </div>
       </header>
 
-      <section class="hero glass-card">
-        <div class="hero-actions">
-          <button id="import-upload-source" class="toolbar-button primary">Import To Config</button>
-        </div>
-      </section>
-
       <section class="main-tabs">
         <div class="segmented-control centered">
           <button class="segment is-active" data-main-tab="referral">Referral Files</button>
@@ -88,54 +82,48 @@
               </div>
             </article>
 
-            <article class="content-card glass-card">
-              <div class="section-head">
+            <article id="generator-card" class="content-card glass-card hidden">
+              <div class="section-head generator-header">
                 <div>
-                  <h2>Output</h2>
-                  <p id="output-subtitle">
-                    Choose where the processed JSON files should be saved and how the final output should be kept.
-                  </p>
+                  <h2>Generator Setup</h2>
+                  <p>Pick a template, choose the output shape, then fine tune the exact counts below.</p>
                 </div>
               </div>
 
-              <div class="form-grid two-col">
-                <label class="field-block">
-                  <span>Save processed files to</span>
-                  <div class="field-row">
-                    <input id="output-dir" type="text" placeholder="Choose where JSON and .gz files should be written" />
-                    <button data-pick="output-dir" class="toolbar-button">Save To</button>
-                  </div>
-                </label>
-                <label class="field-block">
-                  <span>Name for the processed JSON files</span>
-                  <input id="replacement-code" type="text" placeholder="Leave blank to keep original JSON names" />
-                  <small id="output-json-preview" class="helper-text">Preview: original JSON names will be used</small>
-                </label>
-                <label class="field-block">
-                  <span>Name for the final .gz file</span>
-                  <input id="archive-basename" type="text" value="processed_files" />
-                  <small id="archive-preview" class="helper-text">Preview: processed_files.gz</small>
-                </label>
-                <div class="field-block">
-                  <span>If save folder already has files</span>
-                  <div class="toggle-row">
-                    <label class="radio-chip">
-                      <input id="keep-existing-files" name="output-mode" type="radio" checked />
-                      <span>Keep existing files</span>
-                    </label>
-                    <label class="radio-chip">
-                      <input id="clear-output" name="output-mode" type="radio" />
-                      <span>Delete everything first</span>
-                    </label>
-                  </div>
-                  <small class="helper-text">After creating the .gz file</small>
-                  <div class="toggle-row">
-                    <label class="checkbox-chip">
-                      <input id="keep-processed-json" type="checkbox" checked />
-                      <span>Keep formatted JSON files</span>
-                    </label>
-                  </div>
+              <div class="generator-stats">
+                <div class="generator-stat-card">
+                  <span>JSON files</span>
+                  <strong id="generator-file-count-display">1</strong>
+                  <small>How many JSON files will be created in this run.</small>
                 </div>
+                <div class="generator-stat-card">
+                  <span>Per file</span>
+                  <strong id="generator-referrals-per-file-display">1</strong>
+                  <small>How many referrals each generated JSON file will contain.</small>
+                </div>
+                <div class="generator-stat-card accent">
+                  <span>Total referrals</span>
+                  <strong id="generator-total-referrals-display">1</strong>
+                  <small>Total referrals created across all generated JSON files.</small>
+                </div>
+              </div>
+
+              <div class="form-grid three-col">
+                <label class="field-block">
+                  <span>Template</span>
+                  <select id="template-option"></select>
+                  <small id="template-meta" class="helper-text">Template details will appear here.</small>
+                </label>
+                <label class="field-block">
+                  <span>Number of JSON files to generate</span>
+                  <input id="file-count" type="number" min="1" value="1" />
+                  <small class="helper-text">Set this to `1` for a single JSON file, or higher for multiple files.</small>
+                </label>
+                <label class="field-block">
+                  <span>Number of referrals per file</span>
+                  <input id="referrals-per-file" type="number" min="1" value="1" />
+                  <small class="helper-text">Set this to `1` for one referral in each file, or higher for multiple referrals.</small>
+                </label>
               </div>
             </article>
 
@@ -269,77 +257,54 @@
               </div>
             </article>
 
-            <article id="generator-card" class="content-card glass-card hidden">
-              <div class="section-head generator-header">
+            <article class="content-card glass-card">
+              <div class="section-head">
                 <div>
-                  <h2>Generator Setup</h2>
-                  <p>Pick a template, choose the output shape, then fine tune the exact counts below.</p>
+                  <h2>Output</h2>
+                  <p id="output-subtitle">
+                    Choose where the processed JSON files should be saved and how the final output should be kept.
+                  </p>
                 </div>
               </div>
 
-              <div class="generator-modes">
-                <div class="generator-mode-card">
-                  <span class="generator-mode-label">JSON output</span>
+              <div class="form-grid two-col">
+                <label class="field-block">
+                  <span>Save processed files to</span>
+                  <div class="field-row">
+                    <input id="output-dir" type="text" placeholder="Choose where JSON and .gz files should be written" />
+                    <button data-pick="output-dir" class="toolbar-button">Save To</button>
+                  </div>
+                </label>
+                <label class="field-block">
+                  <span>Name for the processed JSON files</span>
+                  <input id="replacement-code" type="text" placeholder="Leave blank to keep original JSON names" />
+                  <small id="output-json-preview" class="helper-text">Preview: original JSON names will be used</small>
+                </label>
+                <label class="field-block">
+                  <span>Name for the final .gz file</span>
+                  <input id="archive-basename" type="text" value="processed_files" />
+                  <small id="archive-preview" class="helper-text">Preview: processed_files.gz</small>
+                </label>
+                <div class="field-block">
+                  <span>If save folder already has files</span>
                   <div class="toggle-row">
                     <label class="radio-chip">
-                      <input id="file-mode-single" name="file-mode" type="radio" checked />
-                      <span>Single JSON file</span>
+                      <input id="keep-existing-files" name="output-mode" type="radio" checked />
+                      <span>Keep existing files</span>
                     </label>
                     <label class="radio-chip">
-                      <input id="file-mode-multiple" name="file-mode" type="radio" />
-                      <span>Multiple JSON files</span>
+                      <input id="clear-output" name="output-mode" type="radio" />
+                      <span>Delete everything first</span>
+                    </label>
+                  </div>
+                  <small class="helper-text">After creating the .gz file</small>
+                  <div class="toggle-row">
+                    <label class="checkbox-chip">
+                      <input id="keep-processed-json" type="checkbox" checked />
+                      <span>Keep formatted JSON files</span>
                     </label>
                   </div>
                 </div>
-                <div class="generator-mode-card">
-                  <span class="generator-mode-label">Referral count</span>
-                  <div class="toggle-row">
-                    <label class="radio-chip">
-                      <input id="referral-mode-single" name="referral-mode" type="radio" checked />
-                      <span>One referral</span>
-                    </label>
-                    <label class="radio-chip">
-                      <input id="referral-mode-multiple" name="referral-mode" type="radio" />
-                      <span>Multiple referrals</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div class="generator-stats">
-                <div class="generator-stat-card">
-                  <span>JSON files</span>
-                  <strong id="generator-file-count-display">1</strong>
-                  <small>How many JSON files will be created in this run.</small>
-                </div>
-                <div class="generator-stat-card">
-                  <span>Per file</span>
-                  <strong id="generator-referrals-per-file-display">1</strong>
-                  <small>How many referrals each generated JSON file will contain.</small>
-                </div>
-                <div class="generator-stat-card accent">
-                  <span>Total referrals</span>
-                  <strong id="generator-total-referrals-display">1</strong>
-                  <small>Total referrals created across all generated JSON files.</small>
-                </div>
-              </div>
-
-              <div class="form-grid three-col">
-                <label class="field-block">
-                  <span>Template</span>
-                  <select id="template-option"></select>
-                  <small id="template-meta" class="helper-text">Template details will appear here.</small>
-                </label>
-                <label class="field-block">
-                  <span>Number of JSON files to generate</span>
-                  <input id="file-count" type="number" min="1" value="1" />
-                  <small class="helper-text">Set this to `1` for a single JSON file, or higher for multiple files.</small>
-                </label>
-                <label class="field-block">
-                  <span>Number of referrals per file</span>
-                  <input id="referrals-per-file" type="number" min="1" value="1" />
-                  <small class="helper-text">Set this to `1` for one referral in each file, or higher for multiple referrals.</small>
-                </label>
               </div>
             </article>
 
@@ -354,9 +319,15 @@
                   <span>Upload the .gz file after processing</span>
                 </label>
               </div>
-              <div class="upload-meta-row">
-                <div id="upload-ready-pill" class="pill-note">Waiting for upload profiles</div>
-                <p id="upload-profile-source" class="upload-copy"></p>
+              <div class="upload-config-card">
+                <div class="upload-config-copy">
+                  <div class="upload-config-head">
+                    <h3>Credentials & Config</h3>
+                    <div id="upload-ready-pill" class="pill-note">Waiting for upload profiles</div>
+                  </div>
+                  <p id="upload-profile-source" class="upload-copy"></p>
+                </div>
+                <button id="import-upload-source" class="toolbar-button primary">Import To Config</button>
               </div>
               <div id="upload-targets" class="upload-targets"></div>
             </article>
