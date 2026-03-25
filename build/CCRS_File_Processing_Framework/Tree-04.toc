@@ -1,0 +1,13 @@
+('C:\\Projects\\projects\\coding\\ccrs-file-processing-framework\\upload_import',
+ 'upload_import',
+ [],
+ 'DATA',
+ [('upload_import\\decrypt-winscp.ps1',
+   'C:\\Projects\\projects\\coding\\ccrs-file-processing-framework\\upload_import\\decrypt-winscp.ps1',
+   'DATA'),
+  ('upload_import\\README.txt',
+   'C:\\Projects\\projects\\coding\\ccrs-file-processing-framework\\upload_import\\README.txt',
+   'DATA'),
+  ('upload_import\\WinSCP.ini',
+   'C:\\Projects\\projects\\coding\\ccrs-file-processing-framework\\upload_import\\WinSCP.ini',
+   'DATA')])

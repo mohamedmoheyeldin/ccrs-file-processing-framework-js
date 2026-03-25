@@ -1,0 +1,1425 @@
+{
+    "ListDate": "2026-03-23 05:25:11",
+    "Referrals": [
+        {
+            "Patient": {
+                "ICN": "TEST8274695115146",
+                "LastName": "Anderson",
+                "FirstName": "Barbara",
+                "MiddleName": "S",
+                "Gender": "F",
+                "DOB": "1972-05-16",
+                "SSN": "999-99-0001",
+                "TelephoneHome": "555-123-3962",
+                "TelephoneBusiness": "555-123-9679",
+                "TelephoneMobile": "555-123-5127",
+                "Email": "email@test.net",
+                "PreferredContactMethod": "email",
+                "GenderIdentity": {
+                    "Code": "M",
+                    "Desc": "Male"
+                },
+                "GenderPronouns": [
+                    {
+                        "Code": "HIM",
+                        "Desc": "He/him"
+                    }
+                ],
+                "preferredName": "Ombi",
+                "birthSex": "F",
+                "HomeAddress": {
+                    "address1": "123 Main St",
+                    "address2": "Apt. 2",
+                    "address3": "Second Floor",
+                    "city": "Las Vegas",
+                    "state": "NV",
+                    "zipCode": "12445",
+                    "Country": "USA"
+                }
+            },
+            "Diagnosis": "Fever",
+            "DiagnosisCode": "MoreCowbell",
+            "MedicalNecessity": "Sick Person",
+            "TreatingProvider": "Will Ferrel",
+            "TreatingProviderNPI": "1982885406",
+            "ReferralCategory": "Inpatient",
+            "ReferralDate": "2025-07-30",
+            "ReferralDateTime": "2025-07-30 06:55:26",
+            "ReferralExpirationDate": "2028-10-30",
+            "ReferralLastUpdateDate": "2025-07-30",
+            "ReferralLastUpdateDateTime": "2025-07-30 06:55:26",
+            "ReferralNumber": "VA_000000002",
+            "ReferralConsultId": "186_4239111",
+            "ReferralPeriod": "365 days",
+            "ReferringFacility": "Ralph H. Johnson VA Medical Center",
+            "ReferringProvider": "Tom Cruise",
+            "ReferringProviderNPI": "1244885455",
+            "ReferralReturnReason": "RCCN Provider meets appointment timeliness standards",
+            "ReferringSpecialty": "Agencies Case Management",
+            "SourceOfReferral": "Automatically entered in VA",
+            "Status": "Approved",
+            "ServiceRequested": "Surgery",
+            "TreatingFacility": "Doctor J",
+            "TreatingFacilityFax": "1112943633",
+            "TreatingFacilityPhone": "1112943634",
+            "TreatingSpeciality": "PAIN MANAGEMENT",
+            "TreatingSpecialityCode": "8675309",
+            "TreatingFacilityAddress": {
+                "Address1": "99 ROUTE 37 W",
+                "Address2": "98 ROUTE 37 W",
+                "Address3": "97 ROUTE 37 W",
+                "City": "TOMS RIVER",
+                "State": "New Jersey",
+                "ZipCode": "08755",
+                "Country": "USA"
+            },
+            "EnrollmentStatus": "Not Enrolled",
+            "CoPaymentStatus": {
+                "PriorityEnrollmentGroup": "Group 1",
+                "CurrentMeansTest": "MT Copay Exempt",
+                "AgentOrangeExposureIndicator": true,
+                "CombatVeteranEligibilityIndicator": false,
+                "CombatVeteranEndDate": "2020-06-09",
+                "Project112SHADIndicator": true,
+                "SouthwestAsiaIndicator": false,
+                "IonizingRadiationIndicator": true,
+                "CampLejeuneIndicator": true,
+                "MeansTestCoPay": null,
+                "GeographicalMeansTestCoPay": null,
+                "LTCCoPay": null,
+                "RxCoPay": null,
+                "ServiceConnectedInfo": [
+                    {
+                        "ServiceConnected": true,
+                        "ServiceConnectedPercentage": "8",
+                        "ServiceConnectedCondition": "Impairment of left leg - tibia and fibula"
+                    },
+                    {
+                        "ServiceConnected": true,
+                        "ServiceConnectedPercentage": "20",
+                        "ServiceConnectedCondition": "Condition2"
+                    },
+                    {
+                        "ServiceConnected": false,
+                        "ServiceConnectedPercentage": "30",
+                        "ServiceConnectedCondition": "Condition3"
+                    },
+                    {
+                        "ServiceConnected": false,
+                        "ServiceConnectedPercentage": "100",
+                        "ServiceConnectedCondition": "Another condition"
+                    }
+                ]
+            },
+            "Network": "CCN1",
+            "NetworkCode": "36C79119D0004",
+            "CLINDesc": "Test CLIN description",
+            "CLINCode": "2019",
+            "PaymentAuthorityCode": "21",
+            "PaymentAuthorityDesc": "Doctor - 1712",
+            "PayorStatus": "VA - Primary Payor",
+            "PreAuthorizations": null,
+            "MilitarySexualTraumaInfo": {
+                "DeterminationFacility": "445 - EASTERN NEVADA HCS",
+                "Status": "Screened but Not Report MST",
+                "StatusChangeDate": "2775-03-26"
+            },
+            "NoseThroatRadiumInfo": {
+                "DeterminationFacility": "446 - EASTERN NEVADA HCS",
+                "DiagnosedWithCancer": false,
+                "DiagnosisVerifiedDate": "2940-11-29",
+                "FromAviatorServiceBefore1955": false,
+                "FromSubmarinerServiceBefore1965": true,
+                "ReceivingTreatment": "No longer",
+                "VerificationDate": "2015-04-26",
+                "VerificationFacility": "Evergreen",
+                "VerificationMethod": "None"
+            },
+            "EligibilityStatus": {
+                "PermanentAndTotalDisabled": "false",
+                "MeansTestStatus": "Never",
+                "MeansTestDeterminedStatus": "Possible",
+                "LTCTestStatus": "Certain",
+                "LTCTestDeterminedStatus": "Unknown",
+                "PharmacyCoPayTestStatus": "Yes",
+                "PharmacyCoPayTestDeterminedStatus": "Negative",
+                "VeteranRurality": "Rural"
+            },
+            "CareTypes": [
+                {
+                    "CareTypeCode": "CLIN #X011AG",
+                    "CareTypeDesc": "Region 4 Appointment Scheduling"
+                }
+            ],
+            "Appointments": [
+                {
+                    "AppointmentFor": "Initial outpatient evaluation for this episode of care.-COMPLEMENTARY AND INTEGRATIVE HEALTH-1.0.12",
+                    "AppointmentDate": "2020-08-10",
+                    "AppointmentTime": "10:30:05",
+                    "AppointmentStatus": "P",
+                    "ReasonForCancellation": "Not Needed",
+                    "CancellationDateTime": "2020-07-31 13:15:48",
+                    "ReasonForSelectingProvider": "Proximity to patient",
+                    "AppointmentCreateDateTime": "2020-07-11 08:12:10"
+                }
+            ],
+            "TransactionHistory": [
+                {
+                    "TransactionDate": "2020-01-12",
+                    "TransactionDateTime": "2020-08-19 02:55:22",
+                    "EffectiveDate": "2020-08-18",
+                    "EffectiveDateTime": "2019-10-18 04:25:45",
+                    "Reason": "Reason 1",
+                    "Status": "Initial"
+                },
+                {
+                    "TransactionDate": "2021-05-22",
+                    "TransactionDateTime": "2020-05-20 07:39:29",
+                    "EffectiveDate": "2020-03-18",
+                    "EffectiveDateTime": "2020-08-11 17:06:44",
+                    "Reason": "Another reason",
+                    "Status": "Approved"
+                },
+                {
+                    "TransactionDate": "2020-01-01",
+                    "TransactionDateTime": "2020-12-12 12:11:10",
+                    "EffectiveDate": "2022-07-26",
+                    "EffectiveDateTime": "2022-03-04 04:18:23",
+                    "Reason": "Last reason",
+                    "Status": "Denied"
+                }
+            ],
+            "OHI": [
+                {
+                    "Payor": "BCBS",
+                    "ValidFromDate": "2024-01-31",
+                    "ValidToDate": "2029-03-22",
+                    "CardholderName": "Landry, Tom",
+                    "PayorCardNumber": "NUM123",
+                    "CardholderAddress": {
+                        "Address1": "100 Heinz St",
+                        "Address2": "1st Floor",
+                        "City": "Pittsburgh",
+                        "State": "PA",
+                        "ZipCode": "55555",
+                        "Country": "USA"
+                    },
+                    "PlanID": "430911",
+                    "PlanType": "Private",
+                    "PlanGroup": "PlanGroup1",
+                    "GroupNumber": "GN69420",
+                    "GroupName": "YOLO",
+                    "LastVerifiedDate": "2020-01-15",
+                    "ReimbursableFlag": "Yes"
+                },
+                {
+                    "Payor": "REGIONAL COUNSEL",
+                    "ValidFromDate": "2023-10-02",
+                    "ValidToDate": "2029-12-23",
+                    "CardholderName": "Johnson, Jimmy",
+                    "PayorCardNumber": "SUPID",
+                    "CardholderAddress": {
+                        "Address1": "Card Holder Address1",
+                        "Address2": "Card Holder Address2",
+                        "City": "Card Holder City",
+                        "State": "FL",
+                        "ZipCode": "35301",
+                        "Country": "USAGroup7"
+                    },
+                    "PlanID": "6712",
+                    "PlanType": "Legal",
+                    "PlanGroup": "Group6",
+                    "GroupNumber": "1951",
+                    "GroupName": "GNCCRA-186",
+                    "LastVerifiedDate": null,
+                    "ReimbursableFlag": null
+                },
+                {
+                    "Payor": "ANTHEM",
+                    "ValidFromDate": "2023-11-25",
+                    "ValidToDate": "2028-06-19",
+                    "CardholderName": "Switzer, Barry",
+                    "PayorCardNumber": "SUPID",
+                    "CardholderAddress": {
+                        "Address1": "Card Holder Address1",
+                        "Address2": "Card Holder Address2",
+                        "City": "Card Holder City",
+                        "State": "FL",
+                        "ZipCode": "33201",
+                        "Country": "USA"
+                    },
+                    "PlanID": "6712",
+                    "PlanType": "Legal",
+                    "PlanGroup": "Group6",
+                    "GroupNumber": "0925",
+                    "GroupName": "GNCCRA-410",
+                    "LastVerifiedDate": null,
+                    "ReimbursableFlag": null
+                }
+            ],
+            "StationID": "668GC",
+            "SeocID": "NIC_CADHC 5 TO 7 DAYS PER WEEK, 365 DAYS_1.21.2_PRCT",
+            "SeocKey": "11879",
+            "AllocatedDate": "2020-02-11",
+            "ReferralReturnReasonCode": "TR",
+            "TreatmentStartDate": "2023-01-02",
+            "TreatingProviderTaxID": "9090155",
+            "TreatingFacilityTaxID": "9294512",
+            "PrimaryCareProviderNPI": "112294",
+            "PrimaryCareProviderName": "Dr. Nobody",
+            "LevelOfCareCode": "X",
+            "LevelOfCareDesc": "Unknown",
+            "CategoryOfCare": "RADIOLOGY MRI/MRA",
+            "EstimatedCostOfCare": "481.79",
+            "Sta6": "534",
+            "Comments": "Test Comments",
+            "NoteOnAppointmentScreen": "Test Note",
+            "CommentOnReferralScreen": "Referral Screen Comments",
+            "PriorityCode": "R",
+            "PriorityDescription": "Routine",
+            "ClinicallyIndicatedDate": "2021-09-27",
+            "AffilitationDesc": "CCN1 Description",
+            "AffilitationCode": "CCN1",
+            "OrderingOfficerName": "QA Team Account",
+            "PreferredProvider": "Test Preferred Provider Name",
+            "ReasonSelectingProvider": "Not Given",
+            "AppointmentDate": "2022-09-22"
+        },
+        {
+            "Patient": {
+                "ICN": "TEST6633999175026",
+                "LastName": "Lopez",
+                "FirstName": "Susan",
+                "MiddleName": "S",
+                "Gender": "F",
+                "DOB": "1961-04-18",
+                "SSN": "999-99-0001",
+                "TelephoneHome": "555-123-5888",
+                "TelephoneBusiness": "555-123-3700",
+                "TelephoneMobile": "555-123-6904",
+                "Email": "email@test.net",
+                "PreferredContactMethod": "email",
+                "GenderIdentity": {
+                    "Code": "M",
+                    "Desc": "Male"
+                },
+                "GenderPronouns": [
+                    {
+                        "Code": "HIM",
+                        "Desc": "He/him"
+                    }
+                ],
+                "preferredName": "Anoxil",
+                "birthSex": "F",
+                "HomeAddress": {
+                    "address1": "123 Main St",
+                    "address2": "Apt. 2",
+                    "address3": "Second Floor",
+                    "city": "Las Vegas",
+                    "state": "NV",
+                    "zipCode": "12445",
+                    "Country": "USA"
+                }
+            },
+            "Diagnosis": "Fever",
+            "DiagnosisCode": "MoreCowbell",
+            "MedicalNecessity": "Sick Person",
+            "TreatingProvider": "Will Ferrel",
+            "TreatingProviderNPI": "1982885406",
+            "ReferralCategory": "Outpatient",
+            "ReferralDate": "2024-03-25",
+            "ReferralDateTime": "2024-03-25 03:19:29",
+            "ReferralExpirationDate": "2027-12-04",
+            "ReferralLastUpdateDate": "2024-03-25",
+            "ReferralLastUpdateDateTime": "2024-03-25 03:19:29",
+            "ReferralNumber": "VA_000000002",
+            "ReferralConsultId": "186_4239111",
+            "ReferralPeriod": "365 days",
+            "ReferringFacility": "Ralph H. Johnson VA Medical Center",
+            "ReferringProvider": "Tom Cruise",
+            "ReferringProviderNPI": "1244885455",
+            "ReferralReturnReason": "RCCN Provider meets appointment timeliness standards",
+            "ReferringSpecialty": "Agencies Case Management",
+            "SourceOfReferral": "Automatically entered in VA",
+            "Status": "Approved",
+            "ServiceRequested": "Surgery",
+            "TreatingFacility": "Doctor J",
+            "TreatingFacilityFax": "1112943633",
+            "TreatingFacilityPhone": "1112943634",
+            "TreatingSpeciality": "PAIN MANAGEMENT",
+            "TreatingSpecialityCode": "8675309",
+            "TreatingFacilityAddress": {
+                "Address1": "99 ROUTE 37 W",
+                "Address2": "98 ROUTE 37 W",
+                "Address3": "97 ROUTE 37 W",
+                "City": "TOMS RIVER",
+                "State": "New Jersey",
+                "ZipCode": "08755",
+                "Country": "USA"
+            },
+            "EnrollmentStatus": "Not Enrolled",
+            "CoPaymentStatus": {
+                "PriorityEnrollmentGroup": "Group 1",
+                "CurrentMeansTest": "MT Copay Exempt",
+                "AgentOrangeExposureIndicator": true,
+                "CombatVeteranEligibilityIndicator": false,
+                "CombatVeteranEndDate": "2020-06-09",
+                "Project112SHADIndicator": true,
+                "SouthwestAsiaIndicator": false,
+                "IonizingRadiationIndicator": true,
+                "CampLejeuneIndicator": true,
+                "MeansTestCoPay": null,
+                "GeographicalMeansTestCoPay": null,
+                "LTCCoPay": null,
+                "RxCoPay": null,
+                "ServiceConnectedInfo": [
+                    {
+                        "ServiceConnected": true,
+                        "ServiceConnectedPercentage": "8",
+                        "ServiceConnectedCondition": "Impairment of left leg - tibia and fibula"
+                    },
+                    {
+                        "ServiceConnected": true,
+                        "ServiceConnectedPercentage": "20",
+                        "ServiceConnectedCondition": "Condition2"
+                    },
+                    {
+                        "ServiceConnected": false,
+                        "ServiceConnectedPercentage": "30",
+                        "ServiceConnectedCondition": "Condition3"
+                    },
+                    {
+                        "ServiceConnected": false,
+                        "ServiceConnectedPercentage": "100",
+                        "ServiceConnectedCondition": "Another condition"
+                    }
+                ]
+            },
+            "Network": "CCN1",
+            "NetworkCode": "36C79119D0004",
+            "CLINDesc": "Test CLIN description",
+            "CLINCode": "2019",
+            "PaymentAuthorityCode": "21",
+            "PaymentAuthorityDesc": "Doctor - 1712",
+            "PayorStatus": "VA - Primary Payor",
+            "PreAuthorizations": null,
+            "MilitarySexualTraumaInfo": {
+                "DeterminationFacility": "445 - EASTERN NEVADA HCS",
+                "Status": "Screened but Not Report MST",
+                "StatusChangeDate": "2775-03-26"
+            },
+            "NoseThroatRadiumInfo": {
+                "DeterminationFacility": "446 - EASTERN NEVADA HCS",
+                "DiagnosedWithCancer": false,
+                "DiagnosisVerifiedDate": "2940-11-29",
+                "FromAviatorServiceBefore1955": false,
+                "FromSubmarinerServiceBefore1965": true,
+                "ReceivingTreatment": "No longer",
+                "VerificationDate": "2015-04-26",
+                "VerificationFacility": "Evergreen",
+                "VerificationMethod": "None"
+            },
+            "EligibilityStatus": {
+                "PermanentAndTotalDisabled": "false",
+                "MeansTestStatus": "Never",
+                "MeansTestDeterminedStatus": "Possible",
+                "LTCTestStatus": "Certain",
+                "LTCTestDeterminedStatus": "Unknown",
+                "PharmacyCoPayTestStatus": "Yes",
+                "PharmacyCoPayTestDeterminedStatus": "Negative",
+                "VeteranRurality": "Rural"
+            },
+            "CareTypes": [
+                {
+                    "CareTypeCode": "CLIN #X011AD1",
+                    "CareTypeDesc": "Region 4 Appointment Scheduling"
+                }
+            ],
+            "Appointments": [
+                {
+                    "AppointmentFor": "Initial outpatient evaluation for this episode of care.-COMPLEMENTARY AND INTEGRATIVE HEALTH-1.0.12",
+                    "AppointmentDate": "2020-08-10",
+                    "AppointmentTime": "10:30:05",
+                    "AppointmentStatus": "P",
+                    "ReasonForCancellation": "Not Needed",
+                    "CancellationDateTime": "2020-07-31 13:15:48",
+                    "ReasonForSelectingProvider": "Proximity to patient",
+                    "AppointmentCreateDateTime": "2020-07-11 08:12:10"
+                }
+            ],
+            "TransactionHistory": [
+                {
+                    "TransactionDate": "2020-01-12",
+                    "TransactionDateTime": "2020-08-19 02:55:22",
+                    "EffectiveDate": "2020-08-18",
+                    "EffectiveDateTime": "2019-10-18 04:25:45",
+                    "Reason": "Reason 1",
+                    "Status": "Initial"
+                },
+                {
+                    "TransactionDate": "2021-05-22",
+                    "TransactionDateTime": "2020-05-20 07:39:29",
+                    "EffectiveDate": "2020-03-18",
+                    "EffectiveDateTime": "2020-08-11 17:06:44",
+                    "Reason": "Another reason",
+                    "Status": "Approved"
+                },
+                {
+                    "TransactionDate": "2020-01-01",
+                    "TransactionDateTime": "2020-12-12 12:11:10",
+                    "EffectiveDate": "2022-07-26",
+                    "EffectiveDateTime": "2022-03-04 04:18:23",
+                    "Reason": "Last reason",
+                    "Status": "Denied"
+                }
+            ],
+            "OHI": [
+                {
+                    "Payor": "BCBS",
+                    "ValidFromDate": "2024-04-07",
+                    "ValidToDate": "2027-03-02",
+                    "CardholderName": "Landry, Tom",
+                    "PayorCardNumber": "NUM123",
+                    "CardholderAddress": {
+                        "Address1": "100 Heinz St",
+                        "Address2": "1st Floor",
+                        "City": "Pittsburgh",
+                        "State": "PA",
+                        "ZipCode": "55555",
+                        "Country": "USA"
+                    },
+                    "PlanID": "430911",
+                    "PlanType": "Private",
+                    "PlanGroup": "PlanGroup1",
+                    "GroupNumber": "GN69420",
+                    "GroupName": "YOLO",
+                    "LastVerifiedDate": "2020-01-15",
+                    "ReimbursableFlag": "Yes"
+                },
+                {
+                    "Payor": "REGIONAL COUNSEL",
+                    "ValidFromDate": "2023-12-11",
+                    "ValidToDate": "2028-12-17",
+                    "CardholderName": "Johnson, Jimmy",
+                    "PayorCardNumber": "SUPID",
+                    "CardholderAddress": {
+                        "Address1": "Card Holder Address1",
+                        "Address2": "Card Holder Address2",
+                        "City": "Card Holder City",
+                        "State": "FL",
+                        "ZipCode": "35301",
+                        "Country": "USAGroup7"
+                    },
+                    "PlanID": "6712",
+                    "PlanType": "Legal",
+                    "PlanGroup": "Group6",
+                    "GroupNumber": "1951",
+                    "GroupName": "GNCCRA-186",
+                    "LastVerifiedDate": null,
+                    "ReimbursableFlag": null
+                },
+                {
+                    "Payor": "ANTHEM",
+                    "ValidFromDate": "2023-06-15",
+                    "ValidToDate": "2027-01-03",
+                    "CardholderName": "Switzer, Barry",
+                    "PayorCardNumber": "SUPID",
+                    "CardholderAddress": {
+                        "Address1": "Card Holder Address1",
+                        "Address2": "Card Holder Address2",
+                        "City": "Card Holder City",
+                        "State": "FL",
+                        "ZipCode": "33201",
+                        "Country": "USA"
+                    },
+                    "PlanID": "6712",
+                    "PlanType": "Legal",
+                    "PlanGroup": "Group6",
+                    "GroupNumber": "0925",
+                    "GroupName": "GNCCRA-410",
+                    "LastVerifiedDate": null,
+                    "ReimbursableFlag": null
+                }
+            ],
+            "StationID": "635QA",
+            "SeocID": "WHC_GYNECOLOGY_1.0.2_PRCT",
+            "SeocKey": "10045",
+            "AllocatedDate": "2020-02-11",
+            "ReferralReturnReasonCode": "TR",
+            "TreatmentStartDate": "2023-01-02",
+            "TreatingProviderTaxID": "9090155",
+            "TreatingFacilityTaxID": "9294512",
+            "PrimaryCareProviderNPI": "112294",
+            "PrimaryCareProviderName": "Dr. Nobody",
+            "LevelOfCareCode": "X",
+            "LevelOfCareDesc": "Unknown",
+            "CategoryOfCare": "RADIOLOGY MRI/MRA",
+            "EstimatedCostOfCare": "481.79",
+            "Sta6": "534",
+            "Comments": "Test Comments",
+            "NoteOnAppointmentScreen": "Test Note",
+            "CommentOnReferralScreen": "Referral Screen Comments",
+            "PriorityCode": "R",
+            "PriorityDescription": "Routine",
+            "ClinicallyIndicatedDate": "2021-09-27",
+            "AffilitationDesc": "CCN1 Description",
+            "AffilitationCode": "CCN1",
+            "OrderingOfficerName": "QA Team Account",
+            "PreferredProvider": "Test Preferred Provider Name",
+            "ReasonSelectingProvider": "Not Given",
+            "AppointmentDate": "2022-09-22"
+        },
+        {
+            "Patient": {
+                "ICN": "TEST3529323258338",
+                "LastName": "Jones",
+                "FirstName": "Susan",
+                "MiddleName": "V",
+                "Gender": "M",
+                "DOB": "1950-11-03",
+                "SSN": "999-99-0001",
+                "TelephoneHome": "555-123-3850",
+                "TelephoneBusiness": "555-123-1699",
+                "TelephoneMobile": "555-123-7301",
+                "Email": "email@test.net",
+                "PreferredContactMethod": "email",
+                "GenderIdentity": {
+                    "Code": "M",
+                    "Desc": "Male"
+                },
+                "GenderPronouns": [
+                    {
+                        "Code": "HIM",
+                        "Desc": "He/him"
+                    }
+                ],
+                "preferredName": "Hurenaa",
+                "birthSex": "M",
+                "HomeAddress": {
+                    "address1": "123 Main St",
+                    "address2": "Apt. 2",
+                    "address3": "Second Floor",
+                    "city": "Las Vegas",
+                    "state": "NV",
+                    "zipCode": "12445",
+                    "Country": "USA"
+                }
+            },
+            "Diagnosis": "Fever",
+            "DiagnosisCode": "MoreCowbell",
+            "MedicalNecessity": "Sick Person",
+            "TreatingProvider": "Will Ferrel",
+            "TreatingProviderNPI": "1982885406",
+            "ReferralCategory": "Outpatient",
+            "ReferralDate": "2025-11-04",
+            "ReferralDateTime": "2025-11-04 10:12:28",
+            "ReferralExpirationDate": "2027-05-24",
+            "ReferralLastUpdateDate": "2025-11-04",
+            "ReferralLastUpdateDateTime": "2025-11-04 10:12:28",
+            "ReferralNumber": "VA_000000002",
+            "ReferralConsultId": "186_4239111",
+            "ReferralPeriod": "365 days",
+            "ReferringFacility": "Ralph H. Johnson VA Medical Center",
+            "ReferringProvider": "Tom Cruise",
+            "ReferringProviderNPI": "1244885455",
+            "ReferralReturnReason": "RCCN Provider meets appointment timeliness standards",
+            "ReferringSpecialty": "Agencies Case Management",
+            "SourceOfReferral": "Automatically entered in VA",
+            "Status": "Approved",
+            "ServiceRequested": "Surgery",
+            "TreatingFacility": "Doctor J",
+            "TreatingFacilityFax": "1112943633",
+            "TreatingFacilityPhone": "1112943634",
+            "TreatingSpeciality": "PAIN MANAGEMENT",
+            "TreatingSpecialityCode": "8675309",
+            "TreatingFacilityAddress": {
+                "Address1": "99 ROUTE 37 W",
+                "Address2": "98 ROUTE 37 W",
+                "Address3": "97 ROUTE 37 W",
+                "City": "TOMS RIVER",
+                "State": "New Jersey",
+                "ZipCode": "08755",
+                "Country": "USA"
+            },
+            "EnrollmentStatus": "Not Enrolled",
+            "CoPaymentStatus": {
+                "PriorityEnrollmentGroup": "Group 1",
+                "CurrentMeansTest": "MT Copay Exempt",
+                "AgentOrangeExposureIndicator": true,
+                "CombatVeteranEligibilityIndicator": false,
+                "CombatVeteranEndDate": "2020-06-09",
+                "Project112SHADIndicator": true,
+                "SouthwestAsiaIndicator": false,
+                "IonizingRadiationIndicator": true,
+                "CampLejeuneIndicator": true,
+                "MeansTestCoPay": null,
+                "GeographicalMeansTestCoPay": null,
+                "LTCCoPay": null,
+                "RxCoPay": null,
+                "ServiceConnectedInfo": [
+                    {
+                        "ServiceConnected": true,
+                        "ServiceConnectedPercentage": "8",
+                        "ServiceConnectedCondition": "Impairment of left leg - tibia and fibula"
+                    },
+                    {
+                        "ServiceConnected": true,
+                        "ServiceConnectedPercentage": "20",
+                        "ServiceConnectedCondition": "Condition2"
+                    },
+                    {
+                        "ServiceConnected": false,
+                        "ServiceConnectedPercentage": "30",
+                        "ServiceConnectedCondition": "Condition3"
+                    },
+                    {
+                        "ServiceConnected": false,
+                        "ServiceConnectedPercentage": "100",
+                        "ServiceConnectedCondition": "Another condition"
+                    }
+                ]
+            },
+            "Network": "CCN1",
+            "NetworkCode": "36C79119D0004",
+            "CLINDesc": "Test CLIN description",
+            "CLINCode": "2019",
+            "PaymentAuthorityCode": "21",
+            "PaymentAuthorityDesc": "Doctor - 1712",
+            "PayorStatus": "VA - Primary Payor",
+            "PreAuthorizations": null,
+            "MilitarySexualTraumaInfo": {
+                "DeterminationFacility": "445 - EASTERN NEVADA HCS",
+                "Status": "Screened but Not Report MST",
+                "StatusChangeDate": "2775-03-26"
+            },
+            "NoseThroatRadiumInfo": {
+                "DeterminationFacility": "446 - EASTERN NEVADA HCS",
+                "DiagnosedWithCancer": false,
+                "DiagnosisVerifiedDate": "2940-11-29",
+                "FromAviatorServiceBefore1955": false,
+                "FromSubmarinerServiceBefore1965": true,
+                "ReceivingTreatment": "No longer",
+                "VerificationDate": "2015-04-26",
+                "VerificationFacility": "Evergreen",
+                "VerificationMethod": "None"
+            },
+            "EligibilityStatus": {
+                "PermanentAndTotalDisabled": "false",
+                "MeansTestStatus": "Never",
+                "MeansTestDeterminedStatus": "Possible",
+                "LTCTestStatus": "Certain",
+                "LTCTestDeterminedStatus": "Unknown",
+                "PharmacyCoPayTestStatus": "Yes",
+                "PharmacyCoPayTestDeterminedStatus": "Negative",
+                "VeteranRurality": "Rural"
+            },
+            "CareTypes": [
+                {
+                    "CareTypeCode": "CLIN #X011AA",
+                    "CareTypeDesc": "Region 4 Appointment Scheduling"
+                }
+            ],
+            "Appointments": [
+                {
+                    "AppointmentFor": "Initial outpatient evaluation for this episode of care.-COMPLEMENTARY AND INTEGRATIVE HEALTH-1.0.12",
+                    "AppointmentDate": "2020-08-10",
+                    "AppointmentTime": "10:30:05",
+                    "AppointmentStatus": "P",
+                    "ReasonForCancellation": "Not Needed",
+                    "CancellationDateTime": "2020-07-31 13:15:48",
+                    "ReasonForSelectingProvider": "Proximity to patient",
+                    "AppointmentCreateDateTime": "2020-07-11 08:12:10"
+                }
+            ],
+            "TransactionHistory": [
+                {
+                    "TransactionDate": "2020-01-12",
+                    "TransactionDateTime": "2020-08-19 02:55:22",
+                    "EffectiveDate": "2020-08-18",
+                    "EffectiveDateTime": "2019-10-18 04:25:45",
+                    "Reason": "Reason 1",
+                    "Status": "Initial"
+                },
+                {
+                    "TransactionDate": "2021-05-22",
+                    "TransactionDateTime": "2020-05-20 07:39:29",
+                    "EffectiveDate": "2020-03-18",
+                    "EffectiveDateTime": "2020-08-11 17:06:44",
+                    "Reason": "Another reason",
+                    "Status": "Approved"
+                },
+                {
+                    "TransactionDate": "2020-01-01",
+                    "TransactionDateTime": "2020-12-12 12:11:10",
+                    "EffectiveDate": "2022-07-26",
+                    "EffectiveDateTime": "2022-03-04 04:18:23",
+                    "Reason": "Last reason",
+                    "Status": "Denied"
+                }
+            ],
+            "OHI": [
+                {
+                    "Payor": "BCBS",
+                    "ValidFromDate": "2024-06-15",
+                    "ValidToDate": "2029-04-20",
+                    "CardholderName": "Landry, Tom",
+                    "PayorCardNumber": "NUM123",
+                    "CardholderAddress": {
+                        "Address1": "100 Heinz St",
+                        "Address2": "1st Floor",
+                        "City": "Pittsburgh",
+                        "State": "PA",
+                        "ZipCode": "55555",
+                        "Country": "USA"
+                    },
+                    "PlanID": "430911",
+                    "PlanType": "Private",
+                    "PlanGroup": "PlanGroup1",
+                    "GroupNumber": "GN69420",
+                    "GroupName": "YOLO",
+                    "LastVerifiedDate": "2020-01-15",
+                    "ReimbursableFlag": "Yes"
+                },
+                {
+                    "Payor": "REGIONAL COUNSEL",
+                    "ValidFromDate": "2024-12-07",
+                    "ValidToDate": "2028-09-15",
+                    "CardholderName": "Johnson, Jimmy",
+                    "PayorCardNumber": "SUPID",
+                    "CardholderAddress": {
+                        "Address1": "Card Holder Address1",
+                        "Address2": "Card Holder Address2",
+                        "City": "Card Holder City",
+                        "State": "FL",
+                        "ZipCode": "35301",
+                        "Country": "USAGroup7"
+                    },
+                    "PlanID": "6712",
+                    "PlanType": "Legal",
+                    "PlanGroup": "Group6",
+                    "GroupNumber": "1951",
+                    "GroupName": "GNCCRA-186",
+                    "LastVerifiedDate": null,
+                    "ReimbursableFlag": null
+                },
+                {
+                    "Payor": "ANTHEM",
+                    "ValidFromDate": "2025-10-23",
+                    "ValidToDate": "2029-02-05",
+                    "CardholderName": "Switzer, Barry",
+                    "PayorCardNumber": "SUPID",
+                    "CardholderAddress": {
+                        "Address1": "Card Holder Address1",
+                        "Address2": "Card Holder Address2",
+                        "City": "Card Holder City",
+                        "State": "FL",
+                        "ZipCode": "33201",
+                        "Country": "USA"
+                    },
+                    "PlanID": "6712",
+                    "PlanType": "Legal",
+                    "PlanGroup": "Group6",
+                    "GroupNumber": "0925",
+                    "GroupName": "GNCCRA-410",
+                    "LastVerifiedDate": null,
+                    "ReimbursableFlag": null
+                }
+            ],
+            "StationID": "635GG",
+            "SeocID": "DEN_DENTAL IMPLANT PLACEMENT_1.18.2",
+            "SeocKey": "11711",
+            "AllocatedDate": "2020-02-11",
+            "ReferralReturnReasonCode": "TR",
+            "TreatmentStartDate": "2023-01-02",
+            "TreatingProviderTaxID": "9090155",
+            "TreatingFacilityTaxID": "9294512",
+            "PrimaryCareProviderNPI": "112294",
+            "PrimaryCareProviderName": "Dr. Nobody",
+            "LevelOfCareCode": "X",
+            "LevelOfCareDesc": "Unknown",
+            "CategoryOfCare": "RADIOLOGY MRI/MRA",
+            "EstimatedCostOfCare": "481.79",
+            "Sta6": "534",
+            "Comments": "Test Comments",
+            "NoteOnAppointmentScreen": "Test Note",
+            "CommentOnReferralScreen": "Referral Screen Comments",
+            "PriorityCode": "R",
+            "PriorityDescription": "Routine",
+            "ClinicallyIndicatedDate": "2021-09-27",
+            "AffilitationDesc": "CCN1 Description",
+            "AffilitationCode": "CCN1",
+            "OrderingOfficerName": "QA Team Account",
+            "PreferredProvider": "Test Preferred Provider Name",
+            "ReasonSelectingProvider": "Not Given",
+            "AppointmentDate": "2022-09-22"
+        },
+        {
+            "Patient": {
+                "ICN": "TEST7766854842789",
+                "LastName": "Williams",
+                "FirstName": "Patricia",
+                "MiddleName": "V",
+                "Gender": "M",
+                "DOB": "1961-02-04",
+                "SSN": "999-99-0001",
+                "TelephoneHome": "555-123-8094",
+                "TelephoneBusiness": "555-123-6798",
+                "TelephoneMobile": "555-123-8733",
+                "Email": "email@test.net",
+                "PreferredContactMethod": "email",
+                "GenderIdentity": {
+                    "Code": "M",
+                    "Desc": "Male"
+                },
+                "GenderPronouns": [
+                    {
+                        "Code": "HIM",
+                        "Desc": "He/him"
+                    }
+                ],
+                "preferredName": "Ham",
+                "birthSex": "M",
+                "HomeAddress": {
+                    "address1": "123 Main St",
+                    "address2": "Apt. 2",
+                    "address3": "Second Floor",
+                    "city": "Las Vegas",
+                    "state": "NV",
+                    "zipCode": "12445",
+                    "Country": "USA"
+                }
+            },
+            "Diagnosis": "Fever",
+            "DiagnosisCode": "MoreCowbell",
+            "MedicalNecessity": "Sick Person",
+            "TreatingProvider": "Will Ferrel",
+            "TreatingProviderNPI": "1982885406",
+            "ReferralCategory": "Outpatient",
+            "ReferralDate": "2023-03-17",
+            "ReferralDateTime": "2023-03-17 15:28:31",
+            "ReferralExpirationDate": "2027-04-13",
+            "ReferralLastUpdateDate": "2023-03-17",
+            "ReferralLastUpdateDateTime": "2023-03-17 15:28:31",
+            "ReferralNumber": "VA_000000002",
+            "ReferralConsultId": "186_4239111",
+            "ReferralPeriod": "365 days",
+            "ReferringFacility": "Ralph H. Johnson VA Medical Center",
+            "ReferringProvider": "Tom Cruise",
+            "ReferringProviderNPI": "1244885455",
+            "ReferralReturnReason": "RCCN Provider meets appointment timeliness standards",
+            "ReferringSpecialty": "Agencies Case Management",
+            "SourceOfReferral": "Automatically entered in VA",
+            "Status": "Approved",
+            "ServiceRequested": "Surgery",
+            "TreatingFacility": "Doctor J",
+            "TreatingFacilityFax": "1112943633",
+            "TreatingFacilityPhone": "1112943634",
+            "TreatingSpeciality": "PAIN MANAGEMENT",
+            "TreatingSpecialityCode": "8675309",
+            "TreatingFacilityAddress": {
+                "Address1": "99 ROUTE 37 W",
+                "Address2": "98 ROUTE 37 W",
+                "Address3": "97 ROUTE 37 W",
+                "City": "TOMS RIVER",
+                "State": "New Jersey",
+                "ZipCode": "08755",
+                "Country": "USA"
+            },
+            "EnrollmentStatus": "Not Enrolled",
+            "CoPaymentStatus": {
+                "PriorityEnrollmentGroup": "Group 1",
+                "CurrentMeansTest": "MT Copay Exempt",
+                "AgentOrangeExposureIndicator": true,
+                "CombatVeteranEligibilityIndicator": false,
+                "CombatVeteranEndDate": "2020-06-09",
+                "Project112SHADIndicator": true,
+                "SouthwestAsiaIndicator": false,
+                "IonizingRadiationIndicator": true,
+                "CampLejeuneIndicator": true,
+                "MeansTestCoPay": null,
+                "GeographicalMeansTestCoPay": null,
+                "LTCCoPay": null,
+                "RxCoPay": null,
+                "ServiceConnectedInfo": [
+                    {
+                        "ServiceConnected": true,
+                        "ServiceConnectedPercentage": "8",
+                        "ServiceConnectedCondition": "Impairment of left leg - tibia and fibula"
+                    },
+                    {
+                        "ServiceConnected": true,
+                        "ServiceConnectedPercentage": "20",
+                        "ServiceConnectedCondition": "Condition2"
+                    },
+                    {
+                        "ServiceConnected": false,
+                        "ServiceConnectedPercentage": "30",
+                        "ServiceConnectedCondition": "Condition3"
+                    },
+                    {
+                        "ServiceConnected": false,
+                        "ServiceConnectedPercentage": "100",
+                        "ServiceConnectedCondition": "Another condition"
+                    }
+                ]
+            },
+            "Network": "CCN1",
+            "NetworkCode": "36C79119D0004",
+            "CLINDesc": "Test CLIN description",
+            "CLINCode": "2019",
+            "PaymentAuthorityCode": "21",
+            "PaymentAuthorityDesc": "Doctor - 1712",
+            "PayorStatus": "VA - Primary Payor",
+            "PreAuthorizations": null,
+            "MilitarySexualTraumaInfo": {
+                "DeterminationFacility": "445 - EASTERN NEVADA HCS",
+                "Status": "Screened but Not Report MST",
+                "StatusChangeDate": "2775-03-26"
+            },
+            "NoseThroatRadiumInfo": {
+                "DeterminationFacility": "446 - EASTERN NEVADA HCS",
+                "DiagnosedWithCancer": false,
+                "DiagnosisVerifiedDate": "2940-11-29",
+                "FromAviatorServiceBefore1955": false,
+                "FromSubmarinerServiceBefore1965": true,
+                "ReceivingTreatment": "No longer",
+                "VerificationDate": "2015-04-26",
+                "VerificationFacility": "Evergreen",
+                "VerificationMethod": "None"
+            },
+            "EligibilityStatus": {
+                "PermanentAndTotalDisabled": "false",
+                "MeansTestStatus": "Never",
+                "MeansTestDeterminedStatus": "Possible",
+                "LTCTestStatus": "Certain",
+                "LTCTestDeterminedStatus": "Unknown",
+                "PharmacyCoPayTestStatus": "Yes",
+                "PharmacyCoPayTestDeterminedStatus": "Negative",
+                "VeteranRurality": "Rural"
+            },
+            "CareTypes": [
+                {
+                    "CareTypeCode": "CLIN #X011AC",
+                    "CareTypeDesc": "Region 4 Appointment Scheduling"
+                }
+            ],
+            "Appointments": [
+                {
+                    "AppointmentFor": "Initial outpatient evaluation for this episode of care.-COMPLEMENTARY AND INTEGRATIVE HEALTH-1.0.12",
+                    "AppointmentDate": "2020-08-10",
+                    "AppointmentTime": "10:30:05",
+                    "AppointmentStatus": "P",
+                    "ReasonForCancellation": "Not Needed",
+                    "CancellationDateTime": "2020-07-31 13:15:48",
+                    "ReasonForSelectingProvider": "Proximity to patient",
+                    "AppointmentCreateDateTime": "2020-07-11 08:12:10"
+                }
+            ],
+            "TransactionHistory": [
+                {
+                    "TransactionDate": "2020-01-12",
+                    "TransactionDateTime": "2020-08-19 02:55:22",
+                    "EffectiveDate": "2020-08-18",
+                    "EffectiveDateTime": "2019-10-18 04:25:45",
+                    "Reason": "Reason 1",
+                    "Status": "Initial"
+                },
+                {
+                    "TransactionDate": "2021-05-22",
+                    "TransactionDateTime": "2020-05-20 07:39:29",
+                    "EffectiveDate": "2020-03-18",
+                    "EffectiveDateTime": "2020-08-11 17:06:44",
+                    "Reason": "Another reason",
+                    "Status": "Approved"
+                },
+                {
+                    "TransactionDate": "2020-01-01",
+                    "TransactionDateTime": "2020-12-12 12:11:10",
+                    "EffectiveDate": "2022-07-26",
+                    "EffectiveDateTime": "2022-03-04 04:18:23",
+                    "Reason": "Last reason",
+                    "Status": "Denied"
+                }
+            ],
+            "OHI": [
+                {
+                    "Payor": "BCBS",
+                    "ValidFromDate": "2024-08-23",
+                    "ValidToDate": "2027-09-26",
+                    "CardholderName": "Landry, Tom",
+                    "PayorCardNumber": "NUM123",
+                    "CardholderAddress": {
+                        "Address1": "100 Heinz St",
+                        "Address2": "1st Floor",
+                        "City": "Pittsburgh",
+                        "State": "PA",
+                        "ZipCode": "55555",
+                        "Country": "USA"
+                    },
+                    "PlanID": "430911",
+                    "PlanType": "Private",
+                    "PlanGroup": "PlanGroup1",
+                    "GroupNumber": "GN69420",
+                    "GroupName": "YOLO",
+                    "LastVerifiedDate": "2020-01-15",
+                    "ReimbursableFlag": "Yes"
+                },
+                {
+                    "Payor": "REGIONAL COUNSEL",
+                    "ValidFromDate": "2024-12-08",
+                    "ValidToDate": "2028-07-06",
+                    "CardholderName": "Johnson, Jimmy",
+                    "PayorCardNumber": "SUPID",
+                    "CardholderAddress": {
+                        "Address1": "Card Holder Address1",
+                        "Address2": "Card Holder Address2",
+                        "City": "Card Holder City",
+                        "State": "FL",
+                        "ZipCode": "35301",
+                        "Country": "USAGroup7"
+                    },
+                    "PlanID": "6712",
+                    "PlanType": "Legal",
+                    "PlanGroup": "Group6",
+                    "GroupNumber": "1951",
+                    "GroupName": "GNCCRA-186",
+                    "LastVerifiedDate": null,
+                    "ReimbursableFlag": null
+                },
+                {
+                    "Payor": "ANTHEM",
+                    "ValidFromDate": "2023-09-02",
+                    "ValidToDate": "2027-11-22",
+                    "CardholderName": "Switzer, Barry",
+                    "PayorCardNumber": "SUPID",
+                    "CardholderAddress": {
+                        "Address1": "Card Holder Address1",
+                        "Address2": "Card Holder Address2",
+                        "City": "Card Holder City",
+                        "State": "FL",
+                        "ZipCode": "33201",
+                        "Country": "USA"
+                    },
+                    "PlanID": "6712",
+                    "PlanType": "Legal",
+                    "PlanGroup": "Group6",
+                    "GroupNumber": "0925",
+                    "GroupName": "GNCCRA-410",
+                    "LastVerifiedDate": null,
+                    "ReimbursableFlag": null
+                }
+            ],
+            "StationID": "659GC",
+            "SeocID": "PMR_PHYSICAL THERAPY_1.0.4",
+            "SeocKey": "10492",
+            "AllocatedDate": "2020-02-11",
+            "ReferralReturnReasonCode": "TR",
+            "TreatmentStartDate": "2023-01-02",
+            "TreatingProviderTaxID": "9090155",
+            "TreatingFacilityTaxID": "9294512",
+            "PrimaryCareProviderNPI": "112294",
+            "PrimaryCareProviderName": "Dr. Nobody",
+            "LevelOfCareCode": "X",
+            "LevelOfCareDesc": "Unknown",
+            "CategoryOfCare": "RADIOLOGY MRI/MRA",
+            "EstimatedCostOfCare": "481.79",
+            "Sta6": "534",
+            "Comments": "Test Comments",
+            "NoteOnAppointmentScreen": "Test Note",
+            "CommentOnReferralScreen": "Referral Screen Comments",
+            "PriorityCode": "R",
+            "PriorityDescription": "Routine",
+            "ClinicallyIndicatedDate": "2021-09-27",
+            "AffilitationDesc": "CCN1 Description",
+            "AffilitationCode": "CCN1",
+            "OrderingOfficerName": "QA Team Account",
+            "PreferredProvider": "Test Preferred Provider Name",
+            "ReasonSelectingProvider": "Not Given",
+            "AppointmentDate": "2022-09-22"
+        },
+        {
+            "Patient": {
+                "ICN": "TEST7001394857907",
+                "LastName": "Lopez",
+                "FirstName": "Linda",
+                "MiddleName": "K",
+                "Gender": "M",
+                "DOB": "1968-01-19",
+                "SSN": "999-99-0001",
+                "TelephoneHome": "555-123-1435",
+                "TelephoneBusiness": "555-123-0953",
+                "TelephoneMobile": "555-123-7588",
+                "Email": "email@test.net",
+                "PreferredContactMethod": "email",
+                "GenderIdentity": {
+                    "Code": "M",
+                    "Desc": "Male"
+                },
+                "GenderPronouns": [
+                    {
+                        "Code": "HIM",
+                        "Desc": "He/him"
+                    }
+                ],
+                "preferredName": "Uraco",
+                "birthSex": "M",
+                "HomeAddress": {
+                    "address1": "123 Main St",
+                    "address2": "Apt. 2",
+                    "address3": "Second Floor",
+                    "city": "Las Vegas",
+                    "state": "NV",
+                    "zipCode": "12445",
+                    "Country": "USA"
+                }
+            },
+            "Diagnosis": "Fever",
+            "DiagnosisCode": "MoreCowbell",
+            "MedicalNecessity": "Sick Person",
+            "TreatingProvider": "Will Ferrel",
+            "TreatingProviderNPI": "1982885406",
+            "ReferralCategory": "Inpatient",
+            "ReferralDate": "2023-01-25",
+            "ReferralDateTime": "2023-01-25 22:10:46",
+            "ReferralExpirationDate": "2027-08-07",
+            "ReferralLastUpdateDate": "2023-01-25",
+            "ReferralLastUpdateDateTime": "2023-01-25 22:10:46",
+            "ReferralNumber": "VA_000000002",
+            "ReferralConsultId": "186_4239111",
+            "ReferralPeriod": "365 days",
+            "ReferringFacility": "Ralph H. Johnson VA Medical Center",
+            "ReferringProvider": "Tom Cruise",
+            "ReferringProviderNPI": "1244885455",
+            "ReferralReturnReason": "RCCN Provider meets appointment timeliness standards",
+            "ReferringSpecialty": "Agencies Case Management",
+            "SourceOfReferral": "Automatically entered in VA",
+            "Status": "Approved",
+            "ServiceRequested": "Surgery",
+            "TreatingFacility": "Doctor J",
+            "TreatingFacilityFax": "1112943633",
+            "TreatingFacilityPhone": "1112943634",
+            "TreatingSpeciality": "PAIN MANAGEMENT",
+            "TreatingSpecialityCode": "8675309",
+            "TreatingFacilityAddress": {
+                "Address1": "99 ROUTE 37 W",
+                "Address2": "98 ROUTE 37 W",
+                "Address3": "97 ROUTE 37 W",
+                "City": "TOMS RIVER",
+                "State": "New Jersey",
+                "ZipCode": "08755",
+                "Country": "USA"
+            },
+            "EnrollmentStatus": "Not Enrolled",
+            "CoPaymentStatus": {
+                "PriorityEnrollmentGroup": "Group 1",
+                "CurrentMeansTest": "MT Copay Exempt",
+                "AgentOrangeExposureIndicator": true,
+                "CombatVeteranEligibilityIndicator": false,
+                "CombatVeteranEndDate": "2020-06-09",
+                "Project112SHADIndicator": true,
+                "SouthwestAsiaIndicator": false,
+                "IonizingRadiationIndicator": true,
+                "CampLejeuneIndicator": true,
+                "MeansTestCoPay": null,
+                "GeographicalMeansTestCoPay": null,
+                "LTCCoPay": null,
+                "RxCoPay": null,
+                "ServiceConnectedInfo": [
+                    {
+                        "ServiceConnected": true,
+                        "ServiceConnectedPercentage": "8",
+                        "ServiceConnectedCondition": "Impairment of left leg - tibia and fibula"
+                    },
+                    {
+                        "ServiceConnected": true,
+                        "ServiceConnectedPercentage": "20",
+                        "ServiceConnectedCondition": "Condition2"
+                    },
+                    {
+                        "ServiceConnected": false,
+                        "ServiceConnectedPercentage": "30",
+                        "ServiceConnectedCondition": "Condition3"
+                    },
+                    {
+                        "ServiceConnected": false,
+                        "ServiceConnectedPercentage": "100",
+                        "ServiceConnectedCondition": "Another condition"
+                    }
+                ]
+            },
+            "Network": "CCN1",
+            "NetworkCode": "36C79119D0004",
+            "CLINDesc": "Test CLIN description",
+            "CLINCode": "2019",
+            "PaymentAuthorityCode": "21",
+            "PaymentAuthorityDesc": "Doctor - 1712",
+            "PayorStatus": "VA - Primary Payor",
+            "PreAuthorizations": null,
+            "MilitarySexualTraumaInfo": {
+                "DeterminationFacility": "445 - EASTERN NEVADA HCS",
+                "Status": "Screened but Not Report MST",
+                "StatusChangeDate": "2775-03-26"
+            },
+            "NoseThroatRadiumInfo": {
+                "DeterminationFacility": "446 - EASTERN NEVADA HCS",
+                "DiagnosedWithCancer": false,
+                "DiagnosisVerifiedDate": "2940-11-29",
+                "FromAviatorServiceBefore1955": false,
+                "FromSubmarinerServiceBefore1965": true,
+                "ReceivingTreatment": "No longer",
+                "VerificationDate": "2015-04-26",
+                "VerificationFacility": "Evergreen",
+                "VerificationMethod": "None"
+            },
+            "EligibilityStatus": {
+                "PermanentAndTotalDisabled": "false",
+                "MeansTestStatus": "Never",
+                "MeansTestDeterminedStatus": "Possible",
+                "LTCTestStatus": "Certain",
+                "LTCTestDeterminedStatus": "Unknown",
+                "PharmacyCoPayTestStatus": "Yes",
+                "PharmacyCoPayTestDeterminedStatus": "Negative",
+                "VeteranRurality": "Rural"
+            },
+            "CareTypes": [
+                {
+                    "CareTypeCode": "CLIN #X011AH",
+                    "CareTypeDesc": "Region 4 Appointment Scheduling"
+                }
+            ],
+            "Appointments": [
+                {
+                    "AppointmentFor": "Initial outpatient evaluation for this episode of care.-COMPLEMENTARY AND INTEGRATIVE HEALTH-1.0.12",
+                    "AppointmentDate": "2020-08-10",
+                    "AppointmentTime": "10:30:05",
+                    "AppointmentStatus": "P",
+                    "ReasonForCancellation": "Not Needed",
+                    "CancellationDateTime": "2020-07-31 13:15:48",
+                    "ReasonForSelectingProvider": "Proximity to patient",
+                    "AppointmentCreateDateTime": "2020-07-11 08:12:10"
+                }
+            ],
+            "TransactionHistory": [
+                {
+                    "TransactionDate": "2020-01-12",
+                    "TransactionDateTime": "2020-08-19 02:55:22",
+                    "EffectiveDate": "2020-08-18",
+                    "EffectiveDateTime": "2019-10-18 04:25:45",
+                    "Reason": "Reason 1",
+                    "Status": "Initial"
+                },
+                {
+                    "TransactionDate": "2021-05-22",
+                    "TransactionDateTime": "2020-05-20 07:39:29",
+                    "EffectiveDate": "2020-03-18",
+                    "EffectiveDateTime": "2020-08-11 17:06:44",
+                    "Reason": "Another reason",
+                    "Status": "Approved"
+                },
+                {
+                    "TransactionDate": "2020-01-01",
+                    "TransactionDateTime": "2020-12-12 12:11:10",
+                    "EffectiveDate": "2022-07-26",
+                    "EffectiveDateTime": "2022-03-04 04:18:23",
+                    "Reason": "Last reason",
+                    "Status": "Denied"
+                }
+            ],
+            "OHI": [
+                {
+                    "Payor": "BCBS",
+                    "ValidFromDate": "2023-04-22",
+                    "ValidToDate": "2028-07-06",
+                    "CardholderName": "Landry, Tom",
+                    "PayorCardNumber": "NUM123",
+                    "CardholderAddress": {
+                        "Address1": "100 Heinz St",
+                        "Address2": "1st Floor",
+                        "City": "Pittsburgh",
+                        "State": "PA",
+                        "ZipCode": "55555",
+                        "Country": "USA"
+                    },
+                    "PlanID": "430911",
+                    "PlanType": "Private",
+                    "PlanGroup": "PlanGroup1",
+                    "GroupNumber": "GN69420",
+                    "GroupName": "YOLO",
+                    "LastVerifiedDate": "2020-01-15",
+                    "ReimbursableFlag": "Yes"
+                },
+                {
+                    "Payor": "REGIONAL COUNSEL",
+                    "ValidFromDate": "2025-03-07",
+                    "ValidToDate": "2027-06-15",
+                    "CardholderName": "Johnson, Jimmy",
+                    "PayorCardNumber": "SUPID",
+                    "CardholderAddress": {
+                        "Address1": "Card Holder Address1",
+                        "Address2": "Card Holder Address2",
+                        "City": "Card Holder City",
+                        "State": "FL",
+                        "ZipCode": "35301",
+                        "Country": "USAGroup7"
+                    },
+                    "PlanID": "6712",
+                    "PlanType": "Legal",
+                    "PlanGroup": "Group6",
+                    "GroupNumber": "1951",
+                    "GroupName": "GNCCRA-186",
+                    "LastVerifiedDate": null,
+                    "ReimbursableFlag": null
+                },
+                {
+                    "Payor": "ANTHEM",
+                    "ValidFromDate": "2025-12-01",
+                    "ValidToDate": "2028-11-27",
+                    "CardholderName": "Switzer, Barry",
+                    "PayorCardNumber": "SUPID",
+                    "CardholderAddress": {
+                        "Address1": "Card Holder Address1",
+                        "Address2": "Card Holder Address2",
+                        "City": "Card Holder City",
+                        "State": "FL",
+                        "ZipCode": "33201",
+                        "Country": "USA"
+                    },
+                    "PlanID": "6712",
+                    "PlanType": "Legal",
+                    "PlanGroup": "Group6",
+                    "GroupNumber": "0925",
+                    "GroupName": "GNCCRA-410",
+                    "LastVerifiedDate": null,
+                    "ReimbursableFlag": null
+                }
+            ],
+            "StationID": "691GF",
+            "SeocID": "DEN_DENTAL ADVANCED PROSTHODONTICS_1.17.2",
+            "SeocKey": "11701",
+            "AllocatedDate": "2020-02-11",
+            "ReferralReturnReasonCode": "TR",
+            "TreatmentStartDate": "2023-01-02",
+            "TreatingProviderTaxID": "9090155",
+            "TreatingFacilityTaxID": "9294512",
+            "PrimaryCareProviderNPI": "112294",
+            "PrimaryCareProviderName": "Dr. Nobody",
+            "LevelOfCareCode": "X",
+            "LevelOfCareDesc": "Unknown",
+            "CategoryOfCare": "RADIOLOGY MRI/MRA",
+            "EstimatedCostOfCare": "481.79",
+            "Sta6": "534",
+            "Comments": "Test Comments",
+            "NoteOnAppointmentScreen": "Test Note",
+            "CommentOnReferralScreen": "Referral Screen Comments",
+            "PriorityCode": "R",
+            "PriorityDescription": "Routine",
+            "ClinicallyIndicatedDate": "2021-09-27",
+            "AffilitationDesc": "CCN1 Description",
+            "AffilitationCode": "CCN1",
+            "OrderingOfficerName": "QA Team Account",
+            "PreferredProvider": "Test Preferred Provider Name",
+            "ReasonSelectingProvider": "Not Given",
+            "AppointmentDate": "2022-09-22"
+        }
+    ]
+}

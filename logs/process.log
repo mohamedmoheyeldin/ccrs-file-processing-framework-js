@@ -1,0 +1,455 @@
+2026-03-19 10:35:24,569 - INFO - Processed: C:/Users/moheyeldin/Desktop/json\128KB.json -> 128KB.json
+2026-03-19 10:35:24,571 - INFO - Processed: C:/Users/moheyeldin/Desktop/json\256KB.json -> 256KB.json
+2026-03-19 10:35:24,573 - INFO - Processed: C:/Users/moheyeldin/Desktop/json\512KB.json -> 512KB.json
+2026-03-19 10:35:24,574 - INFO - Processed: C:/Users/moheyeldin/Desktop/json\64KB.json -> 64KB.json
+2026-03-19 10:36:20,313 - INFO - Processed: C:/Users/moheyeldin/Desktop/json\128KB.json -> 128KB.json
+2026-03-19 10:36:20,314 - INFO - Processed: C:/Users/moheyeldin/Desktop/json\256KB.json -> 256KB.json
+2026-03-19 10:36:20,316 - INFO - Processed: C:/Users/moheyeldin/Desktop/json\512KB.json -> 512KB.json
+2026-03-19 10:36:20,317 - INFO - Processed: C:/Users/moheyeldin/Desktop/json\64KB.json -> 64KB.json
+2026-03-19 10:43:31,715 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV45_MVIP.JSON -> CCRS_DTL_VA25S1DMV45_MVIP.JSON
+2026-03-19 10:43:31,716 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVID.JSON -> CCRS_DTL_VA25S1DMV46_MVID.JSON
+2026-03-19 10:43:31,717 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVIP.JSON -> CCRS_DTL_VA25S1DMV46_MVIP.JSON
+2026-03-19 10:43:31,717 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV47_MVID.JSON -> CCRS_DTL_VA25S1DMV47_MVID.JSON
+2026-03-19 10:43:31,718 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVID.JSON -> CCRS_DTL_VA25S1DMV48_MVID.JSON
+2026-03-19 10:43:31,718 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIP.JSON -> CCRS_DTL_VA25S1DMV48_MVIP.JSON
+2026-03-19 10:43:31,718 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIS.JSON -> CCRS_DTL_VA25S1DMV48_MVIS.JSON
+2026-03-19 10:43:31,719 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV49_MVID.JSON -> CCRS_DTL_VA25S1DMV49_MVID.JSON
+2026-03-19 10:49:44,658 - WARNING - No files found in input directory.
+2026-03-19 10:49:53,413 - WARNING - No files found in input directory.
+2026-03-19 10:51:58,631 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV45_MVIP.JSON -> CCRS_DTL_VA25SSS6DMV45_MVIP.JSON
+2026-03-19 10:51:58,632 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVID.JSON -> CCRS_DTL_VA25SSS6DMV46_MVID.JSON
+2026-03-19 10:51:58,632 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVIP.JSON -> CCRS_DTL_VA25SSS6DMV46_MVIP.JSON
+2026-03-19 10:51:58,633 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV47_MVID.JSON -> CCRS_DTL_VA25SSS6DMV47_MVID.JSON
+2026-03-19 10:51:58,633 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVID.JSON -> CCRS_DTL_VA25SSS6DMV48_MVID.JSON
+2026-03-19 10:51:58,634 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIP.JSON -> CCRS_DTL_VA25SSS6DMV48_MVIP.JSON
+2026-03-19 10:51:58,634 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIS.JSON -> CCRS_DTL_VA25SSS6DMV48_MVIS.JSON
+2026-03-19 10:51:58,634 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV49_MVID.JSON -> CCRS_DTL_VA25SSS6DMV49_MVID.JSON
+2026-03-19 10:52:51,410 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV45_MVIP.JSON -> CCRS_DTL_VA2666fsdDMV45_MVIP.JSON
+2026-03-19 10:52:51,411 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVID.JSON -> CCRS_DTL_VA2666fsdDMV46_MVID.JSON
+2026-03-19 10:52:51,411 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVIP.JSON -> CCRS_DTL_VA2666fsdDMV46_MVIP.JSON
+2026-03-19 10:52:51,411 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV47_MVID.JSON -> CCRS_DTL_VA2666fsdDMV47_MVID.JSON
+2026-03-19 10:52:51,412 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVID.JSON -> CCRS_DTL_VA2666fsdDMV48_MVID.JSON
+2026-03-19 10:52:51,412 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIP.JSON -> CCRS_DTL_VA2666fsdDMV48_MVIP.JSON
+2026-03-19 10:52:51,414 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIS.JSON -> CCRS_DTL_VA2666fsdDMV48_MVIS.JSON
+2026-03-19 10:52:51,414 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV49_MVID.JSON -> CCRS_DTL_VA2666fsdDMV49_MVID.JSON
+2026-03-19 10:59:38,861 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV45_MVIP.JSON -> CCRS_DTL_VA3021S5DMV45_MVIP.JSON
+2026-03-19 10:59:38,862 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVID.JSON -> CCRS_DTL_VA3021S5DMV46_MVID.JSON
+2026-03-19 10:59:38,862 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVIP.JSON -> CCRS_DTL_VA3021S5DMV46_MVIP.JSON
+2026-03-19 10:59:38,862 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV47_MVID.JSON -> CCRS_DTL_VA3021S5DMV47_MVID.JSON
+2026-03-19 10:59:38,863 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVID.JSON -> CCRS_DTL_VA3021S5DMV48_MVID.JSON
+2026-03-19 10:59:38,863 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIP.JSON -> CCRS_DTL_VA3021S5DMV48_MVIP.JSON
+2026-03-19 10:59:38,864 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIS.JSON -> CCRS_DTL_VA3021S5DMV48_MVIS.JSON
+2026-03-19 10:59:38,864 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV49_MVID.JSON -> CCRS_DTL_VA3021S5DMV49_MVID.JSON
+2026-03-19 11:08:42,053 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV45_MVIP.JSON -> CCRS_DTL_VAtest101DMV45_MVIP.JSON
+2026-03-19 11:08:42,053 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVID.JSON -> CCRS_DTL_VAtest101DMV46_MVID.JSON
+2026-03-19 11:08:42,054 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVIP.JSON -> CCRS_DTL_VAtest101DMV46_MVIP.JSON
+2026-03-19 11:08:42,054 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV47_MVID.JSON -> CCRS_DTL_VAtest101DMV47_MVID.JSON
+2026-03-19 11:08:42,054 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVID.JSON -> CCRS_DTL_VAtest101DMV48_MVID.JSON
+2026-03-19 11:08:42,055 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIP.JSON -> CCRS_DTL_VAtest101DMV48_MVIP.JSON
+2026-03-19 11:08:42,055 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIS.JSON -> CCRS_DTL_VAtest101DMV48_MVIS.JSON
+2026-03-19 11:08:42,055 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV49_MVID.JSON -> CCRS_DTL_VAtest101DMV49_MVID.JSON
+2026-03-19 11:08:53,229 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 11:08:53,229 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV45_MVIP.JSON -> CCRS_DTL_VAtest102DMV45_MVIP.JSON
+2026-03-19 11:08:53,230 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVID.JSON -> CCRS_DTL_VAtest102DMV46_MVID.JSON
+2026-03-19 11:08:53,230 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVIP.JSON -> CCRS_DTL_VAtest102DMV46_MVIP.JSON
+2026-03-19 11:08:53,230 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV47_MVID.JSON -> CCRS_DTL_VAtest102DMV47_MVID.JSON
+2026-03-19 11:08:53,231 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVID.JSON -> CCRS_DTL_VAtest102DMV48_MVID.JSON
+2026-03-19 11:08:53,231 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIP.JSON -> CCRS_DTL_VAtest102DMV48_MVIP.JSON
+2026-03-19 11:08:53,231 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIS.JSON -> CCRS_DTL_VAtest102DMV48_MVIS.JSON
+2026-03-19 11:08:53,232 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV49_MVID.JSON -> CCRS_DTL_VAtest102DMV49_MVID.JSON
+2026-03-19 11:11:33,161 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV45_MVIP.JSON -> CCRS_DTL_VAtest151DMV45_MVIP.JSON
+2026-03-19 11:11:33,161 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVID.JSON -> CCRS_DTL_VAtest151DMV46_MVID.JSON
+2026-03-19 11:11:33,162 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVIP.JSON -> CCRS_DTL_VAtest151DMV46_MVIP.JSON
+2026-03-19 11:11:33,162 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV47_MVID.JSON -> CCRS_DTL_VAtest151DMV47_MVID.JSON
+2026-03-19 11:11:33,162 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVID.JSON -> CCRS_DTL_VAtest151DMV48_MVID.JSON
+2026-03-19 11:11:33,163 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIP.JSON -> CCRS_DTL_VAtest151DMV48_MVIP.JSON
+2026-03-19 11:11:33,163 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIS.JSON -> CCRS_DTL_VAtest151DMV48_MVIS.JSON
+2026-03-19 11:11:33,164 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV49_MVID.JSON -> CCRS_DTL_VAtest151DMV49_MVID.JSON
+2026-03-19 11:11:33,167 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 11:11:43,126 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 11:11:43,126 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV45_MVIP.JSON -> CCRS_DTL_VAtest200DMV45_MVIP.JSON
+2026-03-19 11:11:43,127 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVID.JSON -> CCRS_DTL_VAtest200DMV46_MVID.JSON
+2026-03-19 11:11:43,127 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVIP.JSON -> CCRS_DTL_VAtest200DMV46_MVIP.JSON
+2026-03-19 11:11:43,128 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV47_MVID.JSON -> CCRS_DTL_VAtest200DMV47_MVID.JSON
+2026-03-19 11:11:43,128 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVID.JSON -> CCRS_DTL_VAtest200DMV48_MVID.JSON
+2026-03-19 11:11:43,128 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIP.JSON -> CCRS_DTL_VAtest200DMV48_MVIP.JSON
+2026-03-19 11:11:43,129 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIS.JSON -> CCRS_DTL_VAtest200DMV48_MVIS.JSON
+2026-03-19 11:11:43,129 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV49_MVID.JSON -> CCRS_DTL_VAtest200DMV49_MVID.JSON
+2026-03-19 11:11:43,130 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 11:35:11,090 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV45_MVIP.JSON -> CCRS_DTL_VAtestNow101DMV45_MVIP.JSON
+2026-03-19 11:35:11,090 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVID.JSON -> CCRS_DTL_VAtestNow101DMV46_MVID.JSON
+2026-03-19 11:35:11,091 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVIP.JSON -> CCRS_DTL_VAtestNow101DMV46_MVIP.JSON
+2026-03-19 11:35:11,091 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV47_MVID.JSON -> CCRS_DTL_VAtestNow101DMV47_MVID.JSON
+2026-03-19 11:35:11,091 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVID.JSON -> CCRS_DTL_VAtestNow101DMV48_MVID.JSON
+2026-03-19 11:35:11,092 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIP.JSON -> CCRS_DTL_VAtestNow101DMV48_MVIP.JSON
+2026-03-19 11:35:11,092 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIS.JSON -> CCRS_DTL_VAtestNow101DMV48_MVIS.JSON
+2026-03-19 11:35:11,093 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV49_MVID.JSON -> CCRS_DTL_VAtestNow101DMV49_MVID.JSON
+2026-03-19 11:35:11,094 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 11:35:20,552 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 11:35:20,552 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV45_MVIP.JSON -> CCRS_DTL_VAtestNow155DMV45_MVIP.JSON
+2026-03-19 11:35:20,553 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVID.JSON -> CCRS_DTL_VAtestNow155DMV46_MVID.JSON
+2026-03-19 11:35:20,553 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVIP.JSON -> CCRS_DTL_VAtestNow155DMV46_MVIP.JSON
+2026-03-19 11:35:20,554 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV47_MVID.JSON -> CCRS_DTL_VAtestNow155DMV47_MVID.JSON
+2026-03-19 11:35:20,554 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVID.JSON -> CCRS_DTL_VAtestNow155DMV48_MVID.JSON
+2026-03-19 11:35:20,554 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIP.JSON -> CCRS_DTL_VAtestNow155DMV48_MVIP.JSON
+2026-03-19 11:35:20,555 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIS.JSON -> CCRS_DTL_VAtestNow155DMV48_MVIS.JSON
+2026-03-19 11:35:20,555 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV49_MVID.JSON -> CCRS_DTL_VAtestNow155DMV49_MVID.JSON
+2026-03-19 11:35:20,556 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 11:40:07,947 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 11:40:07,948 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV45_MVIP.JSON -> CCRS_DTL_VAtestNow200DMV45_MVIP.JSON
+2026-03-19 11:40:07,948 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVID.JSON -> CCRS_DTL_VAtestNow200DMV46_MVID.JSON
+2026-03-19 11:40:07,949 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV46_MVIP.JSON -> CCRS_DTL_VAtestNow200DMV46_MVIP.JSON
+2026-03-19 11:40:07,949 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV47_MVID.JSON -> CCRS_DTL_VAtestNow200DMV47_MVID.JSON
+2026-03-19 11:40:07,950 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVID.JSON -> CCRS_DTL_VAtestNow200DMV48_MVID.JSON
+2026-03-19 11:40:07,950 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIP.JSON -> CCRS_DTL_VAtestNow200DMV48_MVIP.JSON
+2026-03-19 11:40:07,950 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV48_MVIS.JSON -> CCRS_DTL_VAtestNow200DMV48_MVIS.JSON
+2026-03-19 11:40:07,951 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMV49_MVID.JSON -> CCRS_DTL_VAtestNow200DMV49_MVID.JSON
+2026-03-19 11:40:07,952 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 11:47:34,272 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 11:47:34,279 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA25S1DMVD46_MVID.JSON
+2026-03-19 11:47:34,284 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA25S1DMVD47_MVID.JSON
+2026-03-19 11:47:34,288 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA25S1DMVD48_MVID.JSON
+2026-03-19 11:47:34,293 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA25S1DMVD49_MVID.JSON
+2026-03-19 11:47:34,297 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA25S1DMVI48_MVIP.JSON
+2026-03-19 11:47:34,302 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA25S1DMVI48_MVIS.JSON
+2026-03-19 11:47:34,310 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 11:57:10,856 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA25S1DMVD46_MVID.JSON
+2026-03-19 11:57:10,857 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA25S1DMVD47_MVID.JSON
+2026-03-19 11:57:10,857 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA25S1DMVD48_MVID.JSON
+2026-03-19 11:57:10,858 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA25S1DMVD49_MVID.JSON
+2026-03-19 11:57:10,858 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA25S1DMVI48_MVIP.JSON
+2026-03-19 11:57:10,859 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA25S1DMVI48_MVIS.JSON
+2026-03-19 11:57:10,871 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 11:57:17,775 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 11:57:17,776 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA25S1DMVD46_MVID.JSON
+2026-03-19 11:57:17,776 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA25S1DMVD47_MVID.JSON
+2026-03-19 11:57:17,777 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA25S1DMVD48_MVID.JSON
+2026-03-19 11:57:17,777 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA25S1DMVD49_MVID.JSON
+2026-03-19 11:57:17,778 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA25S1DMVI48_MVIP.JSON
+2026-03-19 11:57:17,778 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA25S1DMVI48_MVIS.JSON
+2026-03-19 11:57:17,788 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 11:57:21,980 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA25S1DMVD46_MVID.JSON
+2026-03-19 11:57:21,981 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA25S1DMVD47_MVID.JSON
+2026-03-19 11:57:21,981 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA25S1DMVD48_MVID.JSON
+2026-03-19 11:57:21,982 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA25S1DMVD49_MVID.JSON
+2026-03-19 11:57:21,982 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA25S1DMVI48_MVIP.JSON
+2026-03-19 11:57:21,982 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA25S1DMVI48_MVIS.JSON
+2026-03-19 11:57:21,992 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 11:57:27,839 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA25S1DMVD46_MVID.JSON
+2026-03-19 11:57:27,840 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA25S1DMVD47_MVID.JSON
+2026-03-19 11:57:27,840 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA25S1DMVD48_MVID.JSON
+2026-03-19 11:57:27,841 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA25S1DMVD49_MVID.JSON
+2026-03-19 11:57:27,841 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA25S1DMVI48_MVIP.JSON
+2026-03-19 11:57:27,842 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA25S1DMVI48_MVIS.JSON
+2026-03-19 11:57:27,852 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 11:57:48,581 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 11:57:48,582 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA25S1DMVD46_MVID.JSON
+2026-03-19 11:57:48,583 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA25S1DMVD47_MVID.JSON
+2026-03-19 11:57:48,583 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA25S1DMVD48_MVID.JSON
+2026-03-19 11:57:48,584 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA25S1DMVD49_MVID.JSON
+2026-03-19 11:57:48,584 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA25S1DMVI48_MVIP.JSON
+2026-03-19 11:57:48,584 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA25S1DMVI48_MVIS.JSON
+2026-03-19 11:57:48,594 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 11:59:44,070 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 11:59:44,071 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VAtest10133DMVD46_MVID.JSON
+2026-03-19 11:59:44,071 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VAtest10133DMVD47_MVID.JSON
+2026-03-19 11:59:44,072 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VAtest10133DMVD48_MVID.JSON
+2026-03-19 11:59:44,072 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VAtest10133DMVD49_MVID.JSON
+2026-03-19 11:59:44,073 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VAtest10133DMVI48_MVIP.JSON
+2026-03-19 11:59:44,073 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VAtest10133DMVI48_MVIS.JSON
+2026-03-19 11:59:44,083 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:05:35,382 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:05:35,383 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA28S4DMVD46_MVID.JSON
+2026-03-19 12:05:35,384 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA28S4DMVD47_MVID.JSON
+2026-03-19 12:05:35,384 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA28S4DMVD48_MVID.JSON
+2026-03-19 12:05:35,385 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA28S4DMVD49_MVID.JSON
+2026-03-19 12:05:35,385 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA28S4DMVI48_MVIP.JSON
+2026-03-19 12:05:35,386 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA28S4DMVI48_MVIS.JSON
+2026-03-19 12:05:35,397 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:11:53,303 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:11:53,303 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA35S20DMVD46_MVID.JSON
+2026-03-19 12:11:53,304 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA35S20DMVD47_MVID.JSON
+2026-03-19 12:11:53,304 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA35S20DMVD48_MVID.JSON
+2026-03-19 12:11:53,305 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA35S20DMVD49_MVID.JSON
+2026-03-19 12:11:53,305 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA35S20DMVI48_MVIP.JSON
+2026-03-19 12:11:53,306 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA35S20DMVI48_MVIS.JSON
+2026-03-19 12:11:53,316 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:17:15,251 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:17:15,252 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA55S28DMVD46_MVID.JSON
+2026-03-19 12:17:15,253 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA55S28DMVD47_MVID.JSON
+2026-03-19 12:17:15,253 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA55S28DMVD48_MVID.JSON
+2026-03-19 12:17:15,254 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA55S28DMVD49_MVID.JSON
+2026-03-19 12:17:15,254 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA55S28DMVI48_MVIP.JSON
+2026-03-19 12:17:15,255 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA55S28DMVI48_MVIS.JSON
+2026-03-19 12:17:15,265 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:17:21,040 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:17:21,041 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA55S28DMVD46_MVID.JSON
+2026-03-19 12:17:21,041 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA55S28DMVD47_MVID.JSON
+2026-03-19 12:17:21,042 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA55S28DMVD48_MVID.JSON
+2026-03-19 12:17:21,042 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA55S28DMVD49_MVID.JSON
+2026-03-19 12:17:21,043 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA55S28DMVI48_MVIP.JSON
+2026-03-19 12:17:21,043 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA55S28DMVI48_MVIS.JSON
+2026-03-19 12:17:21,055 - INFO - Removed processed JSON files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:17:21,055 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:17:24,684 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:17:24,685 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA55S28DMVD46_MVID.JSON
+2026-03-19 12:17:24,685 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA55S28DMVD47_MVID.JSON
+2026-03-19 12:17:24,686 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA55S28DMVD48_MVID.JSON
+2026-03-19 12:17:24,686 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA55S28DMVD49_MVID.JSON
+2026-03-19 12:17:24,686 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA55S28DMVI48_MVIP.JSON
+2026-03-19 12:17:24,687 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA55S28DMVI48_MVIS.JSON
+2026-03-19 12:17:24,697 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:24:38,762 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:24:38,763 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA88S45DMVD46_MVID.JSON
+2026-03-19 12:24:38,763 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA88S45DMVD47_MVID.JSON
+2026-03-19 12:24:38,764 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA88S45DMVD48_MVID.JSON
+2026-03-19 12:24:38,764 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA88S45DMVD49_MVID.JSON
+2026-03-19 12:24:38,765 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA88S45DMVI48_MVIP.JSON
+2026-03-19 12:24:38,765 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA88S45DMVI48_MVIS.JSON
+2026-03-19 12:24:38,775 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:24:49,330 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:24:49,331 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA88S45DMVD46_MVID.JSON
+2026-03-19 12:24:49,331 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA88S45DMVD47_MVID.JSON
+2026-03-19 12:24:49,332 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA88S45DMVD48_MVID.JSON
+2026-03-19 12:24:49,332 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA88S45DMVD49_MVID.JSON
+2026-03-19 12:24:49,333 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA88S45DMVI48_MVIP.JSON
+2026-03-19 12:24:49,333 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA88S45DMVI48_MVIS.JSON
+2026-03-19 12:24:49,344 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:27:38,407 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:27:38,408 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD46_MVID.JSON
+2026-03-19 12:27:38,409 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD47_MVID.JSON
+2026-03-19 12:27:38,409 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD48_MVID.JSON
+2026-03-19 12:27:38,410 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD49_MVID.JSON
+2026-03-19 12:27:38,410 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIP.JSON
+2026-03-19 12:27:38,411 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIS.JSON
+2026-03-19 12:27:38,423 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:27:57,785 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:27:57,786 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD46_MVID.JSON
+2026-03-19 12:27:57,786 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD47_MVID.JSON
+2026-03-19 12:27:57,787 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD48_MVID.JSON
+2026-03-19 12:27:57,787 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD49_MVID.JSON
+2026-03-19 12:27:57,788 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIP.JSON
+2026-03-19 12:27:57,788 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIS.JSON
+2026-03-19 12:27:57,798 - INFO - Removed processed JSON files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:27:57,798 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:28:12,348 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:28:12,348 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD46_MVID.JSON
+2026-03-19 12:28:12,349 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD47_MVID.JSON
+2026-03-19 12:28:12,349 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD48_MVID.JSON
+2026-03-19 12:28:12,350 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD49_MVID.JSON
+2026-03-19 12:28:12,350 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIP.JSON
+2026-03-19 12:28:12,351 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIS.JSON
+2026-03-19 12:28:12,362 - INFO - Removed processed JSON files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:28:12,362 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:28:17,081 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD46_MVID.JSON
+2026-03-19 12:28:17,082 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD47_MVID.JSON
+2026-03-19 12:28:17,082 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD48_MVID.JSON
+2026-03-19 12:28:17,083 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD49_MVID.JSON
+2026-03-19 12:28:17,083 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIP.JSON
+2026-03-19 12:28:17,083 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIS.JSON
+2026-03-19 12:28:17,094 - INFO - Removed processed JSON files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:28:17,094 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:28:20,264 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD46_MVID.JSON
+2026-03-19 12:28:20,265 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD47_MVID.JSON
+2026-03-19 12:28:20,265 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD48_MVID.JSON
+2026-03-19 12:28:20,266 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD49_MVID.JSON
+2026-03-19 12:28:20,266 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIP.JSON
+2026-03-19 12:28:20,267 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIS.JSON
+2026-03-19 12:28:20,277 - INFO - Removed processed JSON files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:28:20,277 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:28:26,728 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:28:26,729 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD46_MVID.JSON
+2026-03-19 12:28:26,729 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD47_MVID.JSON
+2026-03-19 12:28:26,730 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD48_MVID.JSON
+2026-03-19 12:28:26,730 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD49_MVID.JSON
+2026-03-19 12:28:26,731 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIP.JSON
+2026-03-19 12:28:26,731 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIS.JSON
+2026-03-19 12:28:26,741 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:28:29,236 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:28:29,237 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD46_MVID.JSON
+2026-03-19 12:28:29,238 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD47_MVID.JSON
+2026-03-19 12:28:29,238 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD48_MVID.JSON
+2026-03-19 12:28:29,239 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD49_MVID.JSON
+2026-03-19 12:28:29,239 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIP.JSON
+2026-03-19 12:28:29,239 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIS.JSON
+2026-03-19 12:28:29,249 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:28:31,989 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:28:31,990 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD46_MVID.JSON
+2026-03-19 12:28:31,990 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD47_MVID.JSON
+2026-03-19 12:28:31,991 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD48_MVID.JSON
+2026-03-19 12:28:31,991 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA5566S2323DMVD49_MVID.JSON
+2026-03-19 12:28:31,992 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIP.JSON
+2026-03-19 12:28:31,992 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA5566S2323DMVI48_MVIS.JSON
+2026-03-19 12:28:32,002 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:30:58,986 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:30:58,987 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA888999S111DMVD46_MVID.JSON
+2026-03-19 12:30:58,988 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA888999S111DMVD47_MVID.JSON
+2026-03-19 12:30:58,989 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA888999S111DMVD48_MVID.JSON
+2026-03-19 12:30:58,990 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA888999S111DMVD49_MVID.JSON
+2026-03-19 12:30:58,990 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA888999S111DMVI48_MVIP.JSON
+2026-03-19 12:30:58,991 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA888999S111DMVI48_MVIS.JSON
+2026-03-19 12:30:59,000 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:31:03,190 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:31:03,190 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA888999S111DMVD46_MVID.JSON
+2026-03-19 12:31:03,193 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA888999S111DMVD47_MVID.JSON
+2026-03-19 12:31:03,196 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA888999S111DMVD48_MVID.JSON
+2026-03-19 12:31:03,197 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA888999S111DMVD49_MVID.JSON
+2026-03-19 12:31:03,197 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA888999S111DMVI48_MVIP.JSON
+2026-03-19 12:31:03,199 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA888999S111DMVI48_MVIS.JSON
+2026-03-19 12:31:03,208 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:31:04,337 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:31:04,337 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA888999S111DMVD46_MVID.JSON
+2026-03-19 12:31:04,339 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA888999S111DMVD47_MVID.JSON
+2026-03-19 12:31:04,342 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA888999S111DMVD48_MVID.JSON
+2026-03-19 12:31:04,342 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA888999S111DMVD49_MVID.JSON
+2026-03-19 12:31:04,343 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA888999S111DMVI48_MVIP.JSON
+2026-03-19 12:31:04,344 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA888999S111DMVI48_MVIS.JSON
+2026-03-19 12:31:04,352 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:31:09,619 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:31:09,620 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA888999S111DMVD46_MVID.JSON
+2026-03-19 12:31:09,622 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA888999S111DMVD47_MVID.JSON
+2026-03-19 12:31:09,625 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA888999S111DMVD48_MVID.JSON
+2026-03-19 12:31:09,627 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA888999S111DMVD49_MVID.JSON
+2026-03-19 12:31:09,628 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA888999S111DMVI48_MVIP.JSON
+2026-03-19 12:31:09,629 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA888999S111DMVI48_MVIS.JSON
+2026-03-19 12:31:09,638 - INFO - Removed processed JSON files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:31:09,638 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:31:12,671 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA888999S111DMVD46_MVID.JSON
+2026-03-19 12:31:12,674 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA888999S111DMVD47_MVID.JSON
+2026-03-19 12:31:12,678 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA888999S111DMVD48_MVID.JSON
+2026-03-19 12:31:12,678 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA888999S111DMVD49_MVID.JSON
+2026-03-19 12:31:12,679 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA888999S111DMVI48_MVIP.JSON
+2026-03-19 12:31:12,680 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA888999S111DMVI48_MVIS.JSON
+2026-03-19 12:31:12,690 - INFO - Removed processed JSON files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:31:12,690 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-19 12:34:02,152 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-19 12:34:02,153 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA63636S64646DMVD46_MVID.JSON
+2026-03-19 12:34:02,154 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA63636S64646DMVD47_MVID.JSON
+2026-03-19 12:34:02,154 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA63636S64646DMVD48_MVID.JSON
+2026-03-19 12:34:02,155 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA63636S64646DMVD49_MVID.JSON
+2026-03-19 12:34:02,155 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA63636S64646DMVI48_MVIP.JSON
+2026-03-19 12:34:02,156 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA63636S64646DMVI48_MVIS.JSON
+2026-03-19 12:34:02,167 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-20 12:48:30,525 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-20 12:48:30,526 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA25S1DMVD46_MVID.JSON
+2026-03-20 12:48:30,533 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA25S1DMVD47_MVID.JSON
+2026-03-20 12:48:30,538 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA25S1DMVD48_MVID.JSON
+2026-03-20 12:48:30,543 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA25S1DMVD49_MVID.JSON
+2026-03-20 12:48:30,548 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA25S1DMVI48_MVIP.JSON
+2026-03-20 12:48:30,553 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA25S1DMVI48_MVIS.JSON
+2026-03-20 12:48:30,561 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-20 12:48:50,274 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-20 12:48:50,275 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA555666S33322MMMDMVD46_MVID.JSON
+2026-03-20 12:48:50,277 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA555666S33322MMMDMVD47_MVID.JSON
+2026-03-20 12:48:50,279 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA555666S33322MMMDMVD48_MVID.JSON
+2026-03-20 12:48:50,279 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA555666S33322MMMDMVD49_MVID.JSON
+2026-03-20 12:48:50,280 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA555666S33322MMMDMVI48_MVIP.JSON
+2026-03-20 12:48:50,281 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA555666S33322MMMDMVI48_MVIS.JSON
+2026-03-20 12:48:50,290 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-20 12:55:04,168 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-20 12:55:04,169 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VAtest101DMVD46_MVID.JSON
+2026-03-20 12:55:04,178 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VAtest101DMVD47_MVID.JSON
+2026-03-20 12:55:04,181 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VAtest101DMVD48_MVID.JSON
+2026-03-20 12:55:04,182 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VAtest101DMVD49_MVID.JSON
+2026-03-20 12:55:04,183 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VAtest101DMVI48_MVIP.JSON
+2026-03-20 12:55:04,184 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VAtest101DMVI48_MVIS.JSON
+2026-03-20 12:55:04,192 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-20 13:53:14,103 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-20 13:53:14,104 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VASSDD101DMVD46_MVID.JSON
+2026-03-20 13:53:14,105 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VASSDD101DMVD47_MVID.JSON
+2026-03-20 13:53:14,106 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VASSDD101DMVD48_MVID.JSON
+2026-03-20 13:53:14,108 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VASSDD101DMVD49_MVID.JSON
+2026-03-20 13:53:14,109 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VASSDD101DMVI48_MVIP.JSON
+2026-03-20 13:53:14,110 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VASSDD101DMVI48_MVIS.JSON
+2026-03-20 13:53:14,118 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-20 14:03:41,316 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/json/processed
+2026-03-20 14:03:41,317 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VA55S88DMVD46_MVID.JSON
+2026-03-20 14:03:41,318 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VA55S88DMVD47_MVID.JSON
+2026-03-20 14:03:41,321 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VA55S88DMVD48_MVID.JSON
+2026-03-20 14:03:41,323 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VA55S88DMVD49_MVID.JSON
+2026-03-20 14:03:41,324 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VA55S88DMVI48_MVIP.JSON
+2026-03-20 14:03:41,326 - INFO - Processed: C:/Users/moheyeldin/Desktop/json/original\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VA55S88DMVI48_MVIS.JSON
+2026-03-20 14:03:41,334 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/json/processed\processed_files.gz
+2026-03-23 12:07:40,146 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/Zubair/Done
+2026-03-23 12:07:40,147 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T12_53_41_729Z.json -> CCN1_Referral_2026_03_23T12_53_41_729Z.json
+2026-03-23 12:07:40,156 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T12_54_19_937Z.json -> CCN1_Referral_2026_03_23T12_54_19_937Z.json
+2026-03-23 12:07:40,161 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T13_01_11_609Z.json -> CCN1_Referral_2026_03_23T13_01_11_609Z.json
+2026-03-23 12:07:40,166 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN2_Referral_2026_03_23T12_59_42_189Z.json -> CCN2_Referral_2026_03_23T12_59_42_189Z.json
+2026-03-23 12:07:40,173 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN5_Referral_2026_03_23T12_57_37_635Z.json -> CCN5_Referral_2026_03_23T12_57_37_635Z.json
+2026-03-23 12:07:40,178 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN5_Referral_2026_03_23T13_02_28_999Z.json -> CCN5_Referral_2026_03_23T13_02_28_999Z.json
+2026-03-23 12:07:40,182 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> CCRS_DTL_VAtest101DMVD46_MVID.JSON
+2026-03-23 12:07:40,187 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> CCRS_DTL_VAtest101DMVD47_MVID.JSON
+2026-03-23 12:07:40,192 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> CCRS_DTL_VAtest101DMVD48_MVID.JSON
+2026-03-23 12:07:40,196 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> CCRS_DTL_VAtest101DMVD49_MVID.JSON
+2026-03-23 12:07:40,201 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> CCRS_DTL_VAtest101DMVI48_MVIP.JSON
+2026-03-23 12:07:40,205 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> CCRS_DTL_VAtest101DMVI48_MVIS.JSON
+2026-03-23 12:07:40,209 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVP45_MVIP.JSON -> CCRS_DTL_VAtest101DMVP45_MVIP.JSON
+2026-03-23 12:07:40,214 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVP46_MVIP.JSON -> CCRS_DTL_VAtest101DMVP46_MVIP.JSON
+2026-03-23 12:07:40,217 - ERROR - Error processing C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\Screenshot 2026-03-23 090446.png: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte
+2026-03-23 12:07:40,219 - ERROR - Error processing C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\Screenshot 2026-03-23 090506.png: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte
+2026-03-23 12:07:40,222 - ERROR - Error processing C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\Screenshot 2026-03-23 090521.png: 'utf-8' codec can't decode byte 0x89 in position 0: invalid start byte
+2026-03-23 12:07:40,238 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/Zubair/Done\test101.gz
+2026-03-23 12:22:53,890 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/Zubair/Done
+2026-03-23 12:22:53,891 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T12_53_41_729Z.json -> test101_1.json
+2026-03-23 12:22:53,893 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T12_54_19_937Z.json -> test101_2.json
+2026-03-23 12:22:53,894 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T13_01_11_609Z.json -> test101_3.json
+2026-03-23 12:22:53,896 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN2_Referral_2026_03_23T12_59_42_189Z.json -> test101_4.json
+2026-03-23 12:22:53,899 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN5_Referral_2026_03_23T12_57_37_635Z.json -> test101_5.json
+2026-03-23 12:22:53,900 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN5_Referral_2026_03_23T13_02_28_999Z.json -> test101_6.json
+2026-03-23 12:22:53,900 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> test101_7.json
+2026-03-23 12:22:53,901 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> test101_8.json
+2026-03-23 12:22:53,902 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> test101_9.json
+2026-03-23 12:22:53,903 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> test101_10.json
+2026-03-23 12:22:53,904 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> test101_11.json
+2026-03-23 12:22:53,904 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> test101_12.json
+2026-03-23 12:22:53,905 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVP45_MVIP.JSON -> test101_13.json
+2026-03-23 12:22:53,906 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVP46_MVIP.JSON -> test101_14.json
+2026-03-23 12:22:53,927 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/Zubair/Done\test_file.gz
+2026-03-23 12:55:44,565 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/Zubair/Done
+2026-03-23 12:55:44,566 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T12_53_41_729Z.json -> test11777_1.json
+2026-03-23 12:55:44,568 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T12_54_19_937Z.json -> test11777_2.json
+2026-03-23 12:55:44,569 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T13_01_11_609Z.json -> test11777_3.json
+2026-03-23 12:55:44,570 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN2_Referral_2026_03_23T12_59_42_189Z.json -> test11777_4.json
+2026-03-23 12:55:44,574 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN5_Referral_2026_03_23T12_57_37_635Z.json -> test11777_5.json
+2026-03-23 12:55:44,575 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN5_Referral_2026_03_23T13_02_28_999Z.json -> test11777_6.json
+2026-03-23 12:55:44,576 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> test11777_7.json
+2026-03-23 12:55:44,576 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> test11777_8.json
+2026-03-23 12:55:44,577 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> test11777_9.json
+2026-03-23 12:55:44,578 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> test11777_10.json
+2026-03-23 12:55:44,579 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> test11777_11.json
+2026-03-23 12:55:44,580 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> test11777_12.json
+2026-03-23 12:55:44,581 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVP45_MVIP.JSON -> test11777_13.json
+2026-03-23 12:55:44,582 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVP46_MVIP.JSON -> test11777_14.json
+2026-03-23 12:55:44,601 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/Zubair/Done\test11777.gz
+2026-03-23 13:10:21,199 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/Zubair/Done
+2026-03-23 13:10:21,200 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T12_53_41_729Z.json -> test101_1.json
+2026-03-23 13:10:21,202 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T12_54_19_937Z.json -> test101_2.json
+2026-03-23 13:10:21,204 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T13_01_11_609Z.json -> test101_3.json
+2026-03-23 13:10:21,205 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN2_Referral_2026_03_23T12_59_42_189Z.json -> test101_4.json
+2026-03-23 13:10:21,208 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN5_Referral_2026_03_23T12_57_37_635Z.json -> test101_5.json
+2026-03-23 13:10:21,209 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN5_Referral_2026_03_23T13_02_28_999Z.json -> test101_6.json
+2026-03-23 13:10:21,210 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> test101_7.json
+2026-03-23 13:10:21,211 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> test101_8.json
+2026-03-23 13:10:21,212 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> test101_9.json
+2026-03-23 13:10:21,213 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> test101_10.json
+2026-03-23 13:10:21,213 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> test101_11.json
+2026-03-23 13:10:21,214 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> test101_12.json
+2026-03-23 13:10:21,215 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVP45_MVIP.JSON -> test101_13.json
+2026-03-23 13:10:21,216 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVP46_MVIP.JSON -> test101_14.json
+2026-03-23 13:10:21,236 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/Zubair/Done\test9955.gz
+2026-03-23 13:11:13,397 - INFO - Cleared existing files from: C:/Users/moheyeldin/Desktop/Zubair/Done
+2026-03-23 13:11:13,397 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T12_53_41_729Z.json -> test101_1.json
+2026-03-23 13:11:13,400 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T12_54_19_937Z.json -> test101_2.json
+2026-03-23 13:11:13,406 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN1_Referral_2026_03_23T13_01_11_609Z.json -> test101_3.json
+2026-03-23 13:11:13,412 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN2_Referral_2026_03_23T12_59_42_189Z.json -> test101_4.json
+2026-03-23 13:11:13,416 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN5_Referral_2026_03_23T12_57_37_635Z.json -> test101_5.json
+2026-03-23 13:11:13,418 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCN5_Referral_2026_03_23T13_02_28_999Z.json -> test101_6.json
+2026-03-23 13:11:13,419 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD46_MVID.JSON -> test101_7.json
+2026-03-23 13:11:13,420 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD47_MVID.JSON -> test101_8.json
+2026-03-23 13:11:13,422 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD48_MVID.JSON -> test101_9.json
+2026-03-23 13:11:13,423 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVD49_MVID.JSON -> test101_10.json
+2026-03-23 13:11:13,424 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVI48_MVIP.JSON -> test101_11.json
+2026-03-23 13:11:13,425 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVI48_MVIS.JSON -> test101_12.json
+2026-03-23 13:11:13,426 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVP45_MVIP.JSON -> test101_13.json
+2026-03-23 13:11:13,427 - INFO - Processed: C:/Users/moheyeldin/Desktop/Zubair/Golden_Files\CCRS_DTL_VA25S1DMVP46_MVIP.JSON -> test101_14.json
+2026-03-23 13:11:13,446 - INFO - Created gzip file: C:/Users/moheyeldin/Desktop/Zubair/Done\test9955.gz
