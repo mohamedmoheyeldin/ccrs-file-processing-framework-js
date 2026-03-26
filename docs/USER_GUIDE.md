@@ -154,12 +154,11 @@ If you do not select a `Network`, the existing value in each JSON file is left u
 
 ### Payment Authority Code
 - `Payment Authority Code` accepts numbers only
-- users can enter up to 10 digits
-- if users enter fewer than 10 digits, the app fills the rest automatically
-- if users leave it blank, the app generates all 10 digits
+- users can enter up to 5 digits
+- if users leave it blank, the existing value in the source file stays unchanged
 - the preview stays stable after the field finishes generating
 - each referral inside the same JSON file gets a unique `PaymentAuthorityCode`
-- if users enter all 10 digits, the app still adjusts later referrals automatically so values stay unique inside the file
+- if users enter a starting value, later referrals increment from that value automatically so codes stay unique inside the file
 
 ## Upload
 Turn on upload only if you want the app to send the final `.gz` file to a server after processing.

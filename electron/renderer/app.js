@@ -6,7 +6,7 @@ const DATE_PARTS = [
   { key: "minute", width: 2, min: 0, max: 59 },
   { key: "second", width: 2, min: 0, max: 59 },
 ];
-const PAYMENT_AUTHORITY_CODE_MAX = 2147483647;
+const PAYMENT_AUTHORITY_CODE_MAX = 99999;
 
 const state = {
   info: null,
@@ -66,7 +66,7 @@ function sanitizeStationIdInput(value) {
 }
 
 function sanitizePaymentAuthorityCodeInput(value, fallbackValue = "") {
-  const digitsOnly = ((String(value || "").match(/\d/g) || []).join("")).slice(0, 10);
+  const digitsOnly = ((String(value || "").match(/\d/g) || []).join("")).slice(0, 5);
   if (!digitsOnly) {
     return "";
   }

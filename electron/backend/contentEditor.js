@@ -20,8 +20,9 @@ const SSN_PATTERN = /^\d{3}-\d{2}-\d{4}$/;
 const OPTIONAL_RANDOM_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const NUMERIC_RANDOM_CHARSET = "0123456789";
 const STATION_ID_MAX_LENGTH = 5;
-const PAYMENT_AUTHORITY_CODE_LENGTH = 10;
-const PAYMENT_AUTHORITY_CODE_MAX = 2147483647;
+const PAYMENT_AUTHORITY_CODE_LENGTH = 5;
+const PAYMENT_AUTHORITY_CODE_MAX = 99999;
+const PAYMENT_AUTHORITY_CODE_DEFAULT_START = 10000;
 const PAYMENT_AUTHORITY_CODE_ERROR_MESSAGE =
   `Payment Authority Code must be a whole number between 0 and ${PAYMENT_AUTHORITY_CODE_MAX}.`;
 const REFERRAL_NUMBER_PREFIX = "VA";
@@ -124,7 +125,7 @@ function validatePaymentAuthorityCode(value) {
 
 function generatePaymentAuthorityCodeValue(baseValue, sequenceIndex) {
   const normalized = normalizePaymentAuthorityCode(baseValue);
-  const baseNumericValue = normalized ? Number(normalized) : 100000000;
+  const baseNumericValue = normalized ? Number(normalized) : PAYMENT_AUTHORITY_CODE_DEFAULT_START;
   const offset = Math.max((sequenceIndex || 1) - 1, 0);
   const candidateValue = baseNumericValue + offset;
 
@@ -410,6 +411,9 @@ function ensureSourceVariableFieldsAreUnique(data, overrides = {}) {
       if (VARIABLE_OVERRIDE_FIELDS[key] && !Object.prototype.hasOwnProperty.call(overrides, key)) {
         const settings = VARIABLE_OVERRIDE_FIELDS[key];
         const baseValue = typeof value === "string" || typeof value === "number" ? String(value) : "";
+        if (key === "PaymentAuthorityCode") {
+          validatePaymentAuthorityCode(baseValue);
+        }
         const duplicateIndex = (duplicateCounts[key].get(baseValue) || 0) + 1;
         duplicateCounts[key].set(baseValue, duplicateIndex);
 
