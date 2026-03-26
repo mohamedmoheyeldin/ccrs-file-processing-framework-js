@@ -23,9 +23,71 @@ const state = {
 };
 
 const elements = {};
+const STATIC_HELPER_IDS = [
+  "ssnHelp",
+  "fileCountHelp",
+  "referralsPerFileHelp",
+  "dobHelp",
+  "referralDateHelp",
+  "referralDateTimeHelp",
+  "referralExpirationDateHelp",
+  "referralLastUpdateDateHelp",
+];
 
 function $(id) {
   return document.getElementById(id);
+}
+
+function captureStaticHelperDefaults() {
+  for (const key of STATIC_HELPER_IDS) {
+    const element = elements[key];
+    if (element && !element.dataset.defaultText) {
+      element.dataset.defaultText = element.textContent;
+    }
+  }
+}
+
+function setInputValidity(input, hasError) {
+  if (!input) {
+    return;
+  }
+  input.classList.toggle("is-invalid", Boolean(hasError));
+}
+
+function setStaticHelperState(helperElement, inputElement, message = "") {
+  if (!helperElement) {
+    return;
+  }
+
+  const hasError = Boolean(message);
+  helperElement.classList.toggle("is-error", hasError);
+  helperElement.classList.toggle("is-success", false);
+  helperElement.textContent = hasError ? message : helperElement.dataset.defaultText || "";
+  setInputValidity(inputElement, hasError);
+}
+
+function setPreviewHelperState(helperElement, inputElement, message = "") {
+  if (!helperElement) {
+    return;
+  }
+  const hasError = Boolean(message);
+  helperElement.classList.toggle("is-error", hasError);
+  helperElement.classList.toggle("is-success", false);
+  if (hasError) {
+    helperElement.textContent = message;
+  }
+  setInputValidity(inputElement, hasError);
+}
+
+function setUploadTargetStatus(row, message = "", stateName = "") {
+  const statusElement = row?.querySelector(".upload-test-status");
+  if (!statusElement) {
+    return;
+  }
+  statusElement.textContent = message || "Not tested yet.";
+  statusElement.classList.toggle("is-error", stateName === "error");
+  statusElement.classList.toggle("is-success", stateName === "success");
+  statusElement.classList.toggle("is-working", stateName === "working");
 }
 
 function setStatus(label, message) {
@@ -316,13 +378,38 @@ function renderUploadTargets(targets) {
         <label class="field-block">
           <span>User</span>
           <select class="upload-user">${userOptions}</select>
+          <small class="helper-text upload-user-help">Choose the account for this upload target.</small>
         </label>
         <label class="field-block">
           <span>Remote Directory</span>
           <input class="upload-path" type="text" value="${target.defaultRemoteDirectory || "/CCRA_Uploads"}" />
+          <small class="helper-text upload-path-help">Use the remote folder you want the .gz file uploaded to.</small>
         </label>
       </div>
+      <div class="upload-target-actions">
+        <button type="button" class="toolbar-button upload-test-connection">Test Connection</button>
+        <span class="upload-test-status">Not tested yet.</span>
+      </div>
     `;
+
+    const userSelect = wrapper.querySelector(".upload-user");
+    const pathInput = wrapper.querySelector(".upload-path");
+    const enabledInput = wrapper.querySelector(".upload-enabled");
+    const testButton = wrapper.querySelector(".upload-test-connection");
+
+    userSelect.addEventListener("change", () => {
+      setUploadTargetStatus(wrapper);
+      updatePreviews();
+    });
+    pathInput.addEventListener("input", () => {
+      setUploadTargetStatus(wrapper);
+      updatePreviews();
+    });
+    enabledInput.addEventListener("change", () => {
+      setUploadTargetStatus(wrapper);
+      updatePreviews();
+    });
+    testButton.addEventListener("click", () => testUploadTarget(wrapper));
 
     elements.uploadTargets.appendChild(wrapper);
   }
@@ -403,9 +490,81 @@ async function inspectSourceFolder() {
   }
 }
 
+function applyFieldErrors(fieldErrors = {}) {
+  setStaticHelperState(elements.ssnHelp, $("ssn-value"), fieldErrors.ssnValue);
+  setStaticHelperState(elements.fileCountHelp, $("file-count"), fieldErrors.fileCount);
+  setStaticHelperState(elements.referralsPerFileHelp, $("referrals-per-file"), fieldErrors.referralsPerFile);
+  setStaticHelperState(elements.dobHelp, $("override-dob"), fieldErrors.DOB);
+  setStaticHelperState(elements.referralDateHelp, $("override-referral-date"), fieldErrors.ReferralDate);
+  setStaticHelperState(elements.referralDateTimeHelp, $("override-referral-date-time"), fieldErrors.ReferralDateTime);
+  setStaticHelperState(
+    elements.referralExpirationDateHelp,
+    $("override-referral-expiration-date"),
+    fieldErrors.ReferralExpirationDate
+  );
+  setStaticHelperState(
+    elements.referralLastUpdateDateHelp,
+    $("override-referral-last-update-date"),
+    fieldErrors.ReferralLastUpdateDate
+  );
+  setPreviewHelperState(elements.referralPreview, $("referral-code"), fieldErrors.referralReplacementCode);
+  setPreviewHelperState(elements.stationIdPreview, $("override-station-id"), fieldErrors.StationID);
+  setPreviewHelperState(
+    elements.paymentAuthorityCodePreview,
+    $("override-payment-authority-code"),
+    fieldErrors.PaymentAuthorityCode
+  );
+
+  for (const row of document.querySelectorAll(".upload-target")) {
+    const serverName = row.dataset.target || "target";
+    const userError = fieldErrors[`upload:${serverName}:user_name`] || "";
+    const pathError = fieldErrors[`upload:${serverName}:remote_directory`] || "";
+    const userHelp = row.querySelector(".upload-user-help");
+    const pathHelp = row.querySelector(".upload-path-help");
+    const userInput = row.querySelector(".upload-user");
+    const pathInput = row.querySelector(".upload-path");
+
+    if (userHelp && !userHelp.dataset.defaultText) {
+      userHelp.dataset.defaultText = userHelp.textContent;
+    }
+    if (pathHelp && !pathHelp.dataset.defaultText) {
+      pathHelp.dataset.defaultText = pathHelp.textContent;
+    }
+
+    setStaticHelperState(userHelp, userInput, userError);
+    setStaticHelperState(pathHelp, pathInput, pathError);
+  }
+}
+
+async function testUploadTarget(row) {
+  const serverName = row.dataset.target;
+  const userName = row.querySelector(".upload-user").value;
+  const remoteDirectory = row.querySelector(".upload-path").value.trim();
+  const button = row.querySelector(".upload-test-connection");
+
+  button.disabled = true;
+  setUploadTargetStatus(row, "Testing connection...", "working");
+  setStatus("Working", `Testing upload connection for ${serverName}...`);
+
+  try {
+    const result = await window.ccrs.testUploadTarget({
+      server_name: serverName,
+      user_name: userName,
+      remote_directory: remoteDirectory,
+    });
+    setUploadTargetStatus(row, result.message, "success");
+    setStatus("Completed", result.message);
+  } catch (error) {
+    setUploadTargetStatus(row, error.message, "error");
+    setStatus("Failed", error.message);
+  } finally {
+    button.disabled = false;
+  }
+}
+
 async function updatePreviews() {
   if (!state.info) {
-    return;
+    return null;
   }
 
   try {
@@ -413,7 +572,11 @@ async function updatePreviews() {
       replacementCode: readValue("replacement-code"),
       archiveBasename: readValue("archive-basename"),
       referralReplacementCode: readValue("referral-code"),
+      ssnValue: readValue("ssn-value"),
       optionalOverrides: collectOptionalOverrides(),
+      fileCount: Number(readValue("file-count") || 0),
+      referralsPerFile: Number(readValue("referrals-per-file") || 0),
+      upload: collectUploadSettings(),
     });
 
     elements.outputJsonPreview.textContent = formatJsonPreviewList(
@@ -430,13 +593,23 @@ async function updatePreviews() {
     elements.paymentAuthorityCodePreview.textContent = preview.optionalOverrides.PaymentAuthorityCode
       ? `Preview: ${preview.optionalOverrides.PaymentAuthorityCode}`
       : "Preview: no Payment Authority Code override";
+    applyFieldErrors(preview.fieldErrors || {});
+    return preview;
   } catch (error) {
-    if (String(error.message || "").includes("Payment Authority Code")) {
-      elements.paymentAuthorityCodePreview.textContent = error.message;
-    } else {
-      elements.referralPreview.textContent = error.message;
-    }
+    elements.referralPreview.textContent = error.message;
+    elements.referralPreview.classList.add("is-error");
+    return null;
   }
+}
+
+async function validateCurrentForm() {
+  const preview = await updatePreviews();
+  const fieldErrors = preview?.fieldErrors || {};
+  if (Object.keys(fieldErrors).length > 0) {
+    setStatus("Failed", "Please fix the highlighted fields before running.");
+    return false;
+  }
+  return true;
 }
 
 function updateTemplateSummary() {
@@ -625,6 +798,9 @@ async function importUploadSource() {
 }
 
 async function runProcess() {
+  if (!(await validateCurrentForm())) {
+    return;
+  }
   if (!state.listDateTouched) {
     setDateParts(nowAsListDate());
   }
@@ -645,6 +821,9 @@ function nowAsListDate() {
 }
 
 async function runGenerate() {
+  if (!(await validateCurrentForm())) {
+    return;
+  }
   if (!state.listDateTouched) {
     setDateParts(nowAsListDate());
   }
@@ -722,6 +901,9 @@ function setupEventHandlers() {
   elements.overrideNetwork.addEventListener("change", () => {
     updatePreviews();
   });
+  elements.uploadEnabled.addEventListener("change", () => {
+    updatePreviews();
+  });
 
   elements.inputDir.addEventListener("change", inspectSourceFolder);
   elements.inputDir.addEventListener("blur", inspectSourceFolder);
@@ -787,6 +969,14 @@ function cacheElements() {
     overrideReferralExpirationDate: $("override-referral-expiration-date"),
     overrideReferralLastUpdateDate: $("override-referral-last-update-date"),
     overrideReferralPeriod: $("override-referral-period"),
+    ssnHelp: $("ssn-help"),
+    fileCountHelp: $("file-count-help"),
+    referralsPerFileHelp: $("referrals-per-file-help"),
+    dobHelp: $("dob-help"),
+    referralDateHelp: $("referral-date-help"),
+    referralDateTimeHelp: $("referral-date-time-help"),
+    referralExpirationDateHelp: $("referral-expiration-date-help"),
+    referralLastUpdateDateHelp: $("referral-last-update-date-help"),
     paymentAuthorityCodePreview: $("payment-authority-code-preview"),
     referralCode: $("referral-code"),
     referralPreview: $("referral-preview"),
@@ -818,6 +1008,7 @@ function cacheElements() {
 
 document.addEventListener("DOMContentLoaded", async () => {
   cacheElements();
+  captureStaticHelperDefaults();
   setTheme("light");
   startLiveListDateClock();
   setupEventHandlers();

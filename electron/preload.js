@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld("ccrs", {
   getPreview: (data) => ipcRenderer.invoke("backend:preview", data),
   importUploadSource: (sourcePath) =>
     ipcRenderer.invoke("backend:import-upload-source", { sourcePath }),
+  testUploadTarget: (data) => ipcRenderer.invoke("backend:test-upload-target", data),
   runJob: (command, data) => ipcRenderer.invoke("backend:run", { command, data }),
   onBackendEvent: (handler) => {
     const listener = (_event, payload) => handler(payload);

@@ -10,20 +10,15 @@ const {
   modifyContent,
   validatePaymentAuthorityCode,
 } = require("../electron/backend/contentEditor");
+const backend = require("../electron/backend");
 const { summarizeUploadProfiles } = require("../electron/backend/uploader");
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-smoke-"));
 let failures = 0;
+const tests = [];
 
 function test(name, callback) {
-  try {
-    callback();
-    console.log(`PASS ${name}`);
-  } catch (error) {
-    failures += 1;
-    console.error(`FAIL ${name}`);
-    console.error(`  ${error.message}`);
-  }
+  tests.push({ name, callback });
 }
 
 function writeJsonFixture(fileName, data) {
@@ -59,6 +54,17 @@ test("Optional override normalization keeps the validated Payment Authority Code
   assert.equal(overrides.PaymentAuthorityCode, "54321");
   assert.equal(overrides.StationID.length, 5);
   assert.match(overrides.StationID, /^[A-Za-z0-9]{5}$/);
+});
+
+test("Optional date overrides reject invalid formats", () => {
+  assert.throws(
+    () => generateOptionalFieldOverrides({ DOB: "03/26/2026" }),
+    /DOB must use the format YYYY-MM-DD/
+  );
+  assert.throws(
+    () => generateOptionalFieldOverrides({ ReferralDateTime: "2026-03-26T11:30:00" }),
+    /Referral DateTime must use the format YYYY-MM-DD HH:mm:ss/
+  );
 });
 
 test("Referral number generation preserves the VA prefix and increments", () => {
@@ -146,10 +152,53 @@ test("Upload profile summary reports server and user counts", () => {
   });
 });
 
-fs.rmSync(tempRoot, { recursive: true, force: true });
+test("Preview validation reports field-level errors without throwing", async () => {
+  const preview = await backend.handleCommand("preview", {
+    referralReplacementCode: "123",
+    ssnValue: "9999990001",
+    optionalOverrides: {
+      DOB: "2026/03/26",
+      PaymentAuthorityCode: "100000",
+    },
+    fileCount: 0,
+    referralsPerFile: 0,
+    upload: {
+      enabled: true,
+      targets: [{ server_name: "DEV", user_name: "", remote_directory: "" }],
+    },
+  });
 
-if (failures > 0) {
-  process.exitCode = 1;
-} else {
-  console.log("Smoke tests passed.");
-}
+  assert.equal(preview.fieldErrors.ssnValue, "SSN must use the format 999-99-0001.");
+  assert.equal(preview.fieldErrors.PaymentAuthorityCode, "Payment Authority Code must be a whole number between 0 and 99999.");
+  assert.equal(preview.fieldErrors.DOB, "DOB must use the format YYYY-MM-DD.");
+  assert.equal(preview.fieldErrors.fileCount, "Number of JSON files to generate must be greater than zero.");
+  assert.equal(preview.fieldErrors.referralsPerFile, "Number of referrals per file must be greater than zero.");
+  assert.equal(preview.fieldErrors["upload:DEV:user_name"], "Please choose a user for DEV.");
+  assert.equal(
+    preview.fieldErrors["upload:DEV:remote_directory"],
+    "Please enter the remote upload location for DEV."
+  );
+});
+
+(async () => {
+  try {
+    for (const { name, callback } of tests) {
+      try {
+        await callback();
+        console.log(`PASS ${name}`);
+      } catch (error) {
+        failures += 1;
+        console.error(`FAIL ${name}`);
+        console.error(`  ${error.message}`);
+      }
+    }
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+
+  if (failures > 0) {
+    process.exitCode = 1;
+  } else {
+    console.log("Smoke tests passed.");
+  }
+})();

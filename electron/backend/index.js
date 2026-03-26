@@ -8,8 +8,12 @@ const {
   extractJsonChangeDefaults,
   extractListDate,
   generateOptionalFieldOverrides,
+  validateIsoDate,
+  validateIsoDateTime,
+  validatePaymentAuthorityCode,
   validateReferralNumberStart,
   validateSsn,
+  validateStationId,
 } = require("./contentEditor");
 const { bundlePath, dataPath, ensureRuntimeFiles, getRuntimeRoot } = require("./appPaths");
 const { getFiles } = require("./fileHandler");
@@ -28,6 +32,7 @@ const {
   loadUploadProfiles,
   resolveUploadTargets,
   summarizeUploadProfiles,
+  testUploadConnection,
 } = require("./uploader");
 const { sanitizeFilenameBase } = require("./renamer");
 const { DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename } = require("./zipper");
@@ -42,7 +47,15 @@ function loadAppVersion() {
     try {
       if (fs.existsSync(targetPath)) {
         const parsed = JSON.parse(fs.readFileSync(targetPath, "utf8"));
-        return String(parsed.label || "").trim();
+        const configuredLabel = String(parsed.label || "").trim();
+        if (configuredLabel) {
+          return configuredLabel;
+        }
+
+        const version = String(parsed.version || "").trim();
+        const channel = String(parsed.channel || "").trim();
+        const displayVersion = version.endsWith(".0") ? version.slice(0, -2) : version;
+        return [channel, displayVersion].filter(Boolean).join(" ").trim();
       }
     } catch (_error) {
       // Ignore invalid version config and fall back to empty.
@@ -82,7 +95,7 @@ function getInfo() {
       defaultArchiveBasename: DEFAULT_ARCHIVE_BASENAME,
     },
     docs: {
-      userGuidePath: dataPath("docs", "CCRS_File_Processing_Framework_User_Guide.pdf"),
+      userGuidePath: dataPath("docs", "USER_GUIDE.md"),
     },
   };
 }
@@ -143,18 +156,110 @@ function buildPreview(payload) {
   const archiveBasename = sanitizeArchiveBasename(payload.archiveBasename || DEFAULT_ARCHIVE_BASENAME);
   const referralValue = (payload.referralReplacementCode || "").trim();
   const optionalOverrides = payload.optionalOverrides || {};
+  const fieldErrors = collectFieldErrors(payload);
 
   let normalizedReferral = "";
-  if (referralValue) {
+  if (referralValue && !fieldErrors.referralReplacementCode) {
     normalizedReferral = validateReferralNumberStart(referralValue);
+  }
+
+  const normalizedOptionalOverrides = {};
+  if (Object.prototype.hasOwnProperty.call(optionalOverrides, "StationID") && !fieldErrors.StationID) {
+    normalizedOptionalOverrides.StationID = validateStationId(optionalOverrides.StationID || "");
+  }
+  if (
+    Object.prototype.hasOwnProperty.call(optionalOverrides, "PaymentAuthorityCode") &&
+    !fieldErrors.PaymentAuthorityCode
+  ) {
+    normalizedOptionalOverrides.PaymentAuthorityCode = validatePaymentAuthorityCode(
+      optionalOverrides.PaymentAuthorityCode || ""
+    );
   }
 
   return {
     replacementCode,
     archiveBasename,
     referralNumber: normalizedReferral,
-    optionalOverrides: generateOptionalFieldOverrides(optionalOverrides),
+    optionalOverrides: normalizedOptionalOverrides,
+    fieldErrors,
   };
+}
+
+function collectFieldErrors(payload) {
+  const fieldErrors = {};
+  const optionalOverrides = payload.optionalOverrides || {};
+
+  if ((payload.ssnValue || "").trim()) {
+    try {
+      validateSsn(payload.ssnValue);
+    } catch (error) {
+      fieldErrors.ssnValue = error.message;
+    }
+  }
+
+  if ((payload.referralReplacementCode || "").trim()) {
+    try {
+      validateReferralNumberStart(payload.referralReplacementCode);
+    } catch (error) {
+      fieldErrors.referralReplacementCode = error.message;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(optionalOverrides, "StationID")) {
+    try {
+      validateStationId(optionalOverrides.StationID || "");
+    } catch (error) {
+      fieldErrors.StationID = error.message;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(optionalOverrides, "PaymentAuthorityCode")) {
+    try {
+      validatePaymentAuthorityCode(optionalOverrides.PaymentAuthorityCode || "");
+    } catch (error) {
+      fieldErrors.PaymentAuthorityCode = error.message;
+    }
+  }
+
+  const dateFieldValidators = [
+    ["DOB", "DOB", validateIsoDate],
+    ["ReferralDate", "Referral Date", validateIsoDate],
+    ["ReferralDateTime", "Referral DateTime", validateIsoDateTime],
+    ["ReferralExpirationDate", "Referral Expiration Date", validateIsoDate],
+    ["ReferralLastUpdateDate", "Referral Last Update Date", validateIsoDate],
+  ];
+  for (const [fieldName, fieldLabel, validator] of dateFieldValidators) {
+    if (!Object.prototype.hasOwnProperty.call(optionalOverrides, fieldName)) {
+      continue;
+    }
+    try {
+      validator(optionalOverrides[fieldName] || "", fieldLabel);
+    } catch (error) {
+      fieldErrors[fieldName] = error.message;
+    }
+  }
+
+  if (payload.fileCount !== undefined && Number(payload.fileCount || 0) <= 0) {
+    fieldErrors.fileCount = "Number of JSON files to generate must be greater than zero.";
+  }
+  if (payload.referralsPerFile !== undefined && Number(payload.referralsPerFile || 0) <= 0) {
+    fieldErrors.referralsPerFile = "Number of referrals per file must be greater than zero.";
+  }
+
+  const uploadPayload = payload.upload || {};
+  if (uploadPayload.enabled) {
+    for (const target of uploadPayload.targets || []) {
+      const serverName = (target.server_name || "").trim() || "target";
+      if (!(target.user_name || "").trim()) {
+        fieldErrors[`upload:${serverName}:user_name`] = `Please choose a user for ${serverName}.`;
+      }
+      if (!(target.remote_directory || "").trim()) {
+        fieldErrors[`upload:${serverName}:remote_directory`] = `Please enter the remote upload location for ${serverName}.`;
+      }
+    }
+  }
+
+  return fieldErrors;
 }
 
 function buildUploadOptions(payload) {
@@ -261,6 +366,23 @@ async function runGenerate(payload, emitProgress) {
   }
 }
 
+async function runTestUploadTarget(payload) {
+  const target = {
+    server_name: (payload.server_name || "").trim(),
+    user_name: (payload.user_name || "").trim(),
+    remote_directory: (payload.remote_directory || "").trim(),
+  };
+  const [resolvedTarget] = resolveUploadTargets(loadUploadProfiles(), [target]);
+  const message = await testUploadConnection(
+    resolvedTarget.connection_details,
+    resolvedTarget.remote_directory
+  );
+
+  return {
+    message: `${resolvedTarget.server_name}: ${message}`,
+  };
+}
+
 async function handleCommand(command, payload, emitProgress) {
   if (command === "info") {
     return getInfo();
@@ -282,6 +404,9 @@ async function handleCommand(command, payload, emitProgress) {
   }
   if (command === "generate") {
     return runGenerate(payload, emitProgress);
+  }
+  if (command === "test-upload-target") {
+    return runTestUploadTarget(payload);
   }
   throw new Error(`Unsupported command: ${command}`);
 }

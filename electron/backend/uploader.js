@@ -674,6 +674,69 @@ function uploadFileWithWinscp(localPath, remoteDirectory, sessionName, winscpPat
   }
 }
 
+function testConnectionWithWinscp(remoteDirectory, sessionName, winscpPath) {
+  const iniPath = getExistingWinscpIniPath();
+  if (!iniPath) {
+    throw new Error("WinSCP.ini was not found in the expected upload_import locations.");
+  }
+
+  const normalizedRemoteDirectory = (remoteDirectory || "").trim();
+  const scriptLines = [`open "${sessionName}"`];
+  if (normalizedRemoteDirectory) {
+    scriptLines.push(`cd "${normalizedRemoteDirectory}"`);
+    scriptLines.push("pwd");
+  }
+  scriptLines.push("exit");
+
+  const scriptPath = path.join(os.tmpdir(), `winscp_test_${Date.now()}.txt`);
+  fs.writeFileSync(scriptPath, scriptLines.join("\n"), "utf8");
+
+  try {
+    const result = spawnSync(winscpPath, [`/ini=${iniPath}`, `/script=${scriptPath}`, "/nointeractiveinput"], {
+      encoding: "utf8",
+      windowsHide: true,
+    });
+    if (result.status !== 0) {
+      const details = (result.stderr || result.stdout || "Unknown WinSCP error.").trim();
+      throw new Error(`WinSCP connection test failed for session ${sessionName}. ${details}`);
+    }
+    return normalizedRemoteDirectory
+      ? `Connected successfully and confirmed ${normalizedRemoteDirectory}.`
+      : "Connected successfully.";
+  } finally {
+    fs.rmSync(scriptPath, { force: true });
+  }
+}
+
+async function testUploadConnection(connectionDetails, remoteDirectory) {
+  const normalizedRemoteDirectory = (remoteDirectory || "").trim();
+  if (!normalizedRemoteDirectory) {
+    throw new Error("Please enter the remote upload location.");
+  }
+
+  if (connectionDetails.winscp_path && connectionDetails.session_name && !connectionDetails.password) {
+    return testConnectionWithWinscp(
+      normalizedRemoteDirectory,
+      connectionDetails.session_name,
+      connectionDetails.winscp_path
+    );
+  }
+
+  const client = new SftpClient();
+  try {
+    await client.connect({
+      host: connectionDetails.host,
+      port: connectionDetails.port,
+      username: connectionDetails.username,
+      password: connectionDetails.password,
+    });
+    await client.list(normalizedRemoteDirectory);
+    return `Connected successfully and confirmed ${normalizedRemoteDirectory}.`;
+  } finally {
+    await client.end().catch(() => {});
+  }
+}
+
 async function uploadFile(localPath, remoteDirectory, connectionDetails) {
   const normalizedRemoteDirectory = (remoteDirectory || "").trim();
   if (!normalizedRemoteDirectory) {
@@ -715,5 +778,6 @@ module.exports = {
   loadUploadProfiles,
   resolveUploadTargets,
   summarizeUploadProfiles,
+  testUploadConnection,
   uploadFile,
 };
