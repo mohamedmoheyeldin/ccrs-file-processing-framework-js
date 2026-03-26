@@ -41,6 +41,15 @@ function copyIfMissing(source, destination) {
   fs.copyFileSync(source, destination);
 }
 
+function syncFromBundle(source, destination) {
+  if (!fs.existsSync(source)) {
+    return;
+  }
+
+  ensureDirectory(path.dirname(destination));
+  fs.copyFileSync(source, destination);
+}
+
 function ensureRuntimeFiles() {
   ensureDirectory(dataPath("config"));
   ensureDirectory(dataPath("upload_import"));
@@ -51,16 +60,12 @@ function ensureRuntimeFiles() {
 
   copyIfMissing(bundlePath("config", "mappings.json"), dataPath("config", "mappings.json"));
   copyIfMissing(bundlePath("config", "rules.json"), dataPath("config", "rules.json"));
-  copyIfMissing(bundlePath("config", "app_version.json"), dataPath("config", "app_version.json"));
+  syncFromBundle(bundlePath("config", "app_version.json"), dataPath("config", "app_version.json"));
   copyIfMissing(bundlePath("config", "upload_profiles.json"), dataPath("config", "upload_profiles.json"));
   copyIfMissing(bundlePath("config", "upload_credentials.json"), dataPath("config", "upload_credentials.json"));
   copyIfMissing(bundlePath("upload_import", "README.txt"), dataPath("upload_import", "README.txt"));
   copyIfMissing(bundlePath("upload_import", "decrypt-winscp.ps1"), dataPath("upload_import", "decrypt-winscp.ps1"));
-  copyIfMissing(bundlePath("docs", "USER_GUIDE.md"), dataPath("docs", "USER_GUIDE.md"));
-  copyIfMissing(
-    bundlePath("docs", "CCRS_File_Processing_Framework_User_Guide.pdf"),
-    dataPath("docs", "CCRS_File_Processing_Framework_User_Guide.pdf")
-  );
+  syncFromBundle(bundlePath("docs", "USER_GUIDE.md"), dataPath("docs", "USER_GUIDE.md"));
   copyIfMissing(bundlePath("assets", "icons", "ccrs_app_icon.ico"), dataPath("assets", "icons", "ccrs_app_icon.ico"));
   copyIfMissing(bundlePath("assets", "icons", "ccrs_app_icon.png"), dataPath("assets", "icons", "ccrs_app_icon.png"));
 }

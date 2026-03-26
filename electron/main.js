@@ -73,6 +73,9 @@ ipcMain.handle("backend:preview", async (event, payload) => runBackendCommand(ev
 ipcMain.handle("backend:import-upload-source", async (event, payload) =>
   runBackendCommand(event.sender, "import-upload-source", payload)
 );
+ipcMain.handle("backend:test-upload-target", async (event, payload) =>
+  runBackendCommand(event.sender, "test-upload-target", payload)
+);
 ipcMain.handle("backend:run", async (event, payload) =>
   runBackendCommand(event.sender, payload.command, payload.data)
 );

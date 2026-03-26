@@ -94,11 +94,11 @@ button {
   justify-content: space-between;
   align-items: center;
   gap: 24px;
-  padding: 10px 16px;
+  padding: 8px 16px;
 }
 
 .topbar {
-  min-height: 88px;
+  min-height: 72px;
 }
 
 .topbar-side {
@@ -114,7 +114,7 @@ button {
 .topbar-center {
   flex: 1.5;
   display: grid;
-  gap: 1px;
+  gap: 4px;
   justify-items: center;
   text-align: center;
   min-width: 0;
@@ -180,8 +180,8 @@ button {
 }
 
 .topbar h1 {
-  font-size: clamp(1.65rem, 3vw, 2.4rem);
-  line-height: 1.05;
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  line-height: 1;
 }
 
 .version-badge {
@@ -269,6 +269,42 @@ body.theme-dark .toolbar-button.is-active {
   background: var(--accent);
   border-color: transparent;
   color: #fff;
+}
+
+.toolbar-button.invert-active {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+.toolbar-button.invert-active:hover {
+  background: var(--accent-hover);
+}
+
+.toolbar-button.invert-active.is-active,
+.toolbar-button.invert-active:active,
+.toolbar-button.invert-active:focus-visible {
+  background: rgba(242, 242, 247, 0.94);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+}
+
+body.theme-dark .toolbar-button.invert-active {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+body.theme-dark .toolbar-button.invert-active:hover {
+  background: var(--accent-hover);
+}
+
+body.theme-dark .toolbar-button.invert-active.is-active,
+body.theme-dark .toolbar-button.invert-active:active,
+body.theme-dark .toolbar-button.invert-active:focus-visible {
+  background: #243247;
+  border: 1px solid #3a4c68;
+  color: var(--text);
 }
 
 .segmented-control {
@@ -455,6 +491,46 @@ body.theme-dark .segmented-control {
   line-height: 1.45;
   min-height: 18px;
   overflow-wrap: anywhere;
+}
+
+.helper-text.is-error,
+.upload-test-status.is-error {
+  color: #b42337;
+}
+
+.helper-text.is-success,
+.upload-test-status.is-success {
+  color: #0f8a44;
+}
+
+.upload-test-status.is-working {
+  color: #0b67d1;
+}
+
+body.theme-dark .helper-text.is-error,
+body.theme-dark .upload-test-status.is-error {
+  color: #ff9cad;
+}
+
+body.theme-dark .helper-text.is-success,
+body.theme-dark .upload-test-status.is-success {
+  color: #7ee0a1;
+}
+
+body.theme-dark .upload-test-status.is-working {
+  color: #8ab8ff;
+}
+
+input.is-invalid,
+select.is-invalid {
+  border-color: rgba(214, 71, 90, 0.85);
+  box-shadow: 0 0 0 3px rgba(214, 71, 90, 0.14);
+}
+
+body.theme-dark input.is-invalid,
+body.theme-dark select.is-invalid {
+  border-color: rgba(255, 156, 173, 0.72);
+  box-shadow: 0 0 0 3px rgba(255, 156, 173, 0.16);
 }
 
 .info-chips {
@@ -794,6 +870,20 @@ body.theme-dark .upload-config-card {
   margin: 0;
   color: var(--text-secondary);
   line-height: 1.4;
+}
+
+.upload-target-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.upload-test-status {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  min-height: 18px;
 }
 
 .output-grid {

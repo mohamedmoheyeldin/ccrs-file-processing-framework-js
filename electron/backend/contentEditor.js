@@ -17,6 +17,8 @@ function loadMappings() {
 
 const LIST_DATE_FORMAT = "YYYY-MM-DD HH:mm:ss";
 const SSN_PATTERN = /^\d{3}-\d{2}-\d{4}$/;
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const ISO_DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
 const OPTIONAL_RANDOM_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const NUMERIC_RANDOM_CHARSET = "0123456789";
 const STATION_ID_MAX_LENGTH = 5;
@@ -79,6 +81,39 @@ function validateSsn(ssnValue) {
   if (!SSN_PATTERN.test((ssnValue || "").trim())) {
     throw new Error("SSN must use the format 999-99-0001.");
   }
+}
+
+function validateIsoDate(value, fieldLabel) {
+  const normalized = (value || "").trim();
+  if (!normalized) {
+    return "";
+  }
+  if (!ISO_DATE_PATTERN.test(normalized)) {
+    throw new Error(`${fieldLabel} must use the format YYYY-MM-DD.`);
+  }
+
+  const parsed = new Date(`${normalized}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error(`${fieldLabel} must be a valid calendar date.`);
+  }
+  return normalized;
+}
+
+function validateIsoDateTime(value, fieldLabel) {
+  const normalized = (value || "").trim();
+  if (!normalized) {
+    return "";
+  }
+  if (!ISO_DATE_TIME_PATTERN.test(normalized)) {
+    throw new Error(`${fieldLabel} must use the format YYYY-MM-DD HH:mm:ss.`);
+  }
+
+  const [datePart, timePart] = normalized.split(" ");
+  const parsed = new Date(`${datePart}T${timePart}`);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error(`${fieldLabel} must be a valid date and time.`);
+  }
+  return normalized;
 }
 
 function normalizeStationId(value) {
@@ -152,6 +187,27 @@ function generateOptionalFieldOverrides(rawOverrides) {
   }
   if (Object.prototype.hasOwnProperty.call(rawOverrides || {}, "PaymentAuthorityCode")) {
     overrides.PaymentAuthorityCode = validatePaymentAuthorityCode(rawOverrides.PaymentAuthorityCode || "");
+  }
+  if (Object.prototype.hasOwnProperty.call(rawOverrides || {}, "DOB")) {
+    overrides.DOB = validateIsoDate(rawOverrides.DOB || "", "DOB");
+  }
+  if (Object.prototype.hasOwnProperty.call(rawOverrides || {}, "ReferralDate")) {
+    overrides.ReferralDate = validateIsoDate(rawOverrides.ReferralDate || "", "Referral Date");
+  }
+  if (Object.prototype.hasOwnProperty.call(rawOverrides || {}, "ReferralDateTime")) {
+    overrides.ReferralDateTime = validateIsoDateTime(rawOverrides.ReferralDateTime || "", "Referral DateTime");
+  }
+  if (Object.prototype.hasOwnProperty.call(rawOverrides || {}, "ReferralExpirationDate")) {
+    overrides.ReferralExpirationDate = validateIsoDate(
+      rawOverrides.ReferralExpirationDate || "",
+      "Referral Expiration Date"
+    );
+  }
+  if (Object.prototype.hasOwnProperty.call(rawOverrides || {}, "ReferralLastUpdateDate")) {
+    overrides.ReferralLastUpdateDate = validateIsoDate(
+      rawOverrides.ReferralLastUpdateDate || "",
+      "Referral Last Update Date"
+    );
   }
   return overrides;
 }
@@ -572,6 +628,8 @@ module.exports = {
   normalizePaymentAuthorityCode,
   normalizeReferralNumberStart,
   normalizeStationId,
+  validateIsoDate,
+  validateIsoDateTime,
   validatePaymentAuthorityCode,
   validateReferralNumberStart,
   validateSsn,

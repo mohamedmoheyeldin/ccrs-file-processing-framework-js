@@ -44,9 +44,16 @@ if errorlevel 1 (
     exit /b 1
 )
 
+for /f "usebackq delims=" %%v in (`powershell -NoProfile -Command "(Get-Content package.json | ConvertFrom-Json).version"`) do set "APP_VERSION=%%v"
+if "%APP_VERSION%"=="" (
+    echo Failed to read app version from package.json.
+    pause
+    exit /b 1
+)
+
 set "RELEASE_DIR=%CD%\release"
-set "PORTABLE_EXE=%CD%\dist-electron\CCRS File Processing Framework 1.0.0.exe"
-set "SETUP_EXE=%CD%\dist-electron\CCRS File Processing Framework Setup 1.0.0.exe"
+set "PORTABLE_EXE=%CD%\dist-electron\CCRS File Processing Framework %APP_VERSION%.exe"
+set "SETUP_EXE=%CD%\dist-electron\CCRS File Processing Framework Setup %APP_VERSION%.exe"
 
 echo Exporting release artifacts...
 if exist "%RELEASE_DIR%" rmdir /s /q "%RELEASE_DIR%"
@@ -60,8 +67,8 @@ set "DESKTOP_SHORTCUT=%USERPROFILE%\Desktop\CCRS File Processing.lnk"
 echo.
 echo Build completed.
 echo Share one of these files:
-echo release\CCRS File Processing Framework Setup 1.0.0.exe
-echo release\CCRS File Processing Framework 1.0.0.exe
+echo release\CCRS File Processing Framework Setup %APP_VERSION%.exe
+echo release\CCRS File Processing Framework %APP_VERSION%.exe
 echo.
 if exist "%DESKTOP_SHORTCUT%" (
     echo Desktop shortcut detected:

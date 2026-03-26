@@ -13,7 +13,6 @@
           <button id="open-user-guide" class="toolbar-button primary-soft">User Guide</button>
         </div>
         <div class="topbar-center">
-          <p class="eyebrow topbar-eyebrow">CCRS Desktop Workflow</p>
           <div class="topbar-title-row">
             <h1 id="hero-title">CCRS File Processing</h1>
             <span id="app-version-badge" class="version-badge hidden"></span>
@@ -124,12 +123,12 @@
                 <label class="field-block">
                   <span>Number of JSON files to generate</span>
                   <input id="file-count" type="number" min="1" value="1" />
-                  <small class="helper-text">Set this to `1` for a single JSON file, or higher for multiple files.</small>
+                  <small id="file-count-help" class="helper-text">Set this to `1` for a single JSON file, or higher for multiple files.</small>
                 </label>
                 <label class="field-block">
                   <span>Number of referrals per file</span>
                   <input id="referrals-per-file" type="number" min="1" value="1" />
-                  <small class="helper-text">Set this to `1` for one referral in each file, or higher for multiple referrals.</small>
+                  <small id="referrals-per-file-help" class="helper-text">Set this to `1` for one referral in each file, or higher for multiple referrals.</small>
                 </label>
               </div>
             </article>
@@ -140,7 +139,7 @@
                   <h2>Referral Details</h2>
                   <p>Set the first referral number and ListDate behavior for this run.</p>
                 </div>
-                <button id="toggle-optional-fields" class="toolbar-button">Show Optional Fields</button>
+                <button id="toggle-optional-fields" class="toolbar-button invert-active">Show Optional Fields</button>
               </div>
 
               <div class="form-grid two-col">
@@ -152,7 +151,7 @@
                 <label class="field-block">
                   <span>SSN Override</span>
                   <input id="ssn-value" type="text" value="999-99-0001" />
-                  <small class="helper-text">Default test SSN applied unless you replace it.</small>
+                  <small id="ssn-help" class="helper-text">Default test SSN applied unless you replace it.</small>
                 </label>
               </div>
 
@@ -243,6 +242,7 @@
                   <label class="field-block">
                     <span>DOB</span>
                     <input id="override-dob" type="text" placeholder="YYYY-MM-DD" />
+                    <small id="dob-help" class="helper-text">Use the format YYYY-MM-DD.</small>
                   </label>
                   <label class="field-block">
                     <span>Referral Category</span>
@@ -251,18 +251,22 @@
                   <label class="field-block">
                     <span>Referral Date</span>
                     <input id="override-referral-date" type="text" placeholder="YYYY-MM-DD" />
+                    <small id="referral-date-help" class="helper-text">Use the format YYYY-MM-DD.</small>
                   </label>
                   <label class="field-block">
                     <span>Referral DateTime</span>
                     <input id="override-referral-date-time" type="text" placeholder="YYYY-MM-DD HH:mm:ss" />
+                    <small id="referral-date-time-help" class="helper-text">Use the format YYYY-MM-DD HH:mm:ss.</small>
                   </label>
                   <label class="field-block">
                     <span>Referral Expiration Date</span>
                     <input id="override-referral-expiration-date" type="text" placeholder="YYYY-MM-DD" />
+                    <small id="referral-expiration-date-help" class="helper-text">Use the format YYYY-MM-DD.</small>
                   </label>
                   <label class="field-block">
                     <span>Referral Last Update Date</span>
                     <input id="override-referral-last-update-date" type="text" placeholder="YYYY-MM-DD" />
+                    <small id="referral-last-update-date-help" class="helper-text">Use the format YYYY-MM-DD.</small>
                   </label>
                   <label class="field-block">
                     <span>Referral Consult ID</span>
@@ -287,7 +291,7 @@
                   <span>Save processed files to</span>
                   <div class="field-row">
                     <input id="output-dir" type="text" placeholder="Choose where JSON and .gz files should be written" />
-                    <button data-pick="output-dir" class="toolbar-button">Save To</button>
+                    <button data-pick="output-dir" class="toolbar-button invert-active">Save To</button>
                   </div>
                 </label>
                 <label class="field-block">

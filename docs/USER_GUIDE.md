@@ -1,123 +1,112 @@
 # CCRS File Processing Framework User Guide
 
 ## Purpose
-This application is an internal team tool that helps staff work with CCRS files more efficiently. Today it supports referral JSON processing, value updates, output packaging, and optional upload workflows, and it is designed to expand over time to support additional CCRS file types and internal use cases.
+This app helps CCRS users process referral JSON files, generate new referral files, build the final `.gz` package, and optionally upload the finished archive to the configured CCRS environments.
 
-## What The App Can Do
-- Read any source file that ends with `.json`
-- Generate new referral JSON files without needing a source folder
-- Save processed JSON files using a user-chosen output name
-- Create one `.gz` file using a user-chosen archive name
-- Update referral-related JSON values
-- Show live previews for `Referral Number`, `Station ID`, `Payment Authority Code`, output JSON names, and the final `.gz` name
-- Keep or remove processed JSON files after the `.gz` file is created
-- Optionally upload the `.gz` file to `DEV`, `PPD`, or `SQA`
-
-## Before You Start
-Make sure you have:
-- a source folder containing CCRS `.json` files for the workflow you are running
+## Quick Start
+Before you run the app, make sure you have:
+- a source folder with CCRS `.json` files if you are editing existing files
 - an output folder where processed files should be saved
-- a valid `WinSCP.ini` file or a ready-to-use `config\upload_credentials.json` file if you plan to use upload
+- a `WinSCP.ini` file or a ready-to-use `config\upload_credentials.json` file if you plan to upload
 
-## How To Run The App
-This guide assumes users are running the packaged Windows application.
+To start the packaged app:
+- open the folder that contains the `.exe`
+- run either `CCRS File Processing Framework Setup <version>.exe` or `CCRS File Processing Framework <version>.exe`
 
-To start the app:
-- open the folder that contains `CCRS File Processing Framework.exe`
-- double-click `CCRS File Processing Framework.exe`
-
-On first run, the app creates local folders next to the `.exe`, including:
+On first run, the app creates local folders next to the `.exe`:
 - `config`
+- `docs`
 - `logs`
 - `upload_import`
 
-Users should update the files in that generated `config` folder next to the `.exe`, not the source-code folder.
+Use the files in that generated runtime folder next to the `.exe`, not the source-code repo folder.
 
-## Main Workflow
-The main `Referral Files` area now has two sub-tabs:
-- `Edit Existing Files` for updating existing JSON files from a source folder
-- `Generate New Files` for creating new referral JSON files from scratch
+## Main Areas
+The app currently has two main workflow tabs:
+- `Referral Files`
+- `Other CCRS File Types`
 
-### 1. Choose Source Folder
-Use the `Source` section to choose the folder that contains the input `.json` files.
+Inside `Referral Files`, there are two working modes:
+- `Edit Existing Files`
+- `Generate New Files`
 
-The app:
-- reads any `.json` filename
-- ignores non-JSON files
-- loads defaults from the first JSON file it finds
-- updates the output-name preview based on how many source files were found
+## Edit Existing Files
+Use this mode when you already have referral JSON files and want to update them.
 
-### Generate New Files
-Use the `Generate New Files` tab when you want the app to create files from scratch.
+### 1. Source
+Choose the folder that contains the input `.json` files.
 
-In that tab you can:
-- choose how many files to generate
-- choose how many `Referrals` each file should contain
-- use the same output naming and JSON value update options as the normal referral-processing workflow
+The app will:
+- read `.json` files only
+- ignore non-JSON files
+- load defaults from the first JSON file it finds
+- show how many source files were found
+- show the current default `ListDate`
 
-This workflow does not require a source folder and does not include upload options.
+### 2. Referral Details
+Use this section to control the first referral number, `ListDate`, and optional field overrides.
 
-### 2. Choose Output Folder
-Use the `Output` section to pick where processed files should be saved.
+The preview lines update live so you can see what the app will generate before you run it.
 
-### 3. Enter Full Output JSON Name
-In `Full output JSON name`, enter only the actual name you want to use for processed JSON files.
+### 3. Output
+Use `Save To` to choose the output folder.
 
-The app adds `.json` automatically.
+Then enter:
+- the full output JSON base name
+- the final `.gz` archive name
+
+The app adds `.json` and `.gz` automatically.
 
 Examples:
-- if you enter `test101` and there is one file, the app creates `test101.json`
-- if you enter `test101` and there are multiple files, the app creates `test101_1.json`, `test101_2.json`, `test101_3.json`
+- `batch101` becomes `batch101.json`
+- if multiple source files are processed, the app creates `batch101_1.json`, `batch101_2.json`, and so on
+- `ccra_referrals_20260326` becomes `ccra_referrals_20260326.gz`
 
-The preview line under the textbox shows the exact filename pattern that will be used.
+### 4. Run
+Use `Run Processing` when you are editing existing files.
 
-### 4. Enter Final GZ File Name
-In `Name for the final .gz file`, enter only the actual name you want to use for the final archive.
+The app will:
+- apply the requested changes
+- create processed `.json` files
+- build the final `.gz` archive
+- optionally upload the archive if upload is enabled
 
-The app adds `.gz` automatically.
+## Generate New Files
+Use this mode when you want the app to create referral files from scratch.
 
-Example:
-- if you enter `referrals_batch_20260323`, the app creates `referrals_batch_20260323.gz`
+In this mode you can:
+- choose how many JSON files to create
+- choose how many referrals should be in each file
+- use the same referral details and naming rules as the edit flow
 
-The gzip payload also uses the matching internal JSON name:
-- `referrals_batch_20260323.json`
+This mode does not require a source folder and does not include upload.
 
-The preview line under the textbox shows the exact archive filename that will be created.
+Use `Generate Files` to run this workflow.
 
-### 5. Choose File Retention
-After creating the `.gz` file, choose whether to:
-- keep the processed JSON files
-- keep only the `.gz` file
+## Referral Details
+### Referral Number
+Enter only the user-controlled portion of the referral number.
 
-## Referral Number
-Use the `Referral Number` textbox to enter only the user-controlled part of the value.
-
-Important rules:
+Rules:
 - the app adds `VA` automatically
-- the final value always stays 12 characters total, including `VA`
-- the app accepts letters and numbers
-- the app keeps lowercase or uppercase exactly as typed
-- if you enter fewer characters, the app fills the remaining space automatically
-- the preview line shows the first generated value live while you type
-- every updated `ReferralNumber` is unique, even when one JSON file contains multiple items in `Referrals`
+- the final value is always 12 characters total, including `VA`
+- letters and numbers are allowed
+- the preview shows the first generated value live
+- each generated `ReferralNumber` stays unique within the run
 
 Examples:
-- input `1` becomes `VA0000000001`
-- the next referral record becomes `VA0000000002`
-- input `eldin` becomes `VA00000eldin`
-- later values keep the user text as long as possible by removing leading zeros first
+- `1` becomes `VA0000000001`
+- `eldin` becomes `VA00000eldin`
 
-## List Date
-Use the `List Date` section to change the generated `ListDate` value.
+### List Date
+If you do not edit the date and time fields, the app keeps the source `ListDate` or the current live time, depending on the workflow.
 
-If you do not change it, the app keeps the value loaded from the source JSON.
+### Optional Fields
+Click `Show Optional Fields` to open the additional override fields.
 
-## Optional Fields
-Click `Show Optional Fields` to reveal additional editable values.
+If a field is blank, the app keeps the original value unless that field is designed to auto-generate from your starting input.
 
-If a field is left blank, the app keeps the original value from each JSON file unless the field says it auto-generates.
-
-Optional fields include:
+Supported optional fields:
 - `SSN`
 - `Station ID`
 - `Payment Authority Code`
@@ -131,87 +120,83 @@ Optional fields include:
 - `Referral Period`
 - `Referral Consult ID`
 
-### Network Dropdown
-`Network` is a dropdown with these options:
+### Station ID
+Rules:
+- accepts letters and numbers only
+- accepts up to 5 characters
+- later referrals auto-adjust to stay unique
+- the preview shows the first generated value
+
+### Payment Authority Code
+Rules:
+- accepts numbers only
+- accepts up to 5 digits
+- blank means keep the source value
+- later referrals increment automatically so values stay unique
+
+### Network
+Available values:
 - `CCN1`
 - `CCN2`
 - `CCN3`
 - `CCN4`
 - `CCN5`
 
-If you do not select a `Network`, the existing value in each JSON file is left unchanged.
+## Validation
+The app now validates important fields before the workflow runs and shows inline messages next to the field.
 
-### Station ID
-- `Station ID` accepts letters and numbers only
-- users can enter up to 5 characters
-- if users enter fewer than 5 characters, the app fills the rest automatically
-- if users leave it blank, the app generates all 5 characters
-- the preview stays stable after the field finishes generating
-- each referral inside the same JSON file gets a unique `StationID`
-- if the last entered character is a letter, later referrals switch the changing tail to numbers
-- if the last entered character is a number, later referrals switch the changing tail to letters
-- if users enter all 5 characters, the app still adjusts later referrals automatically so values stay unique inside the file
+Examples of what is checked:
+- SSN format
+- referral number format
+- station ID format
+- payment authority code length and range
+- date and date-time format
+- generator counts
+- required upload selections
 
-### Payment Authority Code
-- `Payment Authority Code` accepts numbers only
-- users can enter up to 5 digits
-- if users leave it blank, the existing value in the source file stays unchanged
-- the preview stays stable after the field finishes generating
-- each referral inside the same JSON file gets a unique `PaymentAuthorityCode`
-- if users enter a starting value, later referrals increment from that value automatically so codes stay unique inside the file
+If something is invalid, fix the highlighted field and run again.
 
 ## Upload
-Turn on upload only if you want the app to send the final `.gz` file to a server after processing.
+Turn on upload only if you want the app to send the final `.gz` file after processing.
 
-Supported environments:
+Supported upload targets:
 - `DEV`
 - `PPD`
 - `SQA`
 
-### Default Remote Path
-Each environment starts with this default remote upload location:
+Default remote path:
 - `/CCRA_Uploads`
 
-### Upload Credentials
-The app uses this file as the main upload credential source:
+### Upload Credential Files
+The app uses:
+- `config\upload_profiles.json`
 - `config\upload_credentials.json`
 
-Users can edit that file directly in the same folder as the `.exe`.
-
-Expected format:
-```json
-[
-  {
-    "Environment": "DEV",
-    "Session": "C-DEV/ccrauser@DEV",
-    "UserName": "ccrauser",
-    "Host": "dev-dropzone.ccrs.va.gov",
-    "Password": ""
-  }
-]
-```
-
 ### Import To Config
-If you do not already have `config\upload_credentials.json`, use the `Import To Config` button.
-
-You can choose either:
-- a credentials JSON file
+Use `Import To Config` to load upload credentials from:
 - `WinSCP.ini`
+- a supported credentials JSON file
 
-If you choose `WinSCP.ini`, the app:
-- copies the selected INI into `upload_import`
-- converts the saved WinSCP sessions in the backend
-- saves the final credentials into `config\upload_credentials.json`
+When you import `WinSCP.ini`, the app:
+- reads the saved WinSCP sessions
+- extracts host, username, password, and related connection details
+- writes the final data into `config\upload_credentials.json`
 
-Important notes:
-- after import, `config\upload_credentials.json` is the only credentials file users need
-- temporary `winscp_credentials.json` files are backend-only and are cleaned up by the app
-- uploads to `PROD` remain disabled in the app
+After import, `config\upload_credentials.json` is the main file the app uses for uploads.
+
+### Test Connection
+Each upload target now includes a `Test Connection` button.
+
+Use it to verify:
+- the selected user exists
+- the remote directory is filled in
+- the app can connect before you run the full workflow
+
+This is the fastest way to confirm upload settings before you process files.
 
 ## Output Format
-The final `.gz` contains one combined JSON object, not an array of files.
+The final `.gz` contains one combined JSON object with this shape:
 
-Top-level structure:
 ```json
 {
   "ListDate": "YYYY-MM-DD hh:mm:ss",
@@ -221,10 +206,15 @@ Top-level structure:
 }
 ```
 
-This format is required by the receiving referral application.
+## User Guide File
+The packaged app opens this guide file:
+- `docs\USER_GUIDE.md`
+
+If you share the app with other users, make sure the `docs` folder stays next to the `.exe`.
 
 ## Common Notes
-- Generated JSON filenames always use lowercase `.json`
-- The app creates one `.gz` file for the current run based on the name entered by the user
-- Older `.gz` files in the folder are not deleted automatically
-- The app can keep the generated `.json` files or keep only the `.gz`, depending on the selected option
+- generated JSON files always use lowercase `.json`
+- the app creates one `.gz` file per run
+- older `.gz` files are not removed automatically
+- you can keep the processed `.json` files or keep only the `.gz`
+- upload to `PROD` is not enabled in the app
