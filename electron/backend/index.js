@@ -27,6 +27,7 @@ const {
   importUploadSourceToConfig,
   loadUploadProfiles,
   resolveUploadTargets,
+  summarizeUploadProfiles,
 } = require("./uploader");
 const { sanitizeFilenameBase } = require("./renamer");
 const { DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename } = require("./zipper");
@@ -69,6 +70,7 @@ function getInfo() {
       path: profileSourcePath,
       kind: profileSourceKind,
     },
+    uploadProfileSummary: summarizeUploadProfiles(profiles),
     uploadTargets: buildUploadTargets(profiles),
     generatorDefaults: getGeneratorDefaults(),
     constants: {

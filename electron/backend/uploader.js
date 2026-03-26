@@ -9,6 +9,14 @@ const WINSCP_INI_PATH = dataPath("upload_import", "WinSCP.ini");
 const CREDENTIALS_JSON_PATH = dataPath("config", "upload_credentials.json");
 const WINSCP_GENERATED_CREDENTIALS_PATH = dataPath("upload_import", "winscp_credentials.json");
 
+function summarizeUploadProfiles(profiles) {
+  return {
+    serverCount: (profiles?.servers || []).length,
+    userCount: (profiles?.users || []).length,
+    targetNames: (profiles?.servers || []).map((server) => server.name).filter(Boolean),
+  };
+}
+
 function normalizeUploadTargetName(value) {
   const normalized = (value || "").trim().toUpperCase();
   if (normalized.includes("PROD")) {
@@ -442,10 +450,21 @@ function generateCredentialsJsonFromWinscpIni(iniPath, outputPath = WINSCP_GENER
     }
 
     credentials.push({
+      environment: user.server || "",
+      target_name: user.server || "",
+      server_name: server ? server.name || "" : "",
+      session: (user.session_name || "").replace(/\\/g, "/"),
+      session_name: user.session_name || "",
+      username: user.username || "",
+      host,
+      port: Number(server?.port || 22),
+      password,
+      source: "winscp_ini",
       Environment: user.server || "",
       Session: (user.session_name || "").replace(/\\/g, "/"),
       UserName: user.username || "",
       Host: host,
+      Port: Number(server?.port || 22),
       Password: password,
     });
   }
@@ -491,6 +510,7 @@ function importUploadSourceToConfig(sourcePath) {
       source_kind: "credentials_json",
       source_path: normalizedSourcePath,
       config_path: CREDENTIALS_JSON_PATH,
+      profile_summary: summarizeUploadProfiles(parseCredentialsProfiles(CREDENTIALS_JSON_PATH)),
     };
   }
 
@@ -503,6 +523,8 @@ function importUploadSourceToConfig(sourcePath) {
       source_kind: "winscp_ini",
       source_path: normalizedSourcePath,
       config_path: CREDENTIALS_JSON_PATH,
+      generated_json_path: CREDENTIALS_JSON_PATH,
+      profile_summary: summarizeUploadProfiles(parseCredentialsProfiles(CREDENTIALS_JSON_PATH)),
     };
   }
 
@@ -692,5 +714,6 @@ module.exports = {
   importUploadSourceToConfig,
   loadUploadProfiles,
   resolveUploadTargets,
+  summarizeUploadProfiles,
   uploadFile,
 };

@@ -60,6 +60,21 @@ function readChecked(id) {
   return $(id).checked;
 }
 
+function sanitizeStationIdInput(value) {
+  return ((String(value || "").match(/[A-Za-z0-9]/g) || []).join("")).slice(0, 5);
+}
+
+function sanitizePaymentAuthorityCodeInput(value) {
+  return ((String(value || "").match(/\d/g) || []).join("")).slice(0, 10);
+}
+
+function formatUploadProfileSummary(summary) {
+  if (!summary || !summary.serverCount || !summary.userCount) {
+    return "";
+  }
+  return `${summary.serverCount} server${summary.serverCount === 1 ? "" : "s"}, ${summary.userCount} user${summary.userCount === 1 ? "" : "s"}`;
+}
+
 function setValueIfEmpty(id, value) {
   if (!value || readValue(id)) {
     return;
@@ -222,7 +237,10 @@ function setUploadReadyState(mode = "idle") {
 
   if (state.info?.profileSource?.path) {
     elements.uploadReadyPill.classList.add("is-success");
-    elements.uploadReadyPill.textContent = "Upload profiles imported";
+    const summaryText = formatUploadProfileSummary(state.info.uploadProfileSummary);
+    elements.uploadReadyPill.textContent = summaryText
+      ? `Upload profiles imported: ${summaryText}`
+      : "Upload profiles imported";
     return;
   }
 
@@ -577,7 +595,13 @@ async function importUploadSource() {
     const result = await window.ccrs.importUploadSource(sourcePath);
     applyInfo(result.info);
     setUploadReadyState("ready");
-    setStatus("Idle", "Choose a workflow, then run processing.");
+    const summaryText = formatUploadProfileSummary(result.importResult?.profile_summary || result.info?.uploadProfileSummary);
+    setStatus(
+      "Idle",
+      summaryText
+        ? `Upload configuration imported successfully. ${summaryText} ready for use.`
+        : "Upload configuration imported successfully."
+    );
   } catch (error) {
     setUploadReadyState("failed");
     setStatus("Failed", error.message);
@@ -666,6 +690,12 @@ function setupEventHandlers() {
     "referrals-per-file",
   ]) {
     $(id).addEventListener("input", () => {
+      if (id === "override-station-id") {
+        $(id).value = sanitizeStationIdInput($(id).value);
+      }
+      if (id === "override-payment-authority-code") {
+        $(id).value = sanitizePaymentAuthorityCodeInput($(id).value);
+      }
       if (id === "file-count" || id === "referrals-per-file") {
         updateTemplateSummary();
       }
