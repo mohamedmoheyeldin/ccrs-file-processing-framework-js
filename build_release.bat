@@ -44,13 +44,24 @@ if errorlevel 1 (
     exit /b 1
 )
 
+set "RELEASE_DIR=%CD%\release"
+set "PORTABLE_EXE=%CD%\dist-electron\CCRS File Processing Framework 1.0.0.exe"
+set "SETUP_EXE=%CD%\dist-electron\CCRS File Processing Framework Setup 1.0.0.exe"
+
+echo Exporting release artifacts...
+if exist "%RELEASE_DIR%" rmdir /s /q "%RELEASE_DIR%"
+mkdir "%RELEASE_DIR%"
+
+if exist "%PORTABLE_EXE%" copy /y "%PORTABLE_EXE%" "%RELEASE_DIR%\" >nul
+if exist "%SETUP_EXE%" copy /y "%SETUP_EXE%" "%RELEASE_DIR%\" >nul
+
 set "DESKTOP_SHORTCUT=%USERPROFILE%\Desktop\CCRS File Processing.lnk"
 
 echo.
 echo Build completed.
 echo Share one of these files:
-echo dist-electron\CCRS File Processing Framework Setup 1.0.0.exe
-echo dist-electron\CCRS File Processing Framework 1.0.0.exe
+echo release\CCRS File Processing Framework Setup 1.0.0.exe
+echo release\CCRS File Processing Framework 1.0.0.exe
 echo.
 if exist "%DESKTOP_SHORTCUT%" (
     echo Desktop shortcut detected:
