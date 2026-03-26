@@ -59,6 +59,7 @@
       ]
     },
     "nsis": {
+      "perMachine": true,
       "installerIcon": "assets/icons/ccrs_app_icon.ico",
       "uninstallerIcon": "assets/icons/ccrs_app_icon.ico",
       "installerHeaderIcon": "assets/icons/ccrs_app_icon.ico"
