@@ -27,12 +27,6 @@ function $(id) {
   return document.getElementById(id);
 }
 
-function addLogLine(message) {
-  const line = document.createElement("p");
-  line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-  elements.activityLog.prepend(line);
-}
-
 function setStatus(label, message) {
   const normalizedLabel = String(label || "Idle").trim();
   elements.statusBadge.textContent = normalizedLabel;
@@ -54,9 +48,6 @@ function setStatus(label, message) {
 function setBusy(busy) {
   state.busy = busy;
   for (const element of document.querySelectorAll("button, input, select")) {
-    if (element.id === "clear-activity") {
-      continue;
-    }
     element.disabled = busy;
   }
 }
@@ -124,6 +115,13 @@ function getListDateOverride() {
 
 function markDateTouched() {
   state.listDateTouched = true;
+}
+
+function resumeLiveListDate(syncNow = true) {
+  state.listDateTouched = false;
+  if (syncNow) {
+    setDateParts(nowAsListDate());
+  }
 }
 
 function adjustDatePart(partKey, delta) {
@@ -277,16 +275,16 @@ function renderUploadTargets(targets) {
 
     wrapper.innerHTML = `
       <div class="upload-target-header">
-        <div>
+        <div class="upload-target-copy">
           <strong>${target.name} Server: ${target.serverDisplay || "No server found yet"}</strong>
-          <p>Choose the account and remote destination for ${target.name}.</p>
+          <span class="upload-target-note">Choose the account and remote destination for ${target.name}.</span>
         </div>
         <label class="checkbox-chip">
           <input class="upload-enabled" type="checkbox" />
           <span>Upload to ${target.name}</span>
         </label>
       </div>
-      <div class="form-grid two-col">
+      <div class="form-grid two-col upload-target-grid">
         <label class="field-block">
           <span>User</span>
           <select class="upload-user">${userOptions}</select>
@@ -319,6 +317,8 @@ function applyGeneratorDefaults() {
 
 function applyInfo(info) {
   state.info = info;
+  elements.appVersionBadge.textContent = info.appVersionLabel || "";
+  elements.appVersionBadge.classList.toggle("hidden", !info.appVersionLabel);
   setUploadReadyState("idle");
   renderUploadTargets(info.uploadTargets || []);
   applyGeneratorDefaults();
@@ -335,7 +335,7 @@ function applySourceInspection(inspection) {
 
   state.sourceListDate = inspection?.firstListDate || "";
   elements.listDateSourceValue.textContent = state.sourceListDate
-    ? `Source ListDate: ${state.sourceListDate}`
+    ? state.sourceListDate
     : "No source ListDate found yet.";
 
   const defaults = inspection?.defaults || {};
@@ -351,7 +351,6 @@ function applySourceInspection(inspection) {
   setValueIfEmpty("override-referral-consult-id", defaults.ReferralConsultId);
 
   updatePreviews();
-  updateSummary();
 }
 
 async function inspectSourceFolder() {
@@ -364,7 +363,6 @@ async function inspectSourceFolder() {
     if (!state.listDateTouched) {
       setDateParts("0000-00-00 00:00:00");
     }
-    updateSummary();
     updatePreviews();
     return;
   }
@@ -373,7 +371,7 @@ async function inspectSourceFolder() {
     const inspection = await window.ccrs.inspectSource(inputDir);
     applySourceInspection(inspection);
   } catch (error) {
-    addLogLine(`Could not inspect source folder: ${error.message}`);
+    setStatus("Failed", error.message);
   }
 }
 
@@ -422,34 +420,6 @@ function updateTemplateSummary() {
   elements.generatorTotalReferralsDisplay.textContent = String(totalReferrals);
 }
 
-function updateSummary() {
-  const inspection = state.sourceInspection;
-  const fileCount = Number(inspection?.fileCount || 0);
-  const sourceLabel = state.subTab === "generate"
-    ? `Generator source: ${Math.max(Number(readValue("file-count") || 1), 1)} generated file(s), ${Math.max(Number(readValue("file-count") || 1), 1) * Math.max(Number(readValue("referrals-per-file") || 1), 1)} total referral(s)`
-    : fileCount
-      ? `Source files: ${fileCount} JSON file${fileCount === 1 ? "" : "s"} selected`
-      : "Source files: none selected";
-
-  const replacementCode = readValue("replacement-code");
-  const archiveBasename = readValue("archive-basename") || state.info?.constants?.defaultArchiveBasename || "processed_files";
-  const selectedTargets = collectUploadSettings().targets.map((target) => target.server_name);
-
-  elements.summarySource.textContent = sourceLabel;
-  elements.summaryOutput.textContent = replacementCode
-    ? `Output JSON: ${replacementCode}.json`
-    : "Output JSON: original JSON names";
-  elements.summaryArchive.textContent = `Archive: ${archiveBasename.replace(/\.(gz|json)$/i, "")}.gz`;
-  elements.summaryRetention.textContent = readChecked("keep-processed-json")
-    ? "JSON retention: keep formatted JSON files"
-    : "JSON retention: remove JSON files after creating the archive";
-  elements.summaryUpload.textContent = readChecked("upload-enabled")
-    ? selectedTargets.length
-      ? `Upload: enabled for ${selectedTargets.join(", ")}`
-      : "Upload: enabled but no environment selected yet"
-    : "Upload: disabled";
-}
-
 function updateLiveListDate() {
   if (state.listDateTouched) {
     return;
@@ -470,10 +440,8 @@ function syncWorkflowText() {
   const isGenerate = state.subTab === "generate" && isReferral;
   const isOther = state.mainTab === "other";
 
-  elements.heroTitle.textContent = isReferral ? "CCRS File Processing" : "Other CCRS File Processing";
-  elements.heroSubtitle.textContent = isReferral
-    ? "Use the tabs below to work with referral files and related CCRS processing workflows."
-    : "This area is reserved for future CCRS workflow implementations.";
+  elements.heroTitle.textContent = "CCRS File Processing";
+  elements.heroSubtitle.textContent = "Use the tabs below to work with referral files and related CCRS processing workflows.";
   elements.mainTabCopy.textContent = isReferral
     ? "Choose source files, apply targeted JSON updates, and export clean output in one pass."
     : "Future CCRS file types will appear here.";
@@ -481,10 +449,12 @@ function syncWorkflowText() {
     ? "CCRS Referral Generation"
     : isReferral
       ? "CCRS Referral Processing"
-      : "Future Workflows";
+      : "Other CCRS File Processing";
   elements.workflowSubtitle.textContent = isGenerate
     ? "Create fresh referral JSON files, then process and package them."
-    : "Choose source files, apply targeted JSON updates, and export clean output in one pass.";
+    : isReferral
+      ? "Choose source files, apply targeted JSON updates, and export clean output in one pass."
+      : "This area is reserved for future CCRS workflow implementations.";
   elements.sourceTitle.textContent = isGenerate ? "Template Output" : "Source";
   elements.sourceSubtitle.textContent = isGenerate
     ? "Generator mode creates fresh files directly, so no source folder is required."
@@ -495,13 +465,13 @@ function syncWorkflowText() {
 
   elements.subtabRow.classList.toggle("hidden", !isReferral);
   elements.generatorCard.classList.toggle("hidden", !isGenerate);
-  elements.workflowCard.classList.toggle("hidden", isOther);
-  elements.futureCard.classList.toggle("hidden", !isOther);
+  elements.workflowCard.classList.toggle("hidden", false);
+  elements.futureCard.classList.toggle("hidden", true);
   elements.sourceCard.classList.toggle("hidden", isGenerate || isOther);
   elements.referralDetailsCard.classList.toggle("hidden", isOther);
   elements.outputCard.classList.toggle("hidden", isOther);
   elements.uploadCard.classList.toggle("hidden", isOther);
-  elements.summaryCard.classList.toggle("hidden", isOther);
+  elements.runCard.classList.toggle("hidden", isOther);
   elements.runProcess.classList.toggle("hidden", isGenerate || isOther);
   elements.runGenerate.classList.toggle("hidden", !isGenerate || isOther);
   elements.templateSummaryPill.classList.toggle("hidden", !isGenerate || isOther);
@@ -509,7 +479,6 @@ function syncWorkflowText() {
   if (isGenerate) {
     applyGeneratorDefaults();
   }
-  updateSummary();
   updatePreviews();
 }
 
@@ -556,7 +525,6 @@ function wireDateControls() {
       markDateTouched();
       const part = DATE_PARTS.find((entry) => entry.key === partKey);
       input.value = normalizeDigits(input.value, part.width);
-      updateSummary();
     });
     input.addEventListener("blur", () => {
       const part = DATE_PARTS.find((entry) => entry.key === partKey);
@@ -568,12 +536,10 @@ function wireDateControls() {
         value = part.max;
       }
       input.value = String(value).padStart(part.width, "0");
-      updateSummary();
     });
     for (const stepButton of field.querySelectorAll(".date-step")) {
       stepButton.addEventListener("click", () => {
         adjustDatePart(partKey, Number(stepButton.dataset.step));
-        updateSummary();
       });
     }
   }
@@ -582,7 +548,6 @@ function wireDateControls() {
 async function refreshInfo() {
   const info = await window.ccrs.getInfo();
   applyInfo(info);
-  updateSummary();
   updatePreviews();
 }
 
@@ -596,7 +561,6 @@ async function pickDirectory(targetId) {
   if (targetId === "input-dir") {
     await inspectSourceFolder();
   }
-  updateSummary();
 }
 
 async function importUploadSource() {
@@ -608,24 +572,24 @@ async function importUploadSource() {
   setBusy(true);
   setUploadReadyState("importing");
   setStatus("Importing", "Reading upload configuration...");
-  addLogLine(`Importing upload profiles from ${sourcePath}`);
 
   try {
     const result = await window.ccrs.importUploadSource(sourcePath);
     applyInfo(result.info);
     setUploadReadyState("ready");
     setStatus("Idle", "Choose a workflow, then run processing.");
-    addLogLine("Upload profiles imported successfully.");
   } catch (error) {
     setUploadReadyState("failed");
     setStatus("Failed", error.message);
-    addLogLine(`Import failed: ${error.message}`);
   } finally {
     setBusy(false);
   }
 }
 
 async function runProcess() {
+  if (!state.listDateTouched) {
+    setDateParts(nowAsListDate());
+  }
   await runJob("process", { ...sharedPayload(), inputDir: readValue("input-dir") }, "Processing");
 }
 
@@ -643,9 +607,9 @@ function nowAsListDate() {
 }
 
 async function runGenerate() {
-  const generatedListDate = nowAsListDate();
-  state.listDateTouched = true;
-  setDateParts(generatedListDate);
+  if (!state.listDateTouched) {
+    setDateParts(nowAsListDate());
+  }
   const payload = {
     ...sharedPayload(),
     fileCount: Number(readValue("file-count")),
@@ -657,17 +621,15 @@ async function runGenerate() {
 async function runJob(command, payload, label) {
   setBusy(true);
   setStatus(label, `${label} files with the standalone JavaScript backend...`);
-  addLogLine(`${label} started.`);
 
   try {
     const result = await window.ccrs.runJob(command, payload);
     setStatus("Completed", result.message || `${label} completed.`);
-    addLogLine(result.message || `${label} completed.`);
   } catch (error) {
     setStatus("Failed", error.message);
-    addLogLine(`${label} failed: ${error.message}`);
   } finally {
     setBusy(false);
+    resumeLiveListDate(true);
   }
 }
 
@@ -707,22 +669,16 @@ function setupEventHandlers() {
       if (id === "file-count" || id === "referrals-per-file") {
         updateTemplateSummary();
       }
-      updateSummary();
       updatePreviews();
     });
   }
 
   elements.overrideNetwork.addEventListener("change", () => {
-    updateSummary();
     updatePreviews();
   });
 
   elements.inputDir.addEventListener("change", inspectSourceFolder);
   elements.inputDir.addEventListener("blur", inspectSourceFolder);
-  elements.keepProcessedJson.addEventListener("change", updateSummary);
-  elements.clearOutput.addEventListener("change", updateSummary);
-  elements.keepExistingFiles.addEventListener("change", updateSummary);
-  elements.uploadEnabled.addEventListener("change", updateSummary);
   elements.toggleOptionalFields.addEventListener("click", toggleOptionalFields);
   elements.runProcess.addEventListener("click", runProcess);
   elements.runGenerate.addEventListener("click", runGenerate);
@@ -732,12 +688,6 @@ function setupEventHandlers() {
       window.ccrs.openPath(state.info.docs.userGuidePath);
     }
   });
-  elements.clearActivity.addEventListener("click", () => {
-    elements.activityLog.innerHTML = "";
-  });
-
-  elements.uploadTargets.addEventListener("change", updateSummary);
-  elements.uploadTargets.addEventListener("input", updateSummary);
 
   window.ccrs.onBackendEvent((event) => {
     if (event.type !== "progress") {
@@ -746,27 +696,23 @@ function setupEventHandlers() {
 
     if (event.state === "uploading") {
       const targetText = event.uploadTarget ? ` to ${event.uploadTarget}` : "";
-      addLogLine(`Uploading ${event.filename}${targetText} (${event.current}/${event.total}).`);
       setStatus("Uploading", `Uploading ${event.filename}${targetText}...`);
       return;
     }
 
     if (event.state === "error") {
-      addLogLine(`Error while handling ${event.filename} (${event.current}/${event.total}).`);
       setStatus("Failed", `Error while handling ${event.filename}.`);
       return;
     }
 
-    addLogLine(`Processed ${event.filename} (${event.current}/${event.total}).`);
     setStatus("Working", `Handling ${event.filename} (${event.current}/${event.total})`);
   });
 }
 
 function cacheElements() {
   Object.assign(elements, {
-    activityLog: $("activity-log"),
+    appVersionBadge: $("app-version-badge"),
     archivePreview: $("archive-preview"),
-    clearActivity: $("clear-activity"),
     clearOutput: $("clear-output"),
     generatorCard: $("generator-card"),
     generatorFileCountDisplay: $("generator-file-count-display"),
@@ -800,6 +746,7 @@ function cacheElements() {
     referralPreview: $("referral-preview"),
     referralDetailsCard: $("referral-details-card"),
     referralsPerFile: $("referrals-per-file"),
+    runCard: $("run-card"),
     runGenerate: $("run-generate"),
     runProcess: $("run-process"),
     sourceCard: $("source-card"),
@@ -810,12 +757,6 @@ function cacheElements() {
     statusBadge: $("status-badge"),
     statusMessage: $("status-message"),
     subtabRow: $("subtab-row"),
-    summaryCard: $("summary-card"),
-    summaryArchive: $("summary-archive"),
-    summaryOutput: $("summary-output"),
-    summaryRetention: $("summary-retention"),
-    summarySource: $("summary-source"),
-    summaryUpload: $("summary-upload"),
     templateSummaryPill: $("template-summary-pill"),
     toggleOptionalFields: $("toggle-optional-fields"),
     uploadEnabled: $("upload-enabled"),
@@ -836,6 +777,4 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupEventHandlers();
   syncWorkflowText();
   await refreshInfo();
-  updateSummary();
-  addLogLine("Electron UI ready.");
 });

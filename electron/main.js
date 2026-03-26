@@ -3,6 +3,13 @@ const path = require("path");
 const backend = require("./backend");
 
 let mainWindow;
+const APP_USER_MODEL_ID = "com.ccrs.fileprocessingframework";
+
+function getWindowsIconPath() {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, "assets", "icons", "ccrs_app_icon.ico")
+    : path.join(__dirname, "..", "assets", "icons", "ccrs_app_icon.ico");
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -11,6 +18,7 @@ function createWindow() {
     minWidth: 1120,
     minHeight: 760,
     backgroundColor: "#ececec",
+    icon: getWindowsIconPath(),
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -70,6 +78,7 @@ ipcMain.handle("backend:run", async (event, payload) =>
 );
 
 app.whenReady().then(() => {
+  app.setAppUserModelId(APP_USER_MODEL_ID);
   createWindow();
 
   app.on("activate", () => {

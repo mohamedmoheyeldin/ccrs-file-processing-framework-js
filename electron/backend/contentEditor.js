@@ -271,6 +271,13 @@ function getStationIdSequenceCharset(baseValue) {
   return OPTIONAL_RANDOM_CHARSET;
 }
 
+function getVariableFieldSequenceCharset(key, baseValue) {
+  if (key === "StationID") {
+    return getStationIdSequenceCharset(baseValue);
+  }
+  return VARIABLE_OVERRIDE_FIELDS[key].charset;
+}
+
 function updatePatientIdentity(data, ssnValue) {
   if (Array.isArray(data)) {
     for (const item of data) {
@@ -340,6 +347,63 @@ function applyOptionalOverrides(data, overrides) {
           }
         } else {
           currentData[key] = overrides[key];
+        }
+      } else {
+        apply(value);
+      }
+    }
+  }
+
+  apply(data);
+}
+
+function ensureSourceVariableFieldsAreUnique(data, overrides = {}) {
+  const usedValues = {};
+  const duplicateCounts = {};
+  for (const key of Object.keys(VARIABLE_OVERRIDE_FIELDS)) {
+    usedValues[key] = new Set();
+    duplicateCounts[key] = new Map();
+  }
+
+  function apply(currentData) {
+    if (Array.isArray(currentData)) {
+      for (const item of currentData) {
+        apply(item);
+      }
+      return;
+    }
+
+    if (!currentData || typeof currentData !== "object") {
+      return;
+    }
+
+    for (const [key, value] of Object.entries(currentData)) {
+      if (VARIABLE_OVERRIDE_FIELDS[key] && !Object.prototype.hasOwnProperty.call(overrides, key)) {
+        const settings = VARIABLE_OVERRIDE_FIELDS[key];
+        const baseValue = typeof value === "string" || typeof value === "number" ? String(value) : "";
+        const duplicateIndex = (duplicateCounts[key].get(baseValue) || 0) + 1;
+        duplicateCounts[key].set(baseValue, duplicateIndex);
+
+        if (!usedValues[key].has(baseValue)) {
+          usedValues[key].add(baseValue);
+          continue;
+        }
+
+        const sequenceCharset = getVariableFieldSequenceCharset(key, baseValue);
+        let sequenceIndex = Math.max(duplicateIndex, 2);
+        while (true) {
+          const candidateValue = generateUniqueFieldValue(
+            baseValue,
+            sequenceIndex,
+            settings.length,
+            sequenceCharset
+          );
+          if (!usedValues[key].has(candidateValue)) {
+            usedValues[key].add(candidateValue);
+            currentData[key] = candidateValue;
+            break;
+          }
+          sequenceIndex += 1;
         }
       } else {
         apply(value);
@@ -448,6 +512,7 @@ function modifyContent(
   if (optionalOverrides && Object.keys(optionalOverrides).length > 0) {
     applyOptionalOverrides(data, optionalOverrides);
   }
+  ensureSourceVariableFieldsAreUnique(data, optionalOverrides);
 
   return {
     content: JSON.stringify(data, null, 4),

@@ -51,6 +51,7 @@ function ensureRuntimeFiles() {
 
   copyIfMissing(bundlePath("config", "mappings.json"), dataPath("config", "mappings.json"));
   copyIfMissing(bundlePath("config", "rules.json"), dataPath("config", "rules.json"));
+  copyIfMissing(bundlePath("config", "app_version.json"), dataPath("config", "app_version.json"));
   copyIfMissing(bundlePath("config", "upload_profiles.json"), dataPath("config", "upload_profiles.json"));
   copyIfMissing(bundlePath("config", "upload_credentials.json"), dataPath("config", "upload_credentials.json"));
   copyIfMissing(bundlePath("upload_import", "README.txt"), dataPath("upload_import", "README.txt"));

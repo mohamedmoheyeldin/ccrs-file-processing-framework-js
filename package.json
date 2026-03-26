@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Pure JavaScript Electron desktop app for the CCRS File Processing Framework.",
   "main": "electron/main.js",
-  "author": "OpenAI Codex",
+  "author": "Mohamed Moheyeldin (Eldin)",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
@@ -57,6 +57,11 @@
         "portable",
         "nsis"
       ]
+    },
+    "nsis": {
+      "installerIcon": "assets/icons/ccrs_app_icon.ico",
+      "uninstallerIcon": "assets/icons/ccrs_app_icon.ico",
+      "installerHeaderIcon": "assets/icons/ccrs_app_icon.ico"
     }
   }
 }

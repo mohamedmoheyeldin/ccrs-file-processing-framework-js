@@ -14,7 +14,10 @@
         </div>
         <div class="topbar-center">
           <p class="eyebrow topbar-eyebrow">CCRS Desktop Workflow</p>
-          <h1 id="hero-title">CCRS File Processing</h1>
+          <div class="topbar-title-row">
+            <h1 id="hero-title">CCRS File Processing</h1>
+            <span id="app-version-badge" class="version-badge hidden"></span>
+          </div>
           <p id="hero-subtitle" class="topbar-subtitle">
             Use the tabs below to work with referral files and related CCRS processing workflows.
           </p>
@@ -309,8 +312,8 @@
                       <span>Delete everything first</span>
                     </label>
                   </div>
-                  <small class="helper-text">After creating the .gz file</small>
-                  <div class="toggle-row">
+                  <div class="toggle-row retention-follow-up">
+                    <span class="retention-label">After creating the .gz file</span>
                     <label class="checkbox-chip">
                       <input id="keep-processed-json" type="checkbox" checked />
                       <span>Keep formatted JSON files</span>
@@ -340,52 +343,15 @@
               <div id="upload-targets" class="upload-targets"></div>
             </article>
 
-            <article id="summary-card" class="content-card glass-card">
-              <div class="section-head">
-                <div>
-                  <h2>Run Summary</h2>
-                  <p>Quick review before you run.</p>
+            <article id="run-card" class="content-card glass-card">
+              <div class="run-panel">
+                <div class="status-panel inline-status">
+                  <span id="status-badge" class="status-badge idle">Idle</span>
+                  <p id="status-message">Choose a workflow, then run processing.</p>
                 </div>
-              </div>
-              <div class="summary-grid">
-                <div class="summary-item">
-                  <span>Source</span>
-                  <p id="summary-source">Source files: none selected</p>
-                </div>
-                <div class="summary-item">
-                  <span>Output</span>
-                  <p id="summary-output">Output JSON: original JSON names</p>
-                </div>
-                <div class="summary-item">
-                  <span>Archive</span>
-                  <p id="summary-archive">Archive: processed_files.gz</p>
-                </div>
-                <div class="summary-item">
-                  <span>Retention</span>
-                  <p id="summary-retention">JSON retention: keep formatted JSON files</p>
-                </div>
-                <div class="summary-item">
-                  <span>Upload</span>
-                  <p id="summary-upload">Upload: disabled</p>
-                </div>
-              </div>
-              <div class="footer-grid">
-                <div class="run-panel">
-                  <div class="status-panel inline-status">
-                    <span id="status-badge" class="status-badge idle">Idle</span>
-                    <p id="status-message">Choose a workflow, then run processing.</p>
-                  </div>
-                  <div class="action-row">
-                    <button id="run-process" class="toolbar-button primary">Run Processing</button>
-                    <button id="run-generate" class="toolbar-button primary hidden">Generate Files</button>
-                  </div>
-                </div>
-                <div class="activity-panel">
-                  <div class="section-head compact">
-                    <h2>Activity</h2>
-                    <button id="clear-activity" class="link-button">Clear</button>
-                  </div>
-                  <div id="activity-log" class="activity-log compact-log"></div>
+                <div class="action-row">
+                  <button id="run-process" class="toolbar-button primary">Run Processing</button>
+                  <button id="run-generate" class="toolbar-button primary hidden">Generate Files</button>
                 </div>
               </div>
             </article>

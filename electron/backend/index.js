@@ -11,7 +11,7 @@ const {
   validateReferralNumberStart,
   validateSsn,
 } = require("./contentEditor");
-const { dataPath, ensureRuntimeFiles, getRuntimeRoot } = require("./appPaths");
+const { bundlePath, dataPath, ensureRuntimeFiles, getRuntimeRoot } = require("./appPaths");
 const { getFiles } = require("./fileHandler");
 const { setupLogger } = require("./logger");
 const { processFiles } = require("./processor");
@@ -34,6 +34,22 @@ const { DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename } = require("./zipper"
 ensureRuntimeFiles();
 setupLogger();
 
+function loadAppVersion() {
+  const runtimePath = dataPath("config", "app_version.json");
+  const bundledPath = bundlePath("config", "app_version.json");
+  for (const targetPath of [runtimePath, bundledPath]) {
+    try {
+      if (fs.existsSync(targetPath)) {
+        const parsed = JSON.parse(fs.readFileSync(targetPath, "utf8"));
+        return String(parsed.label || "").trim();
+      }
+    } catch (_error) {
+      // Ignore invalid version config and fall back to empty.
+    }
+  }
+  return "";
+}
+
 function buildUploadTargets(profiles) {
   return getUploadTargetNames(profiles).map((targetName) => ({
     name: targetName,
@@ -48,6 +64,7 @@ function getInfo() {
   const [profileSourcePath, profileSourceKind] = getUploadProfileSourcePath();
   return {
     runtimeRoot: getRuntimeRoot(),
+    appVersionLabel: loadAppVersion(),
     profileSource: {
       path: profileSourcePath,
       kind: profileSourceKind,
