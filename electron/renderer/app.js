@@ -18,6 +18,7 @@ const state = {
   listDateTouched: false,
   optionalFieldsVisible: false,
   liveListDateTimer: null,
+  uploadImportState: "idle",
 };
 
 const elements = {};
@@ -205,8 +206,61 @@ function sharedPayload() {
   };
 }
 
-function getUploadReadyLabel() {
-  return state.info?.profileSource?.path ? "Upload config imported" : "No upload config imported";
+function setUploadReadyState(mode = "idle") {
+  state.uploadImportState = mode;
+  elements.uploadReadyPill.className = "pill-note";
+
+  if (mode === "importing") {
+    elements.uploadReadyPill.classList.add("is-working");
+    elements.uploadReadyPill.textContent = "Importing upload config...";
+    return;
+  }
+
+  if (mode === "failed") {
+    elements.uploadReadyPill.classList.add("is-error");
+    elements.uploadReadyPill.textContent = "Upload config import failed";
+    return;
+  }
+
+  if (state.info?.profileSource?.path) {
+    elements.uploadReadyPill.classList.add("is-success");
+    elements.uploadReadyPill.textContent = "Upload profiles imported";
+    return;
+  }
+
+  elements.uploadReadyPill.textContent = "No upload config imported";
+}
+
+function getPreviewFileCount() {
+  if (state.subTab === "generate") {
+    return Math.max(Number(readValue("file-count") || 1), 1);
+  }
+
+  return Math.max(Number(state.sourceInspection?.fileCount || 0), 1);
+}
+
+function formatJsonPreviewList(baseName, fileCount) {
+  if (!baseName) {
+    return state.subTab === "generate"
+      ? "Preview: generated JSON names will be used"
+      : "Preview: original JSON names will be used";
+  }
+
+  if (fileCount <= 1) {
+    return `Preview: ${baseName}.json`;
+  }
+
+  const visibleCount = Math.min(fileCount, 3);
+  const fileNames = [];
+  for (let index = 1; index <= visibleCount; index += 1) {
+    fileNames.push(`${baseName}_${index}.json`);
+  }
+
+  if (fileCount > visibleCount) {
+    fileNames.push(`+${fileCount - visibleCount} more`);
+  }
+
+  return `Preview: ${fileNames.join(", ")}`;
 }
 
 function renderUploadTargets(targets) {
@@ -265,8 +319,7 @@ function applyGeneratorDefaults() {
 
 function applyInfo(info) {
   state.info = info;
-  elements.uploadReadyPill.textContent = getUploadReadyLabel();
-
+  setUploadReadyState("idle");
   renderUploadTargets(info.uploadTargets || []);
   applyGeneratorDefaults();
   updateTemplateSummary();
@@ -337,9 +390,10 @@ async function updatePreviews() {
       optionalOverrides: collectOptionalOverrides(),
     });
 
-    elements.outputJsonPreview.textContent = preview.replacementCode
-      ? `Preview: ${preview.replacementCode}.json`
-      : "Preview: original JSON names will be used";
+    elements.outputJsonPreview.textContent = formatJsonPreviewList(
+      preview.replacementCode,
+      getPreviewFileCount()
+    );
     elements.archivePreview.textContent = `Preview: ${preview.archiveBasename}.gz`;
     elements.referralPreview.textContent = preview.referralNumber
       ? `Preview: ${preview.referralNumber}`
@@ -552,15 +606,18 @@ async function importUploadSource() {
   }
 
   setBusy(true);
+  setUploadReadyState("importing");
   setStatus("Importing", "Reading upload configuration...");
   addLogLine(`Importing upload profiles from ${sourcePath}`);
 
   try {
     const result = await window.ccrs.importUploadSource(sourcePath);
     applyInfo(result.info);
-    setStatus("Completed", "Upload profiles imported.");
+    setUploadReadyState("ready");
+    setStatus("Idle", "Choose a workflow, then run processing.");
     addLogLine("Upload profiles imported successfully.");
   } catch (error) {
+    setUploadReadyState("failed");
     setStatus("Failed", error.message);
     addLogLine(`Import failed: ${error.message}`);
   } finally {

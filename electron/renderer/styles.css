@@ -418,6 +418,7 @@ body.theme-dark .segmented-control {
   font-size: 0.82rem;
   line-height: 1.45;
   min-height: 18px;
+  overflow-wrap: anywhere;
 }
 
 .info-chips {
@@ -443,6 +444,36 @@ body.theme-dark .segmented-control {
 .pill-note {
   width: fit-content;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+
+.pill-note.is-success {
+  background: rgba(28, 167, 86, 0.12);
+  color: #0f8a44;
+}
+
+.pill-note.is-working {
+  background: rgba(0, 122, 255, 0.12);
+  color: #0b67d1;
+}
+
+.pill-note.is-error {
+  background: rgba(214, 71, 90, 0.12);
+  color: #b42337;
+}
+
+body.theme-dark .pill-note.is-success {
+  background: rgba(41, 161, 90, 0.18);
+  color: #7ee0a1;
+}
+
+body.theme-dark .pill-note.is-working {
+  background: rgba(48, 125, 255, 0.22);
+  color: #8ab8ff;
+}
+
+body.theme-dark .pill-note.is-error {
+  background: rgba(214, 71, 90, 0.22);
+  color: #ff9cad;
 }
 
 .form-grid {
