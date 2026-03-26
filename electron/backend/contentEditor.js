@@ -21,6 +21,9 @@ const OPTIONAL_RANDOM_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const NUMERIC_RANDOM_CHARSET = "0123456789";
 const STATION_ID_MAX_LENGTH = 5;
 const PAYMENT_AUTHORITY_CODE_LENGTH = 10;
+const PAYMENT_AUTHORITY_CODE_MAX = 2147483647;
+const PAYMENT_AUTHORITY_CODE_ERROR_MESSAGE =
+  `Payment Authority Code must be a whole number between 0 and ${PAYMENT_AUTHORITY_CODE_MAX}.`;
 const REFERRAL_NUMBER_PREFIX = "VA";
 const REFERRAL_NUMBER_TOTAL_LENGTH = 12;
 const REFERRAL_NUMBER_DIGIT_COUNT = REFERRAL_NUMBER_TOTAL_LENGTH - REFERRAL_NUMBER_PREFIX.length;
@@ -103,10 +106,35 @@ function validateStationId(value) {
 
 function validatePaymentAuthorityCode(value) {
   const normalized = normalizePaymentAuthorityCode(value);
-  if (normalized.length > PAYMENT_AUTHORITY_CODE_LENGTH) {
-    throw new Error(`Payment Authority Code must be ${PAYMENT_AUTHORITY_CODE_LENGTH} characters or less.`);
+  if (!normalized) {
+    return "";
   }
-  return completeWithRandomSuffix(normalized, PAYMENT_AUTHORITY_CODE_LENGTH, NUMERIC_RANDOM_CHARSET);
+
+  if (normalized.length > PAYMENT_AUTHORITY_CODE_LENGTH) {
+    throw new Error(PAYMENT_AUTHORITY_CODE_ERROR_MESSAGE);
+  }
+
+  const numericValue = Number(normalized);
+  if (!Number.isInteger(numericValue) || numericValue < 0 || numericValue > PAYMENT_AUTHORITY_CODE_MAX) {
+    throw new Error(PAYMENT_AUTHORITY_CODE_ERROR_MESSAGE);
+  }
+
+  return normalized;
+}
+
+function generatePaymentAuthorityCodeValue(baseValue, sequenceIndex) {
+  const normalized = normalizePaymentAuthorityCode(baseValue);
+  const baseNumericValue = normalized ? Number(normalized) : 100000000;
+  const offset = Math.max((sequenceIndex || 1) - 1, 0);
+  const candidateValue = baseNumericValue + offset;
+
+  if (!Number.isInteger(candidateValue) || candidateValue < 0 || candidateValue > PAYMENT_AUTHORITY_CODE_MAX) {
+    throw new Error(
+      `Payment Authority Code range exceeded. The largest supported value is ${PAYMENT_AUTHORITY_CODE_MAX}.`
+    );
+  }
+
+  return String(candidateValue);
 }
 
 function generateOptionalFieldOverrides(rawOverrides) {
@@ -328,17 +356,18 @@ function applyOptionalOverrides(data, overrides) {
     for (const [key, value] of Object.entries(currentData)) {
       if (Object.prototype.hasOwnProperty.call(overrides, key)) {
         if (VARIABLE_OVERRIDE_FIELDS[key]) {
-          const settings = VARIABLE_OVERRIDE_FIELDS[key];
-          const sequenceCharset = key === "StationID" ? getStationIdSequenceCharset(overrides[key]) : settings.charset;
-
           while (true) {
             variableOverrideCounts[key] += 1;
-            const candidateValue = generateUniqueFieldValue(
-              overrides[key],
-              variableOverrideCounts[key],
-              settings.length,
-              sequenceCharset
-            );
+            const candidateValue =
+              key === "PaymentAuthorityCode"
+                ? generatePaymentAuthorityCodeValue(overrides[key], variableOverrideCounts[key])
+                : generateUniqueFieldValue(
+                    overrides[key],
+                    variableOverrideCounts[key],
+                    VARIABLE_OVERRIDE_FIELDS[key].length,
+                    getStationIdSequenceCharset(overrides[key])
+                  );
+
             if (!variableOverrideUsedValues[key].has(candidateValue)) {
               variableOverrideUsedValues[key].add(candidateValue);
               currentData[key] = candidateValue;
@@ -389,15 +418,17 @@ function ensureSourceVariableFieldsAreUnique(data, overrides = {}) {
           continue;
         }
 
-        const sequenceCharset = getVariableFieldSequenceCharset(key, baseValue);
         let sequenceIndex = Math.max(duplicateIndex, 2);
         while (true) {
-          const candidateValue = generateUniqueFieldValue(
-            baseValue,
-            sequenceIndex,
-            settings.length,
-            sequenceCharset
-          );
+          const candidateValue =
+            key === "PaymentAuthorityCode"
+              ? generatePaymentAuthorityCodeValue(baseValue, sequenceIndex)
+              : generateUniqueFieldValue(
+                  baseValue,
+                  sequenceIndex,
+                  settings.length,
+                  getVariableFieldSequenceCharset(key, baseValue)
+                );
           if (!usedValues[key].has(candidateValue)) {
             usedValues[key].add(candidateValue);
             currentData[key] = candidateValue;
@@ -523,12 +554,14 @@ function modifyContent(
 module.exports = {
   LIST_DATE_FORMAT,
   PAYMENT_AUTHORITY_CODE_LENGTH,
+  PAYMENT_AUTHORITY_CODE_MAX,
   REFERRAL_NUMBER_DIGIT_COUNT,
   REFERRAL_NUMBER_PREFIX,
   STATION_ID_MAX_LENGTH,
   completeWithRandomSuffix,
   extractJsonChangeDefaults,
   extractListDate,
+  generatePaymentAuthorityCodeValue,
   generateOptionalFieldOverrides,
   generateReferralNumber,
   modifyContent,

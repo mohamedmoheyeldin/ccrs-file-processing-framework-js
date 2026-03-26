@@ -6,6 +6,7 @@ const DATE_PARTS = [
   { key: "minute", width: 2, min: 0, max: 59 },
   { key: "second", width: 2, min: 0, max: 59 },
 ];
+const PAYMENT_AUTHORITY_CODE_MAX = 2147483647;
 
 const state = {
   info: null,
@@ -64,8 +65,17 @@ function sanitizeStationIdInput(value) {
   return ((String(value || "").match(/[A-Za-z0-9]/g) || []).join("")).slice(0, 5);
 }
 
-function sanitizePaymentAuthorityCodeInput(value) {
-  return ((String(value || "").match(/\d/g) || []).join("")).slice(0, 10);
+function sanitizePaymentAuthorityCodeInput(value, fallbackValue = "") {
+  const digitsOnly = ((String(value || "").match(/\d/g) || []).join("")).slice(0, 10);
+  if (!digitsOnly) {
+    return "";
+  }
+
+  if (Number(digitsOnly) > PAYMENT_AUTHORITY_CODE_MAX) {
+    return fallbackValue;
+  }
+
+  return digitsOnly;
 }
 
 function formatUploadProfileSummary(summary) {
@@ -421,7 +431,11 @@ async function updatePreviews() {
       ? `Preview: ${preview.optionalOverrides.PaymentAuthorityCode}`
       : "Preview: no Payment Authority Code override";
   } catch (error) {
-    elements.referralPreview.textContent = error.message;
+    if (String(error.message || "").includes("Payment Authority Code")) {
+      elements.paymentAuthorityCodePreview.textContent = error.message;
+    } else {
+      elements.referralPreview.textContent = error.message;
+    }
   }
 }
 
@@ -694,7 +708,9 @@ function setupEventHandlers() {
         $(id).value = sanitizeStationIdInput($(id).value);
       }
       if (id === "override-payment-authority-code") {
-        $(id).value = sanitizePaymentAuthorityCodeInput($(id).value);
+        const input = $(id);
+        input.value = sanitizePaymentAuthorityCodeInput(input.value, input.dataset.lastValidValue || "");
+        input.dataset.lastValidValue = input.value;
       }
       if (id === "file-count" || id === "referrals-per-file") {
         updateTemplateSummary();
