@@ -13,6 +13,11 @@ const {
   validatePaymentAuthorityCode,
 } = require("../electron/backend/contentEditor");
 const backend = require("../electron/backend");
+const {
+  cleanupRuntimeArtifacts,
+  cleanupKnownTemporaryArtifacts,
+  registerTemporaryPath,
+} = require("../electron/backend/runtimeCleanup");
 const { summarizeUploadProfiles } = require("../electron/backend/uploader");
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-smoke-"));
@@ -246,6 +251,24 @@ test("modifyContent rejects source files with oversized Payment Authority Code v
     () => modifyContent(filePath, "", null, "999-99-0001", 1, 1, {}, 1),
     /Payment Authority Code must be a whole number between 0 and 99999/
   );
+});
+
+test("runtime cleanup removes tracked temp directories and stale known temp files", () => {
+  const trackedDir = registerTemporaryPath(fs.mkdtempSync(path.join(os.tmpdir(), "ccrs_referral_generator_")));
+  fs.writeFileSync(path.join(trackedDir, "generated.json"), "{}", "utf8");
+
+  const staleWinscpScript = path.join(os.tmpdir(), `winscp_upload_${Date.now()}_smoke.txt`);
+  fs.writeFileSync(staleWinscpScript, "exit", "utf8");
+  const staleDate = new Date(Date.now() - 10 * 60 * 1000);
+  fs.utimesSync(staleWinscpScript, staleDate, staleDate);
+
+  const removedStaleCount = cleanupKnownTemporaryArtifacts({ minimumAgeMs: 5 * 60 * 1000 });
+  assert.equal(removedStaleCount, 1);
+  assert.equal(fs.existsSync(staleWinscpScript), false);
+
+  const removedRuntimeCount = cleanupRuntimeArtifacts();
+  assert.equal(removedRuntimeCount >= 1, true);
+  assert.equal(fs.existsSync(trackedDir), false);
 });
 
 test("Upload profile summary reports server and user counts", () => {

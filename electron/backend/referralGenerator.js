@@ -2,6 +2,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { bundlePath } = require("./appPaths");
+const { registerTemporaryPath, removePath } = require("./runtimeCleanup");
 
 const TEMPLATE_DIRECTORY = bundlePath("templates", "referrals");
 
@@ -47,29 +48,35 @@ function buildGeneratedReferralSources(fileCount, referralsPerFile) {
     throw new Error("No bundled referral templates were found.");
   }
 
-  const generatedDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs_referral_generator_"));
-  for (let fileIndex = 0; fileIndex < fileCount; fileIndex += 1) {
-    const templatePath = templatePaths[fileIndex % templatePaths.length];
-    const templateData = JSON.parse(fs.readFileSync(templatePath, "utf8"));
-    const referrals = Array.isArray(templateData.Referrals) ? templateData.Referrals : [];
-    if (referrals.length === 0) {
-      throw new Error(`The selected template does not contain any Referrals: ${path.basename(templatePath)}`);
-    }
+  const generatedDirectory = registerTemporaryPath(
+    fs.mkdtempSync(path.join(os.tmpdir(), "ccrs_referral_generator_"))
+  );
+  try {
+    for (let fileIndex = 0; fileIndex < fileCount; fileIndex += 1) {
+      const templatePath = templatePaths[fileIndex % templatePaths.length];
+      const templateData = JSON.parse(fs.readFileSync(templatePath, "utf8"));
+      const referrals = Array.isArray(templateData.Referrals) ? templateData.Referrals : [];
+      if (referrals.length === 0) {
+        throw new Error(`The selected template does not contain any Referrals: ${path.basename(templatePath)}`);
+      }
 
-    const generatedData = JSON.parse(JSON.stringify(templateData));
-    generatedData.Referrals = [];
-    for (let referralIndex = 0; referralIndex < referralsPerFile; referralIndex += 1) {
-      generatedData.Referrals.push(JSON.parse(JSON.stringify(referrals[referralIndex % referrals.length])));
-    }
+      const generatedData = JSON.parse(JSON.stringify(templateData));
+      generatedData.Referrals = [];
+      for (let referralIndex = 0; referralIndex < referralsPerFile; referralIndex += 1) {
+        generatedData.Referrals.push(JSON.parse(JSON.stringify(referrals[referralIndex % referrals.length])));
+      }
 
-    fs.writeFileSync(
-      path.join(generatedDirectory, `generated_template_${fileIndex + 1}.json`),
-      JSON.stringify(generatedData, null, 4),
-      "utf8"
-    );
+      fs.writeFileSync(
+        path.join(generatedDirectory, `generated_template_${fileIndex + 1}.json`),
+        JSON.stringify(generatedData, null, 4),
+        "utf8"
+      );
+    }
+    return generatedDirectory;
+  } catch (error) {
+    removePath(generatedDirectory);
+    throw error;
   }
-
-  return generatedDirectory;
 }
 
 module.exports = {

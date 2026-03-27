@@ -506,6 +506,9 @@ function applyInfo(info) {
   state.info = info;
   elements.appVersionBadge.textContent = info.appVersionLabel || "";
   elements.appVersionBadge.classList.toggle("hidden", !info.appVersionLabel);
+  document.title = info.appVersionLabel
+    ? `CCRS File Processing Framework | ${info.appVersionLabel}`
+    : "CCRS File Processing Framework";
   setUploadReadyState("idle");
   renderUploadTargets(info.uploadTargets || []);
   applyGeneratorDefaults();

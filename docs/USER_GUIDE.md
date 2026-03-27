@@ -11,7 +11,7 @@ Before you run the app, make sure you have:
 
 To start the packaged app:
 - open the folder that contains the `.exe`
-- run either `CCRS File Processing Framework Setup <version>.exe` or `CCRS File Processing Framework <version>.exe`
+- run either `CCRS File Processing Framework Setup Production V1.exe` or `CCRS File Processing Framework Production V1.exe`
 
 On first run, the app creates local folders next to the `.exe`:
 - `config`
@@ -108,6 +108,7 @@ If a field is blank, the app keeps the original value unless that field is desig
 
 Supported optional fields:
 - `SSN`
+- `ICN`
 - `Station ID`
 - `Payment Authority Code`
 - `DOB`
@@ -119,6 +120,19 @@ Supported optional fields:
 - `Referral Last Update Date`
 - `Referral Period`
 - `Referral Consult ID`
+
+### ICN
+The `ICN` controls are inside `Show Optional Fields`.
+
+You can choose one of three formats:
+- keep `TEST` and let the app generate the remaining characters automatically
+- keep `TEST` and enter your own letters and numbers for the custom portion
+- enter a custom full ICN base and let the app generate the remaining characters automatically
+
+Rules:
+- the `TEST` custom value accepts letters and numbers
+- the app keeps each generated ICN unique within the run
+- if you leave ICN on the default option, the app still generates a different `TEST...` ICN for each referral
 
 ### Station ID
 Rules:
@@ -217,4 +231,5 @@ If you share the app with other users, make sure the `docs` folder stays next to
 - the app creates one `.gz` file per run
 - older `.gz` files are not removed automatically
 - you can keep the processed `.json` files or keep only the `.gz`
+- app-created temporary staging folders and temporary upload helper files are cleaned automatically after the run or when the app closes
 - upload to `PROD` is not enabled in the app

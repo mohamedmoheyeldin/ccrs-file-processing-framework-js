@@ -13,15 +13,15 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "6.3.0",
-  "channel": "Beta"
+  "version": "6.4.0",
+  "label": "Production V1"
 }
 ```
 
 How it works:
-- `version` controls the Windows build version and the `.exe` filenames.
-- `channel` controls the badge prefix shown in the app, such as `Beta`.
-- The app displays `Beta 6.3` while the build artifacts use `6.3.0`.
+- `version` stays numeric because Windows packaging and Electron builds require a standard build version.
+- `label` is the user-facing release name shown in the app badge and window title.
+- The app now displays `Production V1` while the internal build version remains `6.4.0`.
 - `npm start`, `npm test`, and `npm run dist` automatically sync `package.json` and `package-lock.json` from this file before running.
 
 ## Developer Run
@@ -42,12 +42,12 @@ Or directly:
 - `npm run dist`
 
 The build outputs use the current version from [config/app_version.json](config/app_version.json), for example:
-- `dist-electron\CCRS File Processing Framework Setup 6.3.0.exe`
-- `dist-electron\CCRS File Processing Framework 6.3.0.exe`
+- `dist-electron\CCRS File Processing Framework Setup 6.4.0.exe`
+- `dist-electron\CCRS File Processing Framework 6.4.0.exe`
 
-The final shareable copies are placed in `release\`:
-- `release\CCRS File Processing Framework Setup 6.3.0.exe`
-- `release\CCRS File Processing Framework 6.3.0.exe`
+The final shareable copies are placed in `release\` using the display label when one is configured:
+- `release\CCRS File Processing Framework Setup Production V1.exe`
+- `release\CCRS File Processing Framework Production V1.exe`
 
 Use the setup `.exe` for a normal installer flow. Use the non-setup `.exe` as the portable app.
 
@@ -71,11 +71,14 @@ Files that are kept in sync from the shipped app:
 ## Supported Workflows
 - Process existing CCRS referral JSON files
 - Generate new referral JSON files from bundled templates
+- Use the bundled CCN1 all-fields reference templates stored under `templates\referrals`
 - Override referral number, SSN, station ID, payment authority code, and selected optional fields
+- Choose how ICNs should be generated: keep `TEST`, keep `TEST` with a custom suffix, or use a custom full ICN base
 - Produce final `.gz` archives
 - Import upload settings from `WinSCP.ini` or credentials JSON
 - Upload final archives to configured `DEV`, `PPD`, and `SQA` targets
 - Test upload connectivity before running the full workflow
+- Automatically clean app-created temporary staging folders and upload helper files after a run or when the app closes
 
 ## Validation And Testing
 The app now validates key fields before processing and shows inline messages for common mistakes such as:
@@ -89,8 +92,10 @@ The app now validates key fields before processing and shows inline messages for
 Smoke coverage lives in [scripts/smoke-test.js](scripts/smoke-test.js). The current smoke tests cover:
 - payment authority code limits and generation
 - referral number generation
+- ICN generation modes
 - optional override normalization
 - invalid date rejection
+- runtime cleanup of tracked temp artifacts
 - upload profile summaries
 - preview validation field errors
 

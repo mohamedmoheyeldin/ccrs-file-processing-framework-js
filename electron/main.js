@@ -82,6 +82,11 @@ ipcMain.handle("backend:run", async (event, payload) =>
 
 app.whenReady().then(() => {
   app.setAppUserModelId(APP_USER_MODEL_ID);
+  try {
+    backend.cleanupStaleRuntimeArtifacts();
+  } catch (error) {
+    console.error("Unable to clean stale runtime artifacts.", error);
+  }
   createWindow();
 
   app.on("activate", () => {
@@ -89,6 +94,14 @@ app.whenReady().then(() => {
       createWindow();
     }
   });
+});
+
+app.on("before-quit", () => {
+  try {
+    backend.cleanupRuntimeArtifacts();
+  } catch (error) {
+    console.error("Unable to clean runtime artifacts before quit.", error);
+  }
 });
 
 app.on("window-all-closed", () => {
