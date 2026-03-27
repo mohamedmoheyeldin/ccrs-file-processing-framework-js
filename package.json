@@ -1,6 +1,6 @@
 {
   "name": "ccrs-file-processing-framework",
-  "version": "6.3.0",
+  "version": "6.4.0",
   "description": "Pure JavaScript Electron desktop app for the CCRS File Processing Framework.",
   "main": "electron/main.js",
   "author": "Mohamed Moheyeldin (Eldin)",
