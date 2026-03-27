@@ -4,10 +4,12 @@ const os = require("node:os");
 const path = require("node:path");
 
 const {
+  ICN_MODES,
   generateOptionalFieldOverrides,
   generatePaymentAuthorityCodeValue,
   generateReferralNumber,
   modifyContent,
+  prepareIcnSettings,
   validatePaymentAuthorityCode,
 } = require("../electron/backend/contentEditor");
 const backend = require("../electron/backend");
@@ -119,6 +121,113 @@ test("modifyContent applies Payment Authority Code overrides uniquely across ref
   assert.equal(parsed.ListDate, "2026-03-26 11:30:00");
 });
 
+test("modifyContent keeps TEST and generates unique ICNs by default", () => {
+  const filePath = writeJsonFixture("default-icn.json", {
+    Referrals: [
+      {
+        ReferralNumber: "VA0000000001",
+        ICN: "1",
+        FirstName: "John",
+        LastName: "Doe",
+        SSN: "111-11-1111",
+      },
+      {
+        ReferralNumber: "VA0000000002",
+        ICN: "2",
+        FirstName: "Jane",
+        LastName: "Doe",
+        SSN: "222-22-2222",
+      },
+    ],
+  });
+
+  const result = modifyContent(filePath, "", null, "999-99-0001", 1, 1, {}, 1);
+  const parsed = JSON.parse(result.content);
+
+  assert.match(parsed.Referrals[0].ICN, /^TEST\d{13}$/);
+  assert.match(parsed.Referrals[1].ICN, /^TEST\d{13}$/);
+  assert.notEqual(parsed.Referrals[0].ICN, parsed.Referrals[1].ICN);
+});
+
+test("modifyContent supports a custom suffix after TEST", () => {
+  const filePath = writeJsonFixture("custom-test-icn.json", {
+    Referrals: [
+      {
+        ReferralNumber: "VA0000000001",
+        ICN: "1",
+        FirstName: "John",
+        LastName: "Doe",
+        SSN: "111-11-1111",
+      },
+      {
+        ReferralNumber: "VA0000000002",
+        ICN: "2",
+        FirstName: "Jane",
+        LastName: "Doe",
+        SSN: "222-22-2222",
+      },
+    ],
+  });
+
+  const result = modifyContent(
+    filePath,
+    "",
+    null,
+    "999-99-0001",
+    1,
+    1,
+    {},
+    1,
+    prepareIcnSettings({ mode: ICN_MODES.TEST_CUSTOM_SUFFIX, value: "AB12" }),
+    1
+  );
+  const parsed = JSON.parse(result.content);
+
+  assert.match(parsed.Referrals[0].ICN, /^TESTAB12[A-Z0-9]{9}$/);
+  assert.match(parsed.Referrals[1].ICN, /^TESTAB12[A-Z0-9]{9}$/);
+  assert.notEqual(parsed.Referrals[0].ICN, parsed.Referrals[1].ICN);
+});
+
+test("modifyContent supports a fully custom ICN base", () => {
+  const filePath = writeJsonFixture("custom-full-icn.json", {
+    Referrals: [
+      {
+        ReferralNumber: "VA0000000001",
+        ICN: "1",
+        FirstName: "John",
+        LastName: "Doe",
+        SSN: "111-11-1111",
+      },
+      {
+        ReferralNumber: "VA0000000002",
+        ICN: "2",
+        FirstName: "Jane",
+        LastName: "Doe",
+        SSN: "222-22-2222",
+      },
+    ],
+  });
+
+  const result = modifyContent(
+    filePath,
+    "",
+    null,
+    "999-99-0001",
+    1,
+    1,
+    {},
+    1,
+    prepareIcnSettings({ mode: ICN_MODES.CUSTOM_FULL, value: "AB12" }),
+    1
+  );
+  const parsed = JSON.parse(result.content);
+
+  assert.match(parsed.Referrals[0].ICN, /^AB12[A-Z0-9]{13}$/);
+  assert.equal(parsed.Referrals[0].ICN.length, 17);
+  assert.equal(parsed.Referrals[1].ICN.length, 17);
+  assert.notEqual(parsed.Referrals[0].ICN, parsed.Referrals[1].ICN);
+});
+
 test("modifyContent rejects source files with oversized Payment Authority Code values", () => {
   const filePath = writeJsonFixture("invalid-payment-authority-code.json", {
     Referrals: [
@@ -155,6 +264,10 @@ test("Upload profile summary reports server and user counts", () => {
 test("Preview validation reports field-level errors without throwing", async () => {
   const preview = await backend.handleCommand("preview", {
     referralReplacementCode: "123",
+    icnSettings: {
+      mode: ICN_MODES.TEST_CUSTOM_SUFFIX,
+      value: "",
+    },
     ssnValue: "9999990001",
     optionalOverrides: {
       DOB: "2026/03/26",
@@ -169,6 +282,7 @@ test("Preview validation reports field-level errors without throwing", async () 
   });
 
   assert.equal(preview.fieldErrors.ssnValue, "SSN must use the format 999-99-0001.");
+  assert.equal(preview.fieldErrors.icnValue, "Enter up to 13 letters or numbers after TEST.");
   assert.equal(preview.fieldErrors.PaymentAuthorityCode, "Payment Authority Code must be a whole number between 0 and 99999.");
   assert.equal(preview.fieldErrors.DOB, "DOB must use the format YYYY-MM-DD.");
   assert.equal(preview.fieldErrors.fileCount, "Number of JSON files to generate must be greater than zero.");

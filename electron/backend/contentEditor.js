@@ -30,6 +30,14 @@ const PAYMENT_AUTHORITY_CODE_ERROR_MESSAGE =
 const REFERRAL_NUMBER_PREFIX = "VA";
 const REFERRAL_NUMBER_TOTAL_LENGTH = 12;
 const REFERRAL_NUMBER_DIGIT_COUNT = REFERRAL_NUMBER_TOTAL_LENGTH - REFERRAL_NUMBER_PREFIX.length;
+const ICN_TEST_PREFIX = "TEST";
+const ICN_TOTAL_LENGTH = 17;
+const ICN_TEST_SUFFIX_LENGTH = ICN_TOTAL_LENGTH - ICN_TEST_PREFIX.length;
+const ICN_MODES = {
+  TEST_DYNAMIC: "test-dynamic",
+  TEST_CUSTOM_SUFFIX: "test-custom-suffix",
+  CUSTOM_FULL: "custom-full",
+};
 const TRACKED_JSON_FIELDS = [
   "SSN",
   "DOB",
@@ -124,6 +132,10 @@ function normalizePaymentAuthorityCode(value) {
   return ((value || "").trim().match(/\d/g) || []).join("");
 }
 
+function normalizeAlphaNumeric(value) {
+  return ((value || "").trim().match(/[A-Za-z0-9]/g) || []).join("").toUpperCase();
+}
+
 function completeWithRandomSuffix(value, targetLength, fillCharacters = OPTIONAL_RANDOM_CHARSET) {
   const normalized = (value || "").trim();
   if (normalized.length >= targetLength) {
@@ -156,6 +168,116 @@ function validatePaymentAuthorityCode(value) {
   }
 
   return normalized;
+}
+
+function validateIcnSettings(rawSettings = {}) {
+  const requestedMode = String(rawSettings.mode || ICN_MODES.TEST_DYNAMIC).trim();
+  const mode = Object.values(ICN_MODES).includes(requestedMode) ? requestedMode : ICN_MODES.TEST_DYNAMIC;
+
+  if (mode === ICN_MODES.TEST_DYNAMIC) {
+    return {
+      mode,
+      value: "",
+    };
+  }
+
+  if (mode === ICN_MODES.TEST_CUSTOM_SUFFIX) {
+    const normalizedValue = normalizeAlphaNumeric(rawSettings.value || "");
+    if (!normalizedValue) {
+      throw new Error(`Enter up to ${ICN_TEST_SUFFIX_LENGTH} letters or numbers after ${ICN_TEST_PREFIX}.`);
+    }
+    if (normalizedValue.length > ICN_TEST_SUFFIX_LENGTH) {
+      throw new Error(`Enter up to ${ICN_TEST_SUFFIX_LENGTH} letters or numbers after ${ICN_TEST_PREFIX}.`);
+    }
+    return {
+      mode,
+      value: normalizedValue,
+    };
+  }
+
+  const normalizedValue = normalizeAlphaNumeric(rawSettings.value || "");
+  if (!normalizedValue) {
+    throw new Error(`Enter up to ${ICN_TOTAL_LENGTH} letters or numbers for the full ICN.`);
+  }
+  if (normalizedValue.length > ICN_TOTAL_LENGTH) {
+    throw new Error(`Enter up to ${ICN_TOTAL_LENGTH} letters or numbers for the full ICN.`);
+  }
+
+  return {
+    mode: ICN_MODES.CUSTOM_FULL,
+    value: normalizedValue,
+  };
+}
+
+function prepareIcnSettings(rawSettings = {}) {
+  const validatedSettings = validateIcnSettings(rawSettings);
+
+  if (validatedSettings.mode === ICN_MODES.TEST_DYNAMIC) {
+    return {
+      mode: validatedSettings.mode,
+      baseValue: randomFromCharset(NUMERIC_RANDOM_CHARSET, ICN_TEST_SUFFIX_LENGTH),
+    };
+  }
+
+  if (validatedSettings.mode === ICN_MODES.TEST_CUSTOM_SUFFIX) {
+    return {
+      mode: validatedSettings.mode,
+      baseValue: completeWithRandomSuffix(
+        validatedSettings.value,
+        ICN_TEST_SUFFIX_LENGTH,
+        OPTIONAL_RANDOM_CHARSET
+      ),
+    };
+  }
+
+  return {
+    mode: validatedSettings.mode,
+    baseValue: completeWithRandomSuffix(validatedSettings.value, ICN_TOTAL_LENGTH),
+  };
+}
+
+function describeIcnPreview(rawSettings = {}) {
+  const validatedSettings = validateIcnSettings(rawSettings);
+
+  if (validatedSettings.mode === ICN_MODES.TEST_DYNAMIC) {
+    return `Preview: ${ICN_TEST_PREFIX} + ${ICN_TEST_SUFFIX_LENGTH} generated digits`;
+  }
+
+  if (validatedSettings.mode === ICN_MODES.TEST_CUSTOM_SUFFIX) {
+    const remaining = ICN_TEST_SUFFIX_LENGTH - validatedSettings.value.length;
+    if (remaining <= 0) {
+      return `Preview: ${ICN_TEST_PREFIX}${validatedSettings.value}`;
+    }
+    return `Preview: ${ICN_TEST_PREFIX}${validatedSettings.value} + ${remaining} generated character${remaining === 1 ? "" : "s"}`;
+  }
+
+  const remaining = ICN_TOTAL_LENGTH - validatedSettings.value.length;
+  if (remaining <= 0) {
+    return `Preview: ${validatedSettings.value}`;
+  }
+  return `Preview: ${validatedSettings.value} + ${remaining} generated character${remaining === 1 ? "" : "s"}`;
+}
+
+function generateIcnValue(icnSettings, sequenceIndex) {
+  if (!icnSettings || !icnSettings.mode) {
+    icnSettings = prepareIcnSettings();
+  }
+
+  if (icnSettings.mode === ICN_MODES.CUSTOM_FULL) {
+    return generateUniqueFieldValue(
+      icnSettings.baseValue,
+      sequenceIndex,
+      ICN_TOTAL_LENGTH,
+      OPTIONAL_RANDOM_CHARSET
+    );
+  }
+
+  return `${ICN_TEST_PREFIX}${generateUniqueFieldValue(
+    icnSettings.baseValue,
+    sequenceIndex,
+    ICN_TEST_SUFFIX_LENGTH,
+    icnSettings.mode === ICN_MODES.TEST_CUSTOM_SUFFIX ? OPTIONAL_RANDOM_CHARSET : NUMERIC_RANDOM_CHARSET
+  )}`;
 }
 
 function generatePaymentAuthorityCodeValue(baseValue, sequenceIndex) {
@@ -363,31 +485,36 @@ function getVariableFieldSequenceCharset(key, baseValue) {
   return VARIABLE_OVERRIDE_FIELDS[key].charset;
 }
 
-function updatePatientIdentity(data, ssnValue) {
+function updatePatientIdentity(data, ssnValue, icnSettings = prepareIcnSettings(), sequenceStart = 1) {
+  let replacementsUsed = 0;
+
   if (Array.isArray(data)) {
     for (const item of data) {
-      updatePatientIdentity(item, ssnValue);
+      replacementsUsed += updatePatientIdentity(item, ssnValue, icnSettings, sequenceStart + replacementsUsed);
     }
-    return;
+    return replacementsUsed;
   }
 
   if (!data || typeof data !== "object") {
-    return;
+    return replacementsUsed;
   }
 
   if (["ICN", "FirstName", "LastName", "SSN"].every((key) => Object.prototype.hasOwnProperty.call(data, key))) {
-    data.ICN = `TEST${randomFromCharset(NUMERIC_RANDOM_CHARSET, 13)}`;
+    data.ICN = generateIcnValue(icnSettings, sequenceStart + replacementsUsed);
     data.FirstName = randomChoice(FIRST_NAMES);
     data.LastName = randomChoice(LAST_NAMES);
     if (Object.prototype.hasOwnProperty.call(data, "MiddleName")) {
       data.MiddleName = randomChoice("ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""));
     }
     data.SSN = ssnValue;
+    replacementsUsed += 1;
   }
 
   for (const value of Object.values(data)) {
-    updatePatientIdentity(value, ssnValue);
+    replacementsUsed += updatePatientIdentity(value, ssnValue, icnSettings, sequenceStart + replacementsUsed);
   }
+
+  return replacementsUsed;
 }
 
 function applyOptionalOverrides(data, overrides) {
@@ -581,7 +708,9 @@ function modifyContent(
   _fileIndex,
   _totalFiles,
   optionalOverrides,
-  referralSequenceStart = 1
+  referralSequenceStart = 1,
+  icnSettings = prepareIcnSettings(),
+  icnSequenceStart = 1
 ) {
   const mappings = loadMappings();
   let content = fs.readFileSync(filePath, "utf8");
@@ -599,7 +728,7 @@ function modifyContent(
   if (referralReplacementCode) {
     referralNumbersUsed = applyReferralNumberOverride(data, referralReplacementCode, referralSequenceStart);
   }
-  updatePatientIdentity(data, ssnValue.trim());
+  const patientIdentitiesUsed = updatePatientIdentity(data, ssnValue.trim(), icnSettings, icnSequenceStart);
   if (optionalOverrides && Object.keys(optionalOverrides).length > 0) {
     applyOptionalOverrides(data, optionalOverrides);
   }
@@ -608,10 +737,15 @@ function modifyContent(
   return {
     content: JSON.stringify(data, null, 4),
     referralNumbersUsed,
+    patientIdentitiesUsed,
   };
 }
 
 module.exports = {
+  ICN_MODES,
+  ICN_TEST_PREFIX,
+  ICN_TEST_SUFFIX_LENGTH,
+  ICN_TOTAL_LENGTH,
   LIST_DATE_FORMAT,
   PAYMENT_AUTHORITY_CODE_LENGTH,
   PAYMENT_AUTHORITY_CODE_MAX,
@@ -619,6 +753,7 @@ module.exports = {
   REFERRAL_NUMBER_PREFIX,
   STATION_ID_MAX_LENGTH,
   completeWithRandomSuffix,
+  describeIcnPreview,
   extractJsonChangeDefaults,
   extractListDate,
   generatePaymentAuthorityCodeValue,
@@ -628,7 +763,9 @@ module.exports = {
   normalizePaymentAuthorityCode,
   normalizeReferralNumberStart,
   normalizeStationId,
+  prepareIcnSettings,
   validateIsoDate,
+  validateIcnSettings,
   validateIsoDateTime,
   validatePaymentAuthorityCode,
   validateReferralNumberStart,

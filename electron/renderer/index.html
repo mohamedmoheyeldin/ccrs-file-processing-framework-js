@@ -145,7 +145,8 @@
               <div class="form-grid two-col">
                 <label class="field-block">
                   <span>Referral Number</span>
-                  <input id="referral-code" type="text" placeholder="Enter the starting referral number" />
+                  <input id="referral-code" type="text" placeholder="Enter only the part after VA" />
+                  <small class="helper-text">`VA` will be generated automatically. Enter only the rest of the Referral Number.</small>
                   <small id="referral-preview" class="helper-text">Preview: default referral numbers from source files</small>
                 </label>
                 <label class="field-block">
@@ -214,6 +215,33 @@
 
               <div id="optional-fields" class="optional-fields hidden">
                 <div class="form-grid two-col">
+                  <label class="field-block">
+                    <span>ICN Format</span>
+                    <div class="toggle-row">
+                      <label class="radio-chip">
+                        <input id="icn-mode-test-dynamic" name="icn-mode" type="radio" value="test-dynamic" checked />
+                        <span>Keep TEST and generate the rest</span>
+                      </label>
+                      <label class="radio-chip">
+                        <input
+                          id="icn-mode-test-custom-suffix"
+                          name="icn-mode"
+                          type="radio"
+                          value="test-custom-suffix"
+                        />
+                        <span>Keep TEST and enter the rest</span>
+                      </label>
+                      <label class="radio-chip">
+                        <input id="icn-mode-custom-full" name="icn-mode" type="radio" value="custom-full" />
+                        <span>Custom full ICN</span>
+                      </label>
+                    </div>
+                  </label>
+                  <label class="field-block">
+                    <span>ICN Custom Value</span>
+                    <input id="icn-custom-value" type="text" placeholder="Using TEST + generated digits" />
+                    <small id="icn-preview" class="helper-text">Preview: TEST + 13 generated digits</small>
+                  </label>
                   <label class="field-block">
                     <span>Station ID</span>
                     <input id="override-station-id" type="text" maxlength="5" placeholder="Auto-completes to 5 chars" />

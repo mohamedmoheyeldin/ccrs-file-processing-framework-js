@@ -140,6 +140,47 @@ function sanitizePaymentAuthorityCodeInput(value, fallbackValue = "") {
   return digitsOnly;
 }
 
+function getSelectedIcnMode() {
+  const selected = document.querySelector('input[name="icn-mode"]:checked');
+  return selected?.value || "test-dynamic";
+}
+
+function getReferralNumberBodyLimit() {
+  return Number(state.info?.constants?.referralNumberDigits || 10);
+}
+
+function getIcnConstants() {
+  return {
+    testPrefix: state.info?.constants?.icnTestPrefix || "TEST",
+    suffixLength: Number(state.info?.constants?.icnSuffixLength || 13),
+    totalLength: Number(state.info?.constants?.icnTotalLength || 17),
+  };
+}
+
+function sanitizeIcnInput(value, mode = getSelectedIcnMode()) {
+  const { suffixLength, totalLength } = getIcnConstants();
+  if (mode === "test-custom-suffix") {
+    return ((String(value || "").toUpperCase().match(/[A-Z0-9]/g) || []).join("")).slice(0, suffixLength);
+  }
+
+  if (mode === "custom-full") {
+    return ((String(value || "").toUpperCase().match(/[A-Z0-9]/g) || []).join("")).slice(0, totalLength);
+  }
+
+  return "";
+}
+
+function sanitizeReferralNumberInput(value) {
+  const limit = getReferralNumberBodyLimit();
+  let normalized = String(value || "").trim();
+
+  if (/^VA/i.test(normalized)) {
+    normalized = normalized.slice(2);
+  }
+
+  return ((normalized.match(/[A-Za-z0-9]/g) || []).join("")).slice(0, limit);
+}
+
 function formatUploadProfileSummary(summary) {
   if (!summary || !summary.serverCount || !summary.userCount) {
     return "";
@@ -276,12 +317,20 @@ function collectUploadSettings() {
   return { enabled, targets };
 }
 
+function collectIcnSettings() {
+  return {
+    mode: getSelectedIcnMode(),
+    value: readValue("icn-custom-value"),
+  };
+}
+
 function sharedPayload() {
   return {
     outputDir: readValue("output-dir"),
     replacementCode: readValue("replacement-code"),
     archiveBasename: readValue("archive-basename"),
     referralReplacementCode: readValue("referral-code"),
+    icnSettings: collectIcnSettings(),
     ssnValue: readValue("ssn-value"),
     listDateOverride: getListDateOverride(),
     clearOutput: readChecked("clear-output"),
@@ -415,10 +464,33 @@ function renderUploadTargets(targets) {
   }
 }
 
+function syncIcnFieldState() {
+  const mode = getSelectedIcnMode();
+  const input = elements.icnCustomValue;
+  const { testPrefix, suffixLength, totalLength } = getIcnConstants();
+  if (!input) {
+    return;
+  }
+
+  input.disabled = mode === "test-dynamic";
+  input.value = sanitizeIcnInput(input.value, mode);
+
+  if (mode === "test-custom-suffix") {
+    input.placeholder = `Enter up to ${suffixLength} letters or numbers after ${testPrefix}`;
+    return;
+  }
+
+  if (mode === "custom-full") {
+    input.placeholder = `Enter up to ${totalLength} letters or numbers`;
+    return;
+  }
+
+  input.placeholder = `Using ${testPrefix} + generated digits`;
+}
+
 function applyGeneratorDefaults() {
   const defaults = state.info?.generatorDefaults || {};
 
-  setValueIfEmpty("referral-code", defaults.ReferralNumber);
   setValueIfEmpty("override-network", defaults.Network);
   setValueIfEmpty("override-referral-period", defaults.ReferralPeriod);
   setValueIfEmpty("override-dob", defaults.DOB);
@@ -454,7 +526,6 @@ function applySourceInspection(inspection) {
     : "No source ListDate found yet.";
 
   const defaults = inspection?.defaults || {};
-  setValueIfEmpty("referral-code", defaults.ReferralNumber);
   setValueIfEmpty("override-network", defaults.Network);
   setValueIfEmpty("override-referral-period", defaults.ReferralPeriod);
   setValueIfEmpty("override-dob", defaults.DOB);
@@ -508,6 +579,7 @@ function applyFieldErrors(fieldErrors = {}) {
     fieldErrors.ReferralLastUpdateDate
   );
   setPreviewHelperState(elements.referralPreview, $("referral-code"), fieldErrors.referralReplacementCode);
+  setPreviewHelperState(elements.icnPreview, $("icn-custom-value"), fieldErrors.icnValue);
   setPreviewHelperState(elements.stationIdPreview, $("override-station-id"), fieldErrors.StationID);
   setPreviewHelperState(
     elements.paymentAuthorityCodePreview,
@@ -572,6 +644,7 @@ async function updatePreviews() {
       replacementCode: readValue("replacement-code"),
       archiveBasename: readValue("archive-basename"),
       referralReplacementCode: readValue("referral-code"),
+      icnSettings: collectIcnSettings(),
       ssnValue: readValue("ssn-value"),
       optionalOverrides: collectOptionalOverrides(),
       fileCount: Number(readValue("file-count") || 0),
@@ -587,6 +660,7 @@ async function updatePreviews() {
     elements.referralPreview.textContent = preview.referralNumber
       ? `Preview: ${preview.referralNumber}`
       : "Preview: default referral numbers from source files";
+    elements.icnPreview.textContent = preview.icnPreview || "Preview: TEST + 13 generated digits";
     elements.stationIdPreview.textContent = preview.optionalOverrides.StationID
       ? `Preview: ${preview.optionalOverrides.StationID}`
       : "Preview: no Station ID override";
@@ -867,6 +941,7 @@ function setupEventHandlers() {
     "replacement-code",
     "archive-basename",
     "referral-code",
+    "icn-custom-value",
     "ssn-value",
     "override-station-id",
     "override-payment-authority-code",
@@ -883,6 +958,12 @@ function setupEventHandlers() {
     "referrals-per-file",
   ]) {
     $(id).addEventListener("input", () => {
+      if (id === "referral-code") {
+        $(id).value = sanitizeReferralNumberInput($(id).value);
+      }
+      if (id === "icn-custom-value") {
+        $(id).value = sanitizeIcnInput($(id).value);
+      }
       if (id === "override-station-id") {
         $(id).value = sanitizeStationIdInput($(id).value);
       }
@@ -901,6 +982,12 @@ function setupEventHandlers() {
   elements.overrideNetwork.addEventListener("change", () => {
     updatePreviews();
   });
+  for (const input of document.querySelectorAll('input[name="icn-mode"]')) {
+    input.addEventListener("change", () => {
+      syncIcnFieldState();
+      updatePreviews();
+    });
+  }
   elements.uploadEnabled.addEventListener("change", () => {
     updatePreviews();
   });
@@ -952,6 +1039,8 @@ function cacheElements() {
     heroTitle: $("hero-title"),
     importUploadSource: $("import-upload-source"),
     inputDir: $("input-dir"),
+    icnCustomValue: $("icn-custom-value"),
+    icnPreview: $("icn-preview"),
     keepExistingFiles: $("keep-existing-files"),
     keepProcessedJson: $("keep-processed-json"),
     listDateSourceValue: $("list-date-source-value"),
@@ -1011,7 +1100,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   captureStaticHelperDefaults();
   setTheme("light");
   startLiveListDateClock();
+  syncIcnFieldState();
   setupEventHandlers();
   syncWorkflowText();
   await refreshInfo();
+  syncIcnFieldState();
 });
