@@ -1,5 +1,4 @@
 config/upload_credentials.json
 upload_import/WinSCP.ini
-templates/referrals/
 node_modules/
 src/__pycache__/

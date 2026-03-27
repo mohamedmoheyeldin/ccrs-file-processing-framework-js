@@ -30,6 +30,7 @@ const {
   buildGeneratedReferralSources,
   getGeneratorDefaults,
 } = require("./referralGenerator");
+const { cleanupRuntimeArtifacts, cleanupStaleRuntimeArtifacts, removePath } = require("./runtimeCleanup");
 const {
   getServerDisplayForTarget,
   getUploadProfileSourcePath,
@@ -388,9 +389,7 @@ async function runGenerate(payload, emitProgress) {
     );
     return { message };
   } finally {
-    if (generatedInputDir && fs.existsSync(generatedInputDir)) {
-      fs.rmSync(generatedInputDir, { recursive: true, force: true });
-    }
+    removePath(generatedInputDir);
   }
 }
 
@@ -440,5 +439,7 @@ async function handleCommand(command, payload, emitProgress) {
 }
 
 module.exports = {
+  cleanupRuntimeArtifacts,
+  cleanupStaleRuntimeArtifacts,
   handleCommand,
 };
