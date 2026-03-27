@@ -1,5 +1,10 @@
 const fs = require("fs");
 const {
+  describeIcnPreview,
+  ICN_MODES,
+  ICN_TEST_PREFIX,
+  ICN_TEST_SUFFIX_LENGTH,
+  ICN_TOTAL_LENGTH,
   LIST_DATE_FORMAT,
   PAYMENT_AUTHORITY_CODE_LENGTH,
   REFERRAL_NUMBER_DIGIT_COUNT,
@@ -8,7 +13,9 @@ const {
   extractJsonChangeDefaults,
   extractListDate,
   generateOptionalFieldOverrides,
+  prepareIcnSettings,
   validateIsoDate,
+  validateIcnSettings,
   validateIsoDateTime,
   validatePaymentAuthorityCode,
   validateReferralNumberStart,
@@ -87,6 +94,10 @@ function getInfo() {
     uploadTargets: buildUploadTargets(profiles),
     generatorDefaults: getGeneratorDefaults(),
     constants: {
+      icnModes: ICN_MODES,
+      icnTestPrefix: ICN_TEST_PREFIX,
+      icnSuffixLength: ICN_TEST_SUFFIX_LENGTH,
+      icnTotalLength: ICN_TOTAL_LENGTH,
       listDateFormat: LIST_DATE_FORMAT,
       referralNumberPrefix: REFERRAL_NUMBER_PREFIX,
       referralNumberDigits: REFERRAL_NUMBER_DIGIT_COUNT,
@@ -155,6 +166,7 @@ function buildPreview(payload) {
   const replacementCode = sanitizeFilenameBase(payload.replacementCode || "");
   const archiveBasename = sanitizeArchiveBasename(payload.archiveBasename || DEFAULT_ARCHIVE_BASENAME);
   const referralValue = (payload.referralReplacementCode || "").trim();
+  const icnSettings = payload.icnSettings || {};
   const optionalOverrides = payload.optionalOverrides || {};
   const fieldErrors = collectFieldErrors(payload);
 
@@ -176,9 +188,15 @@ function buildPreview(payload) {
     );
   }
 
+  let icnPreview = describeIcnPreview({ mode: ICN_MODES.TEST_DYNAMIC });
+  if (!fieldErrors.icnValue) {
+    icnPreview = describeIcnPreview(icnSettings);
+  }
+
   return {
     replacementCode,
     archiveBasename,
+    icnPreview,
     referralNumber: normalizedReferral,
     optionalOverrides: normalizedOptionalOverrides,
     fieldErrors,
@@ -187,6 +205,7 @@ function buildPreview(payload) {
 
 function collectFieldErrors(payload) {
   const fieldErrors = {};
+  const icnSettings = payload.icnSettings || {};
   const optionalOverrides = payload.optionalOverrides || {};
 
   if ((payload.ssnValue || "").trim()) {
@@ -246,6 +265,12 @@ function collectFieldErrors(payload) {
     fieldErrors.referralsPerFile = "Number of referrals per file must be greater than zero.";
   }
 
+  try {
+    validateIcnSettings(icnSettings);
+  } catch (error) {
+    fieldErrors.icnValue = error.message;
+  }
+
   const uploadPayload = payload.upload || {};
   if (uploadPayload.enabled) {
     for (const target of uploadPayload.targets || []) {
@@ -288,6 +313,7 @@ function buildCommonArgs(payload, progressCallback) {
     replacementCode: (payload.replacementCode || "").trim(),
     clearOutput: Boolean(payload.clearOutput),
     referralReplacementCode: referralCode,
+    icnSettings: prepareIcnSettings(payload.icnSettings || {}),
     listDateOverride: (payload.listDateOverride || "").trim() || null,
     ssnValue,
     optionalOverrides: generateOptionalFieldOverrides(payload.optionalOverrides || {}),
@@ -315,6 +341,7 @@ async function runProcess(payload, emitProgress) {
     args.replacementCode,
     args.clearOutput,
     args.referralReplacementCode,
+    args.icnSettings,
     args.listDateOverride,
     args.ssnValue,
     args.optionalOverrides,
@@ -350,6 +377,7 @@ async function runGenerate(payload, emitProgress) {
       args.replacementCode,
       args.clearOutput,
       args.referralReplacementCode,
+      args.icnSettings,
       args.listDateOverride,
       args.ssnValue,
       args.optionalOverrides,

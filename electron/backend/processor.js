@@ -12,6 +12,7 @@ async function processFiles(
   replacementCode,
   clearOutput,
   referralReplacementCode,
+  icnSettings,
   listDateOverride,
   ssnValue,
   optionalOverrides,
@@ -29,6 +30,7 @@ async function processFiles(
   let processedCount = 0;
   let errorCount = 0;
   let referralSequenceIndex = 1;
+  let icnSequenceIndex = 1;
 
   removeJsonFiles(outputDir);
   if (clearOutput && directoryHasContents(outputDir)) {
@@ -50,11 +52,16 @@ async function processFiles(
         currentIndex,
         totalFiles,
         optionalOverrides,
-        referralSequenceIndex
+        referralSequenceIndex,
+        icnSettings,
+        icnSequenceIndex
       );
       saveFile(outputDir, newName, result.content);
       if (result.referralNumbersUsed) {
         referralSequenceIndex += result.referralNumbersUsed;
+      }
+      if (result.patientIdentitiesUsed) {
+        icnSequenceIndex += result.patientIdentitiesUsed;
       }
 
       processedCount += 1;
