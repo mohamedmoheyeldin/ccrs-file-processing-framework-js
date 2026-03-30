@@ -478,3 +478,5 @@
 2026-03-25T19:14:40.883Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCRS_DTL_VA25S1DMVP45_MVIP.JSON -> ui_parity_batch_13.json
 2026-03-25T19:14:40.883Z - INFO - Processed: C:\Projects\projects\coding\ccrs-file-processing-framework-js\templates\referrals\CCRS_DTL_VA25S1DMVP46_MVIP.JSON -> ui_parity_batch_14.json
 2026-03-25T19:14:40.892Z - INFO - Created gzip file: C:\Projects\projects\coding\ccrs-file-processing-framework-js\output\ui_parity_verify\ui_parity_archive.gz
+2026-03-30T17:52:08.283Z - INFO - Cleaned temporary runtime artifact: C:\Users\MOHEYE~1\AppData\Local\Temp\winscp_upload_1774893128281_smoke.txt
+2026-03-30T17:52:08.283Z - INFO - Cleaned temporary runtime artifact: C:\Users\MOHEYE~1\AppData\Local\Temp\ccrs_referral_generator_OrBe17
