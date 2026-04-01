@@ -7,6 +7,9 @@ contextBridge.exposeInMainWorld("ccrs", {
   getInfo: () => ipcRenderer.invoke("backend:info"),
   inspectSource: (inputDir) => ipcRenderer.invoke("backend:inspect-source", { inputDir }),
   getPreview: (data) => ipcRenderer.invoke("backend:preview", data),
+  saveUiSettings: (data) => ipcRenderer.invoke("backend:save-ui-settings", data),
+  acknowledgeReleaseAnnouncement: (releaseKey) =>
+    ipcRenderer.invoke("backend:acknowledge-release-announcement", { releaseKey }),
   importUploadSource: (sourcePath) =>
     ipcRenderer.invoke("backend:import-upload-source", { sourcePath }),
   testUploadTarget: (data) => ipcRenderer.invoke("backend:test-upload-target", data),

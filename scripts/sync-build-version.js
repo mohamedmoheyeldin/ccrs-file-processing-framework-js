@@ -5,6 +5,7 @@ const repoRoot = path.resolve(__dirname, "..");
 const appVersionPath = path.join(repoRoot, "config", "app_version.json");
 const packageJsonPath = path.join(repoRoot, "package.json");
 const packageLockPath = path.join(repoRoot, "package-lock.json");
+const DEFAULT_UNINSTALL_DISPLAY_PREFIX = "CCRS File Processing Framework";
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -39,11 +40,22 @@ const appVersion = readJson(appVersionPath);
 const packageJson = readJson(packageJsonPath);
 const packageLock = readJson(packageLockPath);
 const derivedVersion = resolveBuildVersion(appVersion);
+const displayLabel = String(appVersion.label || "").trim();
+const uninstallDisplayName = displayLabel
+  ? `${DEFAULT_UNINSTALL_DISPLAY_PREFIX} ${displayLabel}`
+  : DEFAULT_UNINSTALL_DISPLAY_PREFIX;
 
 let changed = false;
 
 if (packageJson.version !== derivedVersion) {
   packageJson.version = derivedVersion;
+  changed = true;
+}
+
+packageJson.build = packageJson.build || {};
+packageJson.build.nsis = packageJson.build.nsis || {};
+if (packageJson.build.nsis.uninstallDisplayName !== uninstallDisplayName) {
+  packageJson.build.nsis.uninstallDisplayName = uninstallDisplayName;
   changed = true;
 }
 

@@ -70,6 +70,12 @@ ipcMain.handle("backend:inspect-source", async (event, payload) =>
   runBackendCommand(event.sender, "inspect-source", payload)
 );
 ipcMain.handle("backend:preview", async (event, payload) => runBackendCommand(event.sender, "preview", payload));
+ipcMain.handle("backend:save-ui-settings", async (event, payload) =>
+  runBackendCommand(event.sender, "save-ui-settings", payload)
+);
+ipcMain.handle("backend:acknowledge-release-announcement", async (event, payload) =>
+  runBackendCommand(event.sender, "acknowledge-release-announcement", payload)
+);
 ipcMain.handle("backend:import-upload-source", async (event, payload) =>
   runBackendCommand(event.sender, "import-upload-source", payload)
 );

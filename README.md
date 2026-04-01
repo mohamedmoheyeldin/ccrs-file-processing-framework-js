@@ -13,15 +13,19 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "6.4.0",
-  "label": "Production V1"
+  "version": "1.1.0",
+  "label": "Production V1.1",
+  "releaseNotes": [
+    "Short list of release changes shown in the app the first time a user opens that release."
+  ]
 }
 ```
 
 How it works:
 - `version` stays numeric because Windows packaging and Electron builds require a standard build version.
 - `label` is the user-facing release name shown in the app badge and window title.
-- The app now displays `Production V1` while the internal build version remains `6.4.0`.
+- `releaseNotes` powers the first-run release popup for each user and release.
+- The app now displays `Production V1.1` while the Windows build version remains `1.1.0`.
 - `npm start`, `npm test`, and `npm run dist` automatically sync `package.json` and `package-lock.json` from this file before running.
 
 ## Developer Run
@@ -42,31 +46,36 @@ Or directly:
 - `npm run dist`
 
 The build outputs use the current version from [config/app_version.json](config/app_version.json), for example:
-- `dist-electron\CCRS File Processing Framework Setup 6.4.0.exe`
-- `dist-electron\CCRS File Processing Framework 6.4.0.exe`
+- `dist-electron\CCRS File Processing Framework Setup 1.1.0.exe`
+- `dist-electron\CCRS File Processing Framework 1.1.0.exe`
 
 The final shareable copies are placed in `release\` using the display label when one is configured:
-- `release\CCRS File Processing Framework Setup Production V1.exe`
-- `release\CCRS File Processing Framework Production V1.exe`
+- `release\CCRS File Processing Framework Setup Production V1.1.exe`
+- `release\CCRS File Processing Framework Production V1.1.exe`
 
 Use the setup `.exe` for a normal installer flow. Use the non-setup `.exe` as the portable app.
 
 ## Runtime Files
-On first run, the packaged app creates or reuses these folders next to the `.exe`:
+On first run, the packaged app creates or reuses these runtime folders:
 - `config`
 - `upload_import`
 - `logs`
 - `docs`
 - `assets`
 
+For the Setup installer, runtime files are stored under the current user's AppData folder so the app can run without administrator rights, even when installed in `C:\Program Files`.
+
+For the portable build, runtime files stay next to the portable `.exe`.
+
 Files users commonly work with:
 - `config\upload_profiles.json`
 - `config\upload_credentials.json`
-- `docs\USER_GUIDE.md`
+- `docs\USER_GUIDE.pdf`
 
 Files that are kept in sync from the shipped app:
 - `config\app_version.json`
 - `docs\USER_GUIDE.md`
+- `docs\USER_GUIDE.pdf`
 
 ## Supported Workflows
 - Process existing CCRS referral JSON files
@@ -100,4 +109,5 @@ Smoke coverage lives in [scripts/smoke-test.js](scripts/smoke-test.js). The curr
 - preview validation field errors
 
 ## User Documentation
-The main user-facing guide is [docs/USER_GUIDE.md](docs/USER_GUIDE.md).
+The user guide source lives in [docs/USER_GUIDE.md](docs/USER_GUIDE.md).
+Packaged builds open the generated `docs/USER_GUIDE.pdf` from the app UI.

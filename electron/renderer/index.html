@@ -244,7 +244,27 @@
                   </label>
                   <label class="field-block">
                     <span>Station ID</span>
-                    <input id="override-station-id" type="text" maxlength="5" placeholder="Auto-completes to 5 chars" />
+                    <div id="station-id-combobox" class="combo-shell">
+                      <input
+                        id="override-station-id"
+                        type="text"
+                        maxlength="5"
+                        placeholder="Type a station_key or choose from the list"
+                        autocomplete="off"
+                      />
+                      <button
+                        id="station-id-toggle"
+                        type="button"
+                        class="combo-toggle"
+                        aria-label="Show Station ID options"
+                      >
+                        <span class="combo-chevron" aria-hidden="true"></span>
+                      </button>
+                      <div id="station-id-menu" class="combo-menu hidden"></div>
+                    </div>
+                    <small id="station-id-match" class="helper-text">
+                      Choose a station_key from the dropdown or type a custom Station ID.
+                    </small>
                     <small id="station-id-preview" class="helper-text">Preview: no Station ID override</small>
                   </label>
                   <label class="field-block">
@@ -327,11 +347,40 @@
                   <input id="replacement-code" type="text" placeholder="Leave blank to keep original JSON names" />
                   <small id="output-json-preview" class="helper-text">Preview: original JSON names will be used</small>
                 </label>
-                <label class="field-block">
-                  <span>Name for the final .gz file</span>
-                  <input id="archive-basename" type="text" value="processed_files" />
+                <div class="field-block field-span-2 output-retention-card archive-naming-card">
+                  <div class="archive-naming-head">
+                    <span>Archive naming</span>
+                    <small class="helper-text">
+                      Set the final `.gz` base name here, then choose whether related referral details should be appended automatically.
+                    </small>
+                  </div>
+                  <div class="archive-naming-grid">
+                    <label class="field-block">
+                      <span>Name for the final .gz file</span>
+                      <input id="archive-basename" type="text" value="processed_files" />
+                      <small id="archive-name-help" class="helper-text">
+                        Enter a custom base name. The app adds `.gz` automatically.
+                      </small>
+                    </label>
+                    <div class="archive-options-panel">
+                      <span>Archive naming options</span>
+                      <div class="toggle-row">
+                        <label class="checkbox-chip">
+                          <input id="archive-append-network" type="checkbox" />
+                          <span>Append Network</span>
+                        </label>
+                        <label class="checkbox-chip">
+                          <input id="archive-append-referral-date-time" type="checkbox" />
+                          <span>Append Referral DateTime</span>
+                        </label>
+                      </div>
+                      <div class="retention-label">
+                        Example: `customname_CCN1_20260401_134500.gz`
+                      </div>
+                    </div>
+                  </div>
                   <small id="archive-preview" class="helper-text">Preview: processed_files.gz</small>
-                </label>
+                </div>
                 <div class="field-block field-span-2 output-retention-card">
                   <span>If save folder already has files</span>
                   <div class="toggle-row">
@@ -389,6 +438,29 @@
             </article>
           </section>
         </main>
+      </section>
+    </div>
+
+    <div id="release-announcement-overlay" class="modal-overlay hidden">
+      <section
+        id="release-announcement-panel"
+        class="modal-panel glass-card release-announcement-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="release-announcement-title"
+      >
+        <div class="release-announcement-header">
+          <span class="eyebrow">Release Update</span>
+          <h2 id="release-announcement-title">What's new in this release</h2>
+          <p id="release-announcement-version" class="release-announcement-version"></p>
+          <p class="release-announcement-copy">
+            Review the changes below. This message is shown once for each release and user.
+          </p>
+        </div>
+        <ul id="release-announcement-list" class="release-announcement-list"></ul>
+        <div class="release-announcement-actions">
+          <button id="release-announcement-accept" class="toolbar-button primary-soft">Continue To The App</button>
+        </div>
       </section>
     </div>
 

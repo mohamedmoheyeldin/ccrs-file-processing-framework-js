@@ -11,9 +11,19 @@ Before you run the app, make sure you have:
 
 To start the packaged app:
 - open the folder that contains the `.exe`
-- run either `CCRS File Processing Framework Setup Production V1.exe` or `CCRS File Processing Framework Production V1.exe`
+- run either `CCRS File Processing Framework Setup Production V1.1.exe` or `CCRS File Processing Framework Production V1.1.exe`
 
-On first run, the app creates local folders next to the `.exe`:
+When you use the Setup installer, choose the install folder you want for the app.
+
+The installed app keeps its shipped `.exe`, docs, assets, templates, and bundled files inside that app folder.
+
+On first run, the app creates or updates runtime folders for config, logs, docs, and upload helper files.
+
+If you install the app with the Setup installer, those runtime folders are stored under the current user's AppData location so the app can run without administrator rights.
+
+If you use the portable `.exe`, those runtime folders stay next to the portable app.
+
+Typical runtime folders include:
 - `config`
 - `docs`
 - `logs`
@@ -54,6 +64,7 @@ Use `Save To` to choose the output folder.
 Then enter:
 - the full output JSON base name
 - the final `.gz` archive name
+- optional archive naming add-ons such as `Network` and `Referral DateTime`
 
 The app adds `.json` and `.gz` automatically.
 
@@ -61,6 +72,7 @@ Examples:
 - `batch101` becomes `batch101.json`
 - if multiple source files are processed, the app creates `batch101_1.json`, `batch101_2.json`, and so on
 - `ccra_referrals_20260326` becomes `ccra_referrals_20260326.gz`
+- `customname` with archive add-ons can become `customname_CCN1_20260401_134500.gz`
 
 ### 4. Run
 Use `Run Processing` when you are editing existing files.
@@ -136,6 +148,8 @@ Rules:
 
 ### Station ID
 Rules:
+- choose from the dropdown suggestions powered by `station_key` and `station_name`, or type your own value
+- when you choose a suggestion, the saved value is the `station_key`
 - accepts letters and numbers only
 - accepts up to 5 characters
 - later referrals auto-adjust to stay unique
@@ -222,7 +236,7 @@ The final `.gz` contains one combined JSON object with this shape:
 
 ## User Guide File
 The packaged app opens this guide file:
-- `docs\USER_GUIDE.md`
+- `docs\USER_GUIDE.pdf`
 
 If you share the app with other users, make sure the `docs` folder stays next to the `.exe`.
 
