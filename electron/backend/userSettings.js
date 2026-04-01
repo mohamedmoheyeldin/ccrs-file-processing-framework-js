@@ -1,0 +1,171 @@
+const fs = require("fs");
+const { DEFAULT_ARCHIVE_BASENAME } = require("./zipper");
+const { bundlePath, dataPath, userDataPath } = require("./appPaths");
+
+const DEFAULT_UI_SETTINGS = {
+  theme: "light",
+  mainTab: "referral",
+  subTab: "edit",
+  optionalFieldsVisible: false,
+  acknowledgedReleaseKey: "",
+  inputDir: "",
+  outputDir: "",
+  replacementCode: "",
+  archiveBasename: DEFAULT_ARCHIVE_BASENAME,
+  archiveAppendNetwork: false,
+  archiveAppendReferralDateTime: false,
+  referralCode: "",
+  ssnValue: "999-99-0001",
+  icnMode: "test-dynamic",
+  icnCustomValue: "",
+  overrideStationId: "",
+  overridePaymentAuthorityCode: "",
+  overrideReferralPeriod: "",
+  overrideNetwork: "",
+  overrideDob: "",
+  overrideReferralCategory: "",
+  overrideReferralDate: "",
+  overrideReferralDateTime: "",
+  overrideReferralExpirationDate: "",
+  overrideReferralLastUpdateDate: "",
+  overrideReferralConsultId: "",
+  fileCount: "1",
+  referralsPerFile: "1",
+  clearOutput: false,
+  keepProcessedJson: true,
+  uploadEnabled: false,
+  uploadTargets: {},
+};
+
+function toBoolean(value, fallbackValue = false) {
+  if (value === undefined || value === null || value === "") {
+    return fallbackValue;
+  }
+  return Boolean(value);
+}
+
+function normalizeUploadTargets(rawValue) {
+  const normalized = {};
+
+  for (const [targetName, targetSettings] of Object.entries(rawValue || {})) {
+    if (!targetName || !targetSettings || typeof targetSettings !== "object") {
+      continue;
+    }
+
+    normalized[targetName] = {
+      enabled: toBoolean(targetSettings.enabled, false),
+      userName: String(targetSettings.userName || targetSettings.user_name || "").trim(),
+      remoteDirectory: String(targetSettings.remoteDirectory || targetSettings.remote_directory || "").trim(),
+    };
+  }
+
+  return normalized;
+}
+
+function normalizeUiSettings(rawValue = {}) {
+  const normalized = {
+    ...DEFAULT_UI_SETTINGS,
+    theme:
+      String(rawValue.theme || "").trim().toLowerCase() === "dark" ||
+      String(rawValue.theme_mode || "").trim().toLowerCase() === "dark"
+        ? "dark"
+        : "light",
+    mainTab: String(rawValue.mainTab || DEFAULT_UI_SETTINGS.mainTab).trim() || DEFAULT_UI_SETTINGS.mainTab,
+    subTab: String(rawValue.subTab || DEFAULT_UI_SETTINGS.subTab).trim() || DEFAULT_UI_SETTINGS.subTab,
+    optionalFieldsVisible: toBoolean(rawValue.optionalFieldsVisible, DEFAULT_UI_SETTINGS.optionalFieldsVisible),
+    acknowledgedReleaseKey: String(
+      rawValue.acknowledgedReleaseKey || rawValue.acknowledged_release_key || ""
+    ).trim(),
+    inputDir: String(rawValue.inputDir || "").trim(),
+    outputDir: String(rawValue.outputDir || "").trim(),
+    replacementCode: String(rawValue.replacementCode || "").trim(),
+    archiveBasename: String(rawValue.archiveBasename || DEFAULT_UI_SETTINGS.archiveBasename).trim() || DEFAULT_UI_SETTINGS.archiveBasename,
+    archiveAppendNetwork: toBoolean(rawValue.archiveAppendNetwork, DEFAULT_UI_SETTINGS.archiveAppendNetwork),
+    archiveAppendReferralDateTime: toBoolean(
+      rawValue.archiveAppendReferralDateTime,
+      DEFAULT_UI_SETTINGS.archiveAppendReferralDateTime
+    ),
+    referralCode: String(rawValue.referralCode || "").trim(),
+    ssnValue: String(rawValue.ssnValue || DEFAULT_UI_SETTINGS.ssnValue).trim() || DEFAULT_UI_SETTINGS.ssnValue,
+    icnMode: String(rawValue.icnMode || DEFAULT_UI_SETTINGS.icnMode).trim() || DEFAULT_UI_SETTINGS.icnMode,
+    icnCustomValue: String(rawValue.icnCustomValue || "").trim(),
+    overrideStationId: String(rawValue.overrideStationId || "").trim(),
+    overridePaymentAuthorityCode: String(rawValue.overridePaymentAuthorityCode || "").trim(),
+    overrideReferralPeriod: String(rawValue.overrideReferralPeriod || "").trim(),
+    overrideNetwork: String(rawValue.overrideNetwork || "").trim(),
+    overrideDob: String(rawValue.overrideDob || "").trim(),
+    overrideReferralCategory: String(rawValue.overrideReferralCategory || "").trim(),
+    overrideReferralDate: String(rawValue.overrideReferralDate || "").trim(),
+    overrideReferralDateTime: String(rawValue.overrideReferralDateTime || "").trim(),
+    overrideReferralExpirationDate: String(rawValue.overrideReferralExpirationDate || "").trim(),
+    overrideReferralLastUpdateDate: String(rawValue.overrideReferralLastUpdateDate || "").trim(),
+    overrideReferralConsultId: String(rawValue.overrideReferralConsultId || "").trim(),
+    fileCount: String(rawValue.fileCount || DEFAULT_UI_SETTINGS.fileCount).trim() || DEFAULT_UI_SETTINGS.fileCount,
+    referralsPerFile:
+      String(rawValue.referralsPerFile || DEFAULT_UI_SETTINGS.referralsPerFile).trim() ||
+      DEFAULT_UI_SETTINGS.referralsPerFile,
+    clearOutput: toBoolean(rawValue.clearOutput, DEFAULT_UI_SETTINGS.clearOutput),
+    keepProcessedJson: toBoolean(rawValue.keepProcessedJson, DEFAULT_UI_SETTINGS.keepProcessedJson),
+    uploadEnabled: toBoolean(rawValue.uploadEnabled, DEFAULT_UI_SETTINGS.uploadEnabled),
+    uploadTargets: normalizeUploadTargets(rawValue.uploadTargets),
+  };
+
+  if (normalized.mainTab !== "referral" && normalized.mainTab !== "other") {
+    normalized.mainTab = DEFAULT_UI_SETTINGS.mainTab;
+  }
+  if (normalized.subTab !== "edit" && normalized.subTab !== "generate") {
+    normalized.subTab = DEFAULT_UI_SETTINGS.subTab;
+  }
+  if (normalized.mainTab !== "referral") {
+    normalized.subTab = "edit";
+  }
+
+  return normalized;
+}
+
+function getUiSettingsPath() {
+  return userDataPath("config", "ui_settings.json");
+}
+
+function getLegacyUiSettingsPaths() {
+  return [
+    userDataPath("config", "ui_settings.json"),
+    dataPath("config", "ui_settings.json"),
+    bundlePath("config", "ui_settings.json"),
+  ];
+}
+
+function loadUiSettings() {
+  for (const filePath of getLegacyUiSettingsPaths()) {
+    try {
+      if (fs.existsSync(filePath)) {
+        const parsed = JSON.parse(fs.readFileSync(filePath, "utf8"));
+        return normalizeUiSettings(parsed);
+      }
+    } catch (_error) {
+      // Ignore invalid settings files and continue to the next candidate.
+    }
+  }
+
+  return { ...DEFAULT_UI_SETTINGS };
+}
+
+function saveUiSettings(rawValue = {}) {
+  const normalized = normalizeUiSettings(rawValue);
+  const payload = {
+    ...normalized,
+    theme_mode: normalized.theme === "dark" ? "Dark" : "Light",
+  };
+
+  fs.mkdirSync(userDataPath("config"), { recursive: true });
+  fs.writeFileSync(getUiSettingsPath(), JSON.stringify(payload, null, 2), "utf8");
+  return normalized;
+}
+
+module.exports = {
+  DEFAULT_UI_SETTINGS,
+  getUiSettingsPath,
+  loadUiSettings,
+  normalizeUiSettings,
+  saveUiSettings,
+};

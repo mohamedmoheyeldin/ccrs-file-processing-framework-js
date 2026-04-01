@@ -1,6 +1,9 @@
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const electron = require("electron");
+
+const USER_CONFIG_DIRECTORY_NAME = "CCRS File Processing Framework";
 
 function isPackagedApp() {
   return Boolean(electron.app && electron.app.isPackaged);
@@ -20,12 +23,55 @@ function getRuntimeRoot() {
   return path.resolve(__dirname, "..", "..");
 }
 
+function getDefaultUserConfigRoot() {
+  const baseDirectory = process.env.APPDATA || path.join(os.homedir(), ".config");
+  return path.join(baseDirectory, USER_CONFIG_DIRECTORY_NAME);
+}
+
+function getPortableExecutableRoot() {
+  return String(process.env.PORTABLE_EXECUTABLE_DIR || "").trim();
+}
+
+function getPackagedDataRoot() {
+  const overridePath = String(process.env.CCRS_USER_DATA_ROOT || "").trim();
+  if (overridePath) {
+    return overridePath;
+  }
+
+  const portableRoot = getPortableExecutableRoot();
+  if (portableRoot) {
+    return portableRoot;
+  }
+
+  return getDefaultUserConfigRoot();
+}
+
 function bundlePath(...parts) {
   return path.join(getBundleRoot(), ...parts);
 }
 
 function dataPath(...parts) {
+  if (isPackagedApp()) {
+    return path.join(getPackagedDataRoot(), ...parts);
+  }
   return path.join(getRuntimeRoot(), ...parts);
+}
+
+function getUserConfigRoot() {
+  const overridePath = String(process.env.CCRS_USER_DATA_ROOT || "").trim();
+  if (overridePath) {
+    return overridePath;
+  }
+
+  if (isPackagedApp()) {
+    return getPackagedDataRoot();
+  }
+
+  return getDefaultUserConfigRoot();
+}
+
+function userDataPath(...parts) {
+  return path.join(getUserConfigRoot(), ...parts);
 }
 
 function ensureDirectory(targetPath) {
@@ -57,15 +103,26 @@ function ensureRuntimeFiles() {
   ensureDirectory(dataPath("docs"));
   ensureDirectory(dataPath("assets"));
   ensureDirectory(dataPath("assets", "icons"));
+  ensureDirectory(userDataPath("config"));
+  ensureDirectory(userDataPath("upload_import"));
+  ensureDirectory(userDataPath("logs"));
+
+  copyIfMissing(dataPath("config", "ui_settings.json"), userDataPath("config", "ui_settings.json"));
+  copyIfMissing(dataPath("config", "upload_profiles.json"), userDataPath("config", "upload_profiles.json"));
+  copyIfMissing(dataPath("config", "upload_credentials.json"), userDataPath("config", "upload_credentials.json"));
+  copyIfMissing(dataPath("upload_import", "WinSCP.ini"), userDataPath("upload_import", "WinSCP.ini"));
 
   copyIfMissing(bundlePath("config", "mappings.json"), dataPath("config", "mappings.json"));
   copyIfMissing(bundlePath("config", "rules.json"), dataPath("config", "rules.json"));
+  copyIfMissing(bundlePath("config", "station_options.json"), dataPath("config", "station_options.json"));
   syncFromBundle(bundlePath("config", "app_version.json"), dataPath("config", "app_version.json"));
-  copyIfMissing(bundlePath("config", "upload_profiles.json"), dataPath("config", "upload_profiles.json"));
-  copyIfMissing(bundlePath("config", "upload_credentials.json"), dataPath("config", "upload_credentials.json"));
-  copyIfMissing(bundlePath("upload_import", "README.txt"), dataPath("upload_import", "README.txt"));
-  copyIfMissing(bundlePath("upload_import", "decrypt-winscp.ps1"), dataPath("upload_import", "decrypt-winscp.ps1"));
+  copyIfMissing(bundlePath("config", "ui_settings.json"), userDataPath("config", "ui_settings.json"));
+  copyIfMissing(bundlePath("config", "upload_profiles.json"), userDataPath("config", "upload_profiles.json"));
+  copyIfMissing(bundlePath("config", "upload_credentials.json"), userDataPath("config", "upload_credentials.json"));
+  copyIfMissing(bundlePath("upload_import", "README.txt"), userDataPath("upload_import", "README.txt"));
+  copyIfMissing(bundlePath("upload_import", "decrypt-winscp.ps1"), userDataPath("upload_import", "decrypt-winscp.ps1"));
   syncFromBundle(bundlePath("docs", "USER_GUIDE.md"), dataPath("docs", "USER_GUIDE.md"));
+  syncFromBundle(bundlePath("docs", "USER_GUIDE.pdf"), dataPath("docs", "USER_GUIDE.pdf"));
   copyIfMissing(bundlePath("assets", "icons", "ccrs_app_icon.ico"), dataPath("assets", "icons", "ccrs_app_icon.ico"));
   copyIfMissing(bundlePath("assets", "icons", "ccrs_app_icon.png"), dataPath("assets", "icons", "ccrs_app_icon.png"));
 }
@@ -75,4 +132,6 @@ module.exports = {
   dataPath,
   ensureRuntimeFiles,
   getRuntimeRoot,
+  getUserConfigRoot,
+  userDataPath,
 };

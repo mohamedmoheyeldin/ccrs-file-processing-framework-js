@@ -20,11 +20,15 @@ const state = {
   optionalFieldsVisible: false,
   liveListDateTimer: null,
   uploadImportState: "idle",
+  uiSettingsSaveTimer: null,
+  acknowledgedReleaseKey: "",
+  releaseAnnouncementOpen: false,
 };
 
 const elements = {};
 const STATIC_HELPER_IDS = [
   "ssnHelp",
+  "archiveNameHelp",
   "fileCountHelp",
   "referralsPerFileHelp",
   "dobHelp",
@@ -52,6 +56,7 @@ function setInputValidity(input, hasError) {
     return;
   }
   input.classList.toggle("is-invalid", Boolean(hasError));
+  input.closest(".combo-shell")?.classList.toggle("is-invalid", Boolean(hasError));
 }
 
 function setStaticHelperState(helperElement, inputElement, message = "") {
@@ -115,6 +120,61 @@ function setBusy(busy) {
   }
 }
 
+function setReleaseAnnouncementOpen(isOpen) {
+  state.releaseAnnouncementOpen = Boolean(isOpen);
+  elements.releaseAnnouncementOverlay?.classList.toggle("hidden", !state.releaseAnnouncementOpen);
+  document.body.classList.toggle("modal-open", state.releaseAnnouncementOpen);
+}
+
+function syncReleaseAnnouncement() {
+  if (!elements.releaseAnnouncementOverlay || !elements.releaseAnnouncementList) {
+    return;
+  }
+
+  const announcement = state.info?.releaseAnnouncement || null;
+  const notes = Array.isArray(announcement?.notes) ? announcement.notes : [];
+  elements.releaseAnnouncementTitle.textContent = announcement?.label
+    ? `What's new in ${announcement.label}`
+    : "What's new in this release";
+  elements.releaseAnnouncementVersion.textContent = announcement?.label || "";
+  elements.releaseAnnouncementList.innerHTML = "";
+
+  for (const note of notes) {
+    const item = document.createElement("li");
+    item.textContent = note;
+    elements.releaseAnnouncementList.appendChild(item);
+  }
+
+  const shouldOpen = Boolean(
+    announcement?.releaseKey &&
+      announcement?.shouldShow &&
+      state.acknowledgedReleaseKey !== announcement.releaseKey
+  );
+  setReleaseAnnouncementOpen(shouldOpen);
+}
+
+async function acknowledgeReleaseAnnouncement() {
+  const announcement = state.info?.releaseAnnouncement;
+  if (!announcement?.releaseKey) {
+    setReleaseAnnouncementOpen(false);
+    return;
+  }
+
+  const previousReleaseKey = state.acknowledgedReleaseKey;
+  state.acknowledgedReleaseKey = announcement.releaseKey;
+
+  try {
+    await window.ccrs.acknowledgeReleaseAnnouncement(announcement.releaseKey);
+    if (state.info?.releaseAnnouncement) {
+      state.info.releaseAnnouncement.shouldShow = false;
+    }
+    setReleaseAnnouncementOpen(false);
+  } catch (_error) {
+    state.acknowledgedReleaseKey = previousReleaseKey;
+    setStatus("Failed", "Unable to save the release acknowledgement.");
+  }
+}
+
 function readValue(id) {
   return $(id).value.trim();
 }
@@ -124,7 +184,103 @@ function readChecked(id) {
 }
 
 function sanitizeStationIdInput(value) {
-  return ((String(value || "").match(/[A-Za-z0-9]/g) || []).join("")).slice(0, 5);
+  const normalized = String(value || "").trim();
+  const prefixedKeyMatch = normalized.match(/^([A-Za-z0-9]{1,5})(?:\s*[-|].*)$/);
+  if (prefixedKeyMatch) {
+    return prefixedKeyMatch[1];
+  }
+
+  return ((normalized.match(/[A-Za-z0-9]/g) || []).join("")).slice(0, 5);
+}
+
+function getStationOptions() {
+  return Array.isArray(state.info?.stationOptions) ? state.info.stationOptions : [];
+}
+
+function findStationOption(value) {
+  const normalized = String(value || "").trim();
+  if (!normalized) {
+    return null;
+  }
+
+  return getStationOptions().find((option) => option.stationKey === normalized) || null;
+}
+
+function renderStationOptions(options = []) {
+  if (!elements.stationIdMenu) {
+    return;
+  }
+  elements.stationIdMenu.innerHTML = "";
+  const normalizedQuery = readValue("override-station-id").toLowerCase();
+  const fragment = document.createDocumentFragment();
+  const filteredOptions = options
+    .filter((option) => {
+      if (!normalizedQuery) {
+        return true;
+      }
+      const searchTarget = `${option.stationKey} ${option.stationName}`.toLowerCase();
+      return searchTarget.includes(normalizedQuery);
+    });
+
+  if (filteredOptions.length === 0) {
+    const emptyState = document.createElement("div");
+    emptyState.className = "combo-empty";
+    emptyState.textContent = "No matching station found. Keep typing to use a custom Station ID.";
+    fragment.appendChild(emptyState);
+  }
+
+  for (const option of filteredOptions) {
+    const element = document.createElement("button");
+    element.type = "button";
+    element.className = "combo-option";
+    element.title = `${option.stationKey} - ${option.stationName}`;
+    element.innerHTML = `
+      <span class="combo-option-title">${option.stationKey}</span>
+      <span class="combo-option-copy">${option.stationName}</span>
+    `;
+    element.addEventListener("click", async () => {
+      elements.overrideStationId.value = option.stationKey;
+      setStationMenuOpen(false);
+      updateStationIdMatch();
+      await updatePreviews();
+    });
+    fragment.appendChild(element);
+  }
+
+  elements.stationIdMenu.appendChild(fragment);
+}
+
+function setStationMenuOpen(isOpen) {
+  if (!elements.stationIdCombobox || !elements.stationIdMenu) {
+    return;
+  }
+
+  elements.stationIdCombobox.classList.toggle("is-open", Boolean(isOpen));
+  elements.stationIdMenu.classList.toggle("hidden", !isOpen);
+}
+
+function updateStationIdMatch() {
+  if (!elements.stationIdMatch) {
+    return;
+  }
+
+  const stationId = readValue("override-station-id");
+  if (!stationId) {
+    elements.stationIdMatch.classList.remove("is-success", "is-error");
+    elements.stationIdMatch.textContent = `Loaded ${getStationOptions().length.toLocaleString()} Station IDs. Choose a station_key from the dropdown or type a custom Station ID.`;
+    return;
+  }
+
+  const match = findStationOption(stationId);
+  if (match) {
+    elements.stationIdMatch.classList.add("is-success");
+    elements.stationIdMatch.classList.remove("is-error");
+    elements.stationIdMatch.textContent = `Matched station: ${match.stationKey} | ${match.stationName}`;
+    return;
+  }
+
+  elements.stationIdMatch.classList.remove("is-success", "is-error");
+  elements.stationIdMatch.textContent = "Custom Station ID entered. The field still accepts manual values.";
 }
 
 function sanitizePaymentAuthorityCodeInput(value, fallbackValue = "") {
@@ -201,6 +357,21 @@ function setTheme(themeName) {
   for (const button of document.querySelectorAll("[data-theme]")) {
     button.classList.toggle("is-active", button.dataset.theme === state.theme);
   }
+}
+
+function syncTabState() {
+  for (const current of document.querySelectorAll("[data-main-tab]")) {
+    current.classList.toggle("is-active", current.dataset.mainTab === state.mainTab);
+  }
+  for (const current of document.querySelectorAll("[data-sub-tab]")) {
+    current.classList.toggle("is-active", current.dataset.subTab === state.subTab);
+  }
+}
+
+function syncOptionalFieldsVisibility() {
+  elements.optionalFields.classList.toggle("hidden", !state.optionalFieldsVisible);
+  elements.toggleOptionalFields.textContent = state.optionalFieldsVisible ? "Hide Optional Fields" : "Show Optional Fields";
+  elements.toggleOptionalFields.classList.toggle("is-active", state.optionalFieldsVisible);
 }
 
 function normalizeDigits(value, width) {
@@ -324,11 +495,19 @@ function collectIcnSettings() {
   };
 }
 
+function collectArchiveNamingOptions() {
+  return {
+    includeNetwork: readChecked("archive-append-network"),
+    includeReferralDateTime: readChecked("archive-append-referral-date-time"),
+  };
+}
+
 function sharedPayload() {
   return {
     outputDir: readValue("output-dir"),
     replacementCode: readValue("replacement-code"),
     archiveBasename: readValue("archive-basename"),
+    archiveNamingOptions: collectArchiveNamingOptions(),
     referralReplacementCode: readValue("referral-code"),
     icnSettings: collectIcnSettings(),
     ssnValue: readValue("ssn-value"),
@@ -338,6 +517,160 @@ function sharedPayload() {
     optionalOverrides: collectOptionalOverrides(),
     upload: collectUploadSettings(),
   };
+}
+
+function collectPersistedUploadTargets() {
+  const uploadTargets = {};
+
+  for (const row of document.querySelectorAll(".upload-target")) {
+    const targetName = row.dataset.target;
+    if (!targetName) {
+      continue;
+    }
+
+    uploadTargets[targetName] = {
+      enabled: row.querySelector(".upload-enabled")?.checked || false,
+      userName: row.querySelector(".upload-user")?.value || "",
+      remoteDirectory: row.querySelector(".upload-path")?.value.trim() || "",
+    };
+  }
+
+  return uploadTargets;
+}
+
+function collectUiSettings() {
+  return {
+    theme: state.theme,
+    mainTab: state.mainTab,
+    subTab: state.subTab,
+    optionalFieldsVisible: state.optionalFieldsVisible,
+    acknowledgedReleaseKey: state.acknowledgedReleaseKey,
+    inputDir: readValue("input-dir"),
+    outputDir: readValue("output-dir"),
+    replacementCode: readValue("replacement-code"),
+    archiveBasename: readValue("archive-basename"),
+    archiveAppendNetwork: readChecked("archive-append-network"),
+    archiveAppendReferralDateTime: readChecked("archive-append-referral-date-time"),
+    referralCode: readValue("referral-code"),
+    ssnValue: readValue("ssn-value"),
+    icnMode: getSelectedIcnMode(),
+    icnCustomValue: readValue("icn-custom-value"),
+    overrideStationId: readValue("override-station-id"),
+    overridePaymentAuthorityCode: readValue("override-payment-authority-code"),
+    overrideReferralPeriod: readValue("override-referral-period"),
+    overrideNetwork: readValue("override-network"),
+    overrideDob: readValue("override-dob"),
+    overrideReferralCategory: readValue("override-referral-category"),
+    overrideReferralDate: readValue("override-referral-date"),
+    overrideReferralDateTime: readValue("override-referral-date-time"),
+    overrideReferralExpirationDate: readValue("override-referral-expiration-date"),
+    overrideReferralLastUpdateDate: readValue("override-referral-last-update-date"),
+    overrideReferralConsultId: readValue("override-referral-consult-id"),
+    fileCount: readValue("file-count"),
+    referralsPerFile: readValue("referrals-per-file"),
+    clearOutput: readChecked("clear-output"),
+    keepProcessedJson: readChecked("keep-processed-json"),
+    uploadEnabled: readChecked("upload-enabled"),
+    uploadTargets: collectPersistedUploadTargets(),
+  };
+}
+
+function scheduleUiSettingsSave() {
+  clearTimeout(state.uiSettingsSaveTimer);
+  state.uiSettingsSaveTimer = window.setTimeout(async () => {
+    try {
+      await window.ccrs.saveUiSettings(collectUiSettings());
+    } catch (error) {
+      console.error("Unable to save UI settings.", error);
+    }
+  }, 180);
+}
+
+function applyUploadTargetSettings(uploadTargets = {}) {
+  for (const row of document.querySelectorAll(".upload-target")) {
+    const targetName = row.dataset.target;
+    const targetSettings = uploadTargets[targetName];
+    if (!targetSettings) {
+      continue;
+    }
+
+    row.querySelector(".upload-enabled").checked = Boolean(targetSettings.enabled);
+    if (targetSettings.userName && row.querySelector(".upload-user")) {
+      row.querySelector(".upload-user").value = targetSettings.userName;
+    }
+    if (targetSettings.remoteDirectory && row.querySelector(".upload-path")) {
+      row.querySelector(".upload-path").value = targetSettings.remoteDirectory;
+    }
+  }
+}
+
+async function applyUiSettings(settings = {}) {
+  setTheme(settings.theme || "light");
+  state.mainTab = settings.mainTab === "other" ? "other" : "referral";
+  state.subTab = settings.subTab === "generate" ? "generate" : "edit";
+  state.acknowledgedReleaseKey = String(settings.acknowledgedReleaseKey || "").trim();
+  if (state.mainTab !== "referral") {
+    state.subTab = "edit";
+  }
+  syncTabState();
+
+  state.optionalFieldsVisible = Boolean(settings.optionalFieldsVisible);
+  syncOptionalFieldsVisibility();
+
+  const valueMap = {
+    "input-dir": settings.inputDir,
+    "output-dir": settings.outputDir,
+    "replacement-code": settings.replacementCode,
+    "archive-basename": settings.archiveBasename,
+    "referral-code": settings.referralCode,
+    "ssn-value": settings.ssnValue,
+    "icn-custom-value": settings.icnCustomValue,
+    "override-station-id": settings.overrideStationId,
+    "override-payment-authority-code": settings.overridePaymentAuthorityCode,
+    "override-referral-period": settings.overrideReferralPeriod,
+    "override-network": settings.overrideNetwork,
+    "override-dob": settings.overrideDob,
+    "override-referral-category": settings.overrideReferralCategory,
+    "override-referral-date": settings.overrideReferralDate,
+    "override-referral-date-time": settings.overrideReferralDateTime,
+    "override-referral-expiration-date": settings.overrideReferralExpirationDate,
+    "override-referral-last-update-date": settings.overrideReferralLastUpdateDate,
+    "override-referral-consult-id": settings.overrideReferralConsultId,
+    "file-count": settings.fileCount,
+    "referrals-per-file": settings.referralsPerFile,
+  };
+
+  for (const [id, value] of Object.entries(valueMap)) {
+    if ($(id) && value !== undefined && value !== null) {
+      $(id).value = String(value);
+    }
+  }
+
+  const selectedIcnMode = String(settings.icnMode || "test-dynamic").trim();
+  const icnModeInput = document.querySelector(`input[name="icn-mode"][value="${selectedIcnMode}"]`);
+  if (icnModeInput) {
+    icnModeInput.checked = true;
+  }
+
+  $("archive-append-network").checked = Boolean(settings.archiveAppendNetwork);
+  $("archive-append-referral-date-time").checked = Boolean(settings.archiveAppendReferralDateTime);
+  $("clear-output").checked = Boolean(settings.clearOutput);
+  $("keep-existing-files").checked = !Boolean(settings.clearOutput);
+  $("keep-processed-json").checked = settings.keepProcessedJson !== false;
+  $("upload-enabled").checked = Boolean(settings.uploadEnabled);
+
+  syncIcnFieldState();
+  updateTemplateSummary();
+  syncWorkflowText();
+  renderStationOptions(getStationOptions());
+  applyUploadTargetSettings(settings.uploadTargets || {});
+
+  if (readValue("input-dir")) {
+    await inspectSourceFolder();
+  } else {
+    updatePreviews();
+  }
+  syncReleaseAnnouncement();
 }
 
 function setUploadReadyState(mode = "idle") {
@@ -449,14 +782,17 @@ function renderUploadTargets(targets) {
     userSelect.addEventListener("change", () => {
       setUploadTargetStatus(wrapper);
       updatePreviews();
+      scheduleUiSettingsSave();
     });
     pathInput.addEventListener("input", () => {
       setUploadTargetStatus(wrapper);
       updatePreviews();
+      scheduleUiSettingsSave();
     });
     enabledInput.addEventListener("change", () => {
       setUploadTargetStatus(wrapper);
       updatePreviews();
+      scheduleUiSettingsSave();
     });
     testButton.addEventListener("click", () => testUploadTarget(wrapper));
 
@@ -504,6 +840,8 @@ function applyGeneratorDefaults() {
 
 function applyInfo(info) {
   state.info = info;
+  state.acknowledgedReleaseKey = String(info.uiSettings?.acknowledgedReleaseKey || state.acknowledgedReleaseKey || "").trim();
+  renderStationOptions(info.stationOptions || []);
   elements.appVersionBadge.textContent = info.appVersionLabel || "";
   elements.appVersionBadge.classList.toggle("hidden", !info.appVersionLabel);
   document.title = info.appVersionLabel
@@ -512,8 +850,10 @@ function applyInfo(info) {
   setUploadReadyState("idle");
   renderUploadTargets(info.uploadTargets || []);
   applyGeneratorDefaults();
+  applyUploadTargetSettings(info.uiSettings?.uploadTargets || {});
   updateTemplateSummary();
   updatePreviews();
+  syncReleaseAnnouncement();
 }
 
 function applySourceInspection(inspection) {
@@ -566,6 +906,7 @@ async function inspectSourceFolder() {
 
 function applyFieldErrors(fieldErrors = {}) {
   setStaticHelperState(elements.ssnHelp, $("ssn-value"), fieldErrors.ssnValue);
+  setStaticHelperState(elements.archiveNameHelp, $("archive-basename"), fieldErrors.archiveBasename);
   setStaticHelperState(elements.fileCountHelp, $("file-count"), fieldErrors.fileCount);
   setStaticHelperState(elements.referralsPerFileHelp, $("referrals-per-file"), fieldErrors.referralsPerFile);
   setStaticHelperState(elements.dobHelp, $("override-dob"), fieldErrors.DOB);
@@ -646,6 +987,7 @@ async function updatePreviews() {
     const preview = await window.ccrs.getPreview({
       replacementCode: readValue("replacement-code"),
       archiveBasename: readValue("archive-basename"),
+      archiveNamingOptions: collectArchiveNamingOptions(),
       referralReplacementCode: readValue("referral-code"),
       icnSettings: collectIcnSettings(),
       ssnValue: readValue("ssn-value"),
@@ -667,12 +1009,14 @@ async function updatePreviews() {
     elements.stationIdPreview.textContent = preview.optionalOverrides.StationID
       ? `Preview: ${preview.optionalOverrides.StationID}`
       : "Preview: no Station ID override";
+    updateStationIdMatch();
     elements.paymentAuthorityCodePreview.textContent = preview.optionalOverrides.PaymentAuthorityCode
       ? `Preview: ${preview.optionalOverrides.PaymentAuthorityCode}`
       : "Preview: no Payment Authority Code override";
     applyFieldErrors(preview.fieldErrors || {});
     return preview;
   } catch (error) {
+    updateStationIdMatch();
     elements.referralPreview.textContent = error.message;
     elements.referralPreview.classList.add("is-error");
     return null;
@@ -768,35 +1112,28 @@ function setupTabs() {
   for (const button of document.querySelectorAll("[data-main-tab]")) {
     button.addEventListener("click", () => {
       state.mainTab = button.dataset.mainTab;
-      for (const current of document.querySelectorAll("[data-main-tab]")) {
-        current.classList.toggle("is-active", current === button);
-      }
       if (state.mainTab !== "referral") {
         state.subTab = "edit";
       }
-      for (const current of document.querySelectorAll("[data-sub-tab]")) {
-        current.classList.toggle("is-active", current.dataset.subTab === state.subTab);
-      }
+      syncTabState();
       syncWorkflowText();
+      scheduleUiSettingsSave();
     });
   }
 
   for (const button of document.querySelectorAll("[data-sub-tab]")) {
     button.addEventListener("click", () => {
       state.subTab = button.dataset.subTab;
-      for (const current of document.querySelectorAll("[data-sub-tab]")) {
-        current.classList.toggle("is-active", current === button);
-      }
+      syncTabState();
       syncWorkflowText();
+      scheduleUiSettingsSave();
     });
   }
 }
 
 function toggleOptionalFields() {
   state.optionalFieldsVisible = !state.optionalFieldsVisible;
-  elements.optionalFields.classList.toggle("hidden", !state.optionalFieldsVisible);
-  elements.toggleOptionalFields.textContent = state.optionalFieldsVisible ? "Hide Optional Fields" : "Show Optional Fields";
-  elements.toggleOptionalFields.classList.toggle("is-active", state.optionalFieldsVisible);
+  syncOptionalFieldsVisibility();
 }
 
 function wireDateControls() {
@@ -843,6 +1180,7 @@ async function pickDirectory(targetId) {
   if (targetId === "input-dir") {
     await inspectSourceFolder();
   }
+  scheduleUiSettingsSave();
 }
 
 async function importUploadSource() {
@@ -932,7 +1270,10 @@ function setupEventHandlers() {
   wireDateControls();
 
   for (const button of document.querySelectorAll("[data-theme]")) {
-    button.addEventListener("click", () => setTheme(button.dataset.theme));
+    button.addEventListener("click", () => {
+      setTheme(button.dataset.theme);
+      scheduleUiSettingsSave();
+    });
   }
 
   for (const button of document.querySelectorAll("[data-pick]")) {
@@ -943,6 +1284,8 @@ function setupEventHandlers() {
     "output-dir",
     "replacement-code",
     "archive-basename",
+    "archive-append-network",
+    "archive-append-referral-date-time",
     "referral-code",
     "icn-custom-value",
     "ssn-value",
@@ -969,6 +1312,8 @@ function setupEventHandlers() {
       }
       if (id === "override-station-id") {
         $(id).value = sanitizeStationIdInput($(id).value);
+        renderStationOptions(getStationOptions());
+        setStationMenuOpen(true);
       }
       if (id === "override-payment-authority-code") {
         const input = $(id);
@@ -979,25 +1324,70 @@ function setupEventHandlers() {
         updateTemplateSummary();
       }
       updatePreviews();
+      scheduleUiSettingsSave();
     });
   }
 
+  elements.overrideStationId.addEventListener("focus", () => {
+    renderStationOptions(getStationOptions());
+    setStationMenuOpen(true);
+  });
+  elements.overrideStationId.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      setStationMenuOpen(false);
+      return;
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      renderStationOptions(getStationOptions());
+      setStationMenuOpen(true);
+    }
+  });
+  elements.overrideStationId.addEventListener("blur", () => {
+    window.setTimeout(() => setStationMenuOpen(false), 120);
+  });
+  elements.stationIdToggle.addEventListener("click", () => {
+    renderStationOptions(getStationOptions());
+    setStationMenuOpen(!elements.stationIdCombobox.classList.contains("is-open"));
+    elements.overrideStationId.focus();
+  });
+  document.addEventListener("pointerdown", (event) => {
+    if (!elements.stationIdCombobox.contains(event.target)) {
+      setStationMenuOpen(false);
+    }
+  });
+
   elements.overrideNetwork.addEventListener("change", () => {
     updatePreviews();
+    scheduleUiSettingsSave();
   });
   for (const input of document.querySelectorAll('input[name="icn-mode"]')) {
     input.addEventListener("change", () => {
       syncIcnFieldState();
       updatePreviews();
+      scheduleUiSettingsSave();
     });
   }
   elements.uploadEnabled.addEventListener("change", () => {
     updatePreviews();
+    scheduleUiSettingsSave();
   });
 
-  elements.inputDir.addEventListener("change", inspectSourceFolder);
-  elements.inputDir.addEventListener("blur", inspectSourceFolder);
-  elements.toggleOptionalFields.addEventListener("click", toggleOptionalFields);
+  elements.inputDir.addEventListener("change", async () => {
+    await inspectSourceFolder();
+    scheduleUiSettingsSave();
+  });
+  elements.inputDir.addEventListener("blur", async () => {
+    await inspectSourceFolder();
+    scheduleUiSettingsSave();
+  });
+  elements.toggleOptionalFields.addEventListener("click", () => {
+    toggleOptionalFields();
+    scheduleUiSettingsSave();
+  });
+  elements.clearOutput.addEventListener("change", scheduleUiSettingsSave);
+  elements.keepExistingFiles.addEventListener("change", scheduleUiSettingsSave);
+  elements.keepProcessedJson.addEventListener("change", scheduleUiSettingsSave);
   elements.runProcess.addEventListener("click", runProcess);
   elements.runGenerate.addEventListener("click", runGenerate);
   elements.importUploadSource.addEventListener("click", importUploadSource);
@@ -1005,6 +1395,10 @@ function setupEventHandlers() {
     if (state.info?.docs?.userGuidePath) {
       window.ccrs.openPath(state.info.docs.userGuidePath);
     }
+  });
+  elements.releaseAnnouncementAccept.addEventListener("click", acknowledgeReleaseAnnouncement);
+  elements.releaseAnnouncementPanel.addEventListener("click", (event) => {
+    event.stopPropagation();
   });
 
   window.ccrs.onBackendEvent((event) => {
@@ -1031,6 +1425,7 @@ function cacheElements() {
   Object.assign(elements, {
     appVersionBadge: $("app-version-badge"),
     archivePreview: $("archive-preview"),
+    archiveNameHelp: $("archive-name-help"),
     clearOutput: $("clear-output"),
     generatorCard: $("generator-card"),
     generatorFileCountDisplay: $("generator-file-count-display"),
@@ -1061,6 +1456,7 @@ function cacheElements() {
     overrideReferralExpirationDate: $("override-referral-expiration-date"),
     overrideReferralLastUpdateDate: $("override-referral-last-update-date"),
     overrideReferralPeriod: $("override-referral-period"),
+    overrideStationId: $("override-station-id"),
     ssnHelp: $("ssn-help"),
     fileCountHelp: $("file-count-help"),
     referralsPerFileHelp: $("referrals-per-file-help"),
@@ -1082,6 +1478,10 @@ function cacheElements() {
     sourceSubtitle: $("source-subtitle"),
     sourceTitle: $("source-title"),
     stationIdPreview: $("station-id-preview"),
+    stationIdCombobox: $("station-id-combobox"),
+    stationIdMatch: $("station-id-match"),
+    stationIdMenu: $("station-id-menu"),
+    stationIdToggle: $("station-id-toggle"),
     statusBadge: $("status-badge"),
     statusMessage: $("status-message"),
     subtabRow: $("subtab-row"),
@@ -1095,6 +1495,12 @@ function cacheElements() {
     workflowSubtitle: $("workflow-subtitle"),
     workflowTitle: $("workflow-title"),
     outputCard: $("output-card"),
+    releaseAnnouncementAccept: $("release-announcement-accept"),
+    releaseAnnouncementList: $("release-announcement-list"),
+    releaseAnnouncementOverlay: $("release-announcement-overlay"),
+    releaseAnnouncementPanel: $("release-announcement-panel"),
+    releaseAnnouncementTitle: $("release-announcement-title"),
+    releaseAnnouncementVersion: $("release-announcement-version"),
   });
 }
 
@@ -1107,5 +1513,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupEventHandlers();
   syncWorkflowText();
   await refreshInfo();
+  await applyUiSettings(state.info?.uiSettings || {});
   syncIcnFieldState();
 });

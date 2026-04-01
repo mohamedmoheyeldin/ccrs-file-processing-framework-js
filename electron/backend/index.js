@@ -31,6 +31,8 @@ const {
   getGeneratorDefaults,
 } = require("./referralGenerator");
 const { cleanupRuntimeArtifacts, cleanupStaleRuntimeArtifacts, removePath } = require("./runtimeCleanup");
+const { loadStationOptions } = require("./stationCatalog");
+const { getUiSettingsPath, loadUiSettings, saveUiSettings } = require("./userSettings");
 const {
   getServerDisplayForTarget,
   getUploadProfileSourcePath,
@@ -43,33 +45,50 @@ const {
   testUploadConnection,
 } = require("./uploader");
 const { sanitizeFilenameBase } = require("./renamer");
-const { DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename } = require("./zipper");
+const { buildArchiveBasename, DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename } = require("./zipper");
 
 ensureRuntimeFiles();
 setupLogger();
 
-function loadAppVersion() {
+function normalizeReleaseNotes(rawValue) {
+  return (Array.isArray(rawValue) ? rawValue : [])
+    .map((note) => String(note || "").trim())
+    .filter(Boolean);
+}
+
+function loadAppVersionInfo() {
   const runtimePath = dataPath("config", "app_version.json");
   const bundledPath = bundlePath("config", "app_version.json");
   for (const targetPath of [runtimePath, bundledPath]) {
     try {
       if (fs.existsSync(targetPath)) {
         const parsed = JSON.parse(fs.readFileSync(targetPath, "utf8"));
-        const configuredLabel = String(parsed.label || "").trim();
-        if (configuredLabel) {
-          return configuredLabel;
-        }
-
         const version = String(parsed.version || "").trim();
+        const label = String(parsed.label || "").trim();
         const channel = String(parsed.channel || "").trim();
         const displayVersion = version.endsWith(".0") ? version.slice(0, -2) : version;
-        return [channel, displayVersion].filter(Boolean).join(" ").trim();
+        const displayLabel = label || [channel, displayVersion].filter(Boolean).join(" ").trim();
+        return {
+          version,
+          label,
+          channel,
+          displayLabel,
+          releaseKey: [version, label || channel || displayVersion].filter(Boolean).join("|"),
+          releaseNotes: normalizeReleaseNotes(parsed.releaseNotes || parsed.release_notes),
+        };
       }
     } catch (_error) {
       // Ignore invalid version config and fall back to empty.
     }
   }
-  return "";
+  return {
+    version: "",
+    label: "",
+    channel: "",
+    displayLabel: "",
+    releaseKey: "",
+    releaseNotes: [],
+  };
 }
 
 function buildUploadTargets(profiles) {
@@ -82,11 +101,29 @@ function buildUploadTargets(profiles) {
 }
 
 function getInfo() {
+  const uiSettings = loadUiSettings();
+  const appVersion = loadAppVersionInfo();
   const profiles = loadUploadProfiles();
   const [profileSourcePath, profileSourceKind] = getUploadProfileSourcePath();
+  const userGuidePdfPath = dataPath("docs", "USER_GUIDE.pdf");
+  const userGuidePath = fs.existsSync(userGuidePdfPath)
+    ? userGuidePdfPath
+    : dataPath("docs", "USER_GUIDE.md");
   return {
     runtimeRoot: getRuntimeRoot(),
-    appVersionLabel: loadAppVersion(),
+    appVersionLabel: appVersion.displayLabel,
+    appVersion,
+    releaseAnnouncement: {
+      releaseKey: appVersion.releaseKey,
+      version: appVersion.version,
+      label: appVersion.label || appVersion.displayLabel,
+      notes: appVersion.releaseNotes,
+      shouldShow: Boolean(
+        appVersion.releaseKey &&
+          appVersion.releaseNotes.length &&
+          uiSettings.acknowledgedReleaseKey !== appVersion.releaseKey
+      ),
+    },
     profileSource: {
       path: profileSourcePath,
       kind: profileSourceKind,
@@ -94,6 +131,8 @@ function getInfo() {
     uploadProfileSummary: summarizeUploadProfiles(profiles),
     uploadTargets: buildUploadTargets(profiles),
     generatorDefaults: getGeneratorDefaults(),
+    stationOptions: loadStationOptions(),
+    uiSettings,
     constants: {
       icnModes: ICN_MODES,
       icnTestPrefix: ICN_TEST_PREFIX,
@@ -107,7 +146,10 @@ function getInfo() {
       defaultArchiveBasename: DEFAULT_ARCHIVE_BASENAME,
     },
     docs: {
-      userGuidePath: dataPath("docs", "USER_GUIDE.md"),
+      userGuidePath,
+    },
+    userConfig: {
+      uiSettingsPath: getUiSettingsPath(),
     },
   };
 }
@@ -165,11 +207,13 @@ function inspectSource(payload) {
 
 function buildPreview(payload) {
   const replacementCode = sanitizeFilenameBase(payload.replacementCode || "");
-  const archiveBasename = sanitizeArchiveBasename(payload.archiveBasename || DEFAULT_ARCHIVE_BASENAME);
   const referralValue = (payload.referralReplacementCode || "").trim();
   const icnSettings = payload.icnSettings || {};
   const optionalOverrides = payload.optionalOverrides || {};
   const fieldErrors = collectFieldErrors(payload);
+  const archiveBasename = fieldErrors.archiveBasename
+    ? sanitizeArchiveBasename(payload.archiveBasename || DEFAULT_ARCHIVE_BASENAME)
+    : buildArchiveBasename(payload);
 
   let normalizedReferral = "";
   if (referralValue && !fieldErrors.referralReplacementCode) {
@@ -272,6 +316,12 @@ function collectFieldErrors(payload) {
     fieldErrors.icnValue = error.message;
   }
 
+  try {
+    buildArchiveBasename(payload);
+  } catch (error) {
+    fieldErrors.archiveBasename = error.message;
+  }
+
   const uploadPayload = payload.upload || {};
   if (uploadPayload.enabled) {
     for (const target of uploadPayload.targets || []) {
@@ -321,7 +371,7 @@ function buildCommonArgs(payload, progressCallback) {
     keepProcessedJson: Boolean(payload.keepProcessedJson),
     progressCallback,
     uploadOptions: buildUploadOptions(payload),
-    archiveBasename: (payload.archiveBasename || "").trim() || null,
+    archiveBasename: buildArchiveBasename(payload),
   };
 }
 
@@ -418,6 +468,19 @@ async function handleCommand(command, payload, emitProgress) {
     return {
       importResult: importUploadSourceToConfig((payload.sourcePath || "").trim()),
       info: getInfo(),
+    };
+  }
+  if (command === "save-ui-settings") {
+    return {
+      uiSettings: saveUiSettings(payload),
+    };
+  }
+  if (command === "acknowledge-release-announcement") {
+    return {
+      uiSettings: saveUiSettings({
+        ...loadUiSettings(),
+        acknowledgedReleaseKey: String(payload.releaseKey || "").trim(),
+      }),
     };
   }
   if (command === "inspect-source") {

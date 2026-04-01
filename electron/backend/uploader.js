@@ -3,11 +3,11 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 const SftpClient = require("ssh2-sftp-client");
-const { dataPath } = require("./appPaths");
+const { dataPath, userDataPath } = require("./appPaths");
 
-const WINSCP_INI_PATH = dataPath("upload_import", "WinSCP.ini");
-const CREDENTIALS_JSON_PATH = dataPath("config", "upload_credentials.json");
-const WINSCP_GENERATED_CREDENTIALS_PATH = dataPath("upload_import", "winscp_credentials.json");
+const WINSCP_INI_PATH = userDataPath("upload_import", "WinSCP.ini");
+const CREDENTIALS_JSON_PATH = userDataPath("config", "upload_credentials.json");
+const WINSCP_GENERATED_CREDENTIALS_PATH = userDataPath("upload_import", "winscp_credentials.json");
 
 function summarizeUploadProfiles(profiles) {
   return {
@@ -83,6 +83,7 @@ function getCandidateWinscpIniPaths() {
   const homeDirectory = os.homedir();
   return [...new Set([
     WINSCP_INI_PATH,
+    dataPath("upload_import", "WinSCP.ini"),
     path.join(process.cwd(), "upload_import", "WinSCP.ini"),
     path.join(process.cwd(), "upload_import", "winscp.ini"),
     path.join(homeDirectory, "AppData", "Roaming", "WinSCP.ini"),
@@ -95,6 +96,7 @@ function getCandidateCredentialsJsonPaths() {
   const homeDirectory = os.homedir();
   return [...new Set([
     CREDENTIALS_JSON_PATH,
+    dataPath("config", "upload_credentials.json"),
     path.join(process.cwd(), "config", "upload_credentials.json"),
     path.join(process.cwd(), "config", "winscp_credentials.json"),
     path.join(homeDirectory, "Downloads", "winscp_credentials.json"),

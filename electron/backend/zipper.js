@@ -3,6 +3,7 @@ const path = require("path");
 const zlib = require("zlib");
 
 const DEFAULT_ARCHIVE_BASENAME = "processed_files";
+const ARCHIVE_DATE_TIME_PATTERN = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
 
 function sanitizeArchiveBasename(value) {
   let basename = (value || "").trim();
@@ -11,9 +12,46 @@ function sanitizeArchiveBasename(value) {
   }
 
   basename = basename.replace(/\.(json|gz)$/i, "");
+  basename = basename.replace(/\s+/g, "_");
   basename = basename.replace(/[<>:"/\\|?*]+/g, "_");
+  basename = basename.replace(/_+/g, "_");
   basename = basename.replace(/^[ .]+|[ .]+$/g, "");
   return basename || DEFAULT_ARCHIVE_BASENAME;
+}
+
+function sanitizeArchiveSegment(value) {
+  const sanitized = sanitizeArchiveBasename(value || "").replace(/^_+|_+$/g, "");
+  return sanitized === DEFAULT_ARCHIVE_BASENAME && !(value || "").trim() ? "" : sanitized;
+}
+
+function formatArchiveReferralDateTime(value) {
+  const normalized = String(value || "").trim();
+  const match = normalized.match(ARCHIVE_DATE_TIME_PATTERN);
+  if (!match) {
+    throw new Error("Enter Referral DateTime in Referral Details using YYYY-MM-DD HH:mm:ss to append it to the .gz name.");
+  }
+
+  return `${match[1]}${match[2]}${match[3]}_${match[4]}${match[5]}${match[6]}`;
+}
+
+function buildArchiveBasename(payload = {}) {
+  const archiveNamingOptions = payload.archiveNamingOptions || {};
+  const optionalOverrides = payload.optionalOverrides || {};
+  const segments = [sanitizeArchiveBasename(payload.archiveBasename || DEFAULT_ARCHIVE_BASENAME)];
+
+  if (archiveNamingOptions.includeNetwork) {
+    const networkSegment = sanitizeArchiveSegment(optionalOverrides.Network || "");
+    if (!networkSegment) {
+      throw new Error("Choose a Network in Referral Details before appending it to the .gz name.");
+    }
+    segments.push(networkSegment);
+  }
+
+  if (archiveNamingOptions.includeReferralDateTime) {
+    segments.push(formatArchiveReferralDateTime(optionalOverrides.ReferralDateTime || ""));
+  }
+
+  return sanitizeArchiveBasename(segments.join("_"));
 }
 
 function zipOutput(folder, archiveBasename = DEFAULT_ARCHIVE_BASENAME) {
@@ -73,7 +111,9 @@ function zipOutput(folder, archiveBasename = DEFAULT_ARCHIVE_BASENAME) {
 }
 
 module.exports = {
+  buildArchiveBasename,
   DEFAULT_ARCHIVE_BASENAME,
+  formatArchiveReferralDateTime,
   sanitizeArchiveBasename,
   zipOutput,
 };

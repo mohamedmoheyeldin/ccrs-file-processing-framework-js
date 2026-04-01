@@ -1,4 +1,11 @@
 {
-  "version": "6.4.0",
-  "label": "Production V1"
+  "version": "1.1.0",
+  "label": "Production V1.1",
+  "releaseNotes": [
+    "Station ID now uses a searchable dropdown that still accepts typed custom values.",
+    "The Station ID list now shows the full available catalog from the bundled station options file.",
+    "Archive naming now groups the final .gz name, naming options, example, and preview in one clearer section.",
+    "Archive names can optionally append Network and Referral DateTime using system-safe formatting.",
+    "The app now remembers user settings, upload-related config, and installer folder choices more like a full production app."
+  ]
 }

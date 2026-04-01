@@ -19,6 +19,13 @@ const {
   registerTemporaryPath,
 } = require("../electron/backend/runtimeCleanup");
 const { summarizeUploadProfiles } = require("../electron/backend/uploader");
+const { buildArchiveBasename, formatArchiveReferralDateTime } = require("../electron/backend/zipper");
+const {
+  DEFAULT_UI_SETTINGS,
+  loadUiSettings,
+  normalizeUiSettings,
+  saveUiSettings,
+} = require("../electron/backend/userSettings");
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-smoke-"));
 let failures = 0;
@@ -284,6 +291,124 @@ test("Upload profile summary reports server and user counts", () => {
   });
 });
 
+test("App info exposes unique Station ID dropdown options", async () => {
+  const info = await backend.handleCommand("info", {});
+
+  assert.equal(Array.isArray(info.stationOptions), true);
+  assert.equal(info.stationOptions.length >= 1500, true);
+
+  const stationKeys = info.stationOptions.map((option) => option.stationKey);
+  assert.equal(new Set(stationKeys).size, stationKeys.length);
+
+  const sample = info.stationOptions.find((option) => option.stationKey === "1501");
+  assert.equal(Boolean(sample), true);
+  assert.match(sample.stationName, /Togus VA Medical Center/);
+});
+
+test("Archive basename can append Network and Referral DateTime safely", () => {
+  const archiveBasename = buildArchiveBasename({
+    archiveBasename: "My Custom Export",
+    archiveNamingOptions: {
+      includeNetwork: true,
+      includeReferralDateTime: true,
+    },
+    optionalOverrides: {
+      Network: "CCN1",
+      ReferralDateTime: "2026-04-01 13:45:00",
+    },
+  });
+
+  assert.equal(archiveBasename, "My_Custom_Export_CCN1_20260401_134500");
+  assert.equal(formatArchiveReferralDateTime("2026-04-01 13:45:00"), "20260401_134500");
+});
+
+test("UI settings normalize legacy theme values and persist user choices", () => {
+  const originalOverride = process.env.CCRS_USER_DATA_ROOT;
+  const settingsRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-user-settings-"));
+
+  try {
+    process.env.CCRS_USER_DATA_ROOT = settingsRoot;
+
+    const normalized = normalizeUiSettings({
+      theme_mode: "Dark",
+      archiveAppendNetwork: true,
+      archiveAppendReferralDateTime: true,
+      archiveBasename: "my_exports",
+      uploadTargets: {
+        DEV: {
+          enabled: true,
+          userName: "devuser",
+          remoteDirectory: "/CCRA_Uploads",
+        },
+      },
+    });
+
+    assert.equal(normalized.theme, "dark");
+    assert.equal(normalized.archiveAppendNetwork, true);
+    assert.equal(normalized.archiveAppendReferralDateTime, true);
+    assert.equal(normalized.uploadTargets.DEV.userName, "devuser");
+    assert.equal(normalized.acknowledgedReleaseKey, "");
+
+    saveUiSettings({
+      ...DEFAULT_UI_SETTINGS,
+      theme: "dark",
+      archiveBasename: "session_export",
+      archiveAppendNetwork: true,
+      acknowledgedReleaseKey: "1.1.0|Production V1.1",
+    });
+
+    const loaded = loadUiSettings();
+    assert.equal(loaded.theme, "dark");
+    assert.equal(loaded.archiveBasename, "session_export");
+    assert.equal(loaded.archiveAppendNetwork, true);
+    assert.equal(loaded.acknowledgedReleaseKey, "1.1.0|Production V1.1");
+  } finally {
+    if (originalOverride === undefined) {
+      delete process.env.CCRS_USER_DATA_ROOT;
+    } else {
+      process.env.CCRS_USER_DATA_ROOT = originalOverride;
+    }
+    fs.rmSync(settingsRoot, { recursive: true, force: true });
+  }
+});
+
+test("App info exposes one-time release announcement metadata", async () => {
+  const originalOverride = process.env.CCRS_USER_DATA_ROOT;
+  const settingsRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-release-announcement-"));
+
+  try {
+    process.env.CCRS_USER_DATA_ROOT = settingsRoot;
+
+    const initialInfo = await backend.handleCommand("info", {});
+    assert.equal(initialInfo.appVersion.version, "1.1.0");
+    assert.equal(initialInfo.appVersion.label, "Production V1.1");
+    assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
+    assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
+    assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);
+
+    await backend.handleCommand("acknowledge-release-announcement", {
+      releaseKey: initialInfo.releaseAnnouncement.releaseKey,
+    });
+
+    const acknowledgedInfo = await backend.handleCommand("info", {});
+    assert.equal(acknowledgedInfo.releaseAnnouncement.shouldShow, false);
+    assert.equal(loadUiSettings().acknowledgedReleaseKey, initialInfo.releaseAnnouncement.releaseKey);
+  } finally {
+    if (originalOverride === undefined) {
+      delete process.env.CCRS_USER_DATA_ROOT;
+    } else {
+      process.env.CCRS_USER_DATA_ROOT = originalOverride;
+    }
+    fs.rmSync(settingsRoot, { recursive: true, force: true });
+  }
+});
+
+test("App info prefers the PDF user guide path", async () => {
+  const info = await backend.handleCommand("info", {});
+  assert.equal(typeof info.docs?.userGuidePath, "string");
+  assert.match(info.docs.userGuidePath, /USER_GUIDE\.pdf$/);
+});
+
 test("Preview validation reports field-level errors without throwing", async () => {
   const preview = await backend.handleCommand("preview", {
     referralReplacementCode: "123",
@@ -314,6 +439,25 @@ test("Preview validation reports field-level errors without throwing", async () 
   assert.equal(
     preview.fieldErrors["upload:DEV:remote_directory"],
     "Please enter the remote upload location for DEV."
+  );
+});
+
+test("Preview validation requires archive naming fields when append options are enabled", async () => {
+  const preview = await backend.handleCommand("preview", {
+    archiveBasename: "customname",
+    archiveNamingOptions: {
+      includeNetwork: true,
+      includeReferralDateTime: true,
+    },
+    optionalOverrides: {
+      Network: "",
+      ReferralDateTime: "",
+    },
+  });
+
+  assert.equal(
+    preview.fieldErrors.archiveBasename,
+    "Choose a Network in Referral Details before appending it to the .gz name."
   );
 });
 
