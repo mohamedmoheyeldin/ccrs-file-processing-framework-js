@@ -168,6 +168,7 @@ function getInfo() {
     ? userGuidePdfPath
     : dataPath("docs", "USER_GUIDE.md");
   const leieValidationGuidePathCandidates = [
+    dataPath("docs", "LEIE_UPLOAD_VALIDATION_GUIDE.pdf"),
     dataPath("docs", "LEIE_UPLOAD_VALIDATION_GUIDE.md"),
     dataPath("docs", "LEIE_Data_Upload_Validation_Guide.md"),
   ];

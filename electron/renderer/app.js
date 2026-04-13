@@ -1451,7 +1451,7 @@ function syncWorkflowText() {
 
   elements.subtabRow.classList.toggle("hidden", !isReferral);
   elements.generatorCard.classList.toggle("hidden", !isGenerate);
-  elements.workflowCard.classList.toggle("hidden", false);
+  elements.workflowCard.classList.toggle("hidden", isOther);
   elements.futureCard.classList.toggle("hidden", !isOther);
   elements.sourceCard.classList.toggle("hidden", isGenerate || isOther);
   elements.referralDetailsCard.classList.toggle("hidden", isOther || isLeie);
@@ -1873,6 +1873,24 @@ function setupEventHandlers() {
   elements.releaseAnnouncementAccept.addEventListener("click", acknowledgeReleaseAnnouncement);
   elements.releaseAnnouncementPanel.addEventListener("click", (event) => {
     event.stopPropagation();
+  });
+  document.addEventListener("click", async (event) => {
+    const target = event.target?.closest?.("a.external-link");
+    if (!target) {
+      return;
+    }
+    event.preventDefault();
+    const href = String(target.getAttribute("href") || "").trim();
+    if (!href) {
+      return;
+    }
+
+    if (typeof window.ccrs.openExternal === "function") {
+      await window.ccrs.openExternal(href);
+      return;
+    }
+
+    window.open(href, "_blank", "noopener");
   });
 
   window.ccrs.onBackendEvent((event) => {

@@ -65,6 +65,15 @@ ipcMain.handle("shell:open-path", async (_event, targetPath) => {
   return shell.openPath(targetPath);
 });
 
+ipcMain.handle("shell:open-external", async (_event, targetUrl) => {
+  const normalizedUrl = String(targetUrl || "").trim();
+  if (!normalizedUrl) {
+    return false;
+  }
+  await shell.openExternal(normalizedUrl);
+  return true;
+});
+
 ipcMain.handle("backend:info", async (event) => runBackendCommand(event.sender, "info"));
 ipcMain.handle("backend:inspect-source", async (event, payload) =>
   runBackendCommand(event.sender, "inspect-source", payload)

@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld("ccrs", {
   pickDirectory: () => ipcRenderer.invoke("dialog:pick-directory"),
   pickFile: (filters) => ipcRenderer.invoke("dialog:pick-file", filters),
   openPath: (targetPath) => ipcRenderer.invoke("shell:open-path", targetPath),
+  openExternal: (url) => ipcRenderer.invoke("shell:open-external", url),
   getInfo: () => ipcRenderer.invoke("backend:info"),
   inspectSource: (inputDir) => ipcRenderer.invoke("backend:inspect-source", { inputDir }),
   inspectLeieSource: (inputDir, duplicateKey) =>

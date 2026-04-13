@@ -1030,6 +1030,12 @@ body.theme-dark .leie-upload-validation-step5 {
   font-size: 0.8rem;
 }
 
+.leie-upload-validation-step5 a {
+  color: var(--accent);
+  text-decoration: underline;
+  word-break: break-all;
+}
+
 .radio-chip,
 .checkbox-chip {
   display: inline-flex;

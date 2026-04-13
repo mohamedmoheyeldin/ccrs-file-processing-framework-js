@@ -84,9 +84,9 @@
               <div id="leie-guide-banner" class="leie-guide-banner hidden">
                 <div class="leie-guide-copy">
                   <strong>LEIE Data Upload and Validation Guide</strong>
-                  <span>Open the manual for upload steps and database validation checks.</span>
+                  <span>Open the PDF manual for upload steps and database validation checks.</span>
                 </div>
-                <button id="open-leie-validation-guide" class="toolbar-button">Open Guide</button>
+                <button id="open-leie-validation-guide" class="toolbar-button">Open PDF Guide</button>
               </div>
               <label class="field-block" id="source-folder-field">
                 <span>Source Folder</span>
@@ -481,9 +481,9 @@
               </div>
               <div id="leie-upload-validation-card" class="leie-upload-validation-card hidden">
                 <div class="leie-upload-validation-head">
-                  <h3>Step 4: Validate the LEIE Load in the Database</h3>
+                  <h3>Validate the LEIE Load in the Database</h3>
                   <p>
-                    After the LEIE file is loaded, paste your `etl_batch_id`, copy the SQL below, and run it in `ccrsdb`.
+                    After the LEIE file is loaded, paste your <code>etl_batch_id</code>, copy the SQL below, and run it in <code>ccrsdb</code>.
                   </p>
                 </div>
                 <label class="field-block">
@@ -510,7 +510,11 @@
                   <h4>Step 5: Validate in CCRS UI</h4>
                   <p>After running the SQL checks, confirm the same batch in the CCRS Table Viewer:</p>
                   <ul>
-                    <li>Open the environment URL: <code>https://sqa.ccrs.va.gov/tableviewer</code>, <code>https://dev.ccrs.va.gov/tableviewer</code>, <code>https://preprod.ccrs.va.gov/tableviewer</code>, or <code>https://ccrs.va.gov/tableviewer</code>.</li>
+                    <li>Open the correct environment URL:</li>
+                    <li><a class="external-link" href="https://sqa.ccrs.va.gov/tableviewer">https://sqa.ccrs.va.gov/tableviewer</a></li>
+                    <li><a class="external-link" href="https://dev.ccrs.va.gov/tableviewer">https://dev.ccrs.va.gov/tableviewer</a></li>
+                    <li><a class="external-link" href="https://preprod.ccrs.va.gov/tableviewer">https://preprod.ccrs.va.gov/tableviewer</a></li>
+                    <li><a class="external-link" href="https://ccrs.va.gov/tableviewer">https://ccrs.va.gov/tableviewer</a></li>
                     <li>Select <code>CLAIM_BATCH_LOG</code> and confirm file name, <code>etl_batch_id</code>, and timestamps.</li>
                     <li>Confirm the LEIE load completed successfully before moving to the next environment.</li>
                   </ul>

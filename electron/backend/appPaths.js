@@ -129,6 +129,10 @@ function ensureRuntimeFiles() {
     dataPath("docs", "LEIE_UPLOAD_VALIDATION_GUIDE.md")
   );
   syncFromBundle(
+    bundlePath("docs", "LEIE_UPLOAD_VALIDATION_GUIDE.pdf"),
+    dataPath("docs", "LEIE_UPLOAD_VALIDATION_GUIDE.pdf")
+  );
+  syncFromBundle(
     bundlePath("docs", "LEIE_Data_Upload_Validation_Guide.md"),
     dataPath("docs", "LEIE_Data_Upload_Validation_Guide.md")
   );
