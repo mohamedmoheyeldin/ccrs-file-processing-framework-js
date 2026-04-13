@@ -1,4 +1,6 @@
 const fs = require("fs");
+const path = require("path");
+const { Worker } = require("worker_threads");
 const {
   describeIcnPreview,
   ICN_MODES,
@@ -106,6 +108,51 @@ function buildUploadTargets(profiles) {
     users: getUserNamesForServer(profiles, targetName),
     defaultRemoteDirectory: "/CCRA_Uploads",
   }));
+}
+
+function inspectLeieSourceAsync(payload) {
+  return new Promise((resolve, reject) => {
+    const workerPath = path.join(__dirname, "leieWorker.js");
+    let settled = false;
+    const worker = new Worker(workerPath, {
+      workerData: {
+        task: "inspect",
+        payload,
+      },
+    });
+
+    worker.on("message", (message) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      if (message?.ok) {
+        resolve(message.result);
+      } else {
+        reject(new Error(message?.error || "LEIE scan failed."));
+      }
+    });
+
+    worker.on("error", (error) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      reject(error);
+    });
+
+    worker.on("exit", (code) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      if (code === 0) {
+        reject(new Error("LEIE scan worker exited before returning a result."));
+      } else {
+        reject(new Error(`LEIE scan worker exited with code ${code}.`));
+      }
+    });
+  });
 }
 
 function getInfo() {
@@ -506,7 +553,7 @@ async function handleCommand(command, payload, emitProgress) {
     return runProcess(payload, emitProgress);
   }
   if (command === "inspect-leie-source") {
-    return inspectLeieSource(payload);
+    return inspectLeieSourceAsync(payload);
   }
   if (command === "process-leie") {
     return processLeieFiles(payload, emitProgress);

@@ -41,10 +41,11 @@ function getDuplicateMode(rawValue = "") {
 }
 
 function getExcelFiles(inputDir) {
-  const normalizedInputPath = String(inputDir || "").trim();
-  if (!normalizedInputPath) {
+  const rawInputPath = String(inputDir || "").trim();
+  if (!rawInputPath) {
     throw new Error("Please select a source Excel file or folder.");
   }
+  const normalizedInputPath = path.normalize(rawInputPath);
 
   if (!fs.existsSync(normalizedInputPath)) {
     throw new Error("The selected source path was not found.");

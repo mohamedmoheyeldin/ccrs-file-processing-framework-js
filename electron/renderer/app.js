@@ -17,6 +17,9 @@ const state = {
   leieDuplicateKey: "ssn",
   leieDuplicateHandling: "manual",
   leieInspection: null,
+  leieInspectionError: "",
+  leieScanRequestId: 0,
+  leieLastScannedInput: "",
   leieSourceValid: false,
   leieOutputFileName: "",
   sourceInspection: null,
@@ -953,6 +956,7 @@ function syncLeieUiState() {
   }
 
   const inspection = state.leieInspection;
+  const inspectionError = String(state.leieInspectionError || "").trim();
   const duplicates = inspection?.duplicates || [];
   const validationErrors = inspection?.validationErrors || [];
   const hasDuplicates = Boolean(inspection?.hasDuplicates);
@@ -962,7 +966,10 @@ function syncLeieUiState() {
   elements.outputCard.classList.toggle("is-disabled", hasBlockingIssues);
   elements.runProcess.disabled = hasBlockingIssues;
 
-  if (!inspection || !inspection.fileCount) {
+  if (inspectionError) {
+    elements.leieDuplicateResult.value = "LEIE scan failed";
+    elements.leieDuplicateSummary.textContent = inspectionError;
+  } else if (!inspection || !inspection.fileCount) {
     elements.leieDuplicateResult.value = "No LEIE source folder selected.";
     elements.leieDuplicateSummary.textContent = "Duplicate details appear in the table below if found.";
   } else if (validationErrors.length > 0) {
@@ -979,24 +986,39 @@ function syncLeieUiState() {
   renderLeieDuplicateTable(duplicates);
 }
 
-async function inspectLeieSourceFolder() {
+async function inspectLeieSourceFolder(options = {}) {
+  const force = Boolean(options.force);
   const inputDir = readValue("input-dir");
   if (!inputDir) {
     state.leieInspection = null;
+    state.leieInspectionError = "";
+    state.leieLastScannedInput = "";
     elements.sourceFileCount.textContent = "No LEIE source file or folder selected.";
     elements.listDateSourceValue.textContent = "Select an Excel file or folder to scan for LEIE data.";
     syncLeieUiState();
     updatePreviews();
     return;
   }
+  if (!force && inputDir === state.leieLastScannedInput) {
+    return;
+  }
 
+  const requestId = state.leieScanRequestId + 1;
+  state.leieScanRequestId = requestId;
+
+  state.leieInspectionError = "";
   // Reflect user selection immediately so the UI never looks stale while inspection runs.
   elements.sourceFileCount.textContent = "Scanning selected LEIE source...";
   elements.listDateSourceValue.textContent = inputDir;
 
   try {
     const inspection = await window.ccrs.inspectLeieSource(inputDir, "ssn");
+    if (requestId !== state.leieScanRequestId) {
+      return;
+    }
     state.leieInspection = inspection;
+    state.leieInspectionError = "";
+    state.leieLastScannedInput = inputDir;
     state.leieOutputFileName = state.leieOutputFileName || inspection.outputNameSuggestion || "";
     if (!readValue("replacement-code")) {
       elements.replacementCode.value = state.leieOutputFileName;
@@ -1022,7 +1044,12 @@ async function inspectLeieSourceFolder() {
       setStatus("File Loaded", "LEIE source files loaded and ready for processing.");
     }
   } catch (error) {
+    if (requestId !== state.leieScanRequestId) {
+      return;
+    }
     state.leieInspection = null;
+    state.leieInspectionError = error.message || "Unknown error while scanning LEIE source.";
+    state.leieLastScannedInput = "";
     elements.sourceFileCount.textContent = "Unable to scan selected LEIE source.";
     elements.listDateSourceValue.textContent = inputDir;
     setStatus("Failed", error.message);
@@ -1406,9 +1433,10 @@ async function pickDirectory(targetId) {
   if (targetId === "input-dir") {
     if (state.mainTab === "leie") {
       state.leieInspection = null;
+      state.leieLastScannedInput = "";
     }
     if (state.mainTab === "leie" || isExcelPath(selected)) {
-      await inspectLeieSourceFolder();
+      await inspectLeieSourceFolder({ force: true });
     } else {
       await inspectSourceFolder();
     }
@@ -1673,17 +1701,7 @@ function setupEventHandlers() {
   elements.inputDir.addEventListener("change", async () => {
     if (state.mainTab === "leie") {
       state.leieInspection = null;
-    }
-    if (state.mainTab === "leie" || isExcelPath(readValue("input-dir"))) {
-      await inspectLeieSourceFolder();
-    } else {
-      await inspectSourceFolder();
-    }
-    scheduleUiSettingsSave();
-  });
-  elements.inputDir.addEventListener("blur", async () => {
-    if (state.mainTab === "leie") {
-      state.leieInspection = null;
+      state.leieLastScannedInput = "";
     }
     if (state.mainTab === "leie" || isExcelPath(readValue("input-dir"))) {
       await inspectLeieSourceFolder();
