@@ -155,7 +155,6 @@ function syncReleaseAnnouncement() {
 
   const shouldOpen = Boolean(
     announcement?.releaseKey &&
-      announcement?.shouldShow &&
       state.acknowledgedReleaseKey !== announcement.releaseKey
   );
   setReleaseAnnouncementOpen(shouldOpen);

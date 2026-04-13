@@ -1,12 +1,17 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const electron = require("electron");
+let electron = null;
+try {
+  electron = require("electron");
+} catch (_error) {
+  electron = null;
+}
 
 const USER_CONFIG_DIRECTORY_NAME = "CCRS File Processing Framework";
 
 function isPackagedApp() {
-  return Boolean(electron.app && electron.app.isPackaged);
+  return Boolean(electron && electron.app && electron.app.isPackaged);
 }
 
 function getBundleRoot() {
