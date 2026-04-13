@@ -124,6 +124,14 @@ function ensureRuntimeFiles() {
   copyIfMissing(bundlePath("upload_import", "decrypt-winscp.ps1"), userDataPath("upload_import", "decrypt-winscp.ps1"));
   syncFromBundle(bundlePath("docs", "USER_GUIDE.md"), dataPath("docs", "USER_GUIDE.md"));
   syncFromBundle(bundlePath("docs", "USER_GUIDE.pdf"), dataPath("docs", "USER_GUIDE.pdf"));
+  syncFromBundle(
+    bundlePath("docs", "LEIE_UPLOAD_VALIDATION_GUIDE.md"),
+    dataPath("docs", "LEIE_UPLOAD_VALIDATION_GUIDE.md")
+  );
+  syncFromBundle(
+    bundlePath("docs", "LEIE_Data_Upload_Validation_Guide.md"),
+    dataPath("docs", "LEIE_Data_Upload_Validation_Guide.md")
+  );
   copyIfMissing(bundlePath("assets", "icons", "ccrs_app_icon.ico"), dataPath("assets", "icons", "ccrs_app_icon.ico"));
   copyIfMissing(bundlePath("assets", "icons", "ccrs_app_icon.png"), dataPath("assets", "icons", "ccrs_app_icon.png"));
 }

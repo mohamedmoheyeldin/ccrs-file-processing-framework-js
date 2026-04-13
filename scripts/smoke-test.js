@@ -433,12 +433,12 @@ test("LEIE inspection detects duplicates and LEIE processing removes them when c
   writeXlsxFixture(sourcePath, [
     { SSN: "111-11-1111", NPI: "1234567890", Name: "A" },
     { SSN: "222-22-2222", NPI: "1234567891", Name: "B" },
-    { SSN: "111-11-1111", NPI: "1234567892", Name: "C" },
+    { SSN: "111-11-1111", NPI: "1234567890", Name: "A" },
   ]);
 
   const inspection = await backend.handleCommand("inspect-leie-source", {
     inputDir: sourceDir,
-    duplicateKey: "ssn",
+    duplicateKey: "full-row",
   });
 
   assert.equal(inspection.fileCount, 1);
@@ -451,7 +451,7 @@ test("LEIE inspection detects duplicates and LEIE processing removes them when c
       inputDir: sourceDir,
       outputDir,
       outputFileName: "processed_leie",
-      duplicateKey: "ssn",
+      duplicateKey: "full-row",
       duplicateHandling: "manual",
       upload: { enabled: false, targets: [] },
     }),
@@ -462,7 +462,7 @@ test("LEIE inspection detects duplicates and LEIE processing removes them when c
     inputDir: sourceDir,
     outputDir,
     outputFileName: "processed_leie",
-    duplicateKey: "ssn",
+    duplicateKey: "full-row",
     duplicateHandling: "auto-remove",
     upload: { enabled: false, targets: [] },
   });

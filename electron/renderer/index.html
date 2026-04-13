@@ -81,6 +81,13 @@
                   <p id="source-subtitle">Pick the folder that contains the incoming JSON files.</p>
                 </div>
               </div>
+              <div id="leie-guide-banner" class="leie-guide-banner hidden">
+                <div class="leie-guide-copy">
+                  <strong>LEIE Data Upload and Validation Guide</strong>
+                  <span>Open the manual for upload steps and database validation checks.</span>
+                </div>
+                <button id="open-leie-validation-guide" class="toolbar-button">Open Guide</button>
+              </div>
               <label class="field-block" id="source-folder-field">
                 <span>Source Folder</span>
                 <div class="field-row">
@@ -471,6 +478,43 @@
                   <div id="upload-ready-pill" class="pill-note">No upload config imported</div>
                 </div>
                 <button id="import-upload-source" class="toolbar-button primary">Import To Config</button>
+              </div>
+              <div id="leie-upload-validation-card" class="leie-upload-validation-card hidden">
+                <div class="leie-upload-validation-head">
+                  <h3>Step 4: Validate the LEIE Load in the Database</h3>
+                  <p>
+                    After the LEIE file is loaded, paste your `etl_batch_id`, copy the SQL below, and run it in `ccrsdb`.
+                  </p>
+                </div>
+                <label class="field-block">
+                  <span>ETL Batch ID</span>
+                  <input
+                    id="leie-validation-batch-id"
+                    type="text"
+                    placeholder="Example: H202604150409112638"
+                    autocomplete="off"
+                  />
+                  <small class="helper-text">Use the batch ID from `CLAIM_BATCH_LOG` (Step 3 in the guide).</small>
+                </label>
+                <label class="field-block">
+                  <span>Validation SQL</span>
+                  <textarea id="leie-validation-sql" rows="14" readonly></textarea>
+                </label>
+                <div class="toggle-row">
+                  <button id="copy-leie-validation-sql" class="toolbar-button">Copy SQL</button>
+                  <small id="leie-validation-copy-status" class="helper-text">
+                    Copy this SQL and run it in SQL Server for the selected environment.
+                  </small>
+                </div>
+                <div class="leie-upload-validation-step5">
+                  <h4>Step 5: Validate in CCRS UI</h4>
+                  <p>After running the SQL checks, confirm the same batch in the CCRS Table Viewer:</p>
+                  <ul>
+                    <li>Open the environment URL: <code>https://sqa.ccrs.va.gov/tableviewer</code>, <code>https://dev.ccrs.va.gov/tableviewer</code>, <code>https://preprod.ccrs.va.gov/tableviewer</code>, or <code>https://ccrs.va.gov/tableviewer</code>.</li>
+                    <li>Select <code>CLAIM_BATCH_LOG</code> and confirm file name, <code>etl_batch_id</code>, and timestamps.</li>
+                    <li>Confirm the LEIE load completed successfully before moving to the next environment.</li>
+                  </ul>
+                </div>
               </div>
               <div id="upload-targets" class="upload-targets"></div>
             </article>

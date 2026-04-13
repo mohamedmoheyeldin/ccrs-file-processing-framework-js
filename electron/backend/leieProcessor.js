@@ -3,26 +3,7 @@ const path = require("path");
 const XLSX = require("xlsx");
 const { uploadFile, loadUploadProfiles, resolveUploadTargets } = require("./uploader");
 
-const DUPLICATE_KEY_MODES = {
-  ssn: {
-    label: "SSN",
-    aliases: [
-      "ssn",
-      "socialsecuritynumber",
-      "socialsecurity",
-      "social_security_number",
-      "social_security",
-    ],
-  },
-  npi: {
-    label: "NPI",
-    aliases: ["npi", "npinumber", "npi_number"],
-  },
-  "full-row": {
-    label: "Full Row",
-    aliases: [],
-  },
-};
+const STRICT_DUPLICATE_MODE = "full-row";
 const ACCEPTED_EXCEL_EXTENSIONS = new Set([".xlsx", ".xls", ".xlsm", ".xlsb"]);
 
 function normalizeHeader(value) {
@@ -33,11 +14,7 @@ function normalizeHeader(value) {
 }
 
 function getDuplicateMode(rawValue = "") {
-  const normalized = String(rawValue || "").trim().toLowerCase();
-  if (DUPLICATE_KEY_MODES[normalized]) {
-    return normalized;
-  }
-  return "full-row";
+  return STRICT_DUPLICATE_MODE;
 }
 
 function getExcelFiles(inputDir) {
@@ -171,29 +148,15 @@ function readSheetMatrix(sheet) {
   return matrix;
 }
 
-function resolveDuplicateColumn(headers, duplicateMode) {
-  if (duplicateMode === "full-row") {
-    return {
-      columnName: "Full Row",
-      resolver: (rowValues) => {
-        return headers
-          .map((header) => `${normalizeHeader(header)}=${String(rowValues[header] || "").trim()}`)
-          .join("|")
-          .toLowerCase();
-      },
-    };
-  }
-
-  const mode = DUPLICATE_KEY_MODES[duplicateMode];
-  const candidate = headers.find((header) => mode.aliases.includes(normalizeHeader(header)));
-
-  if (!candidate) {
-    throw new Error(`${mode.label} column was not found in the worksheet header.`);
-  }
-
+function resolveDuplicateColumn(headers) {
   return {
-    columnName: candidate,
-    resolver: (rowValues) => String(rowValues[candidate] || "").trim().toLowerCase(),
+    columnName: "Full Row",
+    resolver: (rowValues) => {
+      return headers
+        .map((header) => `${normalizeHeader(header)}=${String(rowValues[header] || "").trim()}`)
+        .join("|")
+        .toLowerCase();
+    },
   };
 }
 
@@ -225,16 +188,7 @@ function collectSourceData(inputDir, duplicateKey = "full-row") {
   const duplicateKeyResolvers = new Map();
 
   for (const file of files) {
-    let duplicateColumn;
-    try {
-      duplicateColumn = resolveDuplicateColumn(file.headers, duplicateMode);
-    } catch (error) {
-      validationErrors.push({
-        fileName: file.fileName,
-        message: error.message,
-      });
-      continue;
-    }
+    const duplicateColumn = resolveDuplicateColumn(file.headers);
 
     duplicateKeyResolvers.set(file.fileName, duplicateColumn);
 
@@ -257,10 +211,7 @@ function collectSourceData(inputDir, duplicateKey = "full-row") {
       duplicates.push({
         fileName: file.fileName,
         rowNumber: row.rowNumber,
-        duplicateValue:
-          duplicateMode === "full-row"
-            ? "Matching full-row values"
-            : String(row.values[duplicateColumn.columnName] || "").trim(),
+        duplicateValue: "Matching full-row values",
         columnName: duplicateColumn.columnName,
       });
     }
@@ -346,7 +297,7 @@ function buildRowFingerprint(rowValues, headers) {
     .join("|");
 }
 
-function buildDedupedRows(sourceData, duplicateMode, duplicateHandling) {
+function buildDedupedRows(sourceData, _duplicateMode, duplicateHandling) {
   const headers = buildOutputHeaders(sourceData.files);
   const rows = [];
   const seenValues = new Set();
@@ -358,12 +309,7 @@ function buildDedupedRows(sourceData, duplicateMode, duplicateHandling) {
     }
 
     for (const row of file.rows) {
-      let rowKey = "";
-      if (duplicateMode === "full-row") {
-        rowKey = buildRowFingerprint(row.values, headers);
-      } else {
-        rowKey = duplicateColumn.resolver(row.values);
-      }
+      let rowKey = buildRowFingerprint(row.values, headers);
 
       if (duplicateHandling === "auto-remove") {
         if (rowKey && seenValues.has(rowKey)) {

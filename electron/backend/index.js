@@ -167,6 +167,11 @@ function getInfo() {
   const userGuidePath = fs.existsSync(userGuidePdfPath)
     ? userGuidePdfPath
     : dataPath("docs", "USER_GUIDE.md");
+  const leieValidationGuidePathCandidates = [
+    dataPath("docs", "LEIE_UPLOAD_VALIDATION_GUIDE.md"),
+    dataPath("docs", "LEIE_Data_Upload_Validation_Guide.md"),
+  ];
+  const leieValidationGuidePath = leieValidationGuidePathCandidates.find((targetPath) => fs.existsSync(targetPath)) || "";
   return {
     runtimeRoot: getRuntimeRoot(),
     appVersionLabel: appVersion.displayLabel,
@@ -205,6 +210,7 @@ function getInfo() {
     },
     docs: {
       userGuidePath,
+      leieValidationGuidePath,
     },
     userConfig: {
       uiSettingsPath: getUiSettingsPath(),

@@ -38,6 +38,7 @@ const DEFAULT_UI_SETTINGS = {
   leieDuplicateKey: "full-row",
   leieDuplicateHandling: "manual",
   leieOutputFileName: "",
+  leieValidationBatchId: "",
 };
 
 function toBoolean(value, fallbackValue = false) {
@@ -118,6 +119,7 @@ function normalizeUiSettings(rawValue = {}) {
       String(rawValue.leieDuplicateHandling || DEFAULT_UI_SETTINGS.leieDuplicateHandling).trim().toLowerCase() ||
       DEFAULT_UI_SETTINGS.leieDuplicateHandling,
     leieOutputFileName: String(rawValue.leieOutputFileName || "").trim(),
+    leieValidationBatchId: String(rawValue.leieValidationBatchId || "").trim(),
   };
 
   if (!["referral", "leie", "other"].includes(normalized.mainTab)) {

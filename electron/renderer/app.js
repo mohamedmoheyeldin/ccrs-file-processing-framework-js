@@ -7,6 +7,7 @@ const DATE_PARTS = [
   { key: "second", width: 2, min: 0, max: 59 },
 ];
 const PAYMENT_AUTHORITY_CODE_MAX = 99999;
+const LEIE_BATCH_ID_PLACEHOLDER = "H202604150409112638";
 
 const state = {
   info: null,
@@ -155,7 +156,7 @@ function syncReleaseAnnouncement() {
 
   const shouldOpen = Boolean(
     announcement?.releaseKey &&
-      state.acknowledgedReleaseKey !== announcement.releaseKey
+      (announcement?.shouldShow === true || state.acknowledgedReleaseKey !== announcement.releaseKey)
   );
   setReleaseAnnouncementOpen(shouldOpen);
 }
@@ -202,6 +203,66 @@ function sanitizeStationIdInput(value) {
 
 function isExcelPath(value) {
   return /\.(xlsx|xls|xlsm|xlsb)$/i.test(String(value || "").trim());
+}
+
+function buildLeieValidationSql(batchIdRaw = "") {
+  const normalizedBatchId = String(batchIdRaw || "").trim() || LEIE_BATCH_ID_PLACEHOLDER;
+  return [
+    "Use ccrsdb;",
+    "",
+    "Select File_Name, *",
+    "from CLAIM_BATCH_LOG",
+    `where etl_batch_id = '${normalizedBatchId}'`,
+    "order by Start_date_time desc;",
+    "",
+    "select count(*)",
+    "from dbo.LKUP_PROVIDER_SANCTION",
+    `where etl_batch_id = '${normalizedBatchId}';`,
+    "",
+    "Select count(*)",
+    "from dbo.LKUP_PROVIDER_SANCTION",
+    `where etl_batch_id <> '${normalizedBatchId}'`,
+    "  and is_current = 'Y';",
+    "",
+    "select * from dbo.LKUP_PROVIDER_SANCTION;",
+  ].join("\n");
+}
+
+function syncLeieValidationSql() {
+  if (!elements.leieValidationSql || !elements.leieValidationBatchId) {
+    return;
+  }
+  elements.leieValidationSql.value = buildLeieValidationSql(elements.leieValidationBatchId.value);
+}
+
+async function copyLeieValidationSql() {
+  if (!elements.leieValidationSql) {
+    return;
+  }
+
+  const sqlText = elements.leieValidationSql.value;
+  let copied = false;
+
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(sqlText);
+      copied = true;
+    } catch (_error) {
+      copied = false;
+    }
+  }
+
+  if (!copied) {
+    elements.leieValidationSql.focus();
+    elements.leieValidationSql.select();
+    copied = document.execCommand("copy");
+  }
+
+  elements.leieValidationCopyStatus.textContent = copied
+    ? "SQL copied. Run it in ccrsdb for the selected environment."
+    : "Unable to copy automatically. Select the SQL and copy it manually.";
+  elements.leieValidationCopyStatus.classList.toggle("is-success", copied);
+  elements.leieValidationCopyStatus.classList.toggle("is-error", !copied);
 }
 
 function getStationOptions() {
@@ -594,6 +655,7 @@ function collectUiSettings() {
     leieDuplicateKey: state.leieDuplicateKey,
     leieDuplicateHandling: state.leieDuplicateHandling,
     leieOutputFileName: state.mainTab === "leie" ? readValue("replacement-code") : state.leieOutputFileName,
+    leieValidationBatchId: readValue("leie-validation-batch-id"),
   };
 }
 
@@ -662,6 +724,7 @@ async function applyUiSettings(settings = {}) {
     "override-referral-consult-id": settings.overrideReferralConsultId,
     "file-count": settings.fileCount,
     "referrals-per-file": settings.referralsPerFile,
+    "leie-validation-batch-id": settings.leieValidationBatchId,
   };
 
   for (const [id, value] of Object.entries(valueMap)) {
@@ -688,12 +751,14 @@ async function applyUiSettings(settings = {}) {
   $("upload-enabled").checked = Boolean(settings.uploadEnabled);
 
   syncIcnFieldState();
+  syncLeieValidationSql();
   updateTemplateSummary();
   syncWorkflowText();
   $("leie-action-auto").checked = state.leieDuplicateHandling === "auto-remove";
   $("leie-action-manual").checked = state.leieDuplicateHandling !== "auto-remove";
   renderStationOptions(getStationOptions());
   applyUploadTargetSettings(settings.uploadTargets || {});
+  syncUploadTargetState();
 
   try {
     if (readValue("input-dir")) {
@@ -825,12 +890,43 @@ function renderUploadTargets(targets) {
     });
     enabledInput.addEventListener("change", () => {
       setUploadTargetStatus(wrapper);
+      syncUploadTargetState();
       updatePreviews();
       scheduleUiSettingsSave();
     });
     testButton.addEventListener("click", () => testUploadTarget(wrapper));
 
     elements.uploadTargets.appendChild(wrapper);
+  }
+
+  syncUploadTargetState();
+}
+
+function syncUploadTargetState() {
+  const uploadEnabled = Boolean(elements.uploadEnabled?.checked);
+
+  for (const row of document.querySelectorAll(".upload-target")) {
+    const targetToggle = row.querySelector(".upload-enabled");
+    const userSelect = row.querySelector(".upload-user");
+    const pathInput = row.querySelector(".upload-path");
+    const testButton = row.querySelector(".upload-test-connection");
+
+    if (!targetToggle) {
+      continue;
+    }
+
+    targetToggle.disabled = !uploadEnabled;
+    const targetActive = uploadEnabled && targetToggle.checked;
+
+    if (userSelect) {
+      userSelect.disabled = !targetActive;
+    }
+    if (pathInput) {
+      pathInput.disabled = !targetActive;
+    }
+    if (testButton) {
+      testButton.disabled = !targetActive;
+    }
   }
 }
 
@@ -888,6 +984,7 @@ function applyInfo(info) {
   renderUploadTargets(info.uploadTargets || []);
   applyGeneratorDefaults();
   applyUploadTargetSettings(info.uiSettings?.uploadTargets || {});
+  syncUploadTargetState();
   updateTemplateSummary();
   updatePreviews();
   syncReleaseAnnouncement();
@@ -953,6 +1050,29 @@ function hasLeieBlockingIssues() {
   return false;
 }
 
+function setLeieResultTone(tone = "neutral") {
+  const classMap = ["is-success", "is-error", "is-working"];
+  elements.leieDuplicateResult.classList.remove(...classMap);
+  elements.leieDuplicateSummary.classList.remove(...classMap);
+
+  if (tone === "success") {
+    elements.leieDuplicateResult.classList.add("is-success");
+    elements.leieDuplicateSummary.classList.add("is-success");
+    return;
+  }
+
+  if (tone === "error") {
+    elements.leieDuplicateResult.classList.add("is-error");
+    elements.leieDuplicateSummary.classList.add("is-error");
+    return;
+  }
+
+  if (tone === "working") {
+    elements.leieDuplicateResult.classList.add("is-working");
+    elements.leieDuplicateSummary.classList.add("is-working");
+  }
+}
+
 function syncLeieUiState() {
   if (state.mainTab !== "leie") {
     return;
@@ -970,20 +1090,25 @@ function syncLeieUiState() {
   elements.runProcess.disabled = hasBlockingIssues;
 
   if (inspectionError) {
+    setLeieResultTone("error");
     elements.leieDuplicateResult.value = "LEIE scan failed";
     elements.leieDuplicateSummary.textContent = inspectionError;
   } else if (!inspection || !inspection.fileCount) {
+    setLeieResultTone("neutral");
     elements.leieDuplicateResult.value = "No LEIE source folder selected.";
-    elements.leieDuplicateSummary.textContent = "Duplicate-only scan details appear in the table below when matches are found.";
+    elements.leieDuplicateSummary.textContent = "Pick a source file and click Rescan to run duplicate detection.";
   } else if (validationErrors.length > 0) {
+    setLeieResultTone("error");
     elements.leieDuplicateResult.value = `${validationErrors.length} file validation issue${validationErrors.length === 1 ? "" : "s"} found`;
-    elements.leieDuplicateSummary.textContent = "Fix validation issues in source files, then rescan.";
+    elements.leieDuplicateSummary.textContent = "Please fix the file issues and run Rescan.";
   } else if (hasDuplicates) {
+    setLeieResultTone("error");
     elements.leieDuplicateResult.value = `${duplicates.length} duplicate row${duplicates.length === 1 ? "" : "s"} found`;
-    elements.leieDuplicateSummary.textContent = "Duplicate details are listed below.";
+    elements.leieDuplicateSummary.textContent = "Exact full-row duplicates were detected. Review rows in the table below.";
   } else {
+    setLeieResultTone("success");
     elements.leieDuplicateResult.value = "No duplicate rows found";
-    elements.leieDuplicateSummary.textContent = "Duplicate-only scan completed successfully.";
+    elements.leieDuplicateSummary.textContent = "Scan complete. Every row is unique across all columns.";
   }
 
   renderLeieDuplicateTable(duplicates);
@@ -1013,6 +1138,9 @@ async function inspectLeieSourceFolder(options = {}) {
   // Reflect user selection immediately so the UI never looks stale while inspection runs.
   elements.sourceFileCount.textContent = "Scanning selected LEIE source...";
   elements.listDateSourceValue.textContent = inputDir;
+  setLeieResultTone("working");
+  elements.leieDuplicateResult.value = "Scanning duplicate rows...";
+  elements.leieDuplicateSummary.textContent = "Running full-row duplicate scan...";
 
   try {
     const inspection = await window.ccrs.inspectLeieSource(inputDir, "full-row");
@@ -1337,6 +1465,8 @@ function syncWorkflowText() {
   elements.runGenerate.classList.toggle("hidden", !isGenerate || isOther);
   elements.templateSummaryPill.classList.toggle("hidden", !isGenerate || isOther);
   elements.runProcess.textContent = isLeie ? "Save Processed File" : "Run Processing";
+  elements.leieGuideBanner?.classList.toggle("hidden", !isLeie);
+  elements.leieUploadValidationCard?.classList.toggle("hidden", !isLeie);
 
   if (isGenerate) {
     applyGeneratorDefaults();
@@ -1352,6 +1482,7 @@ function syncWorkflowText() {
   }
 
   syncLeieUiState();
+  syncLeieValidationSql();
   updatePreviews();
 }
 
@@ -1697,6 +1828,7 @@ function setupEventHandlers() {
     });
   }
   elements.uploadEnabled.addEventListener("change", () => {
+    syncUploadTargetState();
     updatePreviews();
     scheduleUiSettingsSave();
   });
@@ -1728,6 +1860,16 @@ function setupEventHandlers() {
       window.ccrs.openPath(state.info.docs.userGuidePath);
     }
   });
+  elements.openLeieValidationGuide?.addEventListener("click", () => {
+    if (state.info?.docs?.leieValidationGuidePath) {
+      window.ccrs.openPath(state.info.docs.leieValidationGuidePath);
+    }
+  });
+  elements.leieValidationBatchId?.addEventListener("input", () => {
+    syncLeieValidationSql();
+    scheduleUiSettingsSave();
+  });
+  elements.copyLeieValidationSql?.addEventListener("click", copyLeieValidationSql);
   elements.releaseAnnouncementAccept.addEventListener("click", acknowledgeReleaseAnnouncement);
   elements.releaseAnnouncementPanel.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -1872,6 +2014,13 @@ function cacheElements() {
     releaseAnnouncementPanel: $("release-announcement-panel"),
     releaseAnnouncementTitle: $("release-announcement-title"),
     releaseAnnouncementVersion: $("release-announcement-version"),
+    openLeieValidationGuide: $("open-leie-validation-guide"),
+    leieGuideBanner: $("leie-guide-banner"),
+    leieUploadValidationCard: $("leie-upload-validation-card"),
+    leieValidationBatchId: $("leie-validation-batch-id"),
+    leieValidationSql: $("leie-validation-sql"),
+    copyLeieValidationSql: $("copy-leie-validation-sql"),
+    leieValidationCopyStatus: $("leie-validation-copy-status"),
   });
 }
 

@@ -573,6 +573,32 @@ body.theme-dark .segmented-control {
   gap: 10px;
 }
 
+.leie-guide-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(0, 122, 255, 0.25);
+  background: linear-gradient(180deg, rgba(0, 122, 255, 0.08), rgba(0, 122, 255, 0.03));
+}
+
+body.theme-dark .leie-guide-banner {
+  background: linear-gradient(180deg, rgba(10, 132, 255, 0.2), rgba(10, 132, 255, 0.12));
+}
+
+.leie-guide-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.leie-guide-copy span {
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+}
+
 .field-block > span,
 .date-label-row > span {
   font-size: 0.86rem;
@@ -712,6 +738,27 @@ select {
   padding: 0 14px;
   outline: none;
   transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+textarea {
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--panel-border);
+  background: var(--panel-strong);
+  color: var(--text);
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+  line-height: 1.45;
+  resize: vertical;
+  min-height: 220px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.86rem;
+}
+
+textarea:focus {
+  border-color: rgba(0, 122, 255, 0.55);
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.12);
 }
 
 input:focus,
@@ -869,11 +916,118 @@ body.theme-dark .combo-option:focus-visible {
   font-weight: 700;
   letter-spacing: 0.01em;
   border-radius: 14px;
+  border: 1px solid var(--panel-border);
   background: linear-gradient(180deg, var(--panel-strong), rgba(232, 241, 255, 0.6));
 }
 
 body.theme-dark #leie-duplicate-result {
   background: linear-gradient(180deg, var(--panel-strong), rgba(72, 97, 134, 0.58));
+}
+
+#leie-duplicate-result.is-success {
+  color: #13833a;
+  border-color: rgba(19, 131, 58, 0.35);
+}
+
+#leie-duplicate-result.is-error {
+  color: #b42337;
+  border-color: rgba(180, 35, 55, 0.35);
+}
+
+#leie-duplicate-result.is-working {
+  color: #0b67d1;
+  border-color: rgba(11, 103, 209, 0.35);
+}
+
+#leie-duplicate-summary.is-success {
+  color: #13833a;
+}
+
+#leie-duplicate-summary.is-error {
+  color: #b42337;
+}
+
+#leie-duplicate-summary.is-working {
+  color: #0b67d1;
+}
+
+#leie-duplicate-card .form-grid.two-col {
+  grid-template-columns: 1fr;
+}
+
+#leie-duplicate-card .field-block {
+  width: min(760px, 100%);
+  margin-inline: auto;
+}
+
+#leie-duplicate-card .field-block > span,
+#leie-duplicate-card .field-block .helper-text {
+  text-align: center;
+}
+
+.leie-upload-validation-card {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--panel-border);
+  background: linear-gradient(180deg, var(--panel-strong), rgba(232, 241, 255, 0.62));
+}
+
+body.theme-dark .leie-upload-validation-card {
+  background: linear-gradient(180deg, var(--panel-strong), rgba(72, 97, 134, 0.72));
+}
+
+.leie-upload-validation-head {
+  display: grid;
+  gap: 4px;
+}
+
+.leie-upload-validation-head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.leie-upload-validation-head p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.leie-upload-validation-step5 {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--panel-border);
+  background: rgba(13, 110, 253, 0.05);
+}
+
+body.theme-dark .leie-upload-validation-step5 {
+  background: rgba(102, 171, 255, 0.1);
+}
+
+.leie-upload-validation-step5 h4 {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.leie-upload-validation-step5 p {
+  margin: 0 0 6px;
+  color: var(--text-secondary);
+}
+
+.leie-upload-validation-step5 ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+.leie-upload-validation-step5 code {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.8rem;
 }
 
 .radio-chip,
@@ -1246,6 +1400,10 @@ select:disabled {
 
   .field-row {
     flex-direction: column;
+  }
+
+  #leie-duplicate-result {
+    margin: 0 auto;
   }
 
   .upload-config-card {

@@ -5,53 +5,6 @@ const backend = require("./backend");
 let mainWindow;
 const APP_USER_MODEL_ID = "com.ccrs.fileprocessingframework";
 
-async function maybeShowStartupReleaseAnnouncement() {
-  let info;
-  try {
-    info = await backend.handleCommand("info", {});
-  } catch (error) {
-    console.error("Unable to load startup release announcement info.", error);
-    return;
-  }
-
-  const announcement = info?.releaseAnnouncement;
-  if (!announcement?.releaseKey) {
-    return;
-  }
-
-  const shouldShow = Boolean(
-    announcement.shouldShow ||
-      String(announcement.acknowledgedReleaseKey || "").trim() !== String(announcement.releaseKey || "").trim()
-  );
-  if (!shouldShow) {
-    return;
-  }
-
-  const notes = Array.isArray(announcement.notes) ? announcement.notes.filter(Boolean) : [];
-  const detailText = notes.length
-    ? notes.map((note, index) => `${index + 1}. ${note}`).join("\n")
-    : "A new release update is available.";
-
-  dialog.showMessageBoxSync({
-    type: "info",
-    buttons: ["Continue"],
-    defaultId: 0,
-    cancelId: 0,
-    noLink: true,
-    title: "Release Update",
-    message: `What's new in ${announcement.label || "this release"}`,
-    detail: detailText,
-  });
-
-  try {
-    await backend.handleCommand("acknowledge-release-announcement", {
-      releaseKey: announcement.releaseKey,
-    });
-  } catch (error) {
-    console.error("Unable to save startup release announcement acknowledgement.", error);
-  }
-}
-
 function getWindowsIconPath() {
   return app.isPackaged
     ? path.join(process.resourcesPath, "assets", "icons", "ccrs_app_icon.ico")
@@ -143,13 +96,7 @@ app.whenReady().then(() => {
   } catch (error) {
     console.error("Unable to clean stale runtime artifacts.", error);
   }
-  return maybeShowStartupReleaseAnnouncement()
-    .catch((error) => {
-      console.error("Unable to process startup release announcement.", error);
-    })
-    .finally(() => {
-      createWindow();
-    });
+  createWindow();
 }).then(() => {
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {

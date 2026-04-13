@@ -1,12 +1,13 @@
 {
   "version": "1.2.0",
   "label": "Production V1.2",
-  "announcementId": "1.2.0|Production V1.2|2026-04-13-popup-fix-7",
+  "announcementId": "1.2.0|Production V1.2|2026-04-13-leie-validation-guide-10",
   "releaseNotes": [
-    "LEIE Rescan now forces a fresh duplicate scan every time.",
-    "LEIE duplicate current-result textbox is centered and styled for clearer visibility.",
-    "LEIE Output File Name now always shows a live Preview line.",
-    "Upload profiles continue to load only after Import To Config is used."
+    "New in V1.2: LEIE processing now includes a built-in LEIE Upload and Validation Guide with copy-ready SQL checks.",
+    "Added LEIE Step 4 and Step 5 validation guidance in the Upload area for database and CCRS UI verification.",
+    "Security updates: upload settings are only activated after Import To Config, and WinSCP.ini handling/storage was hardened.",
+    "Bug fixes for LEIE scan flow, release update visibility, and upload target enable/disable behavior.",
+    "Upload target toggles are disabled until 'Upload the .gz file after processing' is selected."
   ]
 }
 

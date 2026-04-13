@@ -14,6 +14,11 @@
       "name": "SQA",
       "host": "sqa-dropzone.ccrs.va.gov",
       "port": 22
+    },
+    {
+      "name": "PROD",
+      "host": "dropzone.ccrs.va.gov",
+      "port": 22
     }
   ],
   "users": [
@@ -128,6 +133,42 @@
     {
       "name": "rruser@SQA",
       "server": "SQA",
+      "username": "rruser",
+      "password": ""
+    },
+    {
+      "name": "ccrauser@PROD",
+      "server": "PROD",
+      "username": "ccrauser",
+      "password": ""
+    },
+    {
+      "name": "ediuser@PROD",
+      "server": "PROD",
+      "username": "ediuser",
+      "password": ""
+    },
+    {
+      "name": "fmsuser@PROD",
+      "server": "PROD",
+      "username": "fmsuser",
+      "password": ""
+    },
+    {
+      "name": "pituser@PROD",
+      "server": "PROD",
+      "username": "pituser",
+      "password": ""
+    },
+    {
+      "name": "pmpmuser@PROD",
+      "server": "PROD",
+      "username": "pmpmuser",
+      "password": ""
+    },
+    {
+      "name": "rruser@PROD",
+      "server": "PROD",
       "username": "rruser",
       "password": ""
     }

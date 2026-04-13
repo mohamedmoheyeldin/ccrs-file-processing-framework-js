@@ -50,6 +50,7 @@ function inferUploadTargetName(...values) {
     DEV: ["DEV", "DEVELOPMENT", "NONPROD", "NON-PROD", "SANDBOX"],
     PPD: ["PPD", "PREPROD", "PRE-PROD", "PRE PROD", "STAGE", "STAGING"],
     SQA: ["SQA", "QA", "TEST", "UAT"],
+    PROD: ["PROD", "PRODUCTION", "LIVE"],
   };
 
   for (const [targetName, aliases] of Object.entries(aliasGroups)) {
@@ -74,7 +75,7 @@ function inferServerName(sessionName, host) {
 }
 
 function getDefaultUploadTargets() {
-  return ["DEV", "PPD", "SQA"];
+  return ["DEV", "PPD", "SQA", "PROD"];
 }
 
 function getUploadTargetNames(profiles = {}) {
@@ -96,7 +97,7 @@ function getUploadTargetNames(profiles = {}) {
   }
 
   return [...discovered]
-    .filter((name) => name && name !== "PROD")
+    .filter((name) => name)
     .sort((left, right) => {
       const leftIndex = defaults.indexOf(left);
       const rightIndex = defaults.indexOf(right);
@@ -694,10 +695,6 @@ function findWinscpExecutable() {
 }
 
 function resolveUploadProfile(profiles, serverName, userName) {
-  if (normalizeUploadTargetName(serverName) === "PROD") {
-    throw new Error("Uploads to PROD are disabled in this application.");
-  }
-
   let server = (profiles.servers || []).find((item) => item.name === serverName);
   if (!server) {
     server = findServerForTarget(profiles, serverName);
