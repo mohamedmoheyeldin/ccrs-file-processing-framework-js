@@ -695,10 +695,14 @@ async function applyUiSettings(settings = {}) {
   renderStationOptions(getStationOptions());
   applyUploadTargetSettings(settings.uploadTargets || {});
 
-  if (readValue("input-dir")) {
-    await inspectSourceFolder();
-  } else {
-    updatePreviews();
+  try {
+    if (readValue("input-dir")) {
+      await inspectSourceFolder();
+    } else {
+      updatePreviews();
+    }
+  } catch (error) {
+    console.error("Unable to inspect source while restoring settings.", error);
   }
   syncReleaseAnnouncement();
 }
@@ -1878,7 +1882,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   syncIcnFieldState();
   setupEventHandlers();
   syncWorkflowText();
-  await refreshInfo();
-  await applyUiSettings(state.info?.uiSettings || {});
-  syncIcnFieldState();
+  try {
+    await refreshInfo();
+    await applyUiSettings(state.info?.uiSettings || {});
+  } finally {
+    syncReleaseAnnouncement();
+    syncIcnFieldState();
+  }
 });

@@ -101,12 +101,7 @@ function readWorkbookRows(filePath) {
   }
 
   const sheet = workbook.Sheets[firstSheetName];
-  const matrix = XLSX.utils.sheet_to_json(sheet, {
-    header: 1,
-    defval: "",
-    blankrows: false,
-    raw: false,
-  });
+  const matrix = readSheetMatrix(sheet);
 
   if (!Array.isArray(matrix) || matrix.length === 0) {
     throw new Error("The worksheet does not contain a header row.");
@@ -138,6 +133,42 @@ function readWorkbookRows(filePath) {
     headers: headerRow,
     rows,
   };
+}
+
+function readSheetMatrix(sheet) {
+  const ref = String(sheet?.["!ref"] || "").trim();
+  if (!ref) {
+    return [];
+  }
+
+  const range = XLSX.utils.decode_range(ref);
+  const matrix = [];
+
+  for (let rowIndex = range.s.r; rowIndex <= range.e.r; rowIndex += 1) {
+    const row = [];
+    let hasValues = false;
+
+    for (let columnIndex = range.s.c; columnIndex <= range.e.c; columnIndex += 1) {
+      const address = XLSX.utils.encode_cell({ r: rowIndex, c: columnIndex });
+      const cell = sheet[address];
+      let value = "";
+
+      if (cell && cell.v !== undefined && cell.v !== null) {
+        value = cell.w !== undefined && cell.w !== null ? String(cell.w) : String(cell.v);
+        if (value.trim()) {
+          hasValues = true;
+        }
+      }
+
+      row.push(value);
+    }
+
+    if (hasValues) {
+      matrix.push(row);
+    }
+  }
+
+  return matrix;
 }
 
 function resolveDuplicateColumn(headers, duplicateMode) {
