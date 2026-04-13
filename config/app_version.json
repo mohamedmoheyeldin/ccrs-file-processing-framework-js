@@ -1,12 +1,12 @@
 {
   "version": "1.2.0",
   "label": "Production V1.2",
-  "announcementId": "1.2.0|Production V1.2|2026-04-13-popup-fix-4",
+  "announcementId": "1.2.0|Production V1.2|2026-04-13-popup-fix-5",
   "releaseNotes": [
-    "Release Update modal now syncs at startup so it appears without requiring any extra action.",
-    "LEIE source scan no longer crashes with 'Cannot set properties of undefined (setting value)'.",
-    "LEIE scan now reports worksheet header validation issues cleanly instead of failing the whole scan.",
-    "Build outputs are refreshed for this release package with updated LEIE and popup fixes."
+    "Release Update now runs from the main process at startup, before the app UI loads.",
+    "Release Update now shows when release tracking config is missing or not yet acknowledged.",
+    "LEIE scan crash fixed by restoring the missing replacement-code element cache binding.",
+    "LEIE scan now keeps working and reports validation details instead of failing the UI."
   ]
 }
 

@@ -1800,6 +1800,7 @@ function cacheElements() {
     outputJsonPreview: $("output-json-preview"),
     outputNameHelp: $("output-name-help"),
     outputNameLabel: $("output-name-label"),
+    replacementCode: $("replacement-code"),
     outputDir: $("output-dir"),
     outputSubtitle: $("output-subtitle"),
     overrideDob: $("override-dob"),
