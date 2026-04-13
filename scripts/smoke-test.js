@@ -2,6 +2,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const XLSX = require("xlsx");
 
 const {
   ICN_MODES,
@@ -26,6 +27,11 @@ const {
   normalizeUiSettings,
   saveUiSettings,
 } = require("../electron/backend/userSettings");
+const {
+  exportReleaseArtifacts,
+  getDisplayVersion,
+  isRealWindowsExecutable,
+} = require("./export-release-artifacts");
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-smoke-"));
 let failures = 0;
@@ -39,6 +45,22 @@ function writeJsonFixture(fileName, data) {
   const filePath = path.join(tempRoot, fileName);
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
   return filePath;
+}
+
+function writeWindowsExecutableFixture(filePath, sizeBytes = 1024 * 1024 + 32) {
+  const buffer = Buffer.alloc(sizeBytes, 0);
+  buffer[0] = 0x4d;
+  buffer[1] = 0x5a;
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, buffer);
+}
+
+function writeXlsxFixture(filePath, rows) {
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  XLSX.writeFile(workbook, filePath);
 }
 
 test("Payment Authority Code accepts up to 5 digits", () => {
@@ -354,14 +376,14 @@ test("UI settings normalize legacy theme values and persist user choices", () =>
       theme: "dark",
       archiveBasename: "session_export",
       archiveAppendNetwork: true,
-      acknowledgedReleaseKey: "1.1.0|Production V1.1",
+      acknowledgedReleaseKey: "1.2.0|Production V1.2",
     });
 
     const loaded = loadUiSettings();
     assert.equal(loaded.theme, "dark");
     assert.equal(loaded.archiveBasename, "session_export");
     assert.equal(loaded.archiveAppendNetwork, true);
-    assert.equal(loaded.acknowledgedReleaseKey, "1.1.0|Production V1.1");
+    assert.equal(loaded.acknowledgedReleaseKey, "1.2.0|Production V1.2");
   } finally {
     if (originalOverride === undefined) {
       delete process.env.CCRS_USER_DATA_ROOT;
@@ -380,8 +402,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.1.0");
-    assert.equal(initialInfo.appVersion.label, "Production V1.1");
+    assert.equal(initialInfo.appVersion.version, "1.2.0");
+    assert.equal(initialInfo.appVersion.label, "Production V1.2");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);
@@ -401,6 +423,53 @@ test("App info exposes one-time release announcement metadata", async () => {
     }
     fs.rmSync(settingsRoot, { recursive: true, force: true });
   }
+});
+
+test("LEIE inspection detects duplicates and LEIE processing removes them when configured", async () => {
+  const sourceDir = fs.mkdtempSync(path.join(tempRoot, "leie-source-"));
+  const outputDir = fs.mkdtempSync(path.join(tempRoot, "leie-output-"));
+  const sourcePath = path.join(sourceDir, "leie_source.xlsx");
+
+  writeXlsxFixture(sourcePath, [
+    { SSN: "111-11-1111", NPI: "1234567890", Name: "A" },
+    { SSN: "222-22-2222", NPI: "1234567891", Name: "B" },
+    { SSN: "111-11-1111", NPI: "1234567892", Name: "C" },
+  ]);
+
+  const inspection = await backend.handleCommand("inspect-leie-source", {
+    inputDir: sourceDir,
+    duplicateKey: "ssn",
+  });
+
+  assert.equal(inspection.fileCount, 1);
+  assert.equal(inspection.hasDuplicates, true);
+  assert.equal(inspection.duplicates.length, 1);
+  assert.equal(inspection.duplicates[0].rowNumber, 4);
+
+  await assert.rejects(
+    backend.handleCommand("process-leie", {
+      inputDir: sourceDir,
+      outputDir,
+      outputFileName: "processed_leie",
+      duplicateKey: "ssn",
+      duplicateHandling: "manual",
+      upload: { enabled: false, targets: [] },
+    }),
+    /Duplicates were found/
+  );
+
+  const processed = await backend.handleCommand("process-leie", {
+    inputDir: sourceDir,
+    outputDir,
+    outputFileName: "processed_leie",
+    duplicateKey: "ssn",
+    duplicateHandling: "auto-remove",
+    upload: { enabled: false, targets: [] },
+  });
+
+  assert.equal(processed.outputFileName, "processed_leie.xlsx");
+  assert.equal(fs.existsSync(path.join(outputDir, "processed_leie.xlsx")), true);
+  assert.equal(processed.duplicatesRemoved, 1);
 });
 
 test("App info prefers the PDF user guide path", async () => {
@@ -461,6 +530,86 @@ test("Preview validation requires archive naming fields when append options are 
   );
 });
 
+test("Release export uses the display label for shareable file names", () => {
+  assert.equal(
+    getDisplayVersion({ label: "Production V1.1 <>:/\\|?*" }, { version: "1.1.0" }),
+    "Production V1.1"
+  );
+  assert.equal(getDisplayVersion({ label: "" }, { version: "1.1.0" }), "1.1.0");
+});
+
+test("Release export copies verified portable and setup executables into release", () => {
+  const repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-release-export-"));
+
+  try {
+    fs.mkdirSync(path.join(repoRoot, "config"), { recursive: true });
+    fs.mkdirSync(path.join(repoRoot, "dist-electron"), { recursive: true });
+    fs.writeFileSync(
+      path.join(repoRoot, "package.json"),
+      JSON.stringify({ version: "1.1.0" }, null, 2)
+    );
+    fs.writeFileSync(
+      path.join(repoRoot, "config", "app_version.json"),
+      JSON.stringify({ version: "1.1.0", label: "Production V1.1" }, null, 2)
+    );
+
+    const portableSource = path.join(repoRoot, "dist-electron", "CCRS File Processing Framework 1.1.0.exe");
+    const setupSource = path.join(
+      repoRoot,
+      "dist-electron",
+      "CCRS File Processing Framework Setup 1.1.0.exe"
+    );
+
+    writeWindowsExecutableFixture(portableSource);
+    writeWindowsExecutableFixture(setupSource);
+
+    const result = exportReleaseArtifacts({ repoRoot, mode: "full" });
+
+    const portableOutput = path.join(repoRoot, "release", "CCRS File Processing Framework Production V1.1.exe");
+    const setupOutput = path.join(
+      repoRoot,
+      "release",
+      "CCRS File Processing Framework Setup Production V1.1.exe"
+    );
+
+    assert.equal(result.mode, "full");
+    assert.equal(result.exportedPaths.length, 2);
+    assert.equal(fs.existsSync(portableOutput), true);
+    assert.equal(fs.existsSync(setupOutput), true);
+    assert.equal(isRealWindowsExecutable(portableOutput), true);
+    assert.equal(isRealWindowsExecutable(setupOutput), true);
+  } finally {
+    fs.rmSync(repoRoot, { recursive: true, force: true });
+  }
+});
+
+test("Release export rejects incomplete executables", () => {
+  const repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-release-invalid-"));
+
+  try {
+    fs.mkdirSync(path.join(repoRoot, "config"), { recursive: true });
+    fs.mkdirSync(path.join(repoRoot, "dist-electron"), { recursive: true });
+    fs.writeFileSync(
+      path.join(repoRoot, "package.json"),
+      JSON.stringify({ version: "1.1.0" }, null, 2)
+    );
+    fs.writeFileSync(
+      path.join(repoRoot, "config", "app_version.json"),
+      JSON.stringify({ version: "1.1.0", label: "Production V1.1" }, null, 2)
+    );
+
+    const portableSource = path.join(repoRoot, "dist-electron", "CCRS File Processing Framework 1.1.0.exe");
+    fs.writeFileSync(portableSource, "version https://git-lfs.github.com/spec/v1\n");
+
+    assert.throws(
+      () => exportReleaseArtifacts({ repoRoot, mode: "portable" }),
+      /Git LFS pointer|verified Windows executable/
+    );
+  } finally {
+    fs.rmSync(repoRoot, { recursive: true, force: true });
+  }
+});
+
 (async () => {
   try {
     for (const { name, callback } of tests) {
@@ -483,3 +632,4 @@ test("Preview validation requires archive naming fields when append options are 
     console.log("Smoke tests passed.");
   }
 })();
+

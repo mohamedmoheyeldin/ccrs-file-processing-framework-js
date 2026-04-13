@@ -34,7 +34,7 @@ Use the files in that generated runtime folder next to the `.exe`, not the sourc
 ## Main Areas
 The app currently has two main workflow tabs:
 - `Referral Files`
-- `Other CCRS File Types`
+- `More Features Coming Soon`
 
 Inside `Referral Files`, there are two working modes:
 - `Edit Existing Files`

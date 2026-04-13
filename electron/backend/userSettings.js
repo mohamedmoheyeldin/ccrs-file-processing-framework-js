@@ -35,6 +35,9 @@ const DEFAULT_UI_SETTINGS = {
   keepProcessedJson: true,
   uploadEnabled: false,
   uploadTargets: {},
+  leieDuplicateKey: "ssn",
+  leieDuplicateHandling: "manual",
+  leieOutputFileName: "",
 };
 
 function toBoolean(value, fallbackValue = false) {
@@ -108,9 +111,16 @@ function normalizeUiSettings(rawValue = {}) {
     keepProcessedJson: toBoolean(rawValue.keepProcessedJson, DEFAULT_UI_SETTINGS.keepProcessedJson),
     uploadEnabled: toBoolean(rawValue.uploadEnabled, DEFAULT_UI_SETTINGS.uploadEnabled),
     uploadTargets: normalizeUploadTargets(rawValue.uploadTargets),
+    leieDuplicateKey:
+      String(rawValue.leieDuplicateKey || DEFAULT_UI_SETTINGS.leieDuplicateKey).trim().toLowerCase() ||
+      DEFAULT_UI_SETTINGS.leieDuplicateKey,
+    leieDuplicateHandling:
+      String(rawValue.leieDuplicateHandling || DEFAULT_UI_SETTINGS.leieDuplicateHandling).trim().toLowerCase() ||
+      DEFAULT_UI_SETTINGS.leieDuplicateHandling,
+    leieOutputFileName: String(rawValue.leieOutputFileName || "").trim(),
   };
 
-  if (normalized.mainTab !== "referral" && normalized.mainTab !== "other") {
+  if (!["referral", "leie", "other"].includes(normalized.mainTab)) {
     normalized.mainTab = DEFAULT_UI_SETTINGS.mainTab;
   }
   if (normalized.subTab !== "edit" && normalized.subTab !== "generate") {

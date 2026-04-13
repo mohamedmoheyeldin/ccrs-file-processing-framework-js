@@ -8,6 +8,7 @@ const { dataPath, userDataPath } = require("./appPaths");
 const WINSCP_INI_PATH = userDataPath("upload_import", "WinSCP.ini");
 const CREDENTIALS_JSON_PATH = userDataPath("config", "upload_credentials.json");
 const WINSCP_GENERATED_CREDENTIALS_PATH = userDataPath("upload_import", "winscp_credentials.json");
+const UPLOAD_PROFILES_PATH = userDataPath("config", "upload_profiles.json");
 
 function summarizeUploadProfiles(profiles) {
   return {
@@ -75,8 +76,40 @@ function getDefaultUploadTargets() {
   return ["DEV", "PPD", "SQA"];
 }
 
-function getUploadTargetNames() {
-  return getDefaultUploadTargets();
+function getUploadTargetNames(profiles = {}) {
+  const defaults = getDefaultUploadTargets();
+  const discovered = new Set(defaults);
+
+  for (const server of profiles.servers || []) {
+    const normalized = normalizeUploadTargetName(server?.name || server?.target_name || "");
+    if (normalized) {
+      discovered.add(normalized);
+    }
+  }
+
+  for (const user of profiles.users || []) {
+    const normalized = normalizeUploadTargetName(user?.server || user?.target_name || "");
+    if (normalized) {
+      discovered.add(normalized);
+    }
+  }
+
+  return [...discovered]
+    .filter((name) => name && name !== "PROD")
+    .sort((left, right) => {
+      const leftIndex = defaults.indexOf(left);
+      const rightIndex = defaults.indexOf(right);
+      if (leftIndex >= 0 && rightIndex >= 0) {
+        return leftIndex - rightIndex;
+      }
+      if (leftIndex >= 0) {
+        return -1;
+      }
+      if (rightIndex >= 0) {
+        return 1;
+      }
+      return left.localeCompare(right);
+    });
 }
 
 function getCandidateWinscpIniPaths() {
@@ -104,12 +137,24 @@ function getCandidateCredentialsJsonPaths() {
   ])];
 }
 
+function getCandidateUploadProfilesPaths() {
+  return [...new Set([
+    UPLOAD_PROFILES_PATH,
+    dataPath("config", "upload_profiles.json"),
+    path.join(process.cwd(), "config", "upload_profiles.json"),
+  ])];
+}
+
 function getExistingWinscpIniPath() {
   return getCandidateWinscpIniPaths().find((candidate) => fs.existsSync(candidate)) || "";
 }
 
 function getExistingCredentialsJsonPath() {
   return getCandidateCredentialsJsonPaths().find((candidate) => fs.existsSync(candidate)) || "";
+}
+
+function getExistingUploadProfilesPath() {
+  return getCandidateUploadProfilesPaths().find((candidate) => fs.existsSync(candidate)) || "";
 }
 
 function getUploadProfileSourcePath() {
@@ -490,6 +535,49 @@ function loadUploadProfiles() {
   const winscpProfiles = loadWinscpProfiles();
   if (winscpProfiles.servers.length || winscpProfiles.users.length) {
     return winscpProfiles;
+  }
+
+  const uploadProfilesPath = getExistingUploadProfilesPath();
+  if (uploadProfilesPath) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(uploadProfilesPath, "utf8"));
+      const servers = Array.isArray(parsed?.servers)
+        ? parsed.servers
+            .map((server) => ({
+              name: String(server?.name || "").trim(),
+              host: String(server?.host || "").trim(),
+              port: Number(server?.port || 22),
+              target_name: String(server?.target_name || server?.name || "").trim(),
+              actual_server_name: String(server?.actual_server_name || server?.host || server?.name || "").trim(),
+              source: "upload_profiles_json",
+            }))
+            .filter((server) => Boolean(server.name))
+        : [];
+      const users = Array.isArray(parsed?.users)
+        ? parsed.users
+            .map((user) => ({
+              name: String(user?.name || "").trim(),
+              server: String(user?.server || "").trim(),
+              username: String(user?.username || "").trim(),
+              password: String(user?.password || "").trim(),
+              encrypted_password: String(user?.encrypted_password || "").trim(),
+              password_plain: String(user?.password_plain || "").trim(),
+              session_name: String(user?.session_name || "").trim(),
+              target_name: String(user?.target_name || user?.server || "").trim(),
+              source: "upload_profiles_json",
+            }))
+            .filter((user) => Boolean(user.name && user.server))
+        : [];
+
+      if (servers.length || users.length) {
+        return {
+          servers: servers.sort((a, b) => a.name.localeCompare(b.name)),
+          users: users.sort((a, b) => `${a.server}:${a.name}`.localeCompare(`${b.server}:${b.name}`)),
+        };
+      }
+    } catch (_error) {
+      // Ignore invalid legacy profile file and continue with empty defaults.
+    }
   }
 
   return { servers: [], users: [] };

@@ -45,6 +45,9 @@ Run:
 Or directly:
 - `npm run dist`
 
+To build only the portable app and refresh `release\` with just that shareable file:
+- `npm run dist:portable`
+
 The build outputs use the current version from [config/app_version.json](config/app_version.json), for example:
 - `dist-electron\CCRS File Processing Framework Setup 1.1.0.exe`
 - `dist-electron\CCRS File Processing Framework 1.1.0.exe`
@@ -52,6 +55,13 @@ The build outputs use the current version from [config/app_version.json](config/
 The final shareable copies are placed in `release\` using the display label when one is configured:
 - `release\CCRS File Processing Framework Setup Production V1.1.exe`
 - `release\CCRS File Processing Framework Production V1.1.exe`
+
+The release export step now verifies that each `.exe` is a real Windows executable before copying it into `release\`. This avoids sharing placeholder files, stale outputs, or incomplete installer artifacts.
+
+Expected behavior:
+- `npm run dist` on a real Windows machine exports both the portable app and the setup installer into `release\`
+- `npm run dist:portable` exports only `release\CCRS File Processing Framework Production V1.1.exe`
+- `build_release.bat` runs the full Windows build and confirms the verified `release\` files exist before telling you to share them
 
 Use the setup `.exe` for a normal installer flow. Use the non-setup `.exe` as the portable app.
 

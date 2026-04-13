@@ -35,7 +35,8 @@
       <section class="main-tabs">
         <div class="segmented-control centered">
           <button class="segment is-active" data-main-tab="referral">Referral Files</button>
-          <button class="segment" data-main-tab="other">Other CCRS File Types</button>
+          <button class="segment" data-main-tab="leie">LEIE Data Processing</button>
+          <button class="segment" data-main-tab="other">More Features Coming Soon</button>
         </div>
         <div id="main-tab-copy" class="tab-copy">
           Choose source files, apply targeted JSON updates, and export clean output in one pass.
@@ -67,7 +68,7 @@
             <article id="future-card" class="content-card glass-card hidden">
               <div class="section-head section-head-hero">
                 <div class="section-head-copy centered-copy">
-                  <h2>Other CCRS File Types</h2>
+                  <h2>More Features Coming Soon</h2>
                   <p>This area is reserved for future implementations.</p>
                 </div>
               </div>
@@ -83,13 +84,62 @@
               <label class="field-block" id="source-folder-field">
                 <span>Source Folder</span>
                 <div class="field-row">
-                  <input id="input-dir" type="text" placeholder="Choose the folder that contains source JSON files" />
+                  <input id="input-dir" type="text" placeholder="Choose the folder that contains source files" />
                   <button data-pick="input-dir" class="toolbar-button">Browse</button>
                 </div>
               </label>
               <div class="info-chips">
                 <span id="source-file-count" class="info-chip">No source folder selected.</span>
-                <span id="list-date-source-value" class="info-chip">Default ListDate will appear after you choose a source folder.</span>
+                <span id="list-date-source-value" class="info-chip">Choose a source folder to begin scanning files.</span>
+              </div>
+            </article>
+
+            <article id="leie-duplicate-card" class="content-card glass-card hidden">
+              <div class="section-head">
+                <div>
+                  <h2>Duplicate Detection</h2>
+                  <p>Duplicate results from the selected LEIE source folder will appear below.</p>
+                </div>
+                <button id="leie-rescan" class="toolbar-button">Rescan</button>
+              </div>
+              <div class="form-grid two-col">
+                <div class="field-block">
+                  <span>Current Result</span>
+                  <input id="leie-duplicate-result" type="text" readonly value="No LEIE source folder selected." />
+                  <small id="leie-duplicate-summary" class="helper-text">Duplicate details appear in the table below if found.</small>
+                </div>
+              </div>
+              <div id="leie-duplicate-actions" class="output-retention-card hidden">
+                <span>Resolve Duplicates</span>
+                <div class="toggle-row">
+                  <label class="radio-chip">
+                    <input id="leie-action-auto" name="leie-duplicate-action" type="radio" value="auto-remove" />
+                    <span>Remove duplicates automatically (keep first)</span>
+                  </label>
+                  <label class="radio-chip">
+                    <input id="leie-action-manual" name="leie-duplicate-action" type="radio" value="manual" checked />
+                    <span>Review and fix manually</span>
+                  </label>
+                </div>
+                <small id="leie-action-help" class="helper-text">
+                  Progress is blocked until duplicates are removed automatically or fixed manually and rescanned.
+                </small>
+                <div class="toggle-row">
+                  <button id="leie-cancel-process" class="toolbar-button">Cancel Process</button>
+                </div>
+              </div>
+              <div id="leie-duplicate-table-wrap" class="duplicate-table-wrap hidden">
+                <table class="duplicate-table">
+                  <thead>
+                    <tr>
+                      <th>File Name</th>
+                      <th>Row</th>
+                      <th>Duplicate Value</th>
+                      <th>Column</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leie-duplicate-table-body"></tbody>
+                </table>
               </div>
             </article>
 
@@ -338,13 +388,14 @@
                 <label class="field-block field-span-2">
                   <span>Save processed files to</span>
                   <div class="field-row">
-                    <input id="output-dir" type="text" placeholder="Choose where JSON and .gz files should be written" />
+                    <input id="output-dir" type="text" placeholder="Choose where output files should be written" />
                     <button data-pick="output-dir" class="toolbar-button invert-active">Save To</button>
                   </div>
                 </label>
                 <label class="field-block">
-                  <span>Name for the processed JSON files</span>
-                  <input id="replacement-code" type="text" placeholder="Leave blank to keep original JSON names" />
+                  <span id="output-name-label">Name for the processed JSON files</span>
+                  <input id="replacement-code" type="text" placeholder="Leave blank to keep original file names" />
+                  <small id="output-name-help" class="helper-text">Leave blank to keep original file names.</small>
                   <small id="output-json-preview" class="helper-text">Preview: original JSON names will be used</small>
                 </label>
                 <div class="field-block field-span-2 output-retention-card archive-naming-card">
@@ -381,7 +432,7 @@
                   </div>
                   <small id="archive-preview" class="helper-text">Preview: processed_files.gz</small>
                 </div>
-                <div class="field-block field-span-2 output-retention-card">
+                <div id="output-retention-card" class="field-block field-span-2 output-retention-card">
                   <span>If save folder already has files</span>
                   <div class="toggle-row">
                     <label class="radio-chip">
@@ -408,11 +459,11 @@
               <div class="section-head">
                 <div>
                   <h2>Upload</h2>
-                  <p>Optionally upload the final .gz file to one or more saved environment profiles.</p>
+                  <p id="upload-subtitle">Optionally upload the final .gz file to one or more saved environment profiles.</p>
                 </div>
                 <label class="checkbox-chip">
                   <input id="upload-enabled" type="checkbox" />
-                  <span>Upload the .gz file after processing</span>
+                  <span id="upload-enabled-label">Upload the .gz file after processing</span>
                 </label>
               </div>
               <div class="upload-config-card">

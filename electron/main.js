@@ -69,6 +69,9 @@ ipcMain.handle("backend:info", async (event) => runBackendCommand(event.sender, 
 ipcMain.handle("backend:inspect-source", async (event, payload) =>
   runBackendCommand(event.sender, "inspect-source", payload)
 );
+ipcMain.handle("backend:inspect-leie-source", async (event, payload) =>
+  runBackendCommand(event.sender, "inspect-leie-source", payload)
+);
 ipcMain.handle("backend:preview", async (event, payload) => runBackendCommand(event.sender, "preview", payload));
 ipcMain.handle("backend:save-ui-settings", async (event, payload) =>
   runBackendCommand(event.sender, "save-ui-settings", payload)

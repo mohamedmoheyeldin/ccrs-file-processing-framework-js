@@ -14,6 +14,11 @@ const state = {
   theme: "light",
   mainTab: "referral",
   subTab: "edit",
+  leieDuplicateKey: "ssn",
+  leieDuplicateHandling: "manual",
+  leieInspection: null,
+  leieSourceValid: false,
+  leieOutputFileName: "",
   sourceInspection: null,
   sourceListDate: "",
   listDateTouched: false,
@@ -193,6 +198,10 @@ function sanitizeStationIdInput(value) {
   return ((normalized.match(/[A-Za-z0-9]/g) || []).join("")).slice(0, 5);
 }
 
+function isExcelPath(value) {
+  return /\.(xlsx|xls|xlsm|xlsb)$/i.test(String(value || "").trim());
+}
+
 function getStationOptions() {
   return Array.isArray(state.info?.stationOptions) ? state.info.stationOptions : [];
 }
@@ -335,6 +344,14 @@ function sanitizeReferralNumberInput(value) {
   }
 
   return ((normalized.match(/[A-Za-z0-9]/g) || []).join("")).slice(0, limit);
+}
+
+function sanitizeLeieFileNameInput(value) {
+  return String(value || "")
+    .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[.\s]+$/g, "");
 }
 
 function formatUploadProfileSummary(summary) {
@@ -572,6 +589,9 @@ function collectUiSettings() {
     keepProcessedJson: readChecked("keep-processed-json"),
     uploadEnabled: readChecked("upload-enabled"),
     uploadTargets: collectPersistedUploadTargets(),
+    leieDuplicateKey: state.leieDuplicateKey,
+    leieDuplicateHandling: state.leieDuplicateHandling,
+    leieOutputFileName: state.mainTab === "leie" ? readValue("replacement-code") : state.leieOutputFileName,
   };
 }
 
@@ -606,9 +626,11 @@ function applyUploadTargetSettings(uploadTargets = {}) {
 
 async function applyUiSettings(settings = {}) {
   setTheme(settings.theme || "light");
-  state.mainTab = settings.mainTab === "other" ? "other" : "referral";
+  state.mainTab = ["referral", "leie", "other"].includes(settings.mainTab) ? settings.mainTab : "referral";
   state.subTab = settings.subTab === "generate" ? "generate" : "edit";
-  state.acknowledgedReleaseKey = String(settings.acknowledgedReleaseKey || "").trim();
+  state.leieDuplicateKey = settings.leieDuplicateKey || "ssn";
+  state.leieDuplicateHandling = settings.leieDuplicateHandling === "auto-remove" ? "auto-remove" : "manual";
+  state.leieOutputFileName = String(settings.leieOutputFileName || "").trim();
   if (state.mainTab !== "referral") {
     state.subTab = "edit";
   }
@@ -646,6 +668,10 @@ async function applyUiSettings(settings = {}) {
     }
   }
 
+  if (state.mainTab === "leie") {
+    $("replacement-code").value = state.leieOutputFileName;
+  }
+
   const selectedIcnMode = String(settings.icnMode || "test-dynamic").trim();
   const icnModeInput = document.querySelector(`input[name="icn-mode"][value="${selectedIcnMode}"]`);
   if (icnModeInput) {
@@ -662,6 +688,8 @@ async function applyUiSettings(settings = {}) {
   syncIcnFieldState();
   updateTemplateSummary();
   syncWorkflowText();
+  $("leie-action-auto").checked = state.leieDuplicateHandling === "auto-remove";
+  $("leie-action-manual").checked = state.leieDuplicateHandling !== "auto-remove";
   renderStationOptions(getStationOptions());
   applyUploadTargetSettings(settings.uploadTargets || {});
 
@@ -840,7 +868,9 @@ function applyGeneratorDefaults() {
 
 function applyInfo(info) {
   state.info = info;
-  state.acknowledgedReleaseKey = String(info.uiSettings?.acknowledgedReleaseKey || state.acknowledgedReleaseKey || "").trim();
+  state.acknowledgedReleaseKey = String(
+    info.releaseAnnouncement?.acknowledgedReleaseKey || state.acknowledgedReleaseKey || ""
+  ).trim();
   renderStationOptions(info.stationOptions || []);
   elements.appVersionBadge.textContent = info.appVersionLabel || "";
   elements.appVersionBadge.classList.toggle("hidden", !info.appVersionLabel);
@@ -848,6 +878,7 @@ function applyInfo(info) {
     ? `CCRS File Processing Framework | ${info.appVersionLabel}`
     : "CCRS File Processing Framework";
   setUploadReadyState("idle");
+  state.leieOutputFileName = String(info.uiSettings?.leieOutputFileName || state.leieOutputFileName || "").trim();
   renderUploadTargets(info.uploadTargets || []);
   applyGeneratorDefaults();
   applyUploadTargetSettings(info.uiSettings?.uploadTargets || {});
@@ -882,7 +913,131 @@ function applySourceInspection(inspection) {
   updatePreviews();
 }
 
+function renderLeieDuplicateTable(duplicates = []) {
+  elements.leieDuplicateTableBody.innerHTML = "";
+  for (const duplicate of duplicates) {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${duplicate.fileName}</td>
+      <td>${duplicate.rowNumber}</td>
+      <td>${duplicate.duplicateValue || "(blank)"}</td>
+      <td>${duplicate.columnName}</td>
+    `;
+    elements.leieDuplicateTableBody.appendChild(row);
+  }
+  elements.leieDuplicateTableWrap.classList.toggle("hidden", duplicates.length === 0);
+}
+
+function hasLeieBlockingIssues() {
+  if (state.mainTab !== "leie") {
+    return false;
+  }
+
+  const inspection = state.leieInspection;
+  if (!inspection || !inspection.fileCount) {
+    return true;
+  }
+  if ((inspection.validationErrors || []).length > 0) {
+    return true;
+  }
+  if (inspection.hasDuplicates && state.leieDuplicateHandling !== "auto-remove") {
+    return true;
+  }
+
+  return false;
+}
+
+function syncLeieUiState() {
+  if (state.mainTab !== "leie") {
+    return;
+  }
+
+  const inspection = state.leieInspection;
+  const duplicates = inspection?.duplicates || [];
+  const validationErrors = inspection?.validationErrors || [];
+  const hasDuplicates = Boolean(inspection?.hasDuplicates);
+  const hasBlockingIssues = hasLeieBlockingIssues();
+
+  elements.leieDuplicateActions.classList.toggle("hidden", !hasDuplicates);
+  elements.outputCard.classList.toggle("is-disabled", hasBlockingIssues);
+  elements.runProcess.disabled = hasBlockingIssues;
+
+  if (!inspection || !inspection.fileCount) {
+    elements.leieDuplicateResult.value = "No LEIE source folder selected.";
+    elements.leieDuplicateSummary.textContent = "Duplicate details appear in the table below if found.";
+  } else if (validationErrors.length > 0) {
+    elements.leieDuplicateResult.value = `${validationErrors.length} file validation issue${validationErrors.length === 1 ? "" : "s"} found`;
+    elements.leieDuplicateSummary.textContent = "Fix validation issues in source files, then rescan.";
+  } else if (hasDuplicates) {
+    elements.leieDuplicateResult.value = `${duplicates.length} duplicate row${duplicates.length === 1 ? "" : "s"} found`;
+    elements.leieDuplicateSummary.textContent = "Duplicate details are listed below.";
+  } else {
+    elements.leieDuplicateResult.value = "No duplicates found";
+    elements.leieDuplicateSummary.textContent = "Output settings are enabled.";
+  }
+
+  renderLeieDuplicateTable(duplicates);
+}
+
+async function inspectLeieSourceFolder() {
+  const inputDir = readValue("input-dir");
+  if (!inputDir) {
+    state.leieInspection = null;
+    elements.sourceFileCount.textContent = "No LEIE source file or folder selected.";
+    elements.listDateSourceValue.textContent = "Select an Excel file or folder to scan for LEIE data.";
+    syncLeieUiState();
+    updatePreviews();
+    return;
+  }
+
+  // Reflect user selection immediately so the UI never looks stale while inspection runs.
+  elements.sourceFileCount.textContent = "Scanning selected LEIE source...";
+  elements.listDateSourceValue.textContent = inputDir;
+
+  try {
+    const inspection = await window.ccrs.inspectLeieSource(inputDir, "ssn");
+    state.leieInspection = inspection;
+    state.leieOutputFileName = state.leieOutputFileName || inspection.outputNameSuggestion || "";
+    if (!readValue("replacement-code")) {
+      elements.replacementCode.value = state.leieOutputFileName;
+    }
+
+    elements.sourceFileCount.textContent = inspection.fileCount
+      ? `${inspection.fileCount} source Excel file${inspection.fileCount === 1 ? "" : "s"} selected.`
+      : "No Excel files were found in the selected source path.";
+    if (inspection.excelFiles?.length) {
+      const names = inspection.excelFiles.slice(0, 3).map((file) => file.name).join(", ");
+      const more = inspection.excelFiles.length > 3 ? ` +${inspection.excelFiles.length - 3} more` : "";
+      elements.listDateSourceValue.textContent = `Detected Excel files: ${names}${more}`;
+    } else {
+      elements.listDateSourceValue.textContent = "No Excel files detected yet.";
+    }
+
+    if (inspection.validationErrors.length > 0) {
+      const firstValidationError = inspection.validationErrors[0];
+      setStatus("Failed", `${firstValidationError.fileName}: ${firstValidationError.message}`);
+    } else if (inspection.hasDuplicates) {
+      setStatus("Duplicates Found", "Resolve duplicates before saving the processed LEIE file.");
+    } else if (inspection.fileCount > 0) {
+      setStatus("File Loaded", "LEIE source files loaded and ready for processing.");
+    }
+  } catch (error) {
+    state.leieInspection = null;
+    elements.sourceFileCount.textContent = "Unable to scan selected LEIE source.";
+    elements.listDateSourceValue.textContent = inputDir;
+    setStatus("Failed", error.message);
+  }
+
+  syncLeieUiState();
+  updatePreviews();
+}
+
 async function inspectSourceFolder() {
+  if (state.mainTab === "leie" || isExcelPath(readValue("input-dir"))) {
+    await inspectLeieSourceFolder();
+    return;
+  }
+
   const inputDir = readValue("input-dir");
   if (!inputDir) {
     state.sourceInspection = null;
@@ -983,6 +1138,19 @@ async function updatePreviews() {
     return null;
   }
 
+  if (state.mainTab === "leie") {
+    const outputBaseName = sanitizeLeieFileNameInput(readValue("replacement-code"));
+    if (readValue("replacement-code") !== outputBaseName) {
+      elements.replacementCode.value = outputBaseName;
+    }
+    state.leieOutputFileName = outputBaseName;
+    elements.outputJsonPreview.textContent = outputBaseName
+      ? `Preview: ${outputBaseName}.xlsx`
+      : "Preview: original source file name will be used with .xlsx";
+    elements.archivePreview.textContent = "Preview: not used for LEIE";
+    return { fieldErrors: {} };
+  }
+
   try {
     const preview = await window.ccrs.getPreview({
       replacementCode: readValue("replacement-code"),
@@ -1024,6 +1192,14 @@ async function updatePreviews() {
 }
 
 async function validateCurrentForm() {
+  if (state.mainTab === "leie") {
+    if (hasLeieBlockingIssues()) {
+      setStatus("Failed", "Resolve LEIE duplicate or validation issues before saving.");
+      return false;
+    }
+    return true;
+  }
+
   const preview = await updatePreviews();
   const fieldErrors = preview?.fieldErrors || {};
   if (Object.keys(fieldErrors).length > 0) {
@@ -1063,6 +1239,7 @@ function startLiveListDateClock() {
 
 function syncWorkflowText() {
   const isReferral = state.mainTab === "referral";
+  const isLeie = state.mainTab === "leie";
   const isGenerate = state.subTab === "generate" && isReferral;
   const isOther = state.mainTab === "other";
 
@@ -1070,41 +1247,81 @@ function syncWorkflowText() {
   elements.heroSubtitle.textContent = "Use the tabs below to work with referral files and related CCRS processing workflows.";
   elements.mainTabCopy.textContent = isReferral
     ? "Choose source files, apply targeted JSON updates, and export clean output in one pass."
+    : isLeie
+      ? "Process LEIE Excel files, detect duplicates, save clean output, and upload."
     : "Future CCRS file types will appear here.";
   elements.workflowTitle.textContent = isGenerate
     ? "CCRS Referral Generation"
     : isReferral
       ? "CCRS Referral Processing"
-      : "Other CCRS File Processing";
+      : isLeie
+        ? "LEIE Data Processing"
+        : "Other CCRS File Processing";
   elements.workflowSubtitle.textContent = isGenerate
     ? "Create fresh referral JSON files, then process and package them."
     : isReferral
       ? "Choose source files, apply targeted JSON updates, and export clean output in one pass."
-      : "This area is reserved for future CCRS workflow implementations.";
+      : isLeie
+        ? "Choose an Excel file or folder, validate data, and resolve duplicates before saving."
+        : "This area is reserved for future CCRS workflow implementations.";
   elements.sourceTitle.textContent = isGenerate ? "Template Output" : "Source";
   elements.sourceSubtitle.textContent = isGenerate
     ? "Generator mode creates fresh files directly, so no source folder is required."
-    : "Pick the folder that contains the incoming JSON files.";
+    : isLeie
+      ? "Pick an incoming LEIE Excel file or a folder containing LEIE Excel files."
+      : "Pick the folder that contains the incoming JSON files.";
   elements.outputSubtitle.textContent = isGenerate
     ? "Choose where the generated referral JSON files should be saved and how the final output should be kept."
-    : "Choose where the processed JSON files should be saved and how the final output should be kept.";
+    : isLeie
+      ? "Choose where the processed LEIE Excel file should be saved."
+      : "Choose where the processed JSON files should be saved and how the final output should be kept.";
+  elements.outputNameLabel.textContent = isLeie
+    ? "Output File Name"
+    : "Name for the processed JSON files";
+  elements.outputNameHelp.textContent = isLeie
+    ? "Leave blank to keep original .xlsx file names. Do not include extension; the app saves as .xlsx automatically."
+    : "Leave blank to keep original JSON names.";
+  elements.outputJsonPreview.classList.toggle("hidden", isLeie);
+  elements.inputDir.placeholder = isLeie
+    ? "Choose a LEIE Excel file (.xlsx, .xls, .xlsm, .xlsb) or a source folder"
+    : "Choose the folder that contains source JSON files";
+  elements.outputDir.placeholder = isLeie
+    ? "Choose where processed .xlsx files should be written"
+    : "Choose where JSON and .gz files should be written";
+  elements.uploadSubtitle.textContent = "Optionally upload the final .gz file to one or more saved environment profiles.";
+  elements.uploadEnabledLabel.textContent = "Upload the .gz file after processing";
 
   elements.subtabRow.classList.toggle("hidden", !isReferral);
   elements.generatorCard.classList.toggle("hidden", !isGenerate);
   elements.workflowCard.classList.toggle("hidden", false);
-  elements.futureCard.classList.toggle("hidden", true);
+  elements.futureCard.classList.toggle("hidden", !isOther);
   elements.sourceCard.classList.toggle("hidden", isGenerate || isOther);
-  elements.referralDetailsCard.classList.toggle("hidden", isOther);
+  elements.referralDetailsCard.classList.toggle("hidden", isOther || isLeie);
+  elements.leieDuplicateCard.classList.toggle("hidden", !isLeie);
   elements.outputCard.classList.toggle("hidden", isOther);
+  elements.archiveNamingCard?.classList.toggle("hidden", isLeie);
+  elements.outputRetentionCard?.classList.toggle("hidden", isLeie);
   elements.uploadCard.classList.toggle("hidden", isOther);
   elements.runCard.classList.toggle("hidden", isOther);
   elements.runProcess.classList.toggle("hidden", isGenerate || isOther);
   elements.runGenerate.classList.toggle("hidden", !isGenerate || isOther);
   elements.templateSummaryPill.classList.toggle("hidden", !isGenerate || isOther);
+  elements.runProcess.textContent = isLeie ? "Save Processed File" : "Run Processing";
 
   if (isGenerate) {
     applyGeneratorDefaults();
   }
+
+  if (isLeie) {
+    elements.replacementCode.placeholder = "Leave blank to keep original .xlsx file names";
+    elements.replacementCode.value = state.leieOutputFileName || elements.replacementCode.value;
+    state.sourceInspection = null;
+    state.sourceListDate = "";
+  } else {
+    elements.replacementCode.placeholder = "Leave blank to keep original JSON names";
+  }
+
+  syncLeieUiState();
   updatePreviews();
 }
 
@@ -1117,6 +1334,7 @@ function setupTabs() {
       }
       syncTabState();
       syncWorkflowText();
+      inspectSourceFolder();
       scheduleUiSettingsSave();
     });
   }
@@ -1171,14 +1389,29 @@ async function refreshInfo() {
 }
 
 async function pickDirectory(targetId) {
-  const selected = await window.ccrs.pickDirectory();
+  let selected = "";
+  if (targetId === "input-dir" && state.mainTab === "leie") {
+    selected = await window.ccrs.pickFile([
+      { name: "Excel Files", extensions: ["xlsx", "xls", "xlsm", "xlsb"] },
+      { name: "All Files", extensions: ["*"] },
+    ]);
+  } else {
+    selected = await window.ccrs.pickDirectory();
+  }
   if (!selected) {
     return;
   }
 
   $(targetId).value = selected;
   if (targetId === "input-dir") {
-    await inspectSourceFolder();
+    if (state.mainTab === "leie") {
+      state.leieInspection = null;
+    }
+    if (state.mainTab === "leie" || isExcelPath(selected)) {
+      await inspectLeieSourceFolder();
+    } else {
+      await inspectSourceFolder();
+    }
   }
   scheduleUiSettingsSave();
 }
@@ -1213,6 +1446,11 @@ async function importUploadSource() {
 }
 
 async function runProcess() {
+  if (state.mainTab === "leie") {
+    await runLeieProcess();
+    return;
+  }
+
   if (!(await validateCurrentForm())) {
     return;
   }
@@ -1220,6 +1458,36 @@ async function runProcess() {
     setDateParts(nowAsListDate());
   }
   await runJob("process", { ...sharedPayload(), inputDir: readValue("input-dir") }, "Processing");
+}
+
+async function runLeieProcess() {
+  if (!(await validateCurrentForm())) {
+    return;
+  }
+
+  const payload = {
+    inputDir: readValue("input-dir"),
+    outputDir: readValue("output-dir"),
+    outputFileName: sanitizeLeieFileNameInput(readValue("replacement-code")),
+    duplicateKey: "ssn",
+    duplicateHandling: state.leieDuplicateHandling,
+    upload: collectUploadSettings(),
+  };
+
+  setBusy(true);
+  setStatus("Processing", "Processing LEIE files and preparing output...");
+  try {
+    const result = await window.ccrs.runJob("process-leie", payload);
+    if (payload.upload.enabled && payload.upload.targets.length > 0) {
+      setStatus("Upload Complete", result.message || "LEIE upload completed.");
+    } else {
+      setStatus("Ready to Save", result.message || "LEIE file saved.");
+    }
+  } catch (error) {
+    setStatus("Failed", error.message);
+  } finally {
+    setBusy(false);
+  }
 }
 
 function nowAsListDate() {
@@ -1304,6 +1572,9 @@ function setupEventHandlers() {
     "referrals-per-file",
   ]) {
     $(id).addEventListener("input", () => {
+      if (id === "replacement-code" && state.mainTab === "leie") {
+        $(id).value = sanitizeLeieFileNameInput($(id).value);
+      }
       if (id === "referral-code") {
         $(id).value = sanitizeReferralNumberInput($(id).value);
       }
@@ -1327,6 +1598,32 @@ function setupEventHandlers() {
       scheduleUiSettingsSave();
     });
   }
+
+  elements.leieActionAuto.addEventListener("change", () => {
+    if (elements.leieActionAuto.checked) {
+      state.leieDuplicateHandling = "auto-remove";
+      syncLeieUiState();
+      scheduleUiSettingsSave();
+    }
+  });
+  elements.leieActionManual.addEventListener("change", () => {
+    if (elements.leieActionManual.checked) {
+      state.leieDuplicateHandling = "manual";
+      syncLeieUiState();
+      scheduleUiSettingsSave();
+    }
+  });
+  elements.leieRescan.addEventListener("click", async () => {
+    await inspectLeieSourceFolder();
+    scheduleUiSettingsSave();
+  });
+  elements.leieCancelProcess.addEventListener("click", () => {
+    $("input-dir").value = "";
+    state.leieInspection = null;
+    syncLeieUiState();
+    inspectSourceFolder();
+    scheduleUiSettingsSave();
+  });
 
   elements.overrideStationId.addEventListener("focus", () => {
     renderStationOptions(getStationOptions());
@@ -1374,11 +1671,25 @@ function setupEventHandlers() {
   });
 
   elements.inputDir.addEventListener("change", async () => {
-    await inspectSourceFolder();
+    if (state.mainTab === "leie") {
+      state.leieInspection = null;
+    }
+    if (state.mainTab === "leie" || isExcelPath(readValue("input-dir"))) {
+      await inspectLeieSourceFolder();
+    } else {
+      await inspectSourceFolder();
+    }
     scheduleUiSettingsSave();
   });
   elements.inputDir.addEventListener("blur", async () => {
-    await inspectSourceFolder();
+    if (state.mainTab === "leie") {
+      state.leieInspection = null;
+    }
+    if (state.mainTab === "leie" || isExcelPath(readValue("input-dir"))) {
+      await inspectLeieSourceFolder();
+    } else {
+      await inspectSourceFolder();
+    }
     scheduleUiSettingsSave();
   });
   elements.toggleOptionalFields.addEventListener("click", () => {
@@ -1403,6 +1714,26 @@ function setupEventHandlers() {
 
   window.ccrs.onBackendEvent((event) => {
     if (event.type !== "progress") {
+      return;
+    }
+
+    if (event.state === "file-loaded") {
+      setStatus("File Loaded", "LEIE source file loaded.");
+      return;
+    }
+
+    if (event.state === "duplicates-found") {
+      setStatus("Duplicates Found", "Duplicates detected. Choose how to resolve them.");
+      return;
+    }
+
+    if (event.state === "ready-to-save") {
+      setStatus("Ready to Save", "Processed LEIE file is ready.");
+      return;
+    }
+
+    if (event.state === "upload-complete") {
+      setStatus("Upload Complete", "LEIE upload completed.");
       return;
     }
 
@@ -1446,6 +1777,9 @@ function cacheElements() {
     openUserGuide: $("open-user-guide"),
     optionalFields: $("optional-fields"),
     outputJsonPreview: $("output-json-preview"),
+    outputNameHelp: $("output-name-help"),
+    outputNameLabel: $("output-name-label"),
+    outputDir: $("output-dir"),
     outputSubtitle: $("output-subtitle"),
     overrideDob: $("override-dob"),
     overrideNetwork: $("override-network"),
@@ -1486,15 +1820,30 @@ function cacheElements() {
     statusMessage: $("status-message"),
     subtabRow: $("subtab-row"),
     templateSummaryPill: $("template-summary-pill"),
+    leieActionAuto: $("leie-action-auto"),
+    leieActionHelp: $("leie-action-help"),
+    leieActionManual: $("leie-action-manual"),
+    leieCancelProcess: $("leie-cancel-process"),
+    leieDuplicateActions: $("leie-duplicate-actions"),
+    leieDuplicateCard: $("leie-duplicate-card"),
+    leieDuplicateResult: $("leie-duplicate-result"),
+    leieDuplicateSummary: $("leie-duplicate-summary"),
+    leieDuplicateTableBody: $("leie-duplicate-table-body"),
+    leieDuplicateTableWrap: $("leie-duplicate-table-wrap"),
+    leieRescan: $("leie-rescan"),
     toggleOptionalFields: $("toggle-optional-fields"),
     uploadEnabled: $("upload-enabled"),
+    uploadEnabledLabel: $("upload-enabled-label"),
     uploadCard: $("upload-card"),
+    uploadSubtitle: $("upload-subtitle"),
     uploadReadyPill: $("upload-ready-pill"),
     uploadTargets: $("upload-targets"),
     workflowCard: $("workflow-card"),
     workflowSubtitle: $("workflow-subtitle"),
     workflowTitle: $("workflow-title"),
     outputCard: $("output-card"),
+    archiveNamingCard: document.querySelector(".archive-naming-card"),
+    outputRetentionCard: $("output-retention-card"),
     releaseAnnouncementAccept: $("release-announcement-accept"),
     releaseAnnouncementList: $("release-announcement-list"),
     releaseAnnouncementOverlay: $("release-announcement-overlay"),
