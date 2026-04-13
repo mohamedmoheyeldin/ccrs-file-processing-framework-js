@@ -1,12 +1,12 @@
 {
   "version": "1.2.0",
   "label": "Production V1.2",
-  "announcementId": "1.2.0|Production V1.2|2026-04-13-popup-fix-6",
+  "announcementId": "1.2.0|Production V1.2|2026-04-13-popup-fix-7",
   "releaseNotes": [
-    "Upload profiles no longer auto-load; they appear only after Import To Config is used.",
-    "LEIE scan now checks duplicates by full-row matching, without requiring SSN headers.",
-    "LEIE duplicate current-result field is centered and visually improved.",
-    "Release update startup behavior remains enabled before the UI loads."
+    "LEIE Rescan now forces a fresh duplicate scan every time.",
+    "LEIE duplicate current-result textbox is centered and styled for clearer visibility.",
+    "LEIE Output File Name now always shows a live Preview line.",
+    "Upload profiles continue to load only after Import To Config is used."
   ]
 }
 

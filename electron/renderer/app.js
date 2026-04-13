@@ -974,7 +974,7 @@ function syncLeieUiState() {
     elements.leieDuplicateSummary.textContent = inspectionError;
   } else if (!inspection || !inspection.fileCount) {
     elements.leieDuplicateResult.value = "No LEIE source folder selected.";
-    elements.leieDuplicateSummary.textContent = "Duplicate details appear in the table below if found.";
+    elements.leieDuplicateSummary.textContent = "Duplicate-only scan details appear in the table below when matches are found.";
   } else if (validationErrors.length > 0) {
     elements.leieDuplicateResult.value = `${validationErrors.length} file validation issue${validationErrors.length === 1 ? "" : "s"} found`;
     elements.leieDuplicateSummary.textContent = "Fix validation issues in source files, then rescan.";
@@ -982,8 +982,8 @@ function syncLeieUiState() {
     elements.leieDuplicateResult.value = `${duplicates.length} duplicate row${duplicates.length === 1 ? "" : "s"} found`;
     elements.leieDuplicateSummary.textContent = "Duplicate details are listed below.";
   } else {
-    elements.leieDuplicateResult.value = "No duplicates found";
-    elements.leieDuplicateSummary.textContent = "Output settings are enabled.";
+    elements.leieDuplicateResult.value = "No duplicate rows found";
+    elements.leieDuplicateSummary.textContent = "Duplicate-only scan completed successfully.";
   }
 
   renderLeieDuplicateTable(duplicates);
@@ -1292,7 +1292,7 @@ function syncWorkflowText() {
     : isReferral
       ? "Choose source files, apply targeted JSON updates, and export clean output in one pass."
       : isLeie
-        ? "Choose an Excel file or folder, validate data, and resolve duplicates before saving."
+        ? "Choose an Excel file or folder, scan for duplicate rows, and resolve duplicates before saving."
         : "This area is reserved for future CCRS workflow implementations.";
   elements.sourceTitle.textContent = isGenerate ? "Template Output" : "Source";
   elements.sourceSubtitle.textContent = isGenerate
@@ -1311,7 +1311,7 @@ function syncWorkflowText() {
   elements.outputNameHelp.textContent = isLeie
     ? "Leave blank to keep original .xlsx file names. Do not include extension; the app saves as .xlsx automatically."
     : "Leave blank to keep original JSON names.";
-  elements.outputJsonPreview.classList.toggle("hidden", isLeie);
+  elements.outputJsonPreview.classList.toggle("hidden", false);
   elements.inputDir.placeholder = isLeie
     ? "Choose a LEIE Excel file (.xlsx, .xls, .xlsm, .xlsb) or a source folder"
     : "Choose the folder that contains source JSON files";
@@ -1645,7 +1645,7 @@ function setupEventHandlers() {
     }
   });
   elements.leieRescan.addEventListener("click", async () => {
-    await inspectLeieSourceFolder();
+    await inspectLeieSourceFolder({ force: true });
     scheduleUiSettingsSave();
   });
   elements.leieCancelProcess.addEventListener("click", () => {
