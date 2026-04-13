@@ -113,8 +113,6 @@ function ensureRuntimeFiles() {
   ensureDirectory(userDataPath("logs"));
 
   copyIfMissing(dataPath("config", "ui_settings.json"), userDataPath("config", "ui_settings.json"));
-  copyIfMissing(dataPath("config", "upload_profiles.json"), userDataPath("config", "upload_profiles.json"));
-  copyIfMissing(dataPath("config", "upload_credentials.json"), userDataPath("config", "upload_credentials.json"));
   copyIfMissing(dataPath("upload_import", "WinSCP.ini"), userDataPath("upload_import", "WinSCP.ini"));
 
   copyIfMissing(bundlePath("config", "mappings.json"), dataPath("config", "mappings.json"));
@@ -122,8 +120,6 @@ function ensureRuntimeFiles() {
   copyIfMissing(bundlePath("config", "station_options.json"), dataPath("config", "station_options.json"));
   syncFromBundle(bundlePath("config", "app_version.json"), dataPath("config", "app_version.json"));
   copyIfMissing(bundlePath("config", "ui_settings.json"), userDataPath("config", "ui_settings.json"));
-  copyIfMissing(bundlePath("config", "upload_profiles.json"), userDataPath("config", "upload_profiles.json"));
-  copyIfMissing(bundlePath("config", "upload_credentials.json"), userDataPath("config", "upload_credentials.json"));
   copyIfMissing(bundlePath("upload_import", "README.txt"), userDataPath("upload_import", "README.txt"));
   copyIfMissing(bundlePath("upload_import", "decrypt-winscp.ps1"), userDataPath("upload_import", "decrypt-winscp.ps1"));
   syncFromBundle(bundlePath("docs", "USER_GUIDE.md"), dataPath("docs", "USER_GUIDE.md"));

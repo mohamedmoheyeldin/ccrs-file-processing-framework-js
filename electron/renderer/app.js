@@ -14,7 +14,7 @@ const state = {
   theme: "light",
   mainTab: "referral",
   subTab: "edit",
-  leieDuplicateKey: "ssn",
+  leieDuplicateKey: "full-row",
   leieDuplicateHandling: "manual",
   leieInspection: null,
   leieInspectionError: "",
@@ -630,7 +630,7 @@ async function applyUiSettings(settings = {}) {
   setTheme(settings.theme || "light");
   state.mainTab = ["referral", "leie", "other"].includes(settings.mainTab) ? settings.mainTab : "referral";
   state.subTab = settings.subTab === "generate" ? "generate" : "edit";
-  state.leieDuplicateKey = settings.leieDuplicateKey || "ssn";
+  state.leieDuplicateKey = settings.leieDuplicateKey || "full-row";
   state.leieDuplicateHandling = settings.leieDuplicateHandling === "auto-remove" ? "auto-remove" : "manual";
   state.leieOutputFileName = String(settings.leieOutputFileName || "").trim();
   if (state.mainTab !== "referral") {
@@ -1015,7 +1015,7 @@ async function inspectLeieSourceFolder(options = {}) {
   elements.listDateSourceValue.textContent = inputDir;
 
   try {
-    const inspection = await window.ccrs.inspectLeieSource(inputDir, "ssn");
+    const inspection = await window.ccrs.inspectLeieSource(inputDir, "full-row");
     if (requestId !== state.leieScanRequestId) {
       return;
     }
@@ -1500,7 +1500,7 @@ async function runLeieProcess() {
     inputDir: readValue("input-dir"),
     outputDir: readValue("output-dir"),
     outputFileName: sanitizeLeieFileNameInput(readValue("replacement-code")),
-    duplicateKey: "ssn",
+    duplicateKey: "full-row",
     duplicateHandling: state.leieDuplicateHandling,
     upload: collectUploadSettings(),
   };

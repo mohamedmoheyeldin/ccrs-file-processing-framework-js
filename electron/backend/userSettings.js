@@ -35,7 +35,7 @@ const DEFAULT_UI_SETTINGS = {
   keepProcessedJson: true,
   uploadEnabled: false,
   uploadTargets: {},
-  leieDuplicateKey: "ssn",
+  leieDuplicateKey: "full-row",
   leieDuplicateHandling: "manual",
   leieOutputFileName: "",
 };

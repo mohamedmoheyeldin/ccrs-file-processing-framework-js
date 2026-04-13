@@ -861,6 +861,18 @@ body.theme-dark .combo-option:focus-visible {
   flex: 1;
 }
 
+#leie-duplicate-result {
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--panel-strong), rgba(232, 241, 255, 0.6));
+}
+
+body.theme-dark #leie-duplicate-result {
+  background: linear-gradient(180deg, var(--panel-strong), rgba(72, 97, 134, 0.58));
+}
+
 .radio-chip,
 .checkbox-chip {
   display: inline-flex;

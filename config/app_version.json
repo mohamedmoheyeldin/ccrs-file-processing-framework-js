@@ -1,12 +1,12 @@
 {
   "version": "1.2.0",
   "label": "Production V1.2",
-  "announcementId": "1.2.0|Production V1.2|2026-04-13-popup-fix-5",
+  "announcementId": "1.2.0|Production V1.2|2026-04-13-popup-fix-6",
   "releaseNotes": [
-    "Release Update now runs from the main process at startup, before the app UI loads.",
-    "Release Update now shows when release tracking config is missing or not yet acknowledged.",
-    "LEIE scan crash fixed by restoring the missing replacement-code element cache binding.",
-    "LEIE scan now keeps working and reports validation details instead of failing the UI."
+    "Upload profiles no longer auto-load; they appear only after Import To Config is used.",
+    "LEIE scan now checks duplicates by full-row matching, without requiring SSN headers.",
+    "LEIE duplicate current-result field is centered and visually improved.",
+    "Release update startup behavior remains enabled before the UI loads."
   ]
 }
 

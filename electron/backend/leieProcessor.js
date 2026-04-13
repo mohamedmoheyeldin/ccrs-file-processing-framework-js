@@ -37,7 +37,7 @@ function getDuplicateMode(rawValue = "") {
   if (DUPLICATE_KEY_MODES[normalized]) {
     return normalized;
   }
-  return "ssn";
+  return "full-row";
 }
 
 function getExcelFiles(inputDir) {
@@ -197,7 +197,7 @@ function resolveDuplicateColumn(headers, duplicateMode) {
   };
 }
 
-function collectSourceData(inputDir, duplicateKey = "ssn") {
+function collectSourceData(inputDir, duplicateKey = "full-row") {
   const duplicateMode = getDuplicateMode(duplicateKey);
   const excelFiles = getExcelFiles(inputDir);
 

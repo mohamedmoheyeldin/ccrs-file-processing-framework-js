@@ -3,12 +3,13 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 const SftpClient = require("ssh2-sftp-client");
-const { dataPath, userDataPath } = require("./appPaths");
+const { userDataPath } = require("./appPaths");
 
 const WINSCP_INI_PATH = userDataPath("upload_import", "WinSCP.ini");
 const CREDENTIALS_JSON_PATH = userDataPath("config", "upload_credentials.json");
 const WINSCP_GENERATED_CREDENTIALS_PATH = userDataPath("upload_import", "winscp_credentials.json");
 const UPLOAD_PROFILES_PATH = userDataPath("config", "upload_profiles.json");
+const UPLOAD_SOURCE_MARKER_PATH = userDataPath("config", "upload_source_marker.json");
 
 function summarizeUploadProfiles(profiles) {
   return {
@@ -113,36 +114,56 @@ function getUploadTargetNames(profiles = {}) {
 }
 
 function getCandidateWinscpIniPaths() {
-  const homeDirectory = os.homedir();
   return [...new Set([
     WINSCP_INI_PATH,
-    dataPath("upload_import", "WinSCP.ini"),
-    path.join(process.cwd(), "upload_import", "WinSCP.ini"),
-    path.join(process.cwd(), "upload_import", "winscp.ini"),
-    path.join(homeDirectory, "AppData", "Roaming", "WinSCP.ini"),
-    path.join(homeDirectory, "Downloads", "WinSCP.ini"),
-    path.join(homeDirectory, "Downloads", "winscp.ini"),
+    userDataPath("upload_import", "winscp.ini"),
   ])];
 }
 
 function getCandidateCredentialsJsonPaths() {
-  const homeDirectory = os.homedir();
   return [...new Set([
     CREDENTIALS_JSON_PATH,
-    dataPath("config", "upload_credentials.json"),
-    path.join(process.cwd(), "config", "upload_credentials.json"),
-    path.join(process.cwd(), "config", "winscp_credentials.json"),
-    path.join(homeDirectory, "Downloads", "winscp_credentials.json"),
-    path.join(homeDirectory, "Desktop", "winscp_credentials.json"),
+    userDataPath("config", "winscp_credentials.json"),
   ])];
 }
 
 function getCandidateUploadProfilesPaths() {
   return [...new Set([
     UPLOAD_PROFILES_PATH,
-    dataPath("config", "upload_profiles.json"),
-    path.join(process.cwd(), "config", "upload_profiles.json"),
   ])];
+}
+
+function loadUploadImportMarker() {
+  try {
+    if (!fs.existsSync(UPLOAD_SOURCE_MARKER_PATH)) {
+      return null;
+    }
+
+    const parsed = JSON.parse(fs.readFileSync(UPLOAD_SOURCE_MARKER_PATH, "utf8"));
+    if (!parsed || typeof parsed !== "object") {
+      return null;
+    }
+
+    return {
+      sourceKind: String(parsed.source_kind || parsed.sourceKind || "").trim(),
+      sourcePath: String(parsed.source_path || parsed.sourcePath || "").trim(),
+      importedAt: String(parsed.imported_at || parsed.importedAt || "").trim(),
+    };
+  } catch (_error) {
+    return null;
+  }
+}
+
+function saveUploadImportMarker(payload = {}) {
+  const marker = {
+    source_kind: String(payload.sourceKind || payload.source_kind || "").trim(),
+    source_path: String(payload.sourcePath || payload.source_path || "").trim(),
+    imported_at: new Date().toISOString(),
+  };
+
+  fs.mkdirSync(path.dirname(UPLOAD_SOURCE_MARKER_PATH), { recursive: true });
+  fs.writeFileSync(`${UPLOAD_SOURCE_MARKER_PATH}`, `${JSON.stringify(marker, null, 2)}\n`, "utf8");
+  return marker;
 }
 
 function getExistingWinscpIniPath() {
@@ -158,6 +179,11 @@ function getExistingUploadProfilesPath() {
 }
 
 function getUploadProfileSourcePath() {
+  const marker = loadUploadImportMarker();
+  if (!marker) {
+    return ["", ""];
+  }
+
   const credentialsJsonPath = getExistingCredentialsJsonPath();
   if (credentialsJsonPath) {
     return [credentialsJsonPath, "credentials_json"];
@@ -527,6 +553,11 @@ function generateCredentialsJsonFromWinscpIni(iniPath, outputPath = WINSCP_GENER
 }
 
 function loadUploadProfiles() {
+  const marker = loadUploadImportMarker();
+  if (!marker) {
+    return { servers: [], users: [] };
+  }
+
   const jsonProfiles = parseCredentialsProfiles();
   if (jsonProfiles.servers.length || jsonProfiles.users.length) {
     return jsonProfiles;
@@ -596,6 +627,10 @@ function importUploadSourceToConfig(sourcePath) {
       throw new Error("The selected credentials JSON file did not contain usable upload profiles.");
     }
     persistCredentialsJson(normalizedSourcePath);
+    saveUploadImportMarker({
+      sourceKind: "credentials_json",
+      sourcePath: CREDENTIALS_JSON_PATH,
+    });
     return {
       source_kind: "credentials_json",
       source_path: normalizedSourcePath,
@@ -609,6 +644,10 @@ function importUploadSourceToConfig(sourcePath) {
     fs.copyFileSync(normalizedSourcePath, WINSCP_INI_PATH);
     const generatedJsonPath = generateCredentialsJsonFromWinscpIni(WINSCP_INI_PATH);
     persistCredentialsJson(generatedJsonPath);
+    saveUploadImportMarker({
+      sourceKind: "winscp_ini",
+      sourcePath: WINSCP_INI_PATH,
+    });
     return {
       source_kind: "winscp_ini",
       source_path: normalizedSourcePath,
