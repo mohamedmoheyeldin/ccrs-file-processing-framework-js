@@ -1,13 +1,12 @@
 {
   "version": "1.2.0",
   "label": "Production V1.2",
-  "announcementId": "1.2.0|Production V1.2|2026-04-13-popup-fix-3",
+  "announcementId": "1.2.0|Production V1.2|2026-04-13-popup-fix-4",
   "releaseNotes": [
-    "Release Update modal now appears for this new build version.",
-    "LEIE source scanning improved to find .xlsx files recursively in the selected folder.",
-    "LEIE duplicate section now shows a simple result textbox with duplicate details table.",
-    "LEIE Output section simplified while keeping core save flow.",
-    "Upload visuals and behavior were restored to match the prior shared experience."
+    "Release Update modal now syncs at startup so it appears without requiring any extra action.",
+    "LEIE source scan no longer crashes with 'Cannot set properties of undefined (setting value)'.",
+    "LEIE scan now reports worksheet header validation issues cleanly instead of failing the whole scan.",
+    "Build outputs are refreshed for this release package with updated LEIE and popup fixes."
   ]
 }
 
