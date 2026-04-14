@@ -4,8 +4,20 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 const repoRoot = path.resolve(__dirname, "..");
-const markdownPath = path.join(repoRoot, "docs", "USER_GUIDE.md");
-const outputPath = path.join(repoRoot, "docs", "USER_GUIDE.pdf");
+const guides = [
+  {
+    markdownPath: path.join(repoRoot, "docs", "USER_GUIDE.md"),
+    outputPath: path.join(repoRoot, "docs", "USER_GUIDE.pdf"),
+    title: "CCRS File Processing Framework User Guide",
+    tempFileName: "ccrs-user-guide-print.html",
+  },
+  {
+    markdownPath: path.join(repoRoot, "docs", "LEIE_UPLOAD_VALIDATION_GUIDE.md"),
+    outputPath: path.join(repoRoot, "docs", "LEIE_UPLOAD_VALIDATION_GUIDE.pdf"),
+    title: "LEIE Data Upload and Validation Guide",
+    tempFileName: "ccrs-leie-validation-guide-print.html",
+  },
+];
 
 function escapeHtml(value) {
   return String(value || "")
@@ -37,7 +49,7 @@ function closeList(parts, state) {
   }
 }
 
-function markdownToHtml(markdown) {
+function markdownToHtml(markdown, title) {
   const lines = String(markdown || "").replace(/\r\n/g, "\n").split("\n");
   const parts = [];
   const paragraphLines = [];
@@ -106,7 +118,7 @@ function markdownToHtml(markdown) {
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>CCRS File Processing Framework User Guide</title>
+    <title>${escapeHtml(title)}</title>
     <style>
       :root {
         color-scheme: light;
@@ -213,22 +225,13 @@ function toFileUrl(filePath) {
   return `file:///${normalized}`;
 }
 
-function main() {
-  if (!fs.existsSync(markdownPath)) {
-    throw new Error(`User guide markdown not found: ${markdownPath}`);
+function generatePdfGuide(browserPath, guide) {
+  if (!fs.existsSync(guide.markdownPath)) {
+    throw new Error(`Guide markdown not found: ${guide.markdownPath}`);
   }
 
-  const browserPath = getBrowserPath();
-  if (!browserPath) {
-    if (fs.existsSync(outputPath)) {
-      console.warn("No supported browser found for PDF generation. Keeping the existing USER_GUIDE.pdf.");
-      return;
-    }
-    throw new Error("Unable to generate USER_GUIDE.pdf because Microsoft Edge or Google Chrome was not found.");
-  }
-
-  const html = markdownToHtml(fs.readFileSync(markdownPath, "utf8"));
-  const tempHtmlPath = path.join(os.tmpdir(), "ccrs-user-guide-print.html");
+  const html = markdownToHtml(fs.readFileSync(guide.markdownPath, "utf8"), guide.title);
+  const tempHtmlPath = path.join(os.tmpdir(), guide.tempFileName);
   fs.writeFileSync(tempHtmlPath, html, "utf8");
 
   const result = spawnSync(
@@ -239,7 +242,7 @@ function main() {
       "--allow-file-access-from-files",
       "--disable-software-rasterizer",
       "--no-pdf-header-footer",
-      `--print-to-pdf=${outputPath}`,
+      `--print-to-pdf=${guide.outputPath}`,
       toFileUrl(tempHtmlPath),
     ],
     {
@@ -248,10 +251,10 @@ function main() {
     }
   );
 
-  if (result.status !== 0 || !fs.existsSync(outputPath)) {
+  if (result.status !== 0 || !fs.existsSync(guide.outputPath)) {
     throw new Error(
       [
-        "Failed to generate USER_GUIDE.pdf.",
+        `Failed to generate ${path.basename(guide.outputPath)}.`,
         result.stderr?.trim(),
         result.stdout?.trim(),
       ]
@@ -260,7 +263,23 @@ function main() {
     );
   }
 
-  console.log(`Generated ${path.relative(repoRoot, outputPath)}.`);
+  console.log(`Generated ${path.relative(repoRoot, guide.outputPath)}.`);
+}
+
+function main() {
+  const browserPath = getBrowserPath();
+  if (!browserPath) {
+    const missingOutputs = guides.filter((guide) => !fs.existsSync(guide.outputPath));
+    if (missingOutputs.length === 0) {
+      console.warn("No supported browser found for PDF generation. Keeping existing guide PDFs.");
+      return;
+    }
+    throw new Error("Unable to generate guide PDFs because Microsoft Edge or Google Chrome was not found.");
+  }
+
+  for (const guide of guides) {
+    generatePdfGuide(browserPath, guide);
+  }
 }
 
 main();

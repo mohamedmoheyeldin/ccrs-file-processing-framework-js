@@ -1,4 +1,6 @@
 const fs = require("fs");
+const path = require("path");
+const { Worker } = require("worker_threads");
 const {
   describeIcnPreview,
   ICN_MODES,
@@ -33,6 +35,8 @@ const {
 const { cleanupRuntimeArtifacts, cleanupStaleRuntimeArtifacts, removePath } = require("./runtimeCleanup");
 const { loadStationOptions } = require("./stationCatalog");
 const { getUiSettingsPath, loadUiSettings, saveUiSettings } = require("./userSettings");
+const { inspectLeieSource, processLeieFiles } = require("./leieProcessor");
+const { loadReleaseTracker, saveReleaseTracker } = require("./releaseTracker");
 const {
   getServerDisplayForTarget,
   getUploadProfileSourcePath,
@@ -66,14 +70,19 @@ function loadAppVersionInfo() {
         const version = String(parsed.version || "").trim();
         const label = String(parsed.label || "").trim();
         const channel = String(parsed.channel || "").trim();
+        const announcementId = String(
+          parsed.announcementId || parsed.releaseAnnouncementId || parsed.release_announcement_id || ""
+        ).trim();
         const displayVersion = version.endsWith(".0") ? version.slice(0, -2) : version;
         const displayLabel = label || [channel, displayVersion].filter(Boolean).join(" ").trim();
+        const releaseKey = announcementId || [version, label || channel || displayVersion].filter(Boolean).join("|");
         return {
           version,
           label,
           channel,
+          announcementId,
           displayLabel,
-          releaseKey: [version, label || channel || displayVersion].filter(Boolean).join("|"),
+          releaseKey,
           releaseNotes: normalizeReleaseNotes(parsed.releaseNotes || parsed.release_notes),
         };
       }
@@ -85,6 +94,7 @@ function loadAppVersionInfo() {
     version: "",
     label: "",
     channel: "",
+    announcementId: "",
     displayLabel: "",
     releaseKey: "",
     releaseNotes: [],
@@ -100,8 +110,56 @@ function buildUploadTargets(profiles) {
   }));
 }
 
+function inspectLeieSourceAsync(payload) {
+  return new Promise((resolve, reject) => {
+    const workerPath = path.join(__dirname, "leieWorker.js");
+    let settled = false;
+    const worker = new Worker(workerPath, {
+      workerData: {
+        task: "inspect",
+        payload,
+      },
+    });
+
+    worker.on("message", (message) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      if (message?.ok) {
+        resolve(message.result);
+      } else {
+        reject(new Error(message?.error || "LEIE scan failed."));
+      }
+    });
+
+    worker.on("error", (error) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      reject(error);
+    });
+
+    worker.on("exit", (code) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      if (code === 0) {
+        reject(new Error("LEIE scan worker exited before returning a result."));
+      } else {
+        reject(new Error(`LEIE scan worker exited with code ${code}.`));
+      }
+    });
+  });
+}
+
 function getInfo() {
   const uiSettings = loadUiSettings();
+  const releaseTracker = loadReleaseTracker();
+  const acknowledgedReleaseKey = String(releaseTracker.acknowledgedReleaseKey || "").trim();
+
   const appVersion = loadAppVersionInfo();
   const profiles = loadUploadProfiles();
   const [profileSourcePath, profileSourceKind] = getUploadProfileSourcePath();
@@ -109,19 +167,25 @@ function getInfo() {
   const userGuidePath = fs.existsSync(userGuidePdfPath)
     ? userGuidePdfPath
     : dataPath("docs", "USER_GUIDE.md");
+  const leieValidationGuidePathCandidates = [
+    dataPath("docs", "LEIE_UPLOAD_VALIDATION_GUIDE.pdf"),
+    dataPath("docs", "LEIE_UPLOAD_VALIDATION_GUIDE.md"),
+    dataPath("docs", "LEIE_Data_Upload_Validation_Guide.md"),
+  ];
+  const leieValidationGuidePath = leieValidationGuidePathCandidates.find((targetPath) => fs.existsSync(targetPath)) || "";
   return {
     runtimeRoot: getRuntimeRoot(),
     appVersionLabel: appVersion.displayLabel,
     appVersion,
     releaseAnnouncement: {
       releaseKey: appVersion.releaseKey,
+      acknowledgedReleaseKey,
       version: appVersion.version,
       label: appVersion.label || appVersion.displayLabel,
       notes: appVersion.releaseNotes,
       shouldShow: Boolean(
         appVersion.releaseKey &&
-          appVersion.releaseNotes.length &&
-          uiSettings.acknowledgedReleaseKey !== appVersion.releaseKey
+          acknowledgedReleaseKey !== appVersion.releaseKey
       ),
     },
     profileSource: {
@@ -147,6 +211,7 @@ function getInfo() {
     },
     docs: {
       userGuidePath,
+      leieValidationGuidePath,
     },
     userConfig: {
       uiSettingsPath: getUiSettingsPath(),
@@ -476,10 +541,12 @@ async function handleCommand(command, payload, emitProgress) {
     };
   }
   if (command === "acknowledge-release-announcement") {
+    const releaseKey = String(payload.releaseKey || "").trim();
+    saveReleaseTracker({ acknowledgedReleaseKey: releaseKey });
     return {
       uiSettings: saveUiSettings({
         ...loadUiSettings(),
-        acknowledgedReleaseKey: String(payload.releaseKey || "").trim(),
+        acknowledgedReleaseKey: releaseKey,
       }),
     };
   }
@@ -491,6 +558,12 @@ async function handleCommand(command, payload, emitProgress) {
   }
   if (command === "process") {
     return runProcess(payload, emitProgress);
+  }
+  if (command === "inspect-leie-source") {
+    return inspectLeieSourceAsync(payload);
+  }
+  if (command === "process-leie") {
+    return processLeieFiles(payload, emitProgress);
   }
   if (command === "generate") {
     return runGenerate(payload, emitProgress);

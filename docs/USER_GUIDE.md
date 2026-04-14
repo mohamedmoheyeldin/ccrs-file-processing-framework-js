@@ -1,7 +1,7 @@
 # CCRS File Processing Framework User Guide
 
 ## Purpose
-This app helps CCRS users process referral JSON files, generate new referral files, build the final `.gz` package, and optionally upload the finished archive to the configured CCRS environments.
+This app helps CCRS users process referral JSON files, process LEIE Excel files, generate new referral files, build the final `.gz` package, and optionally upload the finished archive to the configured CCRS environments.
 
 ## Quick Start
 Before you run the app, make sure you have:
@@ -11,7 +11,7 @@ Before you run the app, make sure you have:
 
 To start the packaged app:
 - open the folder that contains the `.exe`
-- run either `CCRS File Processing Framework Setup Production V1.1.exe` or `CCRS File Processing Framework Production V1.1.exe`
+- run either `CCRS File Processing Framework Setup Production V1.2.exe` or `CCRS File Processing Framework Production V1.2.exe`
 
 When you use the Setup installer, choose the install folder you want for the app.
 
@@ -32,13 +32,43 @@ Typical runtime folders include:
 Use the files in that generated runtime folder next to the `.exe`, not the source-code repo folder.
 
 ## Main Areas
-The app currently has two main workflow tabs:
+The app currently has three main workflow tabs:
 - `Referral Files`
-- `Other CCRS File Types`
+- `LEIE Data Processing`
+- `More Features Coming Soon`
 
 Inside `Referral Files`, there are two working modes:
 - `Edit Existing Files`
 - `Generate New Files`
+
+## LEIE Data Processing
+Use this tab when you need to process LEIE Excel files and detect duplicate rows.
+
+At the top of the LEIE Source section, use `LEIE Data Upload and Validation Guide` to open the full manual:
+- `docs\LEIE_UPLOAD_VALIDATION_GUIDE.md`
+
+### 1. Source
+Choose either:
+- a single LEIE Excel file (`.xlsx`, `.xls`, `.xlsm`, `.xlsb`)
+- a folder that contains LEIE Excel files
+
+### 2. Duplicate Detection
+The app runs strict duplicate detection using full-row matching only.
+
+A row is treated as duplicate only when all column values match another row after:
+- trimming whitespace
+- converting to lowercase
+
+The `Current Result` field shows:
+- scan progress while detection runs
+- final result when completed (for example, duplicate rows found or no duplicates found)
+
+### 3. Output
+Choose where the processed LEIE file should be saved and optionally set the output file name.
+The app always shows a live output preview in this section.
+
+### 4. Save
+Use `Save Processed File` after duplicate checks are complete.
 
 ## Edit Existing Files
 Use this mode when you already have referral JSON files and want to update them.
@@ -186,11 +216,13 @@ If something is invalid, fix the highlighted field and run again.
 
 ## Upload
 Turn on upload only if you want the app to send the final `.gz` file after processing.
+If `Upload the .gz file after processing` is not selected, `Upload to ...` target toggles are disabled.
 
 Supported upload targets:
 - `DEV`
 - `PPD`
 - `SQA`
+- `PROD`
 
 Default remote path:
 - `/CCRA_Uploads`
@@ -211,6 +243,7 @@ When you import `WinSCP.ini`, the app:
 - writes the final data into `config\upload_credentials.json`
 
 After import, `config\upload_credentials.json` is the main file the app uses for uploads.
+The app no longer auto-loads upload profiles from arbitrary machine paths; profiles are activated only through `Import To Config`.
 
 ### Test Connection
 Each upload target now includes a `Test Connection` button.
@@ -221,6 +254,21 @@ Use it to verify:
 - the app can connect before you run the full workflow
 
 This is the fastest way to confirm upload settings before you process files.
+
+### LEIE Upload Validation
+When the `LEIE Data Processing` tab is active, the Upload area includes:
+- `Step 4: Validate the LEIE Load in the Database`
+- `Step 5: Validate in CCRS UI`
+
+For Step 4:
+- paste the `etl_batch_id` from `CLAIM_BATCH_LOG`
+- use `Copy SQL`
+- run the SQL in `ccrsdb` and validate row counts/batch status
+
+For Step 5:
+- open the correct CCRS Table Viewer environment
+- validate the same LEIE batch values in the UI
+- confirm the load is successful before moving to the next environment
 
 ## Output Format
 The final `.gz` contains one combined JSON object with this shape:
@@ -246,4 +294,3 @@ If you share the app with other users, make sure the `docs` folder stays next to
 - older `.gz` files are not removed automatically
 - you can keep the processed `.json` files or keep only the `.gz`
 - app-created temporary staging folders and temporary upload helper files are cleaned automatically after the run or when the app closes
-- upload to `PROD` is not enabled in the app

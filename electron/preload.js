@@ -4,8 +4,11 @@ contextBridge.exposeInMainWorld("ccrs", {
   pickDirectory: () => ipcRenderer.invoke("dialog:pick-directory"),
   pickFile: (filters) => ipcRenderer.invoke("dialog:pick-file", filters),
   openPath: (targetPath) => ipcRenderer.invoke("shell:open-path", targetPath),
+  openExternal: (url) => ipcRenderer.invoke("shell:open-external", url),
   getInfo: () => ipcRenderer.invoke("backend:info"),
   inspectSource: (inputDir) => ipcRenderer.invoke("backend:inspect-source", { inputDir }),
+  inspectLeieSource: (inputDir, duplicateKey) =>
+    ipcRenderer.invoke("backend:inspect-leie-source", { inputDir, duplicateKey }),
   getPreview: (data) => ipcRenderer.invoke("backend:preview", data),
   saveUiSettings: (data) => ipcRenderer.invoke("backend:save-ui-settings", data),
   acknowledgeReleaseAnnouncement: (releaseKey) =>

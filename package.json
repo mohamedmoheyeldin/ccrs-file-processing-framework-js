@@ -1,6 +1,6 @@
 {
   "name": "ccrs-file-processing-framework",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Pure JavaScript Electron desktop app for the CCRS File Processing Framework.",
   "main": "electron/main.js",
   "author": "Mohamed Moheyeldin (Eldin)",
@@ -12,11 +12,14 @@
     "test": "node scripts/smoke-test.js",
     "predist": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
     "dist": "electron-builder --win --x64",
+    "postdist": "node scripts/export-release-artifacts.js --mode=full",
     "predist:portable": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
-    "dist:portable": "electron-builder --win portable --x64"
+    "dist:portable": "electron-builder --win portable --x64",
+    "postdist:portable": "node scripts/export-release-artifacts.js --mode=portable"
   },
   "dependencies": {
-    "ssh2-sftp-client": "^12.0.1"
+    "ssh2-sftp-client": "^12.0.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "electron": "^37.2.0",
@@ -100,10 +103,11 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "perMachine": false,
-      "uninstallDisplayName": "CCRS File Processing Framework Production V1.1",
+      "uninstallDisplayName": "CCRS File Processing Framework Production V1.2",
       "installerIcon": "assets/icons/ccrs_app_icon.ico",
       "uninstallerIcon": "assets/icons/ccrs_app_icon.ico",
       "installerHeaderIcon": "assets/icons/ccrs_app_icon.ico"
     }
-  }
+  },
+  "packageManager": "pnpm@10.33.0"
 }

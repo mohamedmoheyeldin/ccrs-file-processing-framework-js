@@ -3,11 +3,13 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 const SftpClient = require("ssh2-sftp-client");
-const { dataPath, userDataPath } = require("./appPaths");
+const { userDataPath } = require("./appPaths");
 
 const WINSCP_INI_PATH = userDataPath("upload_import", "WinSCP.ini");
 const CREDENTIALS_JSON_PATH = userDataPath("config", "upload_credentials.json");
 const WINSCP_GENERATED_CREDENTIALS_PATH = userDataPath("upload_import", "winscp_credentials.json");
+const UPLOAD_PROFILES_PATH = userDataPath("config", "upload_profiles.json");
+const UPLOAD_SOURCE_MARKER_PATH = userDataPath("config", "upload_source_marker.json");
 
 function summarizeUploadProfiles(profiles) {
   return {
@@ -48,6 +50,7 @@ function inferUploadTargetName(...values) {
     DEV: ["DEV", "DEVELOPMENT", "NONPROD", "NON-PROD", "SANDBOX"],
     PPD: ["PPD", "PREPROD", "PRE-PROD", "PRE PROD", "STAGE", "STAGING"],
     SQA: ["SQA", "QA", "TEST", "UAT"],
+    PROD: ["PROD", "PRODUCTION", "LIVE"],
   };
 
   for (const [targetName, aliases] of Object.entries(aliasGroups)) {
@@ -72,36 +75,96 @@ function inferServerName(sessionName, host) {
 }
 
 function getDefaultUploadTargets() {
-  return ["DEV", "PPD", "SQA"];
+  return ["DEV", "PPD", "SQA", "PROD"];
 }
 
-function getUploadTargetNames() {
-  return getDefaultUploadTargets();
+function getUploadTargetNames(profiles = {}) {
+  const defaults = getDefaultUploadTargets();
+  const discovered = new Set(defaults);
+
+  for (const server of profiles.servers || []) {
+    const normalized = normalizeUploadTargetName(server?.name || server?.target_name || "");
+    if (normalized) {
+      discovered.add(normalized);
+    }
+  }
+
+  for (const user of profiles.users || []) {
+    const normalized = normalizeUploadTargetName(user?.server || user?.target_name || "");
+    if (normalized) {
+      discovered.add(normalized);
+    }
+  }
+
+  return [...discovered]
+    .filter((name) => name)
+    .sort((left, right) => {
+      const leftIndex = defaults.indexOf(left);
+      const rightIndex = defaults.indexOf(right);
+      if (leftIndex >= 0 && rightIndex >= 0) {
+        return leftIndex - rightIndex;
+      }
+      if (leftIndex >= 0) {
+        return -1;
+      }
+      if (rightIndex >= 0) {
+        return 1;
+      }
+      return left.localeCompare(right);
+    });
 }
 
 function getCandidateWinscpIniPaths() {
-  const homeDirectory = os.homedir();
   return [...new Set([
     WINSCP_INI_PATH,
-    dataPath("upload_import", "WinSCP.ini"),
-    path.join(process.cwd(), "upload_import", "WinSCP.ini"),
-    path.join(process.cwd(), "upload_import", "winscp.ini"),
-    path.join(homeDirectory, "AppData", "Roaming", "WinSCP.ini"),
-    path.join(homeDirectory, "Downloads", "WinSCP.ini"),
-    path.join(homeDirectory, "Downloads", "winscp.ini"),
+    userDataPath("upload_import", "winscp.ini"),
   ])];
 }
 
 function getCandidateCredentialsJsonPaths() {
-  const homeDirectory = os.homedir();
   return [...new Set([
     CREDENTIALS_JSON_PATH,
-    dataPath("config", "upload_credentials.json"),
-    path.join(process.cwd(), "config", "upload_credentials.json"),
-    path.join(process.cwd(), "config", "winscp_credentials.json"),
-    path.join(homeDirectory, "Downloads", "winscp_credentials.json"),
-    path.join(homeDirectory, "Desktop", "winscp_credentials.json"),
+    userDataPath("config", "winscp_credentials.json"),
   ])];
+}
+
+function getCandidateUploadProfilesPaths() {
+  return [...new Set([
+    UPLOAD_PROFILES_PATH,
+  ])];
+}
+
+function loadUploadImportMarker() {
+  try {
+    if (!fs.existsSync(UPLOAD_SOURCE_MARKER_PATH)) {
+      return null;
+    }
+
+    const parsed = JSON.parse(fs.readFileSync(UPLOAD_SOURCE_MARKER_PATH, "utf8"));
+    if (!parsed || typeof parsed !== "object") {
+      return null;
+    }
+
+    return {
+      sourceKind: String(parsed.source_kind || parsed.sourceKind || "").trim(),
+      sourcePath: String(parsed.source_path || parsed.sourcePath || "").trim(),
+      importedAt: String(parsed.imported_at || parsed.importedAt || "").trim(),
+    };
+  } catch (_error) {
+    return null;
+  }
+}
+
+function saveUploadImportMarker(payload = {}) {
+  const marker = {
+    source_kind: String(payload.sourceKind || payload.source_kind || "").trim(),
+    source_path: String(payload.sourcePath || payload.source_path || "").trim(),
+    imported_at: new Date().toISOString(),
+  };
+
+  fs.mkdirSync(path.dirname(UPLOAD_SOURCE_MARKER_PATH), { recursive: true });
+  fs.writeFileSync(`${UPLOAD_SOURCE_MARKER_PATH}`, `${JSON.stringify(marker, null, 2)}\n`, "utf8");
+  return marker;
 }
 
 function getExistingWinscpIniPath() {
@@ -112,7 +175,16 @@ function getExistingCredentialsJsonPath() {
   return getCandidateCredentialsJsonPaths().find((candidate) => fs.existsSync(candidate)) || "";
 }
 
+function getExistingUploadProfilesPath() {
+  return getCandidateUploadProfilesPaths().find((candidate) => fs.existsSync(candidate)) || "";
+}
+
 function getUploadProfileSourcePath() {
+  const marker = loadUploadImportMarker();
+  if (!marker) {
+    return ["", ""];
+  }
+
   const credentialsJsonPath = getExistingCredentialsJsonPath();
   if (credentialsJsonPath) {
     return [credentialsJsonPath, "credentials_json"];
@@ -482,6 +554,11 @@ function generateCredentialsJsonFromWinscpIni(iniPath, outputPath = WINSCP_GENER
 }
 
 function loadUploadProfiles() {
+  const marker = loadUploadImportMarker();
+  if (!marker) {
+    return { servers: [], users: [] };
+  }
+
   const jsonProfiles = parseCredentialsProfiles();
   if (jsonProfiles.servers.length || jsonProfiles.users.length) {
     return jsonProfiles;
@@ -490,6 +567,49 @@ function loadUploadProfiles() {
   const winscpProfiles = loadWinscpProfiles();
   if (winscpProfiles.servers.length || winscpProfiles.users.length) {
     return winscpProfiles;
+  }
+
+  const uploadProfilesPath = getExistingUploadProfilesPath();
+  if (uploadProfilesPath) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(uploadProfilesPath, "utf8"));
+      const servers = Array.isArray(parsed?.servers)
+        ? parsed.servers
+            .map((server) => ({
+              name: String(server?.name || "").trim(),
+              host: String(server?.host || "").trim(),
+              port: Number(server?.port || 22),
+              target_name: String(server?.target_name || server?.name || "").trim(),
+              actual_server_name: String(server?.actual_server_name || server?.host || server?.name || "").trim(),
+              source: "upload_profiles_json",
+            }))
+            .filter((server) => Boolean(server.name))
+        : [];
+      const users = Array.isArray(parsed?.users)
+        ? parsed.users
+            .map((user) => ({
+              name: String(user?.name || "").trim(),
+              server: String(user?.server || "").trim(),
+              username: String(user?.username || "").trim(),
+              password: String(user?.password || "").trim(),
+              encrypted_password: String(user?.encrypted_password || "").trim(),
+              password_plain: String(user?.password_plain || "").trim(),
+              session_name: String(user?.session_name || "").trim(),
+              target_name: String(user?.target_name || user?.server || "").trim(),
+              source: "upload_profiles_json",
+            }))
+            .filter((user) => Boolean(user.name && user.server))
+        : [];
+
+      if (servers.length || users.length) {
+        return {
+          servers: servers.sort((a, b) => a.name.localeCompare(b.name)),
+          users: users.sort((a, b) => `${a.server}:${a.name}`.localeCompare(`${b.server}:${b.name}`)),
+        };
+      }
+    } catch (_error) {
+      // Ignore invalid legacy profile file and continue with empty defaults.
+    }
   }
 
   return { servers: [], users: [] };
@@ -508,6 +628,10 @@ function importUploadSourceToConfig(sourcePath) {
       throw new Error("The selected credentials JSON file did not contain usable upload profiles.");
     }
     persistCredentialsJson(normalizedSourcePath);
+    saveUploadImportMarker({
+      sourceKind: "credentials_json",
+      sourcePath: CREDENTIALS_JSON_PATH,
+    });
     return {
       source_kind: "credentials_json",
       source_path: normalizedSourcePath,
@@ -521,6 +645,10 @@ function importUploadSourceToConfig(sourcePath) {
     fs.copyFileSync(normalizedSourcePath, WINSCP_INI_PATH);
     const generatedJsonPath = generateCredentialsJsonFromWinscpIni(WINSCP_INI_PATH);
     persistCredentialsJson(generatedJsonPath);
+    saveUploadImportMarker({
+      sourceKind: "winscp_ini",
+      sourcePath: WINSCP_INI_PATH,
+    });
     return {
       source_kind: "winscp_ini",
       source_path: normalizedSourcePath,
@@ -567,10 +695,6 @@ function findWinscpExecutable() {
 }
 
 function resolveUploadProfile(profiles, serverName, userName) {
-  if (normalizeUploadTargetName(serverName) === "PROD") {
-    throw new Error("Uploads to PROD are disabled in this application.");
-  }
-
   let server = (profiles.servers || []).find((item) => item.name === serverName);
   if (!server) {
     server = findServerForTarget(profiles, serverName);

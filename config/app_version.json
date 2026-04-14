@@ -1,11 +1,14 @@
 {
-  "version": "1.1.0",
-  "label": "Production V1.1",
+  "version": "1.2.0",
+  "label": "Production V1.2",
+  "announcementId": "1.2.0|Production V1.2|2026-04-13-leie-pdf-links-11",
   "releaseNotes": [
-    "Station ID now uses a searchable dropdown that still accepts typed custom values.",
-    "The Station ID list now shows the full available catalog from the bundled station options file.",
-    "Archive naming now groups the final .gz name, naming options, example, and preview in one clearer section.",
-    "Archive names can optionally append Network and Referral DateTime using system-safe formatting.",
-    "The app now remembers user settings, upload-related config, and installer folder choices more like a full production app."
+    "New in V1.2: LEIE Data Processing is a new feature in this release.",
+    "New in V1.2: LEIE processing now includes a built-in LEIE Upload and Validation Guide with copy-ready SQL checks.",
+    "Added LEIE Step 4 and Step 5 validation guidance in the Upload area for database and CCRS UI verification.",
+    "Security updates: upload settings are only activated after Import To Config, and WinSCP.ini handling/storage was hardened.",
+    "Bug fixes for LEIE scan flow, release update visibility, and upload target enable/disable behavior.",
+    "Upload target toggles are disabled until 'Upload the .gz file after processing' is selected."
   ]
 }
+

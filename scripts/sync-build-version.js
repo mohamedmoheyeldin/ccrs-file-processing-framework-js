@@ -38,7 +38,7 @@ function resolveBuildVersion(appVersion) {
 
 const appVersion = readJson(appVersionPath);
 const packageJson = readJson(packageJsonPath);
-const packageLock = readJson(packageLockPath);
+const packageLock = fs.existsSync(packageLockPath) ? readJson(packageLockPath) : null;
 const derivedVersion = resolveBuildVersion(appVersion);
 const displayLabel = String(appVersion.label || "").trim();
 const uninstallDisplayName = displayLabel
@@ -59,19 +59,21 @@ if (packageJson.build.nsis.uninstallDisplayName !== uninstallDisplayName) {
   changed = true;
 }
 
-if (packageLock.version !== derivedVersion) {
+if (packageLock && packageLock.version !== derivedVersion) {
   packageLock.version = derivedVersion;
   changed = true;
 }
 
-if (packageLock.packages && packageLock.packages[""] && packageLock.packages[""].version !== derivedVersion) {
+if (packageLock && packageLock.packages && packageLock.packages[""] && packageLock.packages[""].version !== derivedVersion) {
   packageLock.packages[""].version = derivedVersion;
   changed = true;
 }
 
 if (changed) {
   writeJson(packageJsonPath, packageJson);
-  writeJson(packageLockPath, packageLock);
+  if (packageLock) {
+    writeJson(packageLockPath, packageLock);
+  }
   console.log(`Synced build version to ${derivedVersion} from config/app_version.json.`);
 } else {
   console.log(`Build version already synced at ${derivedVersion}.`);

@@ -65,9 +65,21 @@ ipcMain.handle("shell:open-path", async (_event, targetPath) => {
   return shell.openPath(targetPath);
 });
 
+ipcMain.handle("shell:open-external", async (_event, targetUrl) => {
+  const normalizedUrl = String(targetUrl || "").trim();
+  if (!normalizedUrl) {
+    return false;
+  }
+  await shell.openExternal(normalizedUrl);
+  return true;
+});
+
 ipcMain.handle("backend:info", async (event) => runBackendCommand(event.sender, "info"));
 ipcMain.handle("backend:inspect-source", async (event, payload) =>
   runBackendCommand(event.sender, "inspect-source", payload)
+);
+ipcMain.handle("backend:inspect-leie-source", async (event, payload) =>
+  runBackendCommand(event.sender, "inspect-leie-source", payload)
 );
 ipcMain.handle("backend:preview", async (event, payload) => runBackendCommand(event.sender, "preview", payload));
 ipcMain.handle("backend:save-ui-settings", async (event, payload) =>
@@ -94,7 +106,7 @@ app.whenReady().then(() => {
     console.error("Unable to clean stale runtime artifacts.", error);
   }
   createWindow();
-
+}).then(() => {
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();

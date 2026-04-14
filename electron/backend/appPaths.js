@@ -1,12 +1,17 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const electron = require("electron");
+let electron = null;
+try {
+  electron = require("electron");
+} catch (_error) {
+  electron = null;
+}
 
 const USER_CONFIG_DIRECTORY_NAME = "CCRS File Processing Framework";
 
 function isPackagedApp() {
-  return Boolean(electron.app && electron.app.isPackaged);
+  return Boolean(electron && electron.app && electron.app.isPackaged);
 }
 
 function getBundleRoot() {
@@ -108,8 +113,6 @@ function ensureRuntimeFiles() {
   ensureDirectory(userDataPath("logs"));
 
   copyIfMissing(dataPath("config", "ui_settings.json"), userDataPath("config", "ui_settings.json"));
-  copyIfMissing(dataPath("config", "upload_profiles.json"), userDataPath("config", "upload_profiles.json"));
-  copyIfMissing(dataPath("config", "upload_credentials.json"), userDataPath("config", "upload_credentials.json"));
   copyIfMissing(dataPath("upload_import", "WinSCP.ini"), userDataPath("upload_import", "WinSCP.ini"));
 
   copyIfMissing(bundlePath("config", "mappings.json"), dataPath("config", "mappings.json"));
@@ -117,12 +120,22 @@ function ensureRuntimeFiles() {
   copyIfMissing(bundlePath("config", "station_options.json"), dataPath("config", "station_options.json"));
   syncFromBundle(bundlePath("config", "app_version.json"), dataPath("config", "app_version.json"));
   copyIfMissing(bundlePath("config", "ui_settings.json"), userDataPath("config", "ui_settings.json"));
-  copyIfMissing(bundlePath("config", "upload_profiles.json"), userDataPath("config", "upload_profiles.json"));
-  copyIfMissing(bundlePath("config", "upload_credentials.json"), userDataPath("config", "upload_credentials.json"));
   copyIfMissing(bundlePath("upload_import", "README.txt"), userDataPath("upload_import", "README.txt"));
   copyIfMissing(bundlePath("upload_import", "decrypt-winscp.ps1"), userDataPath("upload_import", "decrypt-winscp.ps1"));
   syncFromBundle(bundlePath("docs", "USER_GUIDE.md"), dataPath("docs", "USER_GUIDE.md"));
   syncFromBundle(bundlePath("docs", "USER_GUIDE.pdf"), dataPath("docs", "USER_GUIDE.pdf"));
+  syncFromBundle(
+    bundlePath("docs", "LEIE_UPLOAD_VALIDATION_GUIDE.md"),
+    dataPath("docs", "LEIE_UPLOAD_VALIDATION_GUIDE.md")
+  );
+  syncFromBundle(
+    bundlePath("docs", "LEIE_UPLOAD_VALIDATION_GUIDE.pdf"),
+    dataPath("docs", "LEIE_UPLOAD_VALIDATION_GUIDE.pdf")
+  );
+  syncFromBundle(
+    bundlePath("docs", "LEIE_Data_Upload_Validation_Guide.md"),
+    dataPath("docs", "LEIE_Data_Upload_Validation_Guide.md")
+  );
   copyIfMissing(bundlePath("assets", "icons", "ccrs_app_icon.ico"), dataPath("assets", "icons", "ccrs_app_icon.ico"));
   copyIfMissing(bundlePath("assets", "icons", "ccrs_app_icon.png"), dataPath("assets", "icons", "ccrs_app_icon.png"));
 }

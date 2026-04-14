@@ -13,8 +13,8 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.1.0",
-  "label": "Production V1.1",
+  "version": "1.2.0",
+  "label": "Production V1.2",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -25,7 +25,7 @@ How it works:
 - `version` stays numeric because Windows packaging and Electron builds require a standard build version.
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the first-run release popup for each user and release.
-- The app now displays `Production V1.1` while the Windows build version remains `1.1.0`.
+- The app now displays `Production V1.2` while the Windows build version remains `1.2.0`.
 - `npm start`, `npm test`, and `npm run dist` automatically sync `package.json` and `package-lock.json` from this file before running.
 
 ## Developer Run
@@ -45,13 +45,23 @@ Run:
 Or directly:
 - `npm run dist`
 
+To build only the portable app and refresh `release\` with just that shareable file:
+- `npm run dist:portable`
+
 The build outputs use the current version from [config/app_version.json](config/app_version.json), for example:
 - `dist-electron\CCRS File Processing Framework Setup 1.1.0.exe`
 - `dist-electron\CCRS File Processing Framework 1.1.0.exe`
 
 The final shareable copies are placed in `release\` using the display label when one is configured:
-- `release\CCRS File Processing Framework Setup Production V1.1.exe`
-- `release\CCRS File Processing Framework Production V1.1.exe`
+- `release\CCRS File Processing Framework Setup Production V1.2.exe`
+- `release\CCRS File Processing Framework Production V1.2.exe`
+
+The release export step now verifies that each `.exe` is a real Windows executable before copying it into `release\`. This avoids sharing placeholder files, stale outputs, or incomplete installer artifacts.
+
+Expected behavior:
+- `npm run dist` on a real Windows machine exports both the portable app and the setup installer into `release\`
+- `npm run dist:portable` exports only `release\CCRS File Processing Framework Production V1.2.exe`
+- `build_release.bat` runs the full Windows build and confirms the verified `release\` files exist before telling you to share them
 
 Use the setup `.exe` for a normal installer flow. Use the non-setup `.exe` as the portable app.
 
@@ -76,18 +86,33 @@ Files that are kept in sync from the shipped app:
 - `config\app_version.json`
 - `docs\USER_GUIDE.md`
 - `docs\USER_GUIDE.pdf`
+- `docs\LEIE_UPLOAD_VALIDATION_GUIDE.md`
 
 ## Supported Workflows
 - Process existing CCRS referral JSON files
+- Process LEIE Excel files with strict full-row duplicate detection
 - Generate new referral JSON files from bundled templates
 - Use the bundled CCN1 all-fields reference templates stored under `templates\referrals`
 - Override referral number, SSN, station ID, payment authority code, and selected optional fields
 - Choose how ICNs should be generated: keep `TEST`, keep `TEST` with a custom suffix, or use a custom full ICN base
 - Produce final `.gz` archives
 - Import upload settings from `WinSCP.ini` or credentials JSON
-- Upload final archives to configured `DEV`, `PPD`, and `SQA` targets
+- Upload final archives to configured `DEV`, `PPD`, `SQA`, and `PROD` targets
 - Test upload connectivity before running the full workflow
 - Automatically clean app-created temporary staging folders and upload helper files after a run or when the app closes
+
+## V1.2 Highlights
+- New LEIE processing flow with strict full-row duplicate detection and clearer scan status feedback.
+- New in-app LEIE upload validation support:
+  - quick access to `LEIE Upload and Validation Guide`
+  - Step 4 database validation SQL with copy support
+  - Step 5 CCRS UI validation checklist in the Upload section
+- Security updates for upload config handling:
+  - upload profiles are no longer auto-loaded from random machine locations
+  - upload data is used only after `Import To Config`
+  - fixed the security issue around where `WinSCP.ini` is sourced and persisted
+- Bug fixes across LEIE scan, release update visibility, and upload gating behavior.
+- UI polish for smoother interaction and clearer status messaging.
 
 ## Validation And Testing
 The app now validates key fields before processing and shows inline messages for common mistakes such as:
