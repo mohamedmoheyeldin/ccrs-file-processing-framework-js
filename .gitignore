@@ -7,3 +7,6 @@ release/config/
 release/docs/
 release/upload_import/
 .codex
+build-tmp/
+build-tmp-2/
+dist-electron/win-unpacked/
