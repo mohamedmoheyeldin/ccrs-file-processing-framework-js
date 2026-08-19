@@ -118,6 +118,30 @@ button {
   gap: 8px;
 }
 
+.release-announcement-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-logo {
+  display: block;
+  flex: 0 0 auto;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(10, 16, 26, 0.18);
+}
+
+.app-logo-topbar {
+  width: 46px;
+  height: 46px;
+}
+
+.app-logo-release {
+  width: 54px;
+  height: 54px;
+}
+
 .release-announcement-header h2,
 .release-announcement-header p {
   margin: 0;

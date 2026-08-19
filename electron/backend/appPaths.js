@@ -136,8 +136,8 @@ function ensureRuntimeFiles() {
     bundlePath("docs", "LEIE_Data_Upload_Validation_Guide.md"),
     dataPath("docs", "LEIE_Data_Upload_Validation_Guide.md")
   );
-  copyIfMissing(bundlePath("assets", "icons", "ccrs_app_icon.ico"), dataPath("assets", "icons", "ccrs_app_icon.ico"));
-  copyIfMissing(bundlePath("assets", "icons", "ccrs_app_icon.png"), dataPath("assets", "icons", "ccrs_app_icon.png"));
+  syncFromBundle(bundlePath("assets", "icons", "ccrs_app_icon.ico"), dataPath("assets", "icons", "ccrs_app_icon.ico"));
+  syncFromBundle(bundlePath("assets", "icons", "ccrs_app_icon.png"), dataPath("assets", "icons", "ccrs_app_icon.png"));
 }
 
 module.exports = {

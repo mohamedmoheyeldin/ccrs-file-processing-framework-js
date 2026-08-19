@@ -1,4 +1,5 @@
 const assert = require("node:assert/strict");
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -96,11 +97,29 @@ test("Final Version 1.2 metadata and release automation stay consolidated", () =
   const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
   const smokeWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "smoke-tests.yml"), "utf8");
   const buildReleaseScript = fs.readFileSync(path.join(projectRoot, "scripts", "build-release.js"), "utf8");
+  const rendererHtml = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "index.html"), "utf8");
+  const mainProcess = fs.readFileSync(path.join(projectRoot, "electron", "main.js"), "utf8");
+  const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
+  const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
 
   assert.equal(versionConfig.version, "1.2.4");
   assert.equal(versionConfig.releaseTag, "v1.2");
   assert.equal(versionConfig.label, "Version 1.2");
   assert.equal(packageConfig.scripts["test:smoke"], "node scripts/smoke-test.js");
+  assert.equal(crypto.createHash("sha256").update(iconPng).digest("hex"), "dc3b2ab2b0beda8d92527552f2160be83572018c5bf17c0a6cca7c21c013cb95");
+  assert.deepEqual([...iconIco.subarray(0, 4)], [0, 0, 1, 0]);
+  assert.equal(iconIco.readUInt16LE(4), 7);
+  assert.equal(packageConfig.build.files.includes("assets/icons/ccrs_app_icon.ico"), true);
+  assert.equal(packageConfig.build.files.includes("assets/icons/ccrs_app_icon.png"), true);
+  assert.equal(packageConfig.build.win.icon, "assets/icons/ccrs_app_icon.ico");
+  assert.equal(packageConfig.build.win.signAndEditExecutable, true);
+  assert.equal(packageConfig.build.win.signExecutable, false);
+  assert.equal(packageConfig.build.nsis.installerIcon, "assets/icons/ccrs_app_icon.ico");
+  assert.equal(packageConfig.build.nsis.uninstallerIcon, "assets/icons/ccrs_app_icon.ico");
+  assert.equal(packageConfig.build.nsis.installerHeaderIcon, "assets/icons/ccrs_app_icon.ico");
+  assert.match(rendererHtml, /ccrs_app_icon\.ico/);
+  assert.equal((rendererHtml.match(/ccrs_app_icon\.png/g) || []).length, 2);
+  assert.match(mainProcess, /ccrs_app_icon\.ico/);
   assert.equal(fs.existsSync(path.join(projectRoot, ".github", "release.yml")), false);
   assert.match(releaseWorkflow, /\$config\.releaseTag/);
   assert.match(releaseWorkflow, /pnpm run test:smoke/);

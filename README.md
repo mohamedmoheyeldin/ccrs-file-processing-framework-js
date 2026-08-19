@@ -6,6 +6,7 @@ This project is a pure JavaScript Electron desktop app for working with CCRS ref
 - Electron handles the desktop window, dialogs, IPC, and Windows packaging.
 - The runtime logic lives under [electron/backend](electron/backend).
 - The UI lives under [electron/renderer](electron/renderer).
+- The canonical application logo is [assets/icons/ccrs_app_icon.png](assets/icons/ccrs_app_icon.png); its multi-resolution Windows counterpart is [assets/icons/ccrs_app_icon.ico](assets/icons/ccrs_app_icon.ico). Both are used by the renderer, application window, executable, installer, and uninstaller.
 
 ## Versioning
 The single source of truth for the app version is [config/app_version.json](config/app_version.json).

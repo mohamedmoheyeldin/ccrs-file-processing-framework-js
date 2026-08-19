@@ -27,6 +27,8 @@
     "productName": "CCRS File Processing Framework",
     "files": [
       "electron/**/*",
+      "assets/icons/ccrs_app_icon.ico",
+      "assets/icons/ccrs_app_icon.png",
       "package.json"
     ],
     "extraResources": [
@@ -76,7 +78,8 @@
     "win": {
       "icon": "assets/icons/ccrs_app_icon.ico",
       "defaultArch": "x64",
-      "signAndEditExecutable": false,
+      "signAndEditExecutable": true,
+      "signExecutable": false,
       "verifyUpdateCodeSignature": false,
       "target": [
         {
