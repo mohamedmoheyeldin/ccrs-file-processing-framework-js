@@ -31,9 +31,15 @@ const {
   exportReleaseArtifacts,
   getDisplayVersion,
   isRealWindowsExecutable,
+  resolveReleasePaths,
 } = require("./export-release-artifacts");
+const {
+  assertPathInsideWorkRoot,
+  assertSafeTemporaryWorkRoot,
+} = require("./build-release");
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-smoke-"));
+const projectRoot = path.resolve(__dirname, "..");
 let failures = 0;
 const tests = [];
 
@@ -83,13 +89,76 @@ test("Payment Authority Code generation increments and stops at 99999", () => {
 
 test("Optional override normalization keeps the validated Payment Authority Code", () => {
   const overrides = generateOptionalFieldOverrides({
-    StationID: "ab1",
+    StationID: "1501",
     PaymentAuthorityCode: "54321",
   });
 
   assert.equal(overrides.PaymentAuthorityCode, "54321");
-  assert.equal(overrides.StationID.length, 5);
-  assert.match(overrides.StationID, /^[A-Za-z0-9]{5}$/);
+  assert.equal(overrides.StationID, "1501");
+  assert.throws(
+    () => generateOptionalFieldOverrides({ StationID: "150" }),
+    /must exactly match a station_key/
+  );
+});
+
+test("modifyContent randomizes identity data and matches Referral Number and ICN endings", () => {
+  const filePath = writeJsonFixture("random-identities.json", {
+    Referrals: [1, 2].map((number) => ({
+      ReferralNumber: `VA000000000${number}`,
+      Patient: {
+        ICN: String(number),
+        FirstName: "Test",
+        LastName: "Patient",
+        SSN: "999-99-0001",
+        DOB: "1970-01-01",
+      },
+      ProgramAuthority: { StationID: "1501", SeocKey: "69", SeocID: "OLD" },
+    })),
+  });
+
+  const result = modifyContent(
+    filePath,
+    "400",
+    null,
+    "999-99-0001",
+    1,
+    1,
+    { StationID: "1501", SeocKey: "107", SeocID: "PMR_PHYSICAL THERAPY_1.0.12_PRCT" },
+    1,
+    prepareIcnSettings(),
+    1,
+    { randomizeSsn: true, randomizeDob: true, matchSuffixLength: 5 }
+  );
+  const referrals = JSON.parse(result.content).Referrals;
+
+  assert.deepEqual(referrals.map((item) => item.ProgramAuthority.StationID), ["1501", "1501"]);
+  assert.deepEqual(referrals.map((item) => item.ProgramAuthority.SeocKey), ["107", "107"]);
+  assert.deepEqual(referrals.map((item) => item.ProgramAuthority.SeocID), [
+    "PMR_PHYSICAL THERAPY_1.0.12_PRCT",
+    "PMR_PHYSICAL THERAPY_1.0.12_PRCT",
+  ]);
+  for (const referral of referrals) {
+    assert.match(referral.Patient.SSN, /^9\d{2}-\d{2}-\d{4}$/);
+    assert.match(referral.Patient.DOB, /^(19|20)\d{2}-\d{2}-\d{2}$/);
+    assert.equal(referral.Patient.ICN.slice(-5), referral.ReferralNumber.slice(-5));
+  }
+  assert.notEqual(referrals[0].Patient.SSN, referrals[1].Patient.SSN);
+});
+
+test("modifyContent uses only reference Station IDs in random mode", () => {
+  const filePath = writeJsonFixture("random-stations.json", {
+    Referrals: [
+      { ReferralNumber: "VA0000000001", StationID: "BAD", ICN: "1", FirstName: "A", LastName: "B", SSN: "999-99-0001" },
+      { ReferralNumber: "VA0000000002", StationID: "BAD", ICN: "2", FirstName: "C", LastName: "D", SSN: "999-99-0001" },
+    ],
+  });
+  const result = modifyContent(filePath, "", null, "999-99-0001", 1, 1, {}, 1, prepareIcnSettings(), 1, {
+    randomizeStationId: true,
+  });
+  const validKeys = new Set(require("../electron/backend/stationCatalog").loadStationOptions().map((option) => option.stationKey));
+  for (const referral of JSON.parse(result.content).Referrals) {
+    assert.equal(validKeys.has(referral.StationID), true);
+  }
 });
 
 test("Optional date overrides reject invalid formats", () => {
@@ -327,6 +396,15 @@ test("App info exposes unique Station ID dropdown options", async () => {
   assert.match(sample.stationName, /Togus VA Medical Center/);
 });
 
+test("App info exposes valid synchronized SEOC pairs", async () => {
+  const info = await backend.handleCommand("info", {});
+  assert.equal(Array.isArray(info.seocOptions), true);
+  assert.deepEqual(info.seocOptions, [
+    { seocKey: "69", seocId: "RAD_INTERVENTIONAL RADIOLOGY_1.0.12_REV_PRCT" },
+    { seocKey: "107", seocId: "PMR_PHYSICAL THERAPY_1.0.12_PRCT" },
+  ]);
+});
+
 test("Archive basename can append Network and Referral DateTime safely", () => {
   const archiveBasename = buildArchiveBasename({
     archiveBasename: "My Custom Export",
@@ -486,6 +564,7 @@ test("Preview validation reports field-level errors without throwing", async () 
       value: "",
     },
     ssnValue: "9999990001",
+    identityOptions: { randomizeSsn: false },
     optionalOverrides: {
       DOB: "2026/03/26",
       PaymentAuthorityCode: "100000",
@@ -538,12 +617,37 @@ test("Release export uses the display label for shareable file names", () => {
   assert.equal(getDisplayVersion({ label: "" }, { version: "1.1.0" }), "1.1.0");
 });
 
-test("Release export copies verified portable and setup executables into release", () => {
+test("Windows packaging targets only the setup installer", () => {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
+  const targetNames = packageJson.build.win.target.map((target) => target.target);
+
+  assert.deepEqual(targetNames, ["nsis"]);
+  assert.equal(Object.hasOwn(packageJson.scripts, "dist:portable"), false);
+});
+
+test("Release builds use temporary storage outside the project", () => {
+  const paths = resolveReleasePaths({ repoRoot: projectRoot });
+
+  assert.equal(path.relative(projectRoot, paths.workRoot).startsWith(".."), true);
+  assert.throws(
+    () => assertSafeTemporaryWorkRoot(projectRoot, projectRoot),
+    /unsafe release work directory/
+  );
+  assert.throws(
+    () => assertPathInsideWorkRoot(projectRoot, paths.workRoot),
+    /must stay inside the temporary work directory/
+  );
+});
+
+test("Release export copies only the verified setup executable into release", () => {
   const repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-release-export-"));
 
   try {
     fs.mkdirSync(path.join(repoRoot, "config"), { recursive: true });
-    fs.mkdirSync(path.join(repoRoot, "dist-electron"), { recursive: true });
+    const distRoot = path.join(repoRoot, "temporary-dist");
+    const releaseRoot = path.join(repoRoot, "temporary-publish");
+    fs.mkdirSync(distRoot, { recursive: true });
+    fs.mkdirSync(releaseRoot, { recursive: true });
     fs.writeFileSync(
       path.join(repoRoot, "package.json"),
       JSON.stringify({ version: "1.1.0" }, null, 2)
@@ -553,30 +657,31 @@ test("Release export copies verified portable and setup executables into release
       JSON.stringify({ version: "1.1.0", label: "Production V1.1" }, null, 2)
     );
 
-    const portableSource = path.join(repoRoot, "dist-electron", "CCRS File Processing Framework 1.1.0.exe");
     const setupSource = path.join(
       repoRoot,
-      "dist-electron",
+      "temporary-dist",
       "CCRS File Processing Framework Setup 1.1.0.exe"
     );
 
-    writeWindowsExecutableFixture(portableSource);
     writeWindowsExecutableFixture(setupSource);
+    const stalePortableOutput = path.join(
+      repoRoot,
+      "temporary-publish",
+      "CCRS File Processing Framework Production V1.0.exe"
+    );
+    writeWindowsExecutableFixture(stalePortableOutput);
 
-    const result = exportReleaseArtifacts({ repoRoot, mode: "full" });
+    const result = exportReleaseArtifacts({ repoRoot, distRoot, releaseRoot });
 
-    const portableOutput = path.join(repoRoot, "release", "CCRS File Processing Framework Production V1.1.exe");
     const setupOutput = path.join(
       repoRoot,
-      "release",
+      "temporary-publish",
       "CCRS File Processing Framework Setup Production V1.1.exe"
     );
 
-    assert.equal(result.mode, "full");
-    assert.equal(result.exportedPaths.length, 2);
-    assert.equal(fs.existsSync(portableOutput), true);
+    assert.equal(result.exportedPaths.length, 1);
+    assert.equal(fs.existsSync(stalePortableOutput), false);
     assert.equal(fs.existsSync(setupOutput), true);
-    assert.equal(isRealWindowsExecutable(portableOutput), true);
     assert.equal(isRealWindowsExecutable(setupOutput), true);
   } finally {
     fs.rmSync(repoRoot, { recursive: true, force: true });
@@ -588,7 +693,9 @@ test("Release export rejects incomplete executables", () => {
 
   try {
     fs.mkdirSync(path.join(repoRoot, "config"), { recursive: true });
-    fs.mkdirSync(path.join(repoRoot, "dist-electron"), { recursive: true });
+    const distRoot = path.join(repoRoot, "temporary-dist");
+    const releaseRoot = path.join(repoRoot, "temporary-publish");
+    fs.mkdirSync(distRoot, { recursive: true });
     fs.writeFileSync(
       path.join(repoRoot, "package.json"),
       JSON.stringify({ version: "1.1.0" }, null, 2)
@@ -598,11 +705,11 @@ test("Release export rejects incomplete executables", () => {
       JSON.stringify({ version: "1.1.0", label: "Production V1.1" }, null, 2)
     );
 
-    const portableSource = path.join(repoRoot, "dist-electron", "CCRS File Processing Framework 1.1.0.exe");
-    fs.writeFileSync(portableSource, "version https://git-lfs.github.com/spec/v1\n");
+    const setupSource = path.join(distRoot, "CCRS File Processing Framework Setup 1.1.0.exe");
+    fs.writeFileSync(setupSource, "version https://git-lfs.github.com/spec/v1\n");
 
     assert.throws(
-      () => exportReleaseArtifacts({ repoRoot, mode: "portable" }),
+      () => exportReleaseArtifacts({ repoRoot, distRoot, releaseRoot }),
       /Git LFS pointer|verified Windows executable/
     );
   } finally {
@@ -632,4 +739,3 @@ test("Release export rejects incomplete executables", () => {
     console.log("Smoke tests passed.");
   }
 })();
-

@@ -19,7 +19,8 @@ async function processFiles(
   keepProcessedJson,
   progressCallback,
   uploadOptions,
-  archiveBasename
+  archiveBasename,
+  identityOptions
 ) {
   const files = getFiles(inputDir);
   if (files.length === 0) {
@@ -54,7 +55,8 @@ async function processFiles(
         optionalOverrides,
         referralSequenceIndex,
         icnSettings,
-        icnSequenceIndex
+        icnSequenceIndex,
+        identityOptions
       );
       saveFile(outputDir, newName, result.content);
       if (result.referralNumbersUsed) {

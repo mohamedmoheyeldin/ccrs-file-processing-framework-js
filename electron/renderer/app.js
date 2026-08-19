@@ -127,6 +127,7 @@ function setBusy(busy) {
   for (const element of document.querySelectorAll("button, input, select")) {
     element.disabled = busy;
   }
+  if (!busy) syncIdentityControls();
 }
 
 function setReleaseAnnouncementOpen(isOpen) {
@@ -269,6 +270,42 @@ function getStationOptions() {
   return Array.isArray(state.info?.stationOptions) ? state.info.stationOptions : [];
 }
 
+function getSeocOptions() {
+  return Array.isArray(state.info?.seocOptions) ? state.info.seocOptions : [];
+}
+
+function renderSeocOptions() {
+  const keySelect = elements.overrideSeocKey;
+  const idSelect = elements.overrideSeocId;
+  if (!keySelect || !idSelect) return;
+  const selectedKey = keySelect.value;
+  const selectedId = idSelect.value;
+  keySelect.innerHTML = '<option value="">Keep source SEOC</option>';
+  idSelect.innerHTML = '<option value="">Keep source SEOC</option>';
+  for (const option of getSeocOptions()) {
+    keySelect.add(new Option(`${option.seocKey} — ${option.seocId}`, option.seocKey));
+    idSelect.add(new Option(option.seocId, option.seocId));
+  }
+  keySelect.value = selectedKey;
+  idSelect.value = selectedId;
+}
+
+function syncSeocPair(source) {
+  const options = getSeocOptions();
+  const match = source === "key"
+    ? options.find((option) => option.seocKey === elements.overrideSeocKey.value)
+    : options.find((option) => option.seocId === elements.overrideSeocId.value);
+  elements.overrideSeocKey.value = match?.seocKey || "";
+  elements.overrideSeocId.value = match?.seocId || "";
+}
+
+function syncIdentityControls() {
+  $("ssn-value").disabled = readChecked("randomize-ssn");
+  $("override-dob").disabled = readChecked("randomize-dob");
+  elements.overrideStationId.disabled = readChecked("randomize-station-id");
+  elements.stationIdToggle.disabled = readChecked("randomize-station-id");
+}
+
 function findStationOption(value) {
   const normalized = String(value || "").trim();
   if (!normalized) {
@@ -297,7 +334,7 @@ function renderStationOptions(options = []) {
   if (filteredOptions.length === 0) {
     const emptyState = document.createElement("div");
     emptyState.className = "combo-empty";
-    emptyState.textContent = "No matching station found. Keep typing to use a custom Station ID.";
+    emptyState.textContent = "No matching station found. Choose a station_key from the reference list.";
     fragment.appendChild(emptyState);
   }
 
@@ -336,10 +373,17 @@ function updateStationIdMatch() {
     return;
   }
 
+  if (readChecked("randomize-station-id")) {
+    elements.stationIdMatch.classList.add("is-success");
+    elements.stationIdMatch.classList.remove("is-error");
+    elements.stationIdMatch.textContent = `Random selection will use only the ${getStationOptions().length.toLocaleString()} Station IDs in the reference list.`;
+    return;
+  }
+
   const stationId = readValue("override-station-id");
   if (!stationId) {
     elements.stationIdMatch.classList.remove("is-success", "is-error");
-    elements.stationIdMatch.textContent = `Loaded ${getStationOptions().length.toLocaleString()} Station IDs. Choose a station_key from the dropdown or type a custom Station ID.`;
+    elements.stationIdMatch.textContent = `Loaded ${getStationOptions().length.toLocaleString()} valid Station IDs. Choose an exact station_key or enable random valid IDs.`;
     return;
   }
 
@@ -351,8 +395,9 @@ function updateStationIdMatch() {
     return;
   }
 
-  elements.stationIdMatch.classList.remove("is-success", "is-error");
-  elements.stationIdMatch.textContent = "Custom Station ID entered. The field still accepts manual values.";
+  elements.stationIdMatch.classList.remove("is-success");
+  elements.stationIdMatch.classList.add("is-error");
+  elements.stationIdMatch.textContent = "No exact reference match. Select a valid station_key from the list.";
 }
 
 function sanitizePaymentAuthorityCodeInput(value, fallbackValue = "") {
@@ -530,11 +575,13 @@ function adjustDatePart(partKey, delta) {
 
 function collectOptionalOverrides() {
   const rawValues = {
-    StationID: readValue("override-station-id"),
+    StationID: readChecked("randomize-station-id") ? "" : readValue("override-station-id"),
     PaymentAuthorityCode: readValue("override-payment-authority-code"),
     ReferralPeriod: readValue("override-referral-period"),
     Network: readValue("override-network"),
-    DOB: readValue("override-dob"),
+    DOB: readChecked("randomize-dob") ? "" : readValue("override-dob"),
+    SeocKey: readValue("override-seoc-key"),
+    SeocID: readValue("override-seoc-id"),
     ReferralCategory: readValue("override-referral-category"),
     ReferralDate: readValue("override-referral-date"),
     ReferralDateTime: readValue("override-referral-date-time"),
@@ -591,6 +638,12 @@ function sharedPayload() {
     referralReplacementCode: readValue("referral-code"),
     icnSettings: collectIcnSettings(),
     ssnValue: readValue("ssn-value"),
+    identityOptions: {
+      randomizeSsn: readChecked("randomize-ssn"),
+      randomizeDob: readChecked("randomize-dob"),
+      randomizeStationId: readChecked("randomize-station-id"),
+      matchSuffixLength: Number(readValue("match-suffix-length")),
+    },
     listDateOverride: getListDateOverride(),
     clearOutput: readChecked("clear-output"),
     keepProcessedJson: readChecked("keep-processed-json"),
@@ -633,6 +686,10 @@ function collectUiSettings() {
     archiveAppendReferralDateTime: readChecked("archive-append-referral-date-time"),
     referralCode: readValue("referral-code"),
     ssnValue: readValue("ssn-value"),
+    randomizeSsn: readChecked("randomize-ssn"),
+    randomizeDob: readChecked("randomize-dob"),
+    randomizeStationId: readChecked("randomize-station-id"),
+    matchSuffixLength: readValue("match-suffix-length"),
     icnMode: getSelectedIcnMode(),
     icnCustomValue: readValue("icn-custom-value"),
     overrideStationId: readValue("override-station-id"),
@@ -640,6 +697,8 @@ function collectUiSettings() {
     overrideReferralPeriod: readValue("override-referral-period"),
     overrideNetwork: readValue("override-network"),
     overrideDob: readValue("override-dob"),
+    overrideSeocKey: readValue("override-seoc-key"),
+    overrideSeocId: readValue("override-seoc-id"),
     overrideReferralCategory: readValue("override-referral-category"),
     overrideReferralDate: readValue("override-referral-date"),
     overrideReferralDateTime: readValue("override-referral-date-time"),
@@ -716,6 +775,9 @@ async function applyUiSettings(settings = {}) {
     "override-referral-period": settings.overrideReferralPeriod,
     "override-network": settings.overrideNetwork,
     "override-dob": settings.overrideDob,
+    "override-seoc-key": settings.overrideSeocKey,
+    "override-seoc-id": settings.overrideSeocId,
+    "match-suffix-length": settings.matchSuffixLength || "5",
     "override-referral-category": settings.overrideReferralCategory,
     "override-referral-date": settings.overrideReferralDate,
     "override-referral-date-time": settings.overrideReferralDateTime,
@@ -749,8 +811,12 @@ async function applyUiSettings(settings = {}) {
   $("keep-existing-files").checked = !Boolean(settings.clearOutput);
   $("keep-processed-json").checked = settings.keepProcessedJson !== false;
   $("upload-enabled").checked = Boolean(settings.uploadEnabled);
+  $("randomize-ssn").checked = settings.randomizeSsn !== false;
+  $("randomize-dob").checked = settings.randomizeDob !== false;
+  $("randomize-station-id").checked = Boolean(settings.randomizeStationId);
 
   syncIcnFieldState();
+  syncIdentityControls();
   syncLeieValidationSql();
   updateTemplateSummary();
   syncWorkflowText();
@@ -959,7 +1025,6 @@ function applyGeneratorDefaults() {
 
   setValueIfEmpty("override-network", defaults.Network);
   setValueIfEmpty("override-referral-period", defaults.ReferralPeriod);
-  setValueIfEmpty("override-dob", defaults.DOB);
   setValueIfEmpty("override-referral-category", defaults.ReferralCategory);
   setValueIfEmpty("override-referral-date", defaults.ReferralDate);
   setValueIfEmpty("override-referral-date-time", defaults.ReferralDateTime);
@@ -974,6 +1039,7 @@ function applyInfo(info) {
     info.releaseAnnouncement?.acknowledgedReleaseKey || state.acknowledgedReleaseKey || ""
   ).trim();
   renderStationOptions(info.stationOptions || []);
+  renderSeocOptions();
   elements.appVersionBadge.textContent = info.appVersionLabel || "";
   elements.appVersionBadge.classList.toggle("hidden", !info.appVersionLabel);
   document.title = info.appVersionLabel
@@ -1317,6 +1383,12 @@ async function updatePreviews() {
       referralReplacementCode: readValue("referral-code"),
       icnSettings: collectIcnSettings(),
       ssnValue: readValue("ssn-value"),
+      identityOptions: {
+        randomizeSsn: readChecked("randomize-ssn"),
+        randomizeDob: readChecked("randomize-dob"),
+        randomizeStationId: readChecked("randomize-station-id"),
+        matchSuffixLength: Number(readValue("match-suffix-length")),
+      },
       optionalOverrides: collectOptionalOverrides(),
       fileCount: Number(readValue("file-count") || 0),
       referralsPerFile: Number(readValue("referrals-per-file") || 0),
@@ -1719,11 +1791,14 @@ function setupEventHandlers() {
     "referral-code",
     "icn-custom-value",
     "ssn-value",
+    "match-suffix-length",
     "override-station-id",
     "override-payment-authority-code",
     "override-referral-period",
     "override-network",
     "override-dob",
+    "override-seoc-key",
+    "override-seoc-id",
     "override-referral-category",
     "override-referral-date",
     "override-referral-date-time",
@@ -1817,6 +1892,24 @@ function setupEventHandlers() {
   });
 
   elements.overrideNetwork.addEventListener("change", () => {
+    updatePreviews();
+    scheduleUiSettingsSave();
+  });
+  for (const id of ["randomize-ssn", "randomize-dob", "randomize-station-id"]) {
+    $(id).addEventListener("change", () => {
+      syncIdentityControls();
+      updateStationIdMatch();
+      updatePreviews();
+      scheduleUiSettingsSave();
+    });
+  }
+  elements.overrideSeocKey.addEventListener("change", () => {
+    syncSeocPair("key");
+    updatePreviews();
+    scheduleUiSettingsSave();
+  });
+  elements.overrideSeocId.addEventListener("change", () => {
+    syncSeocPair("id");
     updatePreviews();
     scheduleUiSettingsSave();
   });
@@ -1964,6 +2057,8 @@ function cacheElements() {
     outputDir: $("output-dir"),
     outputSubtitle: $("output-subtitle"),
     overrideDob: $("override-dob"),
+    overrideSeocKey: $("override-seoc-key"),
+    overrideSeocId: $("override-seoc-id"),
     overrideNetwork: $("override-network"),
     overrideReferralCategory: $("override-referral-category"),
     overrideReferralConsultId: $("override-referral-consult-id"),

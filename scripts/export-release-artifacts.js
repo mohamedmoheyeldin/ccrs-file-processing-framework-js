@@ -1,4 +1,5 @@
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 
 const MIN_WINDOWS_EXE_BYTES = 1024 * 1024;
@@ -60,32 +61,36 @@ function ensureVerifiedExecutable(filePath, displayName) {
   }
 }
 
-function buildArtifactList(repoRoot, mode) {
+function resolveReleasePaths(options = {}) {
+  const repoRoot = path.resolve(options.repoRoot || path.join(__dirname, ".."));
+  const workRoot = path.resolve(
+    options.workRoot ||
+      process.env.CCRS_RELEASE_WORK_DIR ||
+      path.join(os.tmpdir(), "ccrs-file-processing-framework-release")
+  );
+
+  return {
+    repoRoot,
+    workRoot,
+    distRoot: path.resolve(options.distRoot || path.join(workRoot, "dist")),
+    releaseRoot: path.resolve(options.releaseRoot || path.join(workRoot, "publish")),
+  };
+}
+
+function buildArtifactList(repoRoot, distRoot, releaseRoot) {
   const packageJson = readJson(path.join(repoRoot, "package.json"));
   const appVersionConfig = readJson(path.join(repoRoot, "config", "app_version.json"));
   const appVersion = String(packageJson.version || "").trim();
   const displayVersion = getDisplayVersion(appVersionConfig, packageJson);
-  const distRoot = path.join(repoRoot, "dist-electron");
-  const releaseRoot = path.join(repoRoot, "release");
-
-  const artifacts = [
-    {
-      sourcePath: path.join(distRoot, `CCRS File Processing Framework ${appVersion}.exe`),
-      destinationPath: path.join(releaseRoot, `CCRS File Processing Framework ${displayVersion}.exe`),
-      displayName: "portable release executable",
-    },
-  ];
-
-  if (mode === "full") {
-    artifacts.unshift({
-      sourcePath: path.join(distRoot, `CCRS File Processing Framework Setup ${appVersion}.exe`),
-      destinationPath: path.join(releaseRoot, `CCRS File Processing Framework Setup ${displayVersion}.exe`),
-      displayName: "setup release executable",
-    });
-  }
 
   return {
-    artifacts,
+    artifacts: [
+      {
+        sourcePath: path.join(distRoot, `CCRS File Processing Framework Setup ${appVersion}.exe`),
+        destinationPath: path.join(releaseRoot, `CCRS File Processing Framework Setup ${displayVersion}.exe`),
+        displayName: "setup release executable",
+      },
+    ],
     appVersion,
     displayVersion,
     releaseRoot,
@@ -93,9 +98,8 @@ function buildArtifactList(repoRoot, mode) {
 }
 
 function exportReleaseArtifacts(options = {}) {
-  const repoRoot = path.resolve(options.repoRoot || path.join(__dirname, ".."));
-  const mode = options.mode === "portable" ? "portable" : "full";
-  const { artifacts, displayVersion, releaseRoot } = buildArtifactList(repoRoot, mode);
+  const { repoRoot, distRoot, releaseRoot } = resolveReleasePaths(options);
+  const { artifacts, displayVersion } = buildArtifactList(repoRoot, distRoot, releaseRoot);
 
   for (const artifact of artifacts) {
     ensureVerifiedExecutable(artifact.sourcePath, artifact.displayName);
@@ -110,33 +114,16 @@ function exportReleaseArtifacts(options = {}) {
 
   return {
     displayVersion,
-    mode,
     releaseRoot,
     exportedPaths: artifacts.map((artifact) => artifact.destinationPath),
   };
 }
 
-function parseModeFromArgv(argv) {
-  const modeArgument = argv.find((value) => value.startsWith("--mode="));
-  if (!modeArgument) {
-    return "full";
-  }
-
-  const mode = modeArgument.slice("--mode=".length).trim().toLowerCase();
-  if (mode !== "full" && mode !== "portable") {
-    throw new Error(`Unsupported release export mode: ${mode}`);
-  }
-
-  return mode;
-}
-
 if (require.main === module) {
   try {
-    const result = exportReleaseArtifacts({
-      mode: parseModeFromArgv(process.argv.slice(2)),
-    });
+    const result = exportReleaseArtifacts();
 
-    console.log(`Exported ${result.mode} release artifacts to ${result.releaseRoot}`);
+    console.log(`Exported setup release artifact to ${result.releaseRoot}`);
     for (const exportedPath of result.exportedPaths) {
       console.log(` - ${path.relative(process.cwd(), exportedPath)}`);
     }
@@ -150,5 +137,6 @@ module.exports = {
   exportReleaseArtifacts,
   getDisplayVersion,
   isRealWindowsExecutable,
+  resolveReleasePaths,
   sanitizeWindowsFileNameSegment,
 };

@@ -38,32 +38,24 @@ Run the desktop app:
 Run smoke tests:
 - `npm test`
 
-## Build Shareable Windows Executables
-Run:
-- `build_release.bat`
+## Build And Distribution
+Release binaries are not stored in this repository. The GitHub Actions release workflow builds the Windows Setup installer in temporary runner storage, verifies it, publishes it to GitHub Releases, and then discards the temporary build files.
 
-Or directly:
-- `npm run dist`
+`pnpm run dist` uses the same temporary-directory build flow for troubleshooting. It does not create `dist-electron\` or `release\` in the project. Portable executables are not generated.
 
-To build only the portable app and refresh `release\` with just that shareable file:
-- `npm run dist:portable`
+## Publish A GitHub Release
+The [Build and publish Windows release](.github/workflows/release.yml) workflow creates a complete GitHub Release containing:
+- the verified Windows Setup installer
+- `SHA256SUMS.txt` for download verification
+- configured release highlights from [config/app_version.json](config/app_version.json)
+- automatically generated GitHub change notes
 
-The build outputs use the current version from [config/app_version.json](config/app_version.json), for example:
-- `dist-electron\CCRS File Processing Framework Setup 1.1.0.exe`
-- `dist-electron\CCRS File Processing Framework 1.1.0.exe`
+Before publishing:
+1. Update `version`, `label`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
+2. Commit and push the release changes to `main`.
+3. Run the workflow manually from GitHub Actions, or push a matching version tag such as `v1.2.0`.
 
-The final shareable copies are placed in `release\` using the display label when one is configured:
-- `release\CCRS File Processing Framework Setup Production V1.2.exe`
-- `release\CCRS File Processing Framework Production V1.2.exe`
-
-The release export step now verifies that each `.exe` is a real Windows executable before copying it into `release\`. This avoids sharing placeholder files, stale outputs, or incomplete installer artifacts.
-
-Expected behavior:
-- `npm run dist` on a real Windows machine exports both the portable app and the setup installer into `release\`
-- `npm run dist:portable` exports only `release\CCRS File Processing Framework Production V1.2.exe`
-- `build_release.bat` runs the full Windows build and confirms the verified `release\` files exist before telling you to share them
-
-Use the setup `.exe` for a normal installer flow. Use the non-setup `.exe` as the portable app.
+The workflow requires the tag to match the configured numeric version and refuses to overwrite an existing release. A manual run creates the matching tag from the selected commit when the release is published.
 
 ## Runtime Files
 On first run, the packaged app creates or reuses these runtime folders:
@@ -73,9 +65,7 @@ On first run, the packaged app creates or reuses these runtime folders:
 - `docs`
 - `assets`
 
-For the Setup installer, runtime files are stored under the current user's AppData folder so the app can run without administrator rights, even when installed in `C:\Program Files`.
-
-For the portable build, runtime files stay next to the portable `.exe`.
+Runtime files are stored under the current user's AppData folder so the app can run without administrator rights, even when installed in `C:\Program Files`.
 
 Files users commonly work with:
 - `config\upload_profiles.json`
@@ -93,8 +83,11 @@ Files that are kept in sync from the shipped app:
 - Process LEIE Excel files with strict full-row duplicate detection
 - Generate new referral JSON files from bundled templates
 - Use the bundled CCN1 all-fields reference templates stored under `templates\referrals`
-- Override referral number, SSN, station ID, payment authority code, and selected optional fields
+- Generate random SSNs and DOBs per patient, or apply fixed overrides when needed
+- Use an exact reference Station ID or randomly select valid Station IDs from the bundled catalog
+- Select synchronized SEOC Number and SEOC ID pairs from the bundled referral references
 - Choose how ICNs should be generated: keep `TEST`, keep `TEST` with a custom suffix, or use a custom full ICN base
+- Match the last 3, 4, or 5 characters of each Referral Number and ICN
 - Produce final `.gz` archives
 - Import upload settings from `WinSCP.ini` or credentials JSON
 - Upload final archives to configured `DEV`, `PPD`, `SQA`, and `PROD` targets
@@ -127,6 +120,7 @@ Smoke coverage lives in [scripts/smoke-test.js](scripts/smoke-test.js). The curr
 - payment authority code limits and generation
 - referral number generation
 - ICN generation modes
+- Station catalog enforcement, random SSN/DOB generation, Referral/ICN suffix matching, and SEOC pairs
 - optional override normalization
 - invalid date rejection
 - runtime cleanup of tracked temp artifacts

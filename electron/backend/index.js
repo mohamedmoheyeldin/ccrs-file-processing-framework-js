@@ -31,6 +31,7 @@ const { processFiles } = require("./processor");
 const {
   buildGeneratedReferralSources,
   getGeneratorDefaults,
+  getSeocOptions,
 } = require("./referralGenerator");
 const { cleanupRuntimeArtifacts, cleanupStaleRuntimeArtifacts, removePath } = require("./runtimeCleanup");
 const { loadStationOptions } = require("./stationCatalog");
@@ -196,6 +197,7 @@ function getInfo() {
     uploadTargets: buildUploadTargets(profiles),
     generatorDefaults: getGeneratorDefaults(),
     stationOptions: loadStationOptions(),
+    seocOptions: getSeocOptions(),
     uiSettings,
     constants: {
       icnModes: ICN_MODES,
@@ -318,7 +320,7 @@ function collectFieldErrors(payload) {
   const icnSettings = payload.icnSettings || {};
   const optionalOverrides = payload.optionalOverrides || {};
 
-  if ((payload.ssnValue || "").trim()) {
+  if (payload.identityOptions?.randomizeSsn === false && (payload.ssnValue || "").trim()) {
     try {
       validateSsn(payload.ssnValue);
     } catch (error) {
@@ -417,7 +419,15 @@ function buildUploadOptions(payload) {
 
 function buildCommonArgs(payload, progressCallback) {
   const ssnValue = (payload.ssnValue || "999-99-0001").trim();
-  validateSsn(ssnValue);
+  const identityOptions = {
+    randomizeSsn: payload.identityOptions?.randomizeSsn !== false,
+    randomizeDob: payload.identityOptions?.randomizeDob !== false,
+    randomizeStationId: Boolean(payload.identityOptions?.randomizeStationId),
+    matchSuffixLength: [3, 4, 5].includes(Number(payload.identityOptions?.matchSuffixLength))
+      ? Number(payload.identityOptions.matchSuffixLength)
+      : 5,
+  };
+  if (!identityOptions.randomizeSsn) validateSsn(ssnValue);
 
   let referralCode = (payload.referralReplacementCode || "").trim();
   if (referralCode) {
@@ -432,6 +442,7 @@ function buildCommonArgs(payload, progressCallback) {
     icnSettings: prepareIcnSettings(payload.icnSettings || {}),
     listDateOverride: (payload.listDateOverride || "").trim() || null,
     ssnValue,
+    identityOptions,
     optionalOverrides: generateOptionalFieldOverrides(payload.optionalOverrides || {}),
     keepProcessedJson: Boolean(payload.keepProcessedJson),
     progressCallback,
@@ -464,7 +475,8 @@ async function runProcess(payload, emitProgress) {
     args.keepProcessedJson,
     args.progressCallback,
     args.uploadOptions,
-    args.archiveBasename
+    args.archiveBasename,
+    args.identityOptions
   );
   return { message };
 }
@@ -500,7 +512,8 @@ async function runGenerate(payload, emitProgress) {
       args.keepProcessedJson,
       args.progressCallback,
       args.uploadOptions,
-      args.archiveBasename
+      args.archiveBasename,
+      args.identityOptions
     );
     return { message };
   } finally {

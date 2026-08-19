@@ -2,8 +2,6 @@ config/upload_credentials.json
 upload_import/WinSCP.ini
 node_modules/
 src/__pycache__/
-release/assets/
-release/config/
-release/docs/
-release/upload_import/
+/dist-electron/
+/release/
 .codex

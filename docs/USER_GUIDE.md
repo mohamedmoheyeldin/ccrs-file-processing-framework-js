@@ -9,9 +9,7 @@ Before you run the app, make sure you have:
 - an output folder where processed files should be saved
 - a `WinSCP.ini` file or a ready-to-use `config\upload_credentials.json` file if you plan to upload
 
-To start the packaged app:
-- open the folder that contains the `.exe`
-- run either `CCRS File Processing Framework Setup Production V1.2.exe` or `CCRS File Processing Framework Production V1.2.exe`
+To start the packaged app, download and run `CCRS File Processing Framework Setup Production V1.2.exe` from GitHub Releases.
 
 When you use the Setup installer, choose the install folder you want for the app.
 
@@ -20,8 +18,6 @@ The installed app keeps its shipped `.exe`, docs, assets, templates, and bundled
 On first run, the app creates or updates runtime folders for config, logs, docs, and upload helper files.
 
 If you install the app with the Setup installer, those runtime folders are stored under the current user's AppData location so the app can run without administrator rights.
-
-If you use the portable `.exe`, those runtime folders stay next to the portable app.
 
 Typical runtime folders include:
 - `config`
@@ -152,6 +148,7 @@ Supported optional fields:
 - `SSN`
 - `ICN`
 - `Station ID`
+- `SEOC Number` and `SEOC ID`
 - `Payment Authority Code`
 - `DOB`
 - `Network`
@@ -175,15 +172,20 @@ Rules:
 - the `TEST` custom value accepts letters and numbers
 - the app keeps each generated ICN unique within the run
 - if you leave ICN on the default option, the app still generates a different `TEST...` ICN for each referral
+- choose 3, 4, or 5 characters to make the ending of each ICN match its Referral Number
+
+### SSN and DOB
+Random generation is enabled by default. Each patient receives a random test SSN and a random DOB. Uncheck the corresponding option only when you need to apply a fixed value.
 
 ### Station ID
 Rules:
-- choose from the dropdown suggestions powered by `station_key` and `station_name`, or type your own value
+- choose an exact `station_key` from the reference-backed dropdown, or enable random valid Station IDs
 - when you choose a suggestion, the saved value is the `station_key`
-- accepts letters and numbers only
-- accepts up to 5 characters
-- later referrals auto-adjust to stay unique
-- the preview shows the first generated value
+- entered Station IDs are never padded or modified
+- random mode uses only IDs from `config/station_options.json`
+
+### SEOC
+Choose either a SEOC Number or SEOC ID. The other selector synchronizes automatically so the generated referral always uses a valid pair found in the bundled reference templates.
 
 ### Payment Authority Code
 Rules:

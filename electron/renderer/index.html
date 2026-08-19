@@ -207,9 +207,10 @@
                   <small id="referral-preview" class="helper-text">Preview: default referral numbers from source files</small>
                 </label>
                 <label class="field-block">
-                  <span>SSN Override</span>
+                  <span>SSN</span>
                   <input id="ssn-value" type="text" value="999-99-0001" />
-                  <small id="ssn-help" class="helper-text">Default test SSN applied unless you replace it.</small>
+                  <label class="radio-chip"><input id="randomize-ssn" type="checkbox" checked /><span>Generate a random test SSN for every patient</span></label>
+                  <small id="ssn-help" class="helper-text">Uncheck random generation to use the fixed value above.</small>
                 </label>
               </div>
 
@@ -300,6 +301,15 @@
                     <small id="icn-preview" class="helper-text">Preview: TEST + 13 generated digits</small>
                   </label>
                   <label class="field-block">
+                    <span>Referral / ICN Match</span>
+                    <select id="match-suffix-length">
+                      <option value="3">Match last 3 characters</option>
+                      <option value="4">Match last 4 characters</option>
+                      <option value="5" selected>Match last 5 characters</option>
+                    </select>
+                    <small class="helper-text">The selected ending of each Referral Number is copied to its ICN.</small>
+                  </label>
+                  <label class="field-block">
                     <span>Station ID</span>
                     <div id="station-id-combobox" class="combo-shell">
                       <input
@@ -320,8 +330,9 @@
                       <div id="station-id-menu" class="combo-menu hidden"></div>
                     </div>
                     <small id="station-id-match" class="helper-text">
-                      Choose a station_key from the dropdown or type a custom Station ID.
+                      Choose an exact station_key from the reference list.
                     </small>
+                    <label class="radio-chip"><input id="randomize-station-id" type="checkbox" /><span>Use random valid Station IDs from the reference list</span></label>
                     <small id="station-id-preview" class="helper-text">Preview: no Station ID override</small>
                   </label>
                   <label class="field-block">
@@ -347,7 +358,17 @@
                   <label class="field-block">
                     <span>DOB</span>
                     <input id="override-dob" type="text" placeholder="YYYY-MM-DD" />
-                    <small id="dob-help" class="helper-text">Use the format YYYY-MM-DD.</small>
+                    <label class="radio-chip"><input id="randomize-dob" type="checkbox" checked /><span>Generate a random DOB for every patient</span></label>
+                    <small id="dob-help" class="helper-text">Uncheck random generation to use an optional fixed date in YYYY-MM-DD format.</small>
+                  </label>
+                  <label class="field-block">
+                    <span>SEOC Number</span>
+                    <select id="override-seoc-key"><option value="">Keep source SEOC</option></select>
+                  </label>
+                  <label class="field-block">
+                    <span>SEOC ID</span>
+                    <select id="override-seoc-id"><option value="">Keep source SEOC</option></select>
+                    <small class="helper-text">Selecting either value synchronizes the valid SEOC pair.</small>
                   </label>
                   <label class="field-block">
                     <span>Referral Category</span>

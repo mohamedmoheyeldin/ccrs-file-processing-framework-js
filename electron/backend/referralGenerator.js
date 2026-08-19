@@ -42,6 +42,24 @@ function getGeneratorDefaults() {
   };
 }
 
+function getSeocOptions() {
+  const options = [];
+  const seen = new Set();
+  for (const templatePath of getReferralTemplatePaths()) {
+    const templateData = JSON.parse(fs.readFileSync(templatePath, "utf8"));
+    for (const referral of Array.isArray(templateData.Referrals) ? templateData.Referrals : []) {
+      const authority = referral.ProgramAuthority || referral;
+      const seocKey = String(authority.SeocKey || "").trim();
+      const seocId = String(authority.SeocID || "").trim();
+      const pairKey = `${seocKey}\u0000${seocId}`;
+      if (!seocKey || !seocId || seen.has(pairKey)) continue;
+      seen.add(pairKey);
+      options.push({ seocKey, seocId });
+    }
+  }
+  return options.sort((left, right) => Number(left.seocKey) - Number(right.seocKey));
+}
+
 function buildGeneratedReferralSources(fileCount, referralsPerFile) {
   const templatePaths = getReferralTemplatePaths();
   if (templatePaths.length === 0) {
@@ -82,4 +100,5 @@ function buildGeneratedReferralSources(fileCount, referralsPerFile) {
 module.exports = {
   buildGeneratedReferralSources,
   getGeneratorDefaults,
+  getSeocOptions,
 };

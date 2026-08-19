@@ -11,26 +11,19 @@
     "pretest": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
     "test": "node scripts/smoke-test.js",
     "predist": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
-    "dist": "electron-builder --win --x64",
-    "postdist": "node scripts/export-release-artifacts.js --mode=full",
-    "predist:portable": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
-    "dist:portable": "electron-builder --win portable --x64",
-    "postdist:portable": "node scripts/export-release-artifacts.js --mode=portable"
+    "dist": "node scripts/build-release.js"
   },
   "dependencies": {
     "ssh2-sftp-client": "^12.0.1",
-    "xlsx": "^0.18.5"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "electron": "^37.2.0",
-    "electron-builder": "^26.0.12"
+    "electron": "^43.4.0",
+    "electron-builder": "^26.15.3"
   },
   "build": {
     "appId": "com.ccrs.fileprocessingframework",
     "productName": "CCRS File Processing Framework",
-    "directories": {
-      "output": "dist-electron"
-    },
     "files": [
       "electron/**/*",
       "package.json"
@@ -85,12 +78,6 @@
       "signAndEditExecutable": false,
       "verifyUpdateCodeSignature": false,
       "target": [
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        },
         {
           "target": "nsis",
           "arch": [

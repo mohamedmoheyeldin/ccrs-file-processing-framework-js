@@ -1,5 +1,6 @@
 const fs = require("fs");
 const { bundlePath, dataPath } = require("./appPaths");
+const { loadStationOptions } = require("./stationCatalog");
 
 function loadMappings() {
   const runtimePath = dataPath("config", "mappings.json");
@@ -38,11 +39,15 @@ const ICN_MODES = {
   TEST_CUSTOM_SUFFIX: "test-custom-suffix",
   CUSTOM_FULL: "custom-full",
 };
+const RANDOM_SSN_BASE = Math.floor(Math.random() * 99999999);
+const RANDOM_DOB_BASE = Math.floor(Math.random() * 24107);
 const TRACKED_JSON_FIELDS = [
   "SSN",
   "DOB",
   "Network",
   "StationID",
+  "SeocID",
+  "SeocKey",
   "PaymentAuthorityCode",
   "ReferralCategory",
   "ReferralDate",
@@ -54,10 +59,6 @@ const TRACKED_JSON_FIELDS = [
 ];
 
 const VARIABLE_OVERRIDE_FIELDS = {
-  StationID: {
-    length: STATION_ID_MAX_LENGTH,
-    charset: OPTIONAL_RANDOM_CHARSET,
-  },
   PaymentAuthorityCode: {
     length: PAYMENT_AUTHORITY_CODE_LENGTH,
     charset: NUMERIC_RANDOM_CHARSET,
@@ -146,10 +147,31 @@ function completeWithRandomSuffix(value, targetLength, fillCharacters = OPTIONAL
 
 function validateStationId(value) {
   const normalized = normalizeStationId(value);
+  if (!normalized) {
+    return "";
+  }
   if (normalized.length > STATION_ID_MAX_LENGTH) {
     throw new Error(`Station ID must be ${STATION_ID_MAX_LENGTH} characters or less.`);
   }
-  return completeWithRandomSuffix(normalized, STATION_ID_MAX_LENGTH);
+  if (!loadStationOptions().some((option) => option.stationKey === normalized)) {
+    throw new Error("Station ID must exactly match a station_key from the reference list.");
+  }
+  return normalized;
+}
+
+function generateRandomSsn(sequenceIndex = 1) {
+  const offset = Math.max(sequenceIndex - 1, 0);
+  const value = 900000001 + ((RANDOM_SSN_BASE + offset) % 99999999);
+  const digits = String(value).padStart(9, "0");
+  return `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5)}`;
+}
+
+function generateRandomDob(sequenceIndex = 1) {
+  const firstDay = Date.UTC(1940, 0, 1);
+  const lastDay = Date.UTC(2005, 11, 31);
+  const dayCount = Math.floor((lastDay - firstDay) / 86400000) + 1;
+  const dayOffset = (RANDOM_DOB_BASE + Math.max(sequenceIndex - 1, 0)) % dayCount;
+  return new Date(firstDay + dayOffset * 86400000).toISOString().slice(0, 10);
 }
 
 function validatePaymentAuthorityCode(value) {
@@ -485,12 +507,12 @@ function getVariableFieldSequenceCharset(key, baseValue) {
   return VARIABLE_OVERRIDE_FIELDS[key].charset;
 }
 
-function updatePatientIdentity(data, ssnValue, icnSettings = prepareIcnSettings(), sequenceStart = 1) {
+function updatePatientIdentity(data, ssnValue, icnSettings = prepareIcnSettings(), sequenceStart = 1, identityOptions = {}) {
   let replacementsUsed = 0;
 
   if (Array.isArray(data)) {
     for (const item of data) {
-      replacementsUsed += updatePatientIdentity(item, ssnValue, icnSettings, sequenceStart + replacementsUsed);
+      replacementsUsed += updatePatientIdentity(item, ssnValue, icnSettings, sequenceStart + replacementsUsed, identityOptions);
     }
     return replacementsUsed;
   }
@@ -506,12 +528,16 @@ function updatePatientIdentity(data, ssnValue, icnSettings = prepareIcnSettings(
     if (Object.prototype.hasOwnProperty.call(data, "MiddleName")) {
       data.MiddleName = randomChoice("ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""));
     }
-    data.SSN = ssnValue;
+    const identityIndex = sequenceStart + replacementsUsed;
+    data.SSN = identityOptions.randomizeSsn ? generateRandomSsn(identityIndex) : ssnValue;
+    if (identityOptions.randomizeDob && Object.prototype.hasOwnProperty.call(data, "DOB")) {
+      data.DOB = generateRandomDob(identityIndex);
+    }
     replacementsUsed += 1;
   }
 
   for (const value of Object.values(data)) {
-    replacementsUsed += updatePatientIdentity(value, ssnValue, icnSettings, sequenceStart + replacementsUsed);
+    replacementsUsed += updatePatientIdentity(value, ssnValue, icnSettings, sequenceStart + replacementsUsed, identityOptions);
   }
 
   return replacementsUsed;
@@ -539,7 +565,9 @@ function applyOptionalOverrides(data, overrides) {
 
     for (const [key, value] of Object.entries(currentData)) {
       if (Object.prototype.hasOwnProperty.call(overrides, key)) {
-        if (VARIABLE_OVERRIDE_FIELDS[key]) {
+        if (key === "StationID") {
+          currentData[key] = overrides[key];
+        } else if (VARIABLE_OVERRIDE_FIELDS[key]) {
           while (true) {
             variableOverrideCounts[key] += 1;
             const candidateValue =
@@ -568,6 +596,66 @@ function applyOptionalOverrides(data, overrides) {
   }
 
   apply(data);
+}
+
+function applyRandomValidStationIds(data) {
+  const stationOptions = loadStationOptions();
+  if (stationOptions.length === 0) {
+    throw new Error("No valid Station IDs are available in the reference list.");
+  }
+  function apply(currentData) {
+    if (Array.isArray(currentData)) {
+      currentData.forEach(apply);
+      return;
+    }
+    if (!currentData || typeof currentData !== "object") return;
+    for (const [key, value] of Object.entries(currentData)) {
+      if (key === "StationID") {
+        currentData[key] = randomChoice(stationOptions).stationKey;
+      } else {
+        apply(value);
+      }
+    }
+  }
+  apply(data);
+}
+
+function alignReferralAndIcnSuffixes(data, suffixLength) {
+  const length = Number(suffixLength || 0);
+  if (![3, 4, 5].includes(length)) return;
+  const usedIcns = new Set();
+
+  function replaceIcnSuffix(currentData, suffix) {
+    if (Array.isArray(currentData)) return currentData.forEach((item) => replaceIcnSuffix(item, suffix));
+    if (!currentData || typeof currentData !== "object") return;
+    for (const [key, value] of Object.entries(currentData)) {
+      if (key === "ICN" && typeof value === "string") {
+        const prefix = value.slice(0, Math.max(0, value.length - length));
+        let candidate = `${prefix}${suffix}`;
+        let attempt = 0;
+        while (usedIcns.has(candidate) && prefix.length > 0) {
+          const marker = OPTIONAL_RANDOM_CHARSET[attempt % OPTIONAL_RANDOM_CHARSET.length];
+          candidate = `${prefix.slice(0, -1)}${marker}${suffix}`;
+          attempt += 1;
+        }
+        usedIcns.add(candidate);
+        currentData[key] = candidate;
+      } else {
+        replaceIcnSuffix(value, suffix);
+      }
+    }
+  }
+
+  function visit(currentData) {
+    if (Array.isArray(currentData)) return currentData.forEach(visit);
+    if (!currentData || typeof currentData !== "object") return;
+    if (typeof currentData.ReferralNumber === "string") {
+      replaceIcnSuffix(currentData, currentData.ReferralNumber.slice(-length));
+      return;
+    }
+    Object.values(currentData).forEach(visit);
+  }
+  visit(data);
 }
 
 function ensureSourceVariableFieldsAreUnique(data, overrides = {}) {
@@ -710,7 +798,8 @@ function modifyContent(
   optionalOverrides,
   referralSequenceStart = 1,
   icnSettings = prepareIcnSettings(),
-  icnSequenceStart = 1
+  icnSequenceStart = 1,
+  identityOptions = {}
 ) {
   const mappings = loadMappings();
   let content = fs.readFileSync(filePath, "utf8");
@@ -722,16 +811,18 @@ function modifyContent(
     content = content.replace(/("ListDate"\s*:\s*")([^"]+)(")/g, `$1${listDateOverride}$3`);
   }
 
-  validateSsn(ssnValue);
+  if (!identityOptions.randomizeSsn) validateSsn(ssnValue);
   const data = JSON.parse(content);
   let referralNumbersUsed = 0;
   if (referralReplacementCode) {
     referralNumbersUsed = applyReferralNumberOverride(data, referralReplacementCode, referralSequenceStart);
   }
-  const patientIdentitiesUsed = updatePatientIdentity(data, ssnValue.trim(), icnSettings, icnSequenceStart);
+  const patientIdentitiesUsed = updatePatientIdentity(data, ssnValue.trim(), icnSettings, icnSequenceStart, identityOptions);
   if (optionalOverrides && Object.keys(optionalOverrides).length > 0) {
     applyOptionalOverrides(data, optionalOverrides);
   }
+  if (identityOptions.randomizeStationId) applyRandomValidStationIds(data);
+  alignReferralAndIcnSuffixes(data, identityOptions.matchSuffixLength);
   ensureSourceVariableFieldsAreUnique(data, optionalOverrides);
 
   return {
@@ -758,6 +849,8 @@ module.exports = {
   extractListDate,
   generatePaymentAuthorityCodeValue,
   generateOptionalFieldOverrides,
+  generateRandomDob,
+  generateRandomSsn,
   generateReferralNumber,
   modifyContent,
   normalizePaymentAuthorityCode,
