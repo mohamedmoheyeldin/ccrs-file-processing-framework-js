@@ -104,6 +104,7 @@ test("Final Version 1.2 metadata and release automation stay consolidated", () =
   assert.equal(fs.existsSync(path.join(projectRoot, ".github", "release.yml")), false);
   assert.match(releaseWorkflow, /\$config\.releaseTag/);
   assert.match(releaseWorkflow, /pnpm run test:smoke/);
+  assert.match(releaseWorkflow, /must include at least one releaseNotes entry/);
   assert.doesNotMatch(releaseWorkflow, /--generate-notes/);
   assert.match(buildReleaseScript, /"--publish",\s*"never"/);
   assert.match(smokeWorkflow, /pull_request:/);
@@ -542,6 +543,40 @@ test("App info exposes one-time release announcement metadata", async () => {
     const acknowledgedInfo = await backend.handleCommand("info", {});
     assert.equal(acknowledgedInfo.releaseAnnouncement.shouldShow, false);
     assert.equal(loadUiSettings().acknowledgedReleaseKey, initialInfo.releaseAnnouncement.releaseKey);
+  } finally {
+    if (originalOverride === undefined) {
+      delete process.env.CCRS_USER_DATA_ROOT;
+    } else {
+      process.env.CCRS_USER_DATA_ROOT = originalOverride;
+    }
+    fs.rmSync(settingsRoot, { recursive: true, force: true });
+  }
+});
+
+test("Release notes appear once after upgrading from an older release", async () => {
+  const originalOverride = process.env.CCRS_USER_DATA_ROOT;
+  const settingsRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-release-upgrade-"));
+  const olderReleaseKey = "1.2.3|Production V1.2.3";
+
+  try {
+    process.env.CCRS_USER_DATA_ROOT = settingsRoot;
+    saveUiSettings({
+      ...DEFAULT_UI_SETTINGS,
+      acknowledgedReleaseKey: olderReleaseKey,
+    });
+
+    const upgradedInfo = await backend.handleCommand("info", {});
+    assert.equal(upgradedInfo.releaseAnnouncement.acknowledgedReleaseKey, olderReleaseKey);
+    assert.notEqual(upgradedInfo.releaseAnnouncement.releaseKey, olderReleaseKey);
+    assert.equal(upgradedInfo.releaseAnnouncement.notes.length > 0, true);
+    assert.equal(upgradedInfo.releaseAnnouncement.shouldShow, true);
+
+    await backend.handleCommand("acknowledge-release-announcement", {
+      releaseKey: upgradedInfo.releaseAnnouncement.releaseKey,
+    });
+
+    const acknowledgedInfo = await backend.handleCommand("info", {});
+    assert.equal(acknowledgedInfo.releaseAnnouncement.shouldShow, false);
   } finally {
     if (originalOverride === undefined) {
       delete process.env.CCRS_USER_DATA_ROOT;

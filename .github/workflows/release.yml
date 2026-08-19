@@ -53,6 +53,7 @@ jobs:
         run: |
           $config = Get-Content -Raw config/app_version.json | ConvertFrom-Json
           $version = [string]$config.version
+          $releaseNotes = @($config.releaseNotes | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
           $expectedTag = [string]$config.releaseTag
           if ([string]::IsNullOrWhiteSpace($expectedTag)) {
             $expectedTag = "v$version"
@@ -65,6 +66,9 @@ jobs:
 
           if ($releaseTag -ne $expectedTag) {
             throw "Release tag '$releaseTag' must match config/app_version.json version '$expectedTag'."
+          }
+          if ($releaseNotes.Count -eq 0) {
+            throw "config/app_version.json must include at least one releaseNotes entry."
           }
 
           $existingRelease = @(

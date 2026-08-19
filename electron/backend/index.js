@@ -159,7 +159,9 @@ function inspectLeieSourceAsync(payload) {
 function getInfo() {
   const uiSettings = loadUiSettings();
   const releaseTracker = loadReleaseTracker();
-  const acknowledgedReleaseKey = String(releaseTracker.acknowledgedReleaseKey || "").trim();
+  const acknowledgedReleaseKey = String(
+    releaseTracker.acknowledgedReleaseKey || uiSettings.acknowledgedReleaseKey || ""
+  ).trim();
 
   const appVersion = loadAppVersionInfo();
   const profiles = loadUploadProfiles();

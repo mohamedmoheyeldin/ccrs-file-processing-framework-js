@@ -32,6 +32,15 @@ Runtime data includes:
 
 Use `GitHub Releases` for official installers. Build directories such as `dist-electron` and `release` are not part of the project or normal user workflow.
 
+### What's New Release Notes
+
+The app automatically displays the current release notes:
+
+- the first time the app is opened after a new installation
+- the first time the app is opened after upgrading from any older version
+
+Select `Continue` to acknowledge the notes. The same release notes will not open again on later launches, but a future release with a new release identifier will display its own notes once. This acknowledgement is stored in the current user's AppData so reinstalling or changing the installation folder does not confuse an older release with a newer one.
+
 ## Before You Begin
 
 Prepare the items required for your workflow:

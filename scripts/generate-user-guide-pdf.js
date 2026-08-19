@@ -6,12 +6,14 @@ const { spawnSync } = require("child_process");
 const repoRoot = path.resolve(__dirname, "..");
 const guides = [
   {
+    id: "user",
     markdownPath: path.join(repoRoot, "docs", "USER_GUIDE.md"),
     outputPath: path.join(repoRoot, "docs", "USER_GUIDE.pdf"),
     title: "CCRS File Processing Framework User Guide",
     tempFileName: "ccrs-user-guide-print.html",
   },
   {
+    id: "leie",
     markdownPath: path.join(repoRoot, "docs", "LEIE_UPLOAD_VALIDATION_GUIDE.md"),
     outputPath: path.join(repoRoot, "docs", "LEIE_UPLOAD_VALIDATION_GUIDE.pdf"),
     title: "LEIE Data Upload and Validation Guide",
@@ -365,9 +367,18 @@ function generatePdfGuide(browserPath, guide) {
 }
 
 function main() {
+  const guideArgumentIndex = process.argv.indexOf("--guide");
+  const requestedGuideId = guideArgumentIndex >= 0 ? String(process.argv[guideArgumentIndex + 1] || "").trim() : "";
+  const selectedGuides = requestedGuideId
+    ? guides.filter((guide) => guide.id === requestedGuideId)
+    : guides;
+  if (requestedGuideId && selectedGuides.length === 0) {
+    throw new Error(`Unknown guide '${requestedGuideId}'. Expected one of: ${guides.map((guide) => guide.id).join(", ")}.`);
+  }
+
   const browserPath = getBrowserPath();
   if (!browserPath) {
-    const missingOutputs = guides.filter((guide) => !fs.existsSync(guide.outputPath));
+    const missingOutputs = selectedGuides.filter((guide) => !fs.existsSync(guide.outputPath));
     if (missingOutputs.length === 0) {
       console.warn("No supported browser found for PDF generation. Keeping existing guide PDFs.");
       return;
@@ -375,7 +386,7 @@ function main() {
     throw new Error("Unable to generate guide PDFs because Microsoft Edge or Google Chrome was not found.");
   }
 
-  for (const guide of guides) {
+  for (const guide of selectedGuides) {
     generatePdfGuide(browserPath, guide);
   }
 }

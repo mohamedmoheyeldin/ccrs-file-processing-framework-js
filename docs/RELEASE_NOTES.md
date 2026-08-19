@@ -53,6 +53,8 @@ Portable executables are not generated. Release binaries are built in temporary 
 
 ## Quality Gates
 
+- The app displays these release notes once after a fresh installation or the first launch following an upgrade from any older version.
+- A release-specific announcement identifier prevents an older acknowledgement from suppressing newer release notes.
 - A smoke-test workflow runs for pull requests targeting `main` and for updates to `main`.
 - The release workflow runs the smoke suite again before creating the installer.
 - The release workflow validates the executable header and minimum size.

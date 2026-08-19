@@ -26,7 +26,8 @@ How it works:
 - `version` is the internal numeric Windows build version and remains monotonic for installer upgrades.
 - `releaseTag` is the public GitHub Release tag.
 - `label` is the user-facing release name shown in the app badge and window title.
-- `releaseNotes` powers the first-run release popup for each user and release.
+- `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
+- `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
 - The final public release is `Version 1.2` (`v1.2`), backed by Windows build version `1.2.4`.
 - `npm start`, `npm test`, and `npm run dist` automatically sync `package.json` and `package-lock.json` from this file before running.
 
@@ -53,11 +54,12 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 - curated release highlights from `config/app_version.json`
 
 Before publishing:
-1. Update `version`, `releaseTag`, `label`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
+1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
 3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.2`.
 
 The workflow requires the tag to match `releaseTag` and refuses to overwrite an existing release.
+It also refuses to build a release when `releaseNotes` is empty.
 
 Pull requests and updates to `main` run the [Smoke tests](.github/workflows/smoke-tests.yml) workflow. The release workflow runs the same smoke suite again before packaging.
 
