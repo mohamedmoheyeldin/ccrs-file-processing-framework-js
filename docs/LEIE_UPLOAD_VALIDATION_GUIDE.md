@@ -15,7 +15,7 @@ Before starting, make sure you have:
 - The current LEIE source file in `.xlsx` format.
 - Access to WinSCP.
 - Access to the `ediuser` account.
-- Access to the `/in` directory in each environment.
+- Access to the `/in/manual_process/` directory in each environment.
 - Access to the `ccrsdb` database in the target environment.
 - Access to the CCRS Table Viewer UI.
 
@@ -123,7 +123,7 @@ The queries identify the latest batch, verify the correct file and batch record,
 Use this checklist for each environment:
 
 - The correct `.xlsx` file was uploaded.
-- The file was uploaded to `/in` using `ediuser`.
+- The file was uploaded to `/in/manual_process/` using `ediuser`.
 - The correct `etl_batch_id` was identified.
 - The row count in `LKUP_PROVIDER_SANCTION` matches the source `.xlsx` record count.
 - No previous batch remains `is_current = 'Y'`.

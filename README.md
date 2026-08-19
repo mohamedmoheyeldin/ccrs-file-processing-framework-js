@@ -13,8 +13,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.2.3",
-  "label": "Production V1.2.3",
+  "version": "1.2.4",
+  "releaseTag": "v1.2",
+  "label": "Version 1.2",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -22,10 +23,11 @@ Current structure:
 ```
 
 How it works:
-- `version` stays numeric because Windows packaging and Electron builds require a standard build version.
+- `version` is the internal numeric Windows build version and remains monotonic for installer upgrades.
+- `releaseTag` is the public GitHub Release tag.
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the first-run release popup for each user and release.
-- The app now displays `Production V1.2.3` while the Windows build version remains `1.2.3`.
+- The final public release is `Version 1.2` (`v1.2`), backed by Windows build version `1.2.4`.
 - `npm start`, `npm test`, and `npm run dist` automatically sync `package.json` and `package-lock.json` from this file before running.
 
 ## Developer Run
@@ -48,14 +50,18 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 - the verified Windows Setup installer
 - `SHA256SUMS.txt` for download verification
 - configured release highlights from [config/app_version.json](config/app_version.json)
-- automatically generated GitHub change notes
+- curated release highlights from `config/app_version.json`
 
 Before publishing:
-1. Update `version`, `label`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
+1. Update `version`, `releaseTag`, `label`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push a matching version tag such as `v1.2.3`.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.2`.
 
-The workflow requires the tag to match the configured numeric version and refuses to overwrite an existing release. A manual run creates the matching tag from the selected commit when the release is published.
+The workflow requires the tag to match `releaseTag` and refuses to overwrite an existing release.
+
+Pull requests and updates to `main` run the [Smoke tests](.github/workflows/smoke-tests.yml) workflow. The release workflow runs the same smoke suite again before packaging.
+
+Full release notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
 
 ## Runtime Files
 On first run, the packaged app creates or reuses these runtime folders:

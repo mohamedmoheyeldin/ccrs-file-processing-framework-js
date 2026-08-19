@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Production V1.2.3`.
+This guide covers `Version 1.2`.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download `CCRS File Processing Framework Setup Production V1.2.3.exe` from the GitHub Releases page and run the installer.
+Download `CCRS File Processing Framework Setup Version 1.2.exe` from the GitHub Releases page and run the installer.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 

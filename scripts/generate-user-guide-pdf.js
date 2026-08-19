@@ -44,9 +44,23 @@ function flushParagraph(paragraphLines, parts) {
 
 function closeList(parts, state) {
   if (state.inList) {
-    parts.push("</ul>");
+    parts.push(`</${state.listTag || "ul"}>`);
     state.inList = false;
+    state.listTag = "";
   }
+}
+
+function parseTableRow(line) {
+  return String(line || "")
+    .trim()
+    .replace(/^\||\|$/g, "")
+    .split("|")
+    .map((cell) => cell.trim());
+}
+
+function isTableDivider(line) {
+  const cells = parseTableRow(line);
+  return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
 }
 
 function markdownToHtml(markdown, title) {
@@ -55,11 +69,13 @@ function markdownToHtml(markdown, title) {
   const paragraphLines = [];
   const state = {
     inList: false,
+    listTag: "",
     inCode: false,
     codeLines: [],
   };
 
-  for (const rawLine of lines) {
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const rawLine = lines[lineIndex];
     const line = rawLine.trimEnd();
     const trimmed = line.trim();
 
@@ -87,6 +103,37 @@ function markdownToHtml(markdown, title) {
       continue;
     }
 
+    if (
+      trimmed.startsWith("|") &&
+      lineIndex + 1 < lines.length &&
+      isTableDivider(lines[lineIndex + 1])
+    ) {
+      flushParagraph(paragraphLines, parts);
+      closeList(parts, state);
+      const headers = parseTableRow(trimmed);
+      const rows = [];
+      lineIndex += 2;
+      while (lineIndex < lines.length && lines[lineIndex].trim().startsWith("|")) {
+        rows.push(parseTableRow(lines[lineIndex]));
+        lineIndex += 1;
+      }
+      lineIndex -= 1;
+      parts.push("<table><thead><tr>");
+      for (const header of headers) {
+        parts.push(`<th>${renderInlineMarkdown(header)}</th>`);
+      }
+      parts.push("</tr></thead><tbody>");
+      for (const row of rows) {
+        parts.push("<tr>");
+        for (const cell of row) {
+          parts.push(`<td>${renderInlineMarkdown(cell)}</td>`);
+        }
+        parts.push("</tr>");
+      }
+      parts.push("</tbody></table>");
+      continue;
+    }
+
     const headingMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
     if (headingMatch) {
       flushParagraph(paragraphLines, parts);
@@ -96,12 +143,19 @@ function markdownToHtml(markdown, title) {
       continue;
     }
 
-    const listMatch = trimmed.match(/^-\s+(.+)$/);
+    const unorderedListMatch = trimmed.match(/^-\s+(.+)$/);
+    const orderedListMatch = trimmed.match(/^\d+\.\s+(.+)$/);
+    const listMatch = unorderedListMatch || orderedListMatch;
     if (listMatch) {
       flushParagraph(paragraphLines, parts);
+      const listTag = orderedListMatch ? "ol" : "ul";
+      if (state.inList && state.listTag !== listTag) {
+        closeList(parts, state);
+      }
       if (!state.inList) {
-        parts.push("<ul>");
+        parts.push(`<${listTag}>`);
         state.inList = true;
+        state.listTag = listTag;
       }
       parts.push(`<li>${renderInlineMarkdown(listMatch[1])}</li>`);
       continue;
@@ -167,12 +221,32 @@ function markdownToHtml(markdown, title) {
       p {
         margin: 0 0 12px;
       }
-      ul {
+      ul, ol {
         margin: 0 0 14px 20px;
         padding: 0;
       }
       li {
         margin: 0 0 8px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0 18px;
+        font-size: 13px;
+      }
+      th, td {
+        border: 1px solid var(--border);
+        padding: 8px 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: #eaf2ff;
+        color: #173b6c;
+        font-weight: 700;
+      }
+      tr:nth-child(even) td {
+        background: #f8faff;
       }
       code {
         font-family: "Cascadia Code", "Consolas", monospace;
@@ -215,12 +289,34 @@ function getBrowserPath() {
     "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
     "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
     "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+    "/mnt/c/Program Files/Microsoft/Edge/Application/msedge.exe",
+    "/mnt/c/Program Files/Google/Chrome/Application/chrome.exe",
   ].filter(Boolean);
 
   return candidates.find((candidate) => fs.existsSync(candidate)) || "";
 }
 
-function toFileUrl(filePath) {
+function usesWindowsBrowserFromWsl(browserPath) {
+  return process.platform === "linux" && /^\/mnt\/[a-z]\//i.test(browserPath) && /\.exe$/i.test(browserPath);
+}
+
+function toWindowsPath(filePath) {
+  const result = spawnSync("wslpath", ["-w", path.resolve(filePath)], { encoding: "utf8" });
+  if (result.status !== 0 || !result.stdout.trim()) {
+    throw new Error(`Unable to translate WSL path for PDF generation: ${filePath}`);
+  }
+  return result.stdout.trim();
+}
+
+function toFileUrl(filePath, windowsBrowserFromWsl = false) {
+  if (windowsBrowserFromWsl) {
+    const windowsPath = toWindowsPath(filePath).replace(/\\/g, "/");
+    if (windowsPath.startsWith("//")) {
+      return `file:${windowsPath}`;
+    }
+    return `file:///${windowsPath}`;
+  }
   const normalized = path.resolve(filePath).replace(/\\/g, "/");
   return `file:///${normalized}`;
 }
@@ -233,6 +329,8 @@ function generatePdfGuide(browserPath, guide) {
   const html = markdownToHtml(fs.readFileSync(guide.markdownPath, "utf8"), guide.title);
   const tempHtmlPath = path.join(os.tmpdir(), guide.tempFileName);
   fs.writeFileSync(tempHtmlPath, html, "utf8");
+  const windowsBrowserFromWsl = usesWindowsBrowserFromWsl(browserPath);
+  const outputPath = windowsBrowserFromWsl ? toWindowsPath(guide.outputPath) : guide.outputPath;
 
   const result = spawnSync(
     browserPath,
@@ -242,8 +340,8 @@ function generatePdfGuide(browserPath, guide) {
       "--allow-file-access-from-files",
       "--disable-software-rasterizer",
       "--no-pdf-header-footer",
-      `--print-to-pdf=${guide.outputPath}`,
-      toFileUrl(tempHtmlPath),
+      `--print-to-pdf=${outputPath}`,
+      toFileUrl(tempHtmlPath, windowsBrowserFromWsl),
     ],
     {
       encoding: "utf8",

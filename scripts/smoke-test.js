@@ -90,6 +90,24 @@ test("LEIE validation SQL includes the requested query set and syntax highlighti
   assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
 });
 
+test("Final Version 1.2 metadata and release automation stay consolidated", () => {
+  const versionConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "app_version.json"), "utf8"));
+  const packageConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
+  const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
+  const smokeWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "smoke-tests.yml"), "utf8");
+
+  assert.equal(versionConfig.version, "1.2.4");
+  assert.equal(versionConfig.releaseTag, "v1.2");
+  assert.equal(versionConfig.label, "Version 1.2");
+  assert.equal(packageConfig.scripts["test:smoke"], "node scripts/smoke-test.js");
+  assert.equal(fs.existsSync(path.join(projectRoot, ".github", "release.yml")), false);
+  assert.match(releaseWorkflow, /\$config\.releaseTag/);
+  assert.match(releaseWorkflow, /pnpm run test:smoke/);
+  assert.doesNotMatch(releaseWorkflow, /--generate-notes/);
+  assert.match(smokeWorkflow, /pull_request:/);
+  assert.match(smokeWorkflow, /pnpm run test:smoke/);
+});
+
 test("LEIE upload targets use the manual-processing directory without replacing custom paths", () => {
   assert.equal(LEIE_DEFAULT_UPLOAD_DIRECTORY, "/in/manual_process/");
   assert.equal(resolveUploadDirectoryForWorkflow("", "leie"), "/in/manual_process/");
@@ -509,8 +527,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.2.3");
-    assert.equal(initialInfo.appVersion.label, "Production V1.2.3");
+    assert.equal(initialInfo.appVersion.version, "1.2.4");
+    assert.equal(initialInfo.appVersion.label, "Version 1.2");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);
