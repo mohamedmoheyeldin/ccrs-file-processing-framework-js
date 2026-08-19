@@ -51,6 +51,8 @@ function buildRelease(options = {}) {
       "--win",
       "nsis",
       "--x64",
+      "--publish",
+      "never",
       `--config.directories.output=${paths.distRoot}`,
     ],
     {

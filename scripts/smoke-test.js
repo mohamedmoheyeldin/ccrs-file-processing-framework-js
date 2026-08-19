@@ -95,6 +95,7 @@ test("Final Version 1.2 metadata and release automation stay consolidated", () =
   const packageConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
   const smokeWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "smoke-tests.yml"), "utf8");
+  const buildReleaseScript = fs.readFileSync(path.join(projectRoot, "scripts", "build-release.js"), "utf8");
 
   assert.equal(versionConfig.version, "1.2.4");
   assert.equal(versionConfig.releaseTag, "v1.2");
@@ -104,6 +105,7 @@ test("Final Version 1.2 metadata and release automation stay consolidated", () =
   assert.match(releaseWorkflow, /\$config\.releaseTag/);
   assert.match(releaseWorkflow, /pnpm run test:smoke/);
   assert.doesNotMatch(releaseWorkflow, /--generate-notes/);
+  assert.match(buildReleaseScript, /"--publish",\s*"never"/);
   assert.match(smokeWorkflow, /pull_request:/);
   assert.match(smokeWorkflow, /pnpm run test:smoke/);
 });
