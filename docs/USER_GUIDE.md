@@ -1,287 +1,361 @@
 # CCRS File Processing Framework User Guide
 
+## Version
+
+This guide covers `Production V1.2.3`.
+
 ## Purpose
-This app helps CCRS users process referral JSON files, process LEIE Excel files, generate new referral files, build the final `.gz` package, and optionally upload the finished archive to the configured CCRS environments.
 
-## Quick Start
-Before you run the app, make sure you have:
-- a source folder with CCRS `.json` files if you are editing existing files
-- an output folder where processed files should be saved
-- a `WinSCP.ini` file or a ready-to-use `config\upload_credentials.json` file if you plan to upload
+The CCRS File Processing Framework supports these workflows:
 
-To start the packaged app, download and run `CCRS File Processing Framework Setup Production V1.2.3.exe` from GitHub Releases.
+- process existing CCRS referral JSON files
+- generate new referral JSON files from the bundled templates
+- build a final `.gz` referral package
+- process LEIE Excel files with strict duplicate detection
+- upload referral or LEIE output to configured CCRS environments
+- validate a completed LEIE load in the database and CCRS Table Viewer
 
-When you use the Setup installer, choose the install folder you want for the app.
+## Install and Start the App
 
-The installed app keeps its shipped `.exe`, docs, assets, templates, and bundled files inside that app folder.
+Download `CCRS File Processing Framework Setup Production V1.2.3.exe` from the GitHub Releases page and run the installer.
 
-On first run, the app creates or updates runtime folders for config, logs, docs, and upload helper files.
+The release contains a full Windows Setup installer. Portable executables are not generated.
 
-If you install the app with the Setup installer, those runtime folders are stored under the current user's AppData location so the app can run without administrator rights.
+The installer lets you choose the installation folder. Application files, bundled templates, assets, and documentation are installed with the app. Writable runtime data is stored under the current Windows user's AppData location so the app can run without administrator rights.
 
-Typical runtime folders include:
+Runtime data includes:
+
 - `config`
 - `docs`
 - `logs`
 - `upload_import`
 
-Use the files in that generated runtime folder next to the `.exe`, not the source-code repo folder.
+Use `GitHub Releases` for official installers. Build directories such as `dist-electron` and `release` are not part of the project or normal user workflow.
+
+## Before You Begin
+
+Prepare the items required for your workflow:
+
+- referral processing: a folder containing CCRS `.json` files
+- LEIE processing: an Excel file or folder containing `.xlsx`, `.xls`, `.xlsm`, or `.xlsb` files
+- an output folder where processed files can be saved
+- `WinSCP.ini` or a supported credentials JSON file if upload is required
 
 ## Main Areas
-The app currently has three main workflow tabs:
+
+The app has three main tabs:
+
 - `Referral Files`
 - `LEIE Data Processing`
 - `More Features Coming Soon`
 
-Inside `Referral Files`, there are two working modes:
+`Referral Files` contains two modes:
+
 - `Edit Existing Files`
 - `Generate New Files`
 
 ## LEIE Data Processing
-Use this tab when you need to process LEIE Excel files and detect duplicate rows.
 
-At the top of the LEIE Source section, use `LEIE Data Upload and Validation Guide` to open the full manual:
-- `docs\LEIE_UPLOAD_VALIDATION_GUIDE.md`
+Use `LEIE Data Processing` to inspect, clean, save, upload, and validate LEIE Excel data.
 
-### 1. Source
+The `LEIE Data Upload and Validation Guide` button opens the separate detailed LEIE manual from the app.
+
+### Step 1: Select the Source
+
 Choose either:
-- a single LEIE Excel file (`.xlsx`, `.xls`, `.xlsm`, `.xlsb`)
-- a folder that contains LEIE Excel files
 
-### 2. Duplicate Detection
-The app runs strict duplicate detection using full-row matching only.
+- one LEIE Excel file
+- a folder containing one or more LEIE Excel files
 
-A row is treated as duplicate only when all column values match another row after:
-- trimming whitespace
-- converting to lowercase
+Supported extensions are `.xlsx`, `.xls`, `.xlsm`, and `.xlsb`.
 
-The `Current Result` field shows:
-- scan progress while detection runs
-- final result when completed (for example, duplicate rows found or no duplicates found)
+The app scans the source and reports the number of files and rows it can read.
 
-### 3. Output
-Choose where the processed LEIE file should be saved. `Output File Name` defaults to the original source file name; change it only when you want a different name.
-The app always shows a live output preview in this section.
+### Step 2: Resolve Duplicate Rows
 
-### 4. Save
-Use `Save Processed File` after duplicate checks are complete.
+LEIE duplicate detection always uses strict full-row matching. A row is considered a duplicate only when every column value matches another row after whitespace is trimmed and text is compared without case differences.
 
-## Edit Existing Files
-Use this mode when you already have referral JSON files and want to update them.
+The duplicate area shows scan progress, the final result, and duplicate row details.
 
-### 1. Source
-Choose the folder that contains the input `.json` files.
+If duplicates are found, choose one action:
 
-The app will:
-- read `.json` files only
-- ignore non-JSON files
-- load defaults from the first JSON file it finds
-- show how many source files were found
-- show the current default `ListDate`
+- `Remove duplicates automatically (keep first)` keeps the first matching row and removes later matches
+- `Review and fix manually` blocks processing until the source is corrected and rescanned
+- `Cancel Process` stops the LEIE workflow
 
-### 2. Referral Details
-Use this section to control the first referral number, `ListDate`, and optional field overrides.
+Use `Rescan` after changing the source file manually.
 
-The preview lines update live so you can see what the app will generate before you run it.
+### Step 3: Choose the Output
 
-### 3. Output
-Use `Save To` to choose the output folder.
+Select the output folder.
 
-Then enter:
-- the full output JSON base name
+`Output File Name` defaults to the original source file name. The app does not add a `Processed_` prefix or otherwise change the source base name by default.
+
+You may enter a different base name when needed. The saved output is an `.xlsx` workbook, and the live preview shows the final name.
+
+### Step 4: Configure LEIE Upload
+
+Enable `Upload the .xlsx file after processing` only when the processed workbook should be sent to one or more servers.
+
+Supported targets are `DEV`, `PPD`, `SQA`, and `PROD`.
+
+Every LEIE server defaults to this remote directory:
+
+```text
+/in/manual_process/
+```
+
+This LEIE default is separate from the referral default `/CCRA_Uploads`. Switching workflows changes only a standard default path. A custom remote directory entered by the user is preserved.
+
+For every selected server:
+
+- choose the upload user
+- confirm or edit the remote directory
+- use `Test Connection` before processing when possible
+
+### Step 5: Save and Upload
+
+Select `Save Processed File` after the duplicate check is complete.
+
+When upload is enabled, the app processes selected servers in order. For each server it:
+
+- shows an `Uploading` state
+- transfers the processed `.xlsx` file
+- verifies that the remote file exists and has the expected byte size
+- marks that server complete only after verification
+- closes the connection with a bounded timeout so a stalled disconnect cannot block the workflow
+- moves to the next selected server
+
+If one server fails, the app records the error and continues with the remaining selected servers. The final status identifies failed targets. A successfully saved local workbook remains available even when an upload target fails.
+
+### Step 6: Find the ETL Batch ID
+
+After the server processes the uploaded file, use the latest batch log entry to identify the correct `etl_batch_id`.
+
+The in-app example batch ID is:
+
+```text
+LEIE0731202606153013
+```
+
+Replace it with the actual batch ID for the environment and file being validated.
+
+### Step 7: Run the LEIE Validation SQL
+
+The LEIE Upload area contains an `ETL Batch ID` field and a `Validation SQL` box. Entering a batch ID updates all three batch-ID references automatically.
+
+The SQL box uses color-coded SQL keywords, quoted values, numbers, and comments. It remains selectable, and `Copy SQL` copies the complete plain-text query set.
+
+The current query set is:
+
+```sql
+Use ccrsdb;
+
+select * from CLAIM_BATCH_LOG order by last_updated_date desc;-- First get the etl_batch_id
+
+Select File_Name, *
+from CLAIM_BATCH_LOG
+where etl_batch_id = 'LEIE0731202606153013'
+order by Start_date_time desc;
+
+select count(*)
+from dbo.LKUP_PROVIDER_SANCTION
+where etl_batch_id = 'LEIE0731202606153013';
+
+Select count(*)
+from dbo.LKUP_PROVIDER_SANCTION
+where etl_batch_id <> 'LEIE0731202606153013'
+  and is_current = 'Y';
+
+select * from dbo.LKUP_PROVIDER_SANCTION;
+```
+
+Run the SQL in `ccrsdb` for the selected environment. Confirm the file name, timestamps, batch status, loaded row count, and current-record state.
+
+### Step 8: Validate in CCRS UI
+
+Open the CCRS Table Viewer for the same environment, select `CLAIM_BATCH_LOG`, and confirm that the file name, `etl_batch_id`, timestamps, and load status match the database results.
+
+Complete validation in one environment before moving to the next required environment.
+
+## Edit Existing Referral Files
+
+Use `Edit Existing Files` when referral JSON files already exist.
+
+### Source
+
+Choose the folder containing the input `.json` files. The app:
+
+- reads JSON files and ignores unrelated files
+- reports the number of source files found
+- loads available defaults from the first source file
+- displays the current source `ListDate`
+
+### Referral Details
+
+Set the starting referral number, `ListDate`, and any optional overrides. Preview lines update before the workflow runs.
+
+### Output
+
+Choose the output folder and optionally enter:
+
+- the processed JSON base name
 - the final `.gz` archive name
-- optional archive naming add-ons such as `Network` and `Referral DateTime`
+- archive additions such as `Network` and `Referral DateTime`
 
-The app adds `.json` and `.gz` automatically.
+The app adds `.json` and `.gz` extensions automatically.
 
 Examples:
+
 - `batch101` becomes `batch101.json`
-- if multiple source files are processed, the app creates `batch101_1.json`, `batch101_2.json`, and so on
+- multiple files become `batch101_1.json`, `batch101_2.json`, and so on
 - `ccra_referrals_20260326` becomes `ccra_referrals_20260326.gz`
-- `customname` with archive add-ons can become `customname_CCN1_20260401_134500.gz`
+- archive additions can produce `customname_CCN1_20260401_134500.gz`
 
-### 4. Run
-Use `Run Processing` when you are editing existing files.
+### Run
 
-The app will:
-- apply the requested changes
-- create processed `.json` files
-- build the final `.gz` archive
-- optionally upload the archive if upload is enabled
+Select `Run Processing`. The app applies changes, creates processed JSON files, builds the final `.gz`, and uploads the archive when upload is enabled.
 
-## Generate New Files
-Use this mode when you want the app to create referral files from scratch.
+## Generate New Referral Files
 
-In this mode you can:
-- choose how many JSON files to create
-- choose how many referrals should be in each file
-- use the same referral details and naming rules as the edit flow
+Use `Generate New Files` to create referrals from the bundled templates.
 
-This mode does not require a source folder and does not include upload.
+Choose:
 
-Use `Generate Files` to run this workflow.
+- the number of JSON files
+- the number of referrals per file
+- referral details and optional overrides
+- output naming
 
-## Referral Details
+This mode does not require a source folder and does not upload. Select `Generate Files` to run it.
+
+## Referral Number and ICN
+
 ### Referral Number
-Enter only the user-controlled portion of the referral number.
+
+Enter the user-controlled portion only. The app adds `VA` automatically and produces a 12-character final value.
 
 Rules:
-- the app adds `VA` automatically
-- the final value is always 12 characters total, including `VA`
+
 - letters and numbers are allowed
-- the preview shows the first generated value live
-- each generated `ReferralNumber` stays unique within the run
+- the live preview shows the first value
+- generated referral numbers remain unique within the run
 
 Examples:
+
 - `1` becomes `VA0000000001`
 - `eldin` becomes `VA00000eldin`
 
-### List Date
-If you do not edit the date and time fields, the app keeps the source `ListDate` or the current live time, depending on the workflow.
-
-### Optional Fields
-Click `Show Optional Fields` to open the additional override fields.
-
-If a field is blank, the app keeps the original value unless that field is designed to auto-generate from your starting input.
-
-Supported optional fields:
-- `SSN`
-- `ICN`
-- `Station ID`
-- `SEOC Number` and `SEOC ID`
-- `Payment Authority Code`
-- `DOB`
-- `Network`
-- `Referral Category`
-- `Referral Date`
-- `Referral Date Time`
-- `Referral Expiration Date`
-- `Referral Last Update Date`
-- `Referral Period`
-- `Referral Consult ID`
-
 ### ICN
-The `ICN` controls are inside `Show Optional Fields`.
 
-You can choose one of three formats:
-- keep `TEST` and let the app generate the remaining characters automatically
-- keep `TEST` and enter your own letters and numbers for the custom portion
-- enter a custom full ICN base and let the app generate the remaining characters automatically
+Open `Show Optional Fields` to configure ICN generation.
 
-Rules:
-- the `TEST` custom value accepts letters and numbers
-- the app keeps each generated ICN unique within the run
-- if you leave ICN on the default option, the app still generates a different `TEST...` ICN for each referral
-- choose 3, 4, or 5 characters to make the ending of each ICN match its Referral Number
+Available modes are:
+
+- keep `TEST` and generate the remaining characters
+- keep `TEST` and enter a custom alphanumeric suffix
+- enter a custom full ICN base and generate the remaining characters
+
+Generated ICNs remain unique. Choose `3`, `4`, or `5` to make the ending of each ICN match the ending of its Referral Number.
+
+## Patient Identity Controls
 
 ### SSN and DOB
-Random generation is enabled by default. Each patient receives a random test SSN and a random DOB. Uncheck the corresponding option only when you need to apply a fixed value.
+
+Random generation is enabled by default. Each patient receives a random test SSN and random DOB.
+
+Uncheck the corresponding random option only when a fixed value must be applied. Fixed SSNs must use the displayed test format, and dates must use `YYYY-MM-DD`.
 
 ### Station ID
+
+Choose an exact `station_key` from the reference-backed dropdown or enable random valid Station IDs.
+
 Rules:
-- choose an exact `station_key` from the reference-backed dropdown, or enable random valid Station IDs
-- when you choose a suggestion, the saved value is the `station_key`
-- entered Station IDs are never padded or modified
-- random mode uses only IDs from `config/station_options.json`
 
-### SEOC
-Choose either a SEOC Number or SEOC ID. The other selector synchronizes automatically so the generated referral always uses a valid pair found in the bundled reference templates.
+- a selected or entered Station ID is never padded or extended
+- a three-character Station ID remains three characters
+- manual values must exactly match the reference table
+- random mode uses only valid entries from `config/station_options.json`
 
-### Payment Authority Code
-Rules:
-- accepts numbers only
-- accepts up to 5 digits
-- blank means keep the source value
-- later referrals increment automatically so values stay unique
+### SEOC Number and SEOC ID
 
-### Network
-Available values:
-- `CCN1`
-- `CCN2`
-- `CCN3`
-- `CCN4`
-- `CCN5`
+Select either a SEOC Number or a SEOC ID. The other selector updates automatically so the referral receives a valid synchronized pair from the bundled reference data.
 
-## Validation
-The app now validates important fields before the workflow runs and shows inline messages next to the field.
+## Other Optional Referral Fields
 
-Examples of what is checked:
-- SSN format
-- referral number format
-- station ID format
-- payment authority code length and range
-- date and date-time format
-- generator counts
-- required upload selections
+Supported optional fields include:
 
-If something is invalid, fix the highlighted field and run again.
+- Payment Authority Code
+- Network
+- Referral Category
+- Referral Date
+- Referral Date Time
+- Referral Expiration Date
+- Referral Last Update Date
+- Referral Period
+- Referral Consult ID
 
-## Upload
-Turn on upload only if you want the app to send the final `.gz` file after processing.
-If `Upload the .gz file after processing` is not selected, `Upload to ...` target toggles are disabled.
+Payment Authority Code accepts up to five numeric digits. Later generated referrals increment the value so it remains unique.
 
-Supported upload targets:
-- `DEV`
-- `PPD`
-- `SQA`
-- `PROD`
+Network values are `CCN1`, `CCN2`, `CCN3`, `CCN4`, and `CCN5`.
 
-Default remote path:
-- `/CCRA_Uploads`
+If an optional field is blank, the app keeps the source value unless that field's selected mode explicitly generates a value.
 
-When `LEIE Data Processing` is active, every server instead defaults to:
-- `/in/manual_process/`
+## Referral Upload
 
-Switching workflows updates the standard default path but preserves a custom remote path entered by the user.
+Referral processing uploads the final `.gz` archive. Enable `Upload the .gz file after processing`, select one or more targets, choose the user, and confirm the remote directory.
 
-### Upload Credential Files
-The app uses:
+The standard referral remote directory is:
+
+```text
+/CCRA_Uploads
+```
+
+Target toggles remain disabled until the main upload option is enabled.
+
+## Upload Credentials
+
+The app uses runtime copies of:
+
 - `config\upload_profiles.json`
 - `config\upload_credentials.json`
 
-### Import To Config
-Use `Import To Config` to load upload credentials from:
-- `WinSCP.ini`
-- a supported credentials JSON file
+Use `Import To Config` to import `WinSCP.ini` or a supported credentials JSON file. The app does not automatically search arbitrary machine locations for credentials.
 
-When you import `WinSCP.ini`, the app:
-- reads the saved WinSCP sessions
-- extracts host, username, password, and related connection details
-- writes the final data into `config\upload_credentials.json`
+Importing WinSCP settings reads the saved sessions, resolves servers and users, and writes the active credentials configuration under the app's runtime data location.
 
-After import, `config\upload_credentials.json` is the main file the app uses for uploads.
-The app no longer auto-loads upload profiles from arbitrary machine paths; profiles are activated only through `Import To Config`.
+Each upload target includes `Test Connection`. Use it to verify the selected account and remote directory before a full workflow.
 
-### Test Connection
-Each upload target now includes a `Test Connection` button.
+## Validation and Status Messages
 
-Use it to verify:
-- the selected user exists
-- the remote directory is filled in
-- the app can connect before you run the full workflow
+The app validates fields before running and displays messages next to invalid inputs.
 
-This is the fastest way to confirm upload settings before you process files.
+Validation includes:
 
-During LEIE processing, the app verifies each uploaded file on the remote server before marking that target complete. It then continues to the next selected server. If one target fails, the remaining selected servers are still attempted and the final status lists the failed target.
+- SSN format
+- Referral Number format
+- Station ID reference match
+- Payment Authority Code range
+- date and date-time format
+- generator counts
+- selected upload user
+- remote upload directory
+- LEIE duplicate resolution
 
-### LEIE Upload Validation
-When the `LEIE Data Processing` tab is active, the Upload area includes:
-- `Step 4: Validate the LEIE Load in the Database`
-- `Step 5: Validate in CCRS UI`
+Common statuses include:
 
-For Step 4:
-- paste the `etl_batch_id` from `CLAIM_BATCH_LOG`
-- use `Copy SQL`
-- review the color-coded SQL keywords, values, numbers, and comments in the validation box
-- run the SQL in `ccrsdb` and validate row counts/batch status
+- `File Loaded`
+- `Duplicates Found`
+- `Ready to Save`
+- `Uploading`
+- `Uploaded`
+- `Upload Complete`
+- `Upload Warning`
+- `Failed`
 
-For Step 5:
-- open the correct CCRS Table Viewer environment
-- validate the same LEIE batch values in the UI
-- confirm the load is successful before moving to the next environment
+## Referral Output Format
 
-## Output Format
-The final `.gz` contains one combined JSON object with this shape:
+The final `.gz` contains one combined JSON object:
 
 ```json
 {
@@ -292,15 +366,41 @@ The final `.gz` contains one combined JSON object with this shape:
 }
 ```
 
-## User Guide File
-The packaged app opens this guide file:
-- `docs\USER_GUIDE.pdf`
+## Files and Cleanup
 
-If you share the app with other users, make sure the `docs` folder stays next to the `.exe`.
+The packaged app opens `docs\USER_GUIDE.pdf` when the User Guide is requested.
 
-## Common Notes
-- generated JSON files always use lowercase `.json`
-- the app creates one `.gz` file per run
-- older `.gz` files are not removed automatically
-- you can keep the processed `.json` files or keep only the `.gz`
-- app-created temporary staging folders and temporary upload helper files are cleaned automatically after the run or when the app closes
+General behavior:
+
+- generated JSON files use lowercase `.json`
+- one `.gz` archive is created per referral-processing run
+- existing `.gz` files are not deleted automatically
+- processed JSON files may be kept or removed after archive creation
+- app-created staging folders and temporary upload helper files are cleaned after a run or when the app closes
+- release binaries are distributed through GitHub Releases rather than stored in the source repository
+
+## Troubleshooting
+
+### LEIE Output Name Is Unexpected
+
+Select or rescan the source. The default should match the original source base name. Clear a custom value if you want the original name restored.
+
+### LEIE Upload Appears Stuck
+
+Check the individual server status. The app verifies the remote file and limits disconnect waiting time. If a server reports an error, review its user, path, and connection test; later selected servers are still attempted.
+
+### Upload Target Is Disabled
+
+Enable the main upload checkbox first, then enable each required server.
+
+### No Upload Profiles Are Available
+
+Use `Import To Config` and select the approved `WinSCP.ini` or credentials JSON file.
+
+### LEIE Processing Is Blocked
+
+Resolve duplicates automatically, or correct them in the source and select `Rescan` before saving.
+
+### SQL Uses the Example Batch ID
+
+Paste the actual `etl_batch_id` into the in-app field before selecting `Copy SQL`.
