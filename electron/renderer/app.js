@@ -139,6 +139,11 @@ function setReleaseAnnouncementOpen(isOpen) {
   state.releaseAnnouncementOpen = Boolean(isOpen);
   elements.releaseAnnouncementOverlay?.classList.toggle("hidden", !state.releaseAnnouncementOpen);
   document.body.classList.toggle("modal-open", state.releaseAnnouncementOpen);
+  if (state.releaseAnnouncementOpen) {
+    window.requestAnimationFrame(() => {
+      elements.releaseAnnouncementAccept?.focus({ preventScroll: true });
+    });
+  }
 }
 
 function syncReleaseAnnouncement() {

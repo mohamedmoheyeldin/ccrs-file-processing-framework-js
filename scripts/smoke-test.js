@@ -98,6 +98,7 @@ test("Final Version 1.2 metadata and release automation stay consolidated", () =
   const smokeWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "smoke-tests.yml"), "utf8");
   const buildReleaseScript = fs.readFileSync(path.join(projectRoot, "scripts", "build-release.js"), "utf8");
   const rendererHtml = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "index.html"), "utf8");
+  const rendererStyles = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "styles.css"), "utf8");
   const mainProcess = fs.readFileSync(path.join(projectRoot, "electron", "main.js"), "utf8");
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
@@ -119,6 +120,10 @@ test("Final Version 1.2 metadata and release automation stay consolidated", () =
   assert.equal(packageConfig.build.nsis.installerHeaderIcon, "assets/icons/ccrs_app_icon.ico");
   assert.match(rendererHtml, /ccrs_app_icon\.ico/);
   assert.equal((rendererHtml.match(/ccrs_app_icon\.png/g) || []).length, 2);
+  assert.match(rendererHtml, /class="release-announcement-scroll"/);
+  assert.match(rendererHtml, />Start Using The App</);
+  assert.match(rendererStyles, /grid-template-rows:\s*auto minmax\(0, 1fr\) auto/);
+  assert.match(rendererStyles, /\.release-announcement-scroll\s*\{[^}]*overflow-y:\s*auto/s);
   assert.match(mainProcess, /ccrs_app_icon\.ico/);
   assert.equal(fs.existsSync(path.join(projectRoot, ".github", "release.yml")), false);
   assert.match(releaseWorkflow, /\$config\.releaseTag/);

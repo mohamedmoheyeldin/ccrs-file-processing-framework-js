@@ -110,12 +110,21 @@ button {
 
 .release-announcement-modal {
   display: grid;
-  gap: 18px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(1180px, 100%);
+  height: min(820px, calc(100vh - 48px));
+  max-height: calc(100vh - 48px);
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .release-announcement-header {
   display: grid;
   gap: 8px;
+  padding: 24px 28px 18px;
+  border-bottom: 1px solid var(--panel-border);
+  background: var(--panel-strong);
 }
 
 .release-announcement-brand {
@@ -155,19 +164,66 @@ button {
 
 .release-announcement-list {
   display: grid;
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
   margin: 0;
-  padding-left: 20px;
+  padding: 0;
+  list-style: none;
 }
 
 .release-announcement-list li {
   color: var(--text);
   line-height: 1.55;
+  padding: 14px 16px 14px 38px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  background: var(--panel-strong);
+  position: relative;
+}
+
+.release-announcement-list li::before {
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: 17px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 5px var(--accent-soft);
+}
+
+.release-announcement-scroll {
+  min-height: 0;
+  padding: 20px 28px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.release-announcement-scroll:focus-visible {
+  outline: 3px solid var(--accent-soft);
+  outline-offset: -3px;
 }
 
 .release-announcement-actions {
   display: flex;
+  align-items: center;
+  gap: 18px;
   justify-content: flex-end;
+  padding: 16px 28px;
+  border-top: 1px solid var(--panel-border);
+  background: var(--panel-strong);
+}
+
+.release-announcement-actions span {
+  margin-right: auto;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.release-announcement-actions button {
+  min-width: 210px;
 }
 
 .duplicate-table-wrap {
@@ -1480,6 +1536,37 @@ select:disabled {
 
   .modal-panel {
     padding: 18px;
+  }
+
+  .release-announcement-modal {
+    width: 100%;
+    height: calc(100vh - 32px);
+    max-height: calc(100vh - 32px);
+    padding: 0;
+  }
+
+  .release-announcement-header,
+  .release-announcement-scroll,
+  .release-announcement-actions {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .release-announcement-list {
+    grid-template-columns: 1fr;
+  }
+
+  .release-announcement-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .release-announcement-actions span {
+    margin-right: 0;
+  }
+
+  .release-announcement-actions button {
+    width: 100%;
   }
 
   .field-row {

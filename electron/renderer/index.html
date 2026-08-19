@@ -576,6 +576,7 @@
         role="dialog"
         aria-modal="true"
         aria-labelledby="release-announcement-title"
+        aria-describedby="release-announcement-copy"
       >
         <div class="release-announcement-header">
           <div class="release-announcement-brand">
@@ -584,13 +585,16 @@
           </div>
           <h2 id="release-announcement-title">What's new in this release</h2>
           <p id="release-announcement-version" class="release-announcement-version"></p>
-          <p class="release-announcement-copy">
-            Review the changes below. This message is shown once for each release and user.
+          <p id="release-announcement-copy" class="release-announcement-copy">
+            Review the changes below. Scroll through the updates, then start using the app when you are ready.
           </p>
         </div>
-        <ul id="release-announcement-list" class="release-announcement-list"></ul>
+        <div class="release-announcement-scroll" tabindex="0" aria-label="Release notes">
+          <ul id="release-announcement-list" class="release-announcement-list"></ul>
+        </div>
         <div class="release-announcement-actions">
-          <button id="release-announcement-accept" class="toolbar-button primary-soft">Continue To The App</button>
+          <span>The release notes are shown once for this version.</span>
+          <button id="release-announcement-accept" class="toolbar-button primary">Start Using The App</button>
         </div>
       </section>
     </div>
