@@ -10,6 +10,9 @@ const CREDENTIALS_JSON_PATH = userDataPath("config", "upload_credentials.json");
 const WINSCP_GENERATED_CREDENTIALS_PATH = userDataPath("upload_import", "winscp_credentials.json");
 const UPLOAD_PROFILES_PATH = userDataPath("config", "upload_profiles.json");
 const UPLOAD_SOURCE_MARKER_PATH = userDataPath("config", "upload_source_marker.json");
+const SFTP_CONNECT_TIMEOUT_MS = 30_000;
+const SFTP_OPERATION_TIMEOUT_MS = 10 * 60_000;
+const SFTP_CLOSE_TIMEOUT_MS = 5_000;
 
 function summarizeUploadProfiles(profiles) {
   return {
@@ -772,6 +775,41 @@ async function ensureRemoteDirectory(client, remoteDirectory) {
   }
 }
 
+function withTimeout(promise, timeoutMs, description) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${description} timed out after ${Math.ceil(timeoutMs / 1000)} seconds.`)), timeoutMs);
+  });
+
+  return Promise.race([Promise.resolve(promise), timeout]).finally(() => clearTimeout(timer));
+}
+
+async function closeSftpClient(client, timeoutMs = SFTP_CLOSE_TIMEOUT_MS) {
+  let closePromise;
+  try {
+    closePromise = Promise.resolve(client.end()).catch(() => {});
+  } catch (_error) {
+    closePromise = Promise.resolve();
+  }
+
+  let timer;
+  const closedNormally = await Promise.race([
+    closePromise.then(() => true),
+    new Promise((resolve) => {
+      timer = setTimeout(() => resolve(false), timeoutMs);
+    }),
+  ]);
+  clearTimeout(timer);
+
+  if (!closedNormally) {
+    try {
+      client.client?.destroy?.();
+    } catch (_error) {
+      // The transfer is already complete; a failed forced disconnect must not block the next target.
+    }
+  }
+}
+
 function uploadFileWithWinscp(localPath, remoteDirectory, sessionName, winscpPath) {
   const iniPath = getExistingWinscpIniPath();
   if (!iniPath) {
@@ -789,7 +827,12 @@ function uploadFileWithWinscp(localPath, remoteDirectory, sessionName, winscpPat
     const result = spawnSync(winscpPath, [`/ini=${iniPath}`, `/script=${scriptPath}`, "/nointeractiveinput"], {
       encoding: "utf8",
       windowsHide: true,
+      timeout: SFTP_OPERATION_TIMEOUT_MS,
+      killSignal: "SIGKILL",
     });
+    if (result.error) {
+      throw new Error(`WinSCP upload failed for session ${sessionName}. ${result.error.message}`);
+    }
     if (result.status !== 0) {
       const details = (result.stderr || result.stdout || "Unknown WinSCP error.").trim();
       throw new Error(`WinSCP upload failed for session ${sessionName}. ${details}`);
@@ -821,7 +864,12 @@ function testConnectionWithWinscp(remoteDirectory, sessionName, winscpPath) {
     const result = spawnSync(winscpPath, [`/ini=${iniPath}`, `/script=${scriptPath}`, "/nointeractiveinput"], {
       encoding: "utf8",
       windowsHide: true,
+      timeout: SFTP_CONNECT_TIMEOUT_MS,
+      killSignal: "SIGKILL",
     });
+    if (result.error) {
+      throw new Error(`WinSCP connection test failed for session ${sessionName}. ${result.error.message}`);
+    }
     if (result.status !== 0) {
       const details = (result.stderr || result.stdout || "Unknown WinSCP error.").trim();
       throw new Error(`WinSCP connection test failed for session ${sessionName}. ${details}`);
@@ -850,16 +898,55 @@ async function testUploadConnection(connectionDetails, remoteDirectory) {
 
   const client = new SftpClient();
   try {
-    await client.connect({
+    await withTimeout(client.connect({
       host: connectionDetails.host,
       port: connectionDetails.port,
       username: connectionDetails.username,
       password: connectionDetails.password,
-    });
-    await client.list(normalizedRemoteDirectory);
+    }), SFTP_CONNECT_TIMEOUT_MS, "SFTP connection");
+    await withTimeout(client.list(normalizedRemoteDirectory), SFTP_CONNECT_TIMEOUT_MS, "Remote directory check");
     return `Connected successfully and confirmed ${normalizedRemoteDirectory}.`;
   } finally {
-    await client.end().catch(() => {});
+    await closeSftpClient(client);
+  }
+}
+
+async function uploadFileWithSftp(
+  localPath,
+  remoteDirectory,
+  connectionDetails,
+  client = new SftpClient(),
+  timeouts = {}
+) {
+  const connectTimeoutMs = timeouts.connectTimeoutMs || SFTP_CONNECT_TIMEOUT_MS;
+  const operationTimeoutMs = timeouts.operationTimeoutMs || SFTP_OPERATION_TIMEOUT_MS;
+  const closeTimeoutMs = timeouts.closeTimeoutMs || SFTP_CLOSE_TIMEOUT_MS;
+
+  try {
+    await withTimeout(client.connect({
+      host: connectionDetails.host,
+      port: connectionDetails.port,
+      username: connectionDetails.username,
+      password: connectionDetails.password,
+    }), connectTimeoutMs, "SFTP connection");
+    await withTimeout(
+      ensureRemoteDirectory(client, remoteDirectory),
+      operationTimeoutMs,
+      "Remote directory preparation"
+    );
+    const remotePath = `${remoteDirectory.replace(/\/+$/, "")}/${path.basename(localPath)}`;
+    await withTimeout(client.put(localPath, remotePath), operationTimeoutMs, "SFTP upload");
+
+    const remoteStats = await withTimeout(client.stat(remotePath), connectTimeoutMs, "Uploaded file verification");
+    const localSize = fs.statSync(localPath).size;
+    if (Number(remoteStats?.size) !== localSize) {
+      throw new Error(
+        `Upload verification failed for ${path.basename(localPath)}: expected ${localSize} bytes, found ${remoteStats?.size ?? "unknown"}.`
+      );
+    }
+    return remotePath;
+  } finally {
+    await closeSftpClient(client, closeTimeoutMs);
   }
 }
 
@@ -878,21 +965,7 @@ async function uploadFile(localPath, remoteDirectory, connectionDetails) {
     );
   }
 
-  const client = new SftpClient();
-  try {
-    await client.connect({
-      host: connectionDetails.host,
-      port: connectionDetails.port,
-      username: connectionDetails.username,
-      password: connectionDetails.password,
-    });
-    await ensureRemoteDirectory(client, normalizedRemoteDirectory);
-    const remotePath = `${normalizedRemoteDirectory.replace(/\/+$/, "")}/${path.basename(localPath)}`;
-    await client.put(localPath, remotePath);
-    return remotePath;
-  } finally {
-    await client.end().catch(() => {});
-  }
+  return uploadFileWithSftp(localPath, normalizedRemoteDirectory, connectionDetails);
 }
 
 module.exports = {
@@ -905,5 +978,8 @@ module.exports = {
   resolveUploadTargets,
   summarizeUploadProfiles,
   testUploadConnection,
+  closeSftpClient,
   uploadFile,
+  uploadFileWithSftp,
+  withTimeout,
 };

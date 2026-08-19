@@ -1,8 +1,12 @@
 {
-  "version": "1.2.0",
-  "label": "Production V1.2",
-  "announcementId": "1.2.0|Production V1.2|2026-08-19-referral-data-controls",
+  "version": "1.2.1",
+  "label": "Production V1.2.1",
+  "announcementId": "1.2.1|Production V1.2.1|2026-08-19-leie-upload-completion",
   "releaseNotes": [
+    "LEIE Output File Name now defaults to the original source file name without adding a Processed_ prefix.",
+    "LEIE SFTP uploads now verify the remote file size before marking each server complete.",
+    "A stalled SFTP disconnect can no longer leave the upload permanently in progress or prevent the next selected server from running.",
+    "If one LEIE upload target fails, the app continues through the remaining selected targets and reports the failed server.",
     "New in V1.2: LEIE Data Processing is a new feature in this release.",
     "New in V1.2: LEIE processing now includes a built-in LEIE Upload and Validation Guide with copy-ready SQL checks.",
     "Added LEIE Step 4 and Step 5 validation guidance in the Upload area for database and CCRS UI verification.",

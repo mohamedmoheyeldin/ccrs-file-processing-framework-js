@@ -31,7 +31,7 @@ function createWindow() {
 }
 
 function runBackendCommand(webContents, command, payload = {}) {
-  return backend.handleCommand(command, payload, (current, total, filename, state, uploadTarget) => {
+  return backend.handleCommand(command, payload, (current, total, filename, state, uploadTarget, detail) => {
     webContents.send("backend:event", {
       type: "progress",
       current,
@@ -39,6 +39,7 @@ function runBackendCommand(webContents, command, payload = {}) {
       filename,
       state,
       uploadTarget: uploadTarget || null,
+      detail: detail || null,
     });
   });
 }

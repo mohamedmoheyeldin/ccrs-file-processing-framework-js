@@ -13,8 +13,8 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.2.0",
-  "label": "Production V1.2",
+  "version": "1.2.1",
+  "label": "Production V1.2.1",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -25,7 +25,7 @@ How it works:
 - `version` stays numeric because Windows packaging and Electron builds require a standard build version.
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the first-run release popup for each user and release.
-- The app now displays `Production V1.2` while the Windows build version remains `1.2.0`.
+- The app now displays `Production V1.2.1` while the Windows build version remains `1.2.1`.
 - `npm start`, `npm test`, and `npm run dist` automatically sync `package.json` and `package-lock.json` from this file before running.
 
 ## Developer Run
@@ -53,7 +53,7 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `label`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push a matching version tag such as `v1.2.0`.
+3. Run the workflow manually from GitHub Actions, or push a matching version tag such as `v1.2.1`.
 
 The workflow requires the tag to match the configured numeric version and refuses to overwrite an existing release. A manual run creates the matching tag from the selected commit when the release is published.
 
@@ -81,6 +81,7 @@ Files that are kept in sync from the shipped app:
 ## Supported Workflows
 - Process existing CCRS referral JSON files
 - Process LEIE Excel files with strict full-row duplicate detection
+- Keep the original LEIE source file name as the default output name
 - Generate new referral JSON files from bundled templates
 - Use the bundled CCN1 all-fields reference templates stored under `templates\referrals`
 - Generate random SSNs and DOBs per patient, or apply fixed overrides when needed
@@ -92,6 +93,7 @@ Files that are kept in sync from the shipped app:
 - Import upload settings from `WinSCP.ini` or credentials JSON
 - Upload final archives to configured `DEV`, `PPD`, `SQA`, and `PROD` targets
 - Test upload connectivity before running the full workflow
+- Verify each LEIE upload and continue through every selected server even when one target fails
 - Automatically clean app-created temporary staging folders and upload helper files after a run or when the app closes
 
 ## V1.2 Highlights

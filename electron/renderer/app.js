@@ -1193,7 +1193,8 @@ async function inspectLeieSourceFolder(options = {}) {
     updatePreviews();
     return;
   }
-  if (!force && inputDir === state.leieLastScannedInput) {
+  const sourceChanged = inputDir !== state.leieLastScannedInput;
+  if (!force && !sourceChanged) {
     return;
   }
 
@@ -1216,8 +1217,8 @@ async function inspectLeieSourceFolder(options = {}) {
     state.leieInspection = inspection;
     state.leieInspectionError = "";
     state.leieLastScannedInput = inputDir;
-    state.leieOutputFileName = state.leieOutputFileName || inspection.outputNameSuggestion || "";
-    if (!readValue("replacement-code")) {
+    if (sourceChanged || !readValue("replacement-code")) {
+      state.leieOutputFileName = inspection.outputNameSuggestion || "";
       elements.replacementCode.value = state.leieOutputFileName;
     }
 
@@ -1509,7 +1510,7 @@ function syncWorkflowText() {
     ? "Output File Name"
     : "Name for the processed JSON files";
   elements.outputNameHelp.textContent = isLeie
-    ? "Leave blank to keep original .xlsx file names. Do not include extension; the app saves as .xlsx automatically."
+    ? "Defaults to the original source file name. You can enter a different base name; the app saves as .xlsx automatically."
     : "Leave blank to keep original JSON names.";
   elements.outputJsonPreview.classList.toggle("hidden", false);
   elements.inputDir.placeholder = isLeie
@@ -1545,7 +1546,7 @@ function syncWorkflowText() {
   }
 
   if (isLeie) {
-    elements.replacementCode.placeholder = "Leave blank to keep original .xlsx file names";
+    elements.replacementCode.placeholder = "Original source file name";
     elements.replacementCode.value = state.leieOutputFileName || elements.replacementCode.value;
     state.sourceInspection = null;
     state.sourceListDate = "";
@@ -2011,8 +2012,26 @@ function setupEventHandlers() {
       return;
     }
 
+    const uploadRow = [...document.querySelectorAll(".upload-target")]
+      .find((row) => row.dataset.target === event.uploadTarget);
+
+    if (event.state === "upload-target-complete") {
+      setUploadTargetStatus(uploadRow, `Upload complete (${event.current}/${event.total}).`, "success");
+      const nextMessage = event.current < event.total ? " Moving to the next server." : "";
+      setStatus("Uploaded", `${event.filename} uploaded to ${event.uploadTarget}.${nextMessage}`);
+      return;
+    }
+
+    if (event.state === "upload-target-error") {
+      setUploadTargetStatus(uploadRow, event.detail || "Upload failed.", "error");
+      const nextMessage = event.current < event.total ? " Moving to the next server." : "";
+      setStatus("Upload Warning", `Upload to ${event.uploadTarget} failed.${nextMessage}`);
+      return;
+    }
+
     if (event.state === "uploading") {
       const targetText = event.uploadTarget ? ` to ${event.uploadTarget}` : "";
+      setUploadTargetStatus(uploadRow, `Uploading ${event.filename}...`, "working");
       setStatus("Uploading", `Uploading ${event.filename}${targetText}...`);
       return;
     }

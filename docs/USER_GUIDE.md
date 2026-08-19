@@ -9,7 +9,7 @@ Before you run the app, make sure you have:
 - an output folder where processed files should be saved
 - a `WinSCP.ini` file or a ready-to-use `config\upload_credentials.json` file if you plan to upload
 
-To start the packaged app, download and run `CCRS File Processing Framework Setup Production V1.2.exe` from GitHub Releases.
+To start the packaged app, download and run `CCRS File Processing Framework Setup Production V1.2.1.exe` from GitHub Releases.
 
 When you use the Setup installer, choose the install folder you want for the app.
 
@@ -60,7 +60,7 @@ The `Current Result` field shows:
 - final result when completed (for example, duplicate rows found or no duplicates found)
 
 ### 3. Output
-Choose where the processed LEIE file should be saved and optionally set the output file name.
+Choose where the processed LEIE file should be saved. `Output File Name` defaults to the original source file name; change it only when you want a different name.
 The app always shows a live output preview in this section.
 
 ### 4. Save
@@ -256,6 +256,8 @@ Use it to verify:
 - the app can connect before you run the full workflow
 
 This is the fastest way to confirm upload settings before you process files.
+
+During LEIE processing, the app verifies each uploaded file on the remote server before marking that target complete. It then continues to the next selected server. If one target fails, the remaining selected servers are still attempted and the final status lists the failed target.
 
 ### LEIE Upload Validation
 When the `LEIE Data Processing` tab is active, the Upload area includes:

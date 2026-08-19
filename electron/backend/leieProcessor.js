@@ -259,7 +259,7 @@ function inspectLeieSource(payload = {}) {
     duplicates: sourceData.duplicates,
     validationErrors: sourceData.validationErrors,
     hasDuplicates: sourceData.duplicates.length > 0,
-    outputNameSuggestion: firstFileName ? `Processed_${firstFileName}` : "",
+    outputNameSuggestion: firstFileName,
   };
 }
 
@@ -399,6 +399,7 @@ async function processLeieFiles(payload = {}, progressCallback) {
   }
 
   const uploadedPaths = [];
+  const uploadErrors = [];
   const uploadOptions = buildLeieUploadOptions(payload);
   if (uploadOptions && uploadOptions.enabled) {
     for (let index = 0; index < uploadOptions.targets.length; index += 1) {
@@ -413,21 +414,55 @@ async function processLeieFiles(payload = {}, progressCallback) {
         );
       }
 
-      const uploadedPath = await uploadFile(
-        outputPath,
-        uploadTarget.remote_directory,
-        uploadTarget.connection_details
-      );
+      try {
+        const uploadedPath = await uploadFile(
+          outputPath,
+          uploadTarget.remote_directory,
+          uploadTarget.connection_details
+        );
 
-      uploadedPaths.push({
-        server_name: uploadTarget.server_name,
-        remote_path: uploadedPath,
-      });
+        uploadedPaths.push({
+          server_name: uploadTarget.server_name,
+          remote_path: uploadedPath,
+        });
+        if (progressCallback) {
+          progressCallback(
+            index + 1,
+            uploadOptions.targets.length,
+            outputFileName,
+            "upload-target-complete",
+            uploadTarget.server_name
+          );
+        }
+      } catch (error) {
+        uploadErrors.push({
+          server_name: uploadTarget.server_name,
+          message: error.message,
+        });
+        if (progressCallback) {
+          progressCallback(
+            index + 1,
+            uploadOptions.targets.length,
+            outputFileName,
+            "upload-target-error",
+            uploadTarget.server_name,
+            error.message
+          );
+        }
+      }
     }
 
-    if (progressCallback) {
+    if (progressCallback && uploadErrors.length === 0) {
       progressCallback(uploadedPaths.length, uploadedPaths.length, outputFileName, "upload-complete");
     }
+  }
+
+  if (uploadErrors.length > 0) {
+    throw new Error(
+      `LEIE file was saved, but ${uploadErrors.length} upload target${uploadErrors.length === 1 ? "" : "s"} failed: ${uploadErrors
+        .map((item) => `${item.server_name}: ${item.message}`)
+        .join("; ")}`
+    );
   }
 
   const uploadedMessage = uploadedPaths.length

@@ -19,7 +19,7 @@ const {
   cleanupKnownTemporaryArtifacts,
   registerTemporaryPath,
 } = require("../electron/backend/runtimeCleanup");
-const { summarizeUploadProfiles } = require("../electron/backend/uploader");
+const { summarizeUploadProfiles, uploadFileWithSftp } = require("../electron/backend/uploader");
 const { buildArchiveBasename, formatArchiveReferralDateTime } = require("../electron/backend/zipper");
 const {
   DEFAULT_UI_SETTINGS,
@@ -480,8 +480,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.2.0");
-    assert.equal(initialInfo.appVersion.label, "Production V1.2");
+    assert.equal(initialInfo.appVersion.version, "1.2.1");
+    assert.equal(initialInfo.appVersion.label, "Production V1.2.1");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);
@@ -520,6 +520,7 @@ test("LEIE inspection detects duplicates and LEIE processing removes them when c
   });
 
   assert.equal(inspection.fileCount, 1);
+  assert.equal(inspection.outputNameSuggestion, "leie_source");
   assert.equal(inspection.hasDuplicates, true);
   assert.equal(inspection.duplicates.length, 1);
   assert.equal(inspection.duplicates[0].rowNumber, 4);
@@ -548,6 +549,59 @@ test("LEIE inspection detects duplicates and LEIE processing removes them when c
   assert.equal(processed.outputFileName, "processed_leie.xlsx");
   assert.equal(fs.existsSync(path.join(outputDir, "processed_leie.xlsx")), true);
   assert.equal(processed.duplicatesRemoved, 1);
+
+  const defaultNamed = await backend.handleCommand("process-leie", {
+    inputDir: sourceDir,
+    outputDir,
+    outputFileName: "",
+    duplicateKey: "full-row",
+    duplicateHandling: "auto-remove",
+    upload: { enabled: false, targets: [] },
+  });
+
+  assert.equal(defaultNamed.outputFileName, "leie_source.xlsx");
+  assert.equal(fs.existsSync(path.join(outputDir, "leie_source.xlsx")), true);
+});
+
+test("SFTP upload verifies the remote file and does not hang when disconnect stalls", async () => {
+  const localPath = path.join(tempRoot, "verified-upload.xlsx");
+  fs.writeFileSync(localPath, "verified upload payload", "utf8");
+  let destroyed = false;
+  let uploadedRemotePath = "";
+
+  const fakeClient = {
+    client: {
+      destroy() {
+        destroyed = true;
+      },
+    },
+    async connect() {},
+    async stat(remotePath) {
+      if (remotePath.endsWith("verified-upload.xlsx")) {
+        return { size: fs.statSync(localPath).size };
+      }
+      return { type: "d" };
+    },
+    async mkdir() {},
+    async put(_sourcePath, remotePath) {
+      uploadedRemotePath = remotePath;
+    },
+    end() {
+      return new Promise(() => {});
+    },
+  };
+
+  const remotePath = await uploadFileWithSftp(
+    localPath,
+    "/incoming/leie",
+    { host: "example.test", port: 22, username: "tester", password: "secret" },
+    fakeClient,
+    { connectTimeoutMs: 100, operationTimeoutMs: 100, closeTimeoutMs: 10 }
+  );
+
+  assert.equal(remotePath, "/incoming/leie/verified-upload.xlsx");
+  assert.equal(uploadedRemotePath, remotePath);
+  assert.equal(destroyed, true);
 });
 
 test("App info prefers the PDF user guide path", async () => {
