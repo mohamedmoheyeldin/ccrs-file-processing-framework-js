@@ -8,6 +8,11 @@ const DATE_PARTS = [
 ];
 const PAYMENT_AUTHORITY_CODE_MAX = 99999;
 const { buildLeieValidationSql, highlightSql } = window.ccrsLeieSql;
+const {
+  LEIE_DEFAULT_UPLOAD_DIRECTORY,
+  REFERRAL_DEFAULT_UPLOAD_DIRECTORY,
+  resolveUploadDirectoryForWorkflow,
+} = window.ccrsUploadDefaults;
 
 const state = {
   info: null,
@@ -725,8 +730,33 @@ function applyUploadTargetSettings(uploadTargets = {}) {
     if (targetSettings.userName && row.querySelector(".upload-user")) {
       row.querySelector(".upload-user").value = targetSettings.userName;
     }
-    if (targetSettings.remoteDirectory && row.querySelector(".upload-path")) {
-      row.querySelector(".upload-path").value = targetSettings.remoteDirectory;
+    if (row.querySelector(".upload-path")) {
+      row.querySelector(".upload-path").value = resolveUploadDirectoryForWorkflow(
+        targetSettings.remoteDirectory,
+        state.mainTab,
+        row.dataset.referralDefaultDirectory
+      );
+    }
+  }
+}
+
+function syncWorkflowUploadDirectories() {
+  for (const row of document.querySelectorAll(".upload-target")) {
+    const pathInput = row.querySelector(".upload-path");
+    const pathHelp = row.querySelector(".upload-path-help");
+    if (!pathInput) {
+      continue;
+    }
+
+    pathInput.value = resolveUploadDirectoryForWorkflow(
+      pathInput.value,
+      state.mainTab,
+      row.dataset.referralDefaultDirectory
+    );
+    if (pathHelp) {
+      pathHelp.textContent = state.mainTab === "leie"
+        ? `LEIE uploads default to ${LEIE_DEFAULT_UPLOAD_DIRECTORY} on every server.`
+        : "Use the remote folder you want the .gz file uploaded to.";
     }
   }
 }
@@ -889,6 +919,12 @@ function renderUploadTargets(targets) {
     const wrapper = document.createElement("div");
     wrapper.className = "upload-target";
     wrapper.dataset.target = target.name;
+    wrapper.dataset.referralDefaultDirectory = target.defaultRemoteDirectory || REFERRAL_DEFAULT_UPLOAD_DIRECTORY;
+    const defaultRemoteDirectory = resolveUploadDirectoryForWorkflow(
+      "",
+      state.mainTab,
+      wrapper.dataset.referralDefaultDirectory
+    );
 
     const userOptions = (target.users || [])
       .map((user) => `<option value="${user}">${user}</option>`)
@@ -913,7 +949,7 @@ function renderUploadTargets(targets) {
         </label>
         <label class="field-block">
           <span>Remote Directory</span>
-          <input class="upload-path" type="text" value="${target.defaultRemoteDirectory || "/CCRA_Uploads"}" />
+          <input class="upload-path" type="text" value="${defaultRemoteDirectory}" />
           <small class="helper-text upload-path-help">Use the remote folder you want the .gz file uploaded to.</small>
         </label>
       </div>
@@ -1503,8 +1539,13 @@ function syncWorkflowText() {
   elements.outputDir.placeholder = isLeie
     ? "Choose where processed .xlsx files should be written"
     : "Choose where JSON and .gz files should be written";
-  elements.uploadSubtitle.textContent = "Optionally upload the final .gz file to one or more saved environment profiles.";
-  elements.uploadEnabledLabel.textContent = "Upload the .gz file after processing";
+  elements.uploadSubtitle.textContent = isLeie
+    ? "Optionally upload the processed LEIE .xlsx file to one or more saved environment profiles."
+    : "Optionally upload the final .gz file to one or more saved environment profiles.";
+  elements.uploadEnabledLabel.textContent = isLeie
+    ? "Upload the .xlsx file after processing"
+    : "Upload the .gz file after processing";
+  syncWorkflowUploadDirectories();
 
   elements.subtabRow.classList.toggle("hidden", !isReferral);
   elements.generatorCard.classList.toggle("hidden", !isGenerate);

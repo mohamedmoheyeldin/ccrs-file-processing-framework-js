@@ -9,7 +9,7 @@ Before you run the app, make sure you have:
 - an output folder where processed files should be saved
 - a `WinSCP.ini` file or a ready-to-use `config\upload_credentials.json` file if you plan to upload
 
-To start the packaged app, download and run `CCRS File Processing Framework Setup Production V1.2.2.exe` from GitHub Releases.
+To start the packaged app, download and run `CCRS File Processing Framework Setup Production V1.2.3.exe` from GitHub Releases.
 
 When you use the Setup installer, choose the install folder you want for the app.
 
@@ -228,6 +228,11 @@ Supported upload targets:
 
 Default remote path:
 - `/CCRA_Uploads`
+
+When `LEIE Data Processing` is active, every server instead defaults to:
+- `/in/manual_process/`
+
+Switching workflows updates the standard default path but preserves a custom remote path entered by the user.
 
 ### Upload Credential Files
 The app uses:

@@ -41,6 +41,10 @@ const {
   buildLeieValidationSql,
   highlightSql,
 } = require("../electron/renderer/leieSql");
+const {
+  LEIE_DEFAULT_UPLOAD_DIRECTORY,
+  resolveUploadDirectoryForWorkflow,
+} = require("../electron/renderer/uploadDefaults");
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-smoke-"));
 const projectRoot = path.resolve(__dirname, "..");
@@ -84,6 +88,14 @@ test("LEIE validation SQL includes the requested query set and syntax highlighti
   assert.match(highlighted, /class="sql-keyword">select<\/span>/i);
   assert.match(highlighted, /class="sql-string">&#39;LEIE0731202606153013&#39;<\/span>/);
   assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
+});
+
+test("LEIE upload targets use the manual-processing directory without replacing custom paths", () => {
+  assert.equal(LEIE_DEFAULT_UPLOAD_DIRECTORY, "/in/manual_process/");
+  assert.equal(resolveUploadDirectoryForWorkflow("", "leie"), "/in/manual_process/");
+  assert.equal(resolveUploadDirectoryForWorkflow("/CCRA_Uploads", "leie"), "/in/manual_process/");
+  assert.equal(resolveUploadDirectoryForWorkflow("/custom/leie/", "leie"), "/custom/leie/");
+  assert.equal(resolveUploadDirectoryForWorkflow("/in/manual_process/", "referral"), "/CCRA_Uploads");
 });
 
 test("Payment Authority Code accepts up to 5 digits", () => {
@@ -497,8 +509,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.2.2");
-    assert.equal(initialInfo.appVersion.label, "Production V1.2.2");
+    assert.equal(initialInfo.appVersion.version, "1.2.3");
+    assert.equal(initialInfo.appVersion.label, "Production V1.2.3");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);

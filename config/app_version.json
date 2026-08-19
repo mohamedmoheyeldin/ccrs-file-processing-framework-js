@@ -1,8 +1,10 @@
 {
-  "version": "1.2.2",
-  "label": "Production V1.2.2",
-  "announcementId": "1.2.2|Production V1.2.2|2026-08-19-leie-sql-highlighting",
+  "version": "1.2.3",
+  "label": "Production V1.2.3",
+  "announcementId": "1.2.3|Production V1.2.3|2026-08-19-leie-upload-directory",
   "releaseNotes": [
+    "Every LEIE server upload now defaults to /in/manual_process/ while referral uploads retain /CCRA_Uploads.",
+    "Switching workflows updates standard upload defaults without replacing a custom remote directory.",
     "Updated the LEIE database validation SQL to include the latest batch-log lookup and all requested sanction-table checks.",
     "The LEIE Validation SQL box now uses SQL syntax colors for keywords, values, numbers, and comments while remaining selectable and copyable.",
     "LEIE Output File Name now defaults to the original source file name without adding a Processed_ prefix.",

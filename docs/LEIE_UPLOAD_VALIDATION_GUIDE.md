@@ -58,7 +58,7 @@ Use the correct URL for each environment:
 
 1. Open WinSCP.
 2. Connect using user `ediuser`.
-3. Go to the target environment's inbound directory: `/in`.
+3. Go to the target environment's manual-processing directory: `/in/manual_process/`.
 4. Upload the LEIE `.xlsx` file.
 5. Confirm the file was transferred successfully.
 
