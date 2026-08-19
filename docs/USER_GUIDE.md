@@ -9,7 +9,7 @@ Before you run the app, make sure you have:
 - an output folder where processed files should be saved
 - a `WinSCP.ini` file or a ready-to-use `config\upload_credentials.json` file if you plan to upload
 
-To start the packaged app, download and run `CCRS File Processing Framework Setup Production V1.2.1.exe` from GitHub Releases.
+To start the packaged app, download and run `CCRS File Processing Framework Setup Production V1.2.2.exe` from GitHub Releases.
 
 When you use the Setup installer, choose the install folder you want for the app.
 
@@ -267,6 +267,7 @@ When the `LEIE Data Processing` tab is active, the Upload area includes:
 For Step 4:
 - paste the `etl_batch_id` from `CLAIM_BATCH_LOG`
 - use `Copy SQL`
+- review the color-coded SQL keywords, values, numbers, and comments in the validation box
 - run the SQL in `ccrsdb` and validate row counts/batch status
 
 For Step 5:

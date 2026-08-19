@@ -78,46 +78,36 @@ Find the correct LEIE load entry and copy the `etl_batch_id` value.
 Example:
 
 ```sql
-H202604150409112638
+LEIE0731202606153013
 ```
 
 ## Step 4: Validate the LEIE Load in the Database
 
-Use the `etl_batch_id` from Step 3 and run the following queries.
+Use the `etl_batch_id` from Step 3 and run the following SQL. Replace the example batch ID with the batch ID for the file you loaded.
 
 ```sql
 Use ccrsdb;
 
+select * from CLAIM_BATCH_LOG order by last_updated_date desc;-- First get the etl_batch_id
+
 Select File_Name, *
 from CLAIM_BATCH_LOG
-where etl_batch_id = 'H202604150409112638'
+where etl_batch_id = 'LEIE0731202606153013'
 order by Start_date_time desc;
-```
 
-This verifies the correct file and batch record.
-
-```sql
 select count(*)
 from dbo.LKUP_PROVIDER_SANCTION
-where etl_batch_id = 'H202604150409112638';
-```
+where etl_batch_id = 'LEIE0731202606153013';
 
-This verifies the number of loaded rows. Compare this count to the number of records in the `.xlsx` file.
-
-```sql
 Select count(*)
 from dbo.LKUP_PROVIDER_SANCTION
-where etl_batch_id <> 'H202604150409112638'
+where etl_batch_id <> 'LEIE0731202606153013'
   and is_current = 'Y';
-```
 
-This verifies that no older batch is still marked as current.
-
-```sql
 select * from dbo.LKUP_PROVIDER_SANCTION;
 ```
 
-This gives you a full view of the loaded LEIE data for additional validation.
+The queries identify the latest batch, verify the correct file and batch record, count loaded rows, confirm no older batch remains current, and provide a full LEIE data view.
 
 ## Step 5: Validate in CCRS UI
 

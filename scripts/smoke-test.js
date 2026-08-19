@@ -37,6 +37,10 @@ const {
   assertPathInsideWorkRoot,
   assertSafeTemporaryWorkRoot,
 } = require("./build-release");
+const {
+  buildLeieValidationSql,
+  highlightSql,
+} = require("../electron/renderer/leieSql");
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-smoke-"));
 const projectRoot = path.resolve(__dirname, "..");
@@ -68,6 +72,19 @@ function writeXlsxFixture(filePath, rows) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   XLSX.writeFile(workbook, filePath);
 }
+
+test("LEIE validation SQL includes the requested query set and syntax highlighting", () => {
+  const sql = buildLeieValidationSql("LEIE0731202606153013");
+  assert.match(sql, /^Use ccrsdb;/);
+  assert.match(sql, /select \* from CLAIM_BATCH_LOG order by last_updated_date desc;-- First get the etl_batch_id/);
+  assert.equal((sql.match(/LEIE0731202606153013/g) || []).length, 3);
+  assert.match(sql, /select \* from dbo\.LKUP_PROVIDER_SANCTION;$/);
+
+  const highlighted = highlightSql(sql);
+  assert.match(highlighted, /class="sql-keyword">select<\/span>/i);
+  assert.match(highlighted, /class="sql-string">&#39;LEIE0731202606153013&#39;<\/span>/);
+  assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
+});
 
 test("Payment Authority Code accepts up to 5 digits", () => {
   assert.equal(validatePaymentAuthorityCode("99999"), "99999");
@@ -480,8 +497,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.2.1");
-    assert.equal(initialInfo.appVersion.label, "Production V1.2.1");
+    assert.equal(initialInfo.appVersion.version, "1.2.2");
+    assert.equal(initialInfo.appVersion.label, "Production V1.2.2");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);

@@ -512,14 +512,20 @@
                   <input
                     id="leie-validation-batch-id"
                     type="text"
-                    placeholder="Example: H202604150409112638"
+                    placeholder="Example: LEIE0731202606153013"
                     autocomplete="off"
                   />
                   <small class="helper-text">Use the batch ID from `CLAIM_BATCH_LOG` (Step 3 in the guide).</small>
                 </label>
                 <label class="field-block">
                   <span>Validation SQL</span>
-                  <textarea id="leie-validation-sql" rows="14" readonly></textarea>
+                  <pre
+                    id="leie-validation-sql"
+                    class="sql-code-block"
+                    tabindex="0"
+                    role="region"
+                    aria-label="Syntax-highlighted LEIE validation SQL"
+                  ><code></code></pre>
                 </label>
                 <div class="toggle-row">
                   <button id="copy-leie-validation-sql" class="toolbar-button">Copy SQL</button>
@@ -584,6 +590,7 @@
       </section>
     </div>
 
+    <script src="./leieSql.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

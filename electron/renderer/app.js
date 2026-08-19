@@ -7,7 +7,7 @@ const DATE_PARTS = [
   { key: "second", width: 2, min: 0, max: 59 },
 ];
 const PAYMENT_AUTHORITY_CODE_MAX = 99999;
-const LEIE_BATCH_ID_PLACEHOLDER = "H202604150409112638";
+const { buildLeieValidationSql, highlightSql } = window.ccrsLeieSql;
 
 const state = {
   info: null,
@@ -206,34 +206,13 @@ function isExcelPath(value) {
   return /\.(xlsx|xls|xlsm|xlsb)$/i.test(String(value || "").trim());
 }
 
-function buildLeieValidationSql(batchIdRaw = "") {
-  const normalizedBatchId = String(batchIdRaw || "").trim() || LEIE_BATCH_ID_PLACEHOLDER;
-  return [
-    "Use ccrsdb;",
-    "",
-    "Select File_Name, *",
-    "from CLAIM_BATCH_LOG",
-    `where etl_batch_id = '${normalizedBatchId}'`,
-    "order by Start_date_time desc;",
-    "",
-    "select count(*)",
-    "from dbo.LKUP_PROVIDER_SANCTION",
-    `where etl_batch_id = '${normalizedBatchId}';`,
-    "",
-    "Select count(*)",
-    "from dbo.LKUP_PROVIDER_SANCTION",
-    `where etl_batch_id <> '${normalizedBatchId}'`,
-    "  and is_current = 'Y';",
-    "",
-    "select * from dbo.LKUP_PROVIDER_SANCTION;",
-  ].join("\n");
-}
-
 function syncLeieValidationSql() {
   if (!elements.leieValidationSql || !elements.leieValidationBatchId) {
     return;
   }
-  elements.leieValidationSql.value = buildLeieValidationSql(elements.leieValidationBatchId.value);
+  const sqlText = buildLeieValidationSql(elements.leieValidationBatchId.value);
+  elements.leieValidationSql.dataset.rawSql = sqlText;
+  elements.leieValidationSql.innerHTML = `<code>${highlightSql(sqlText)}</code>`;
 }
 
 async function copyLeieValidationSql() {
@@ -241,7 +220,7 @@ async function copyLeieValidationSql() {
     return;
   }
 
-  const sqlText = elements.leieValidationSql.value;
+  const sqlText = elements.leieValidationSql.dataset.rawSql || elements.leieValidationSql.textContent;
   let copied = false;
 
   if (navigator.clipboard && window.isSecureContext) {
@@ -254,9 +233,14 @@ async function copyLeieValidationSql() {
   }
 
   if (!copied) {
-    elements.leieValidationSql.focus();
-    elements.leieValidationSql.select();
+    const copyField = document.createElement("textarea");
+    copyField.value = sqlText;
+    copyField.setAttribute("readonly", "");
+    copyField.className = "clipboard-copy-field";
+    document.body.appendChild(copyField);
+    copyField.select();
     copied = document.execCommand("copy");
+    copyField.remove();
   }
 
   elements.leieValidationCopyStatus.textContent = copied
