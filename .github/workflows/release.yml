@@ -64,8 +64,12 @@ jobs:
             throw "Release tag '$releaseTag' must match config/app_version.json version '$expectedTag'."
           }
 
-          gh release view $releaseTag --repo $env:GITHUB_REPOSITORY *> $null
-          if ($LASTEXITCODE -eq 0) {
+          $existingRelease = @(
+            gh release list --repo $env:GITHUB_REPOSITORY --limit 100 --json tagName |
+              ConvertFrom-Json |
+              Where-Object { $_.tagName -eq $releaseTag }
+          )
+          if ($existingRelease.Count -gt 0) {
             throw "GitHub Release '$releaseTag' already exists. Increment config/app_version.json before publishing another release."
           }
 
