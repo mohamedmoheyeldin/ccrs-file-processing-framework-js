@@ -798,8 +798,8 @@ function syncWorkflowUploadDirectories() {
     );
     if (pathHelp) {
       pathHelp.textContent = state.mainTab === "leie"
-        ? `LEIE uploads default to ${LEIE_DEFAULT_UPLOAD_DIRECTORY} on every server.`
-        : "Use the remote folder you want the .gz file uploaded to.";
+        ? `LEIE Data uploads default to ${LEIE_DEFAULT_UPLOAD_DIRECTORY}. This is separate from the CCRS Referral default ${REFERRAL_DEFAULT_UPLOAD_DIRECTORY}.`
+        : `CCRS Referral uploads default to ${REFERRAL_DEFAULT_UPLOAD_DIRECTORY}. This is separate from the LEIE Data default ${LEIE_DEFAULT_UPLOAD_DIRECTORY}.`;
     }
   }
 }
@@ -993,7 +993,7 @@ function renderUploadTargets(targets) {
         <label class="field-block">
           <span>Remote Directory</span>
           <input class="upload-path" type="text" value="${defaultRemoteDirectory}" />
-          <small class="helper-text upload-path-help">Use the remote folder you want the .gz file uploaded to.</small>
+          <small class="helper-text upload-path-help">CCRS Referral uploads default to ${REFERRAL_DEFAULT_UPLOAD_DIRECTORY}.</small>
         </label>
       </div>
       <div class="upload-target-actions">

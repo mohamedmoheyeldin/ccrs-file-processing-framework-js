@@ -1,15 +1,23 @@
-# CCRS File Processing Framework Version 1.2.5
+# CCRS File Processing Framework Version 1.3
 
 ## Release Summary
 
-Version 1.2.5 is the reliability, security, large-file, and user-experience update for the Version 1.2 product line.
+Version 1.3 makes the CCRS Referral and LEIE Data upload workflows unmistakably separate while retaining the reliability, security, large-file, and user-experience improvements introduced in the previous release.
 
 The GitHub Release contains:
 
-- `CCRS File Processing Framework Setup Version 1.2.5.exe`
+- `CCRS File Processing Framework Setup Version 1.3.exe`
 - `SHA256SUMS.txt`
 
 Portable executables are not generated. Build output stays in temporary GitHub Actions storage and is not committed to the repository.
+
+## Separate Referral and LEIE Upload Workflows
+
+- CCRS Referral processing uploads the final `.gz` archive and defaults every Remote Directory field to `/CCRA_Uploads`.
+- LEIE Data processing uploads the processed `.xlsx` file and defaults every Remote Directory field to `/in/manual_process/`.
+- Each Remote Directory note identifies its workflow's default and explicitly contrasts it with the other workflow.
+- Switching workflows changes recognized standard defaults without replacing a custom remote directory entered by the user.
+- Smoke and Windows Electron end-to-end tests verify both visible defaults and workflow switching behavior.
 
 ## Performance and Large Files
 

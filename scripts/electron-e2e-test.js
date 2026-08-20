@@ -25,6 +25,12 @@ async function run() {
     assert.equal(await window.locator("#run-process").isVisible(), true);
     assert.equal(await window.locator("#cancel-job").isHidden(), true);
     assert.equal(await window.locator("meta[http-equiv='Content-Security-Policy']").count(), 1);
+    const uploadDirectoryNote = window.locator(".upload-path-help").first();
+    await uploadDirectoryNote.waitFor({ state: "visible" });
+    assert.match(await uploadDirectoryNote.textContent(), /CCRS Referral uploads default to \/CCRA_Uploads/);
+    await window.locator("[data-main-tab='leie']").click();
+    assert.match(await uploadDirectoryNote.textContent(), /LEIE Data uploads default to \/in\/manual_process\//);
+    await window.locator("[data-main-tab='referral']").click();
     if (process.env.CCRS_E2E_SCREENSHOT) {
       await window.screenshot({ path: process.env.CCRS_E2E_SCREENSHOT, fullPage: true });
     }

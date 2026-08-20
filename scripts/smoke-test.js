@@ -95,7 +95,7 @@ test("LEIE validation SQL includes the requested query set and syntax highlighti
   assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
 });
 
-test("Version 1.2.5 metadata and release automation stay consolidated", () => {
+test("Version 1.3 metadata and release automation stay consolidated", () => {
   const versionConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "app_version.json"), "utf8"));
   const packageConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
@@ -107,9 +107,9 @@ test("Version 1.2.5 metadata and release automation stay consolidated", () => {
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
 
-  assert.equal(versionConfig.version, "1.2.5");
-  assert.equal(versionConfig.releaseTag, "v1.2.5");
-  assert.equal(versionConfig.label, "Version 1.2.5");
+  assert.equal(versionConfig.version, "1.3.0");
+  assert.equal(versionConfig.releaseTag, "v1.3");
+  assert.equal(versionConfig.label, "Version 1.3");
   assert.equal(packageConfig.scripts["test:smoke"], "node scripts/smoke-test.js");
   assert.equal(packageConfig.scripts["test:syntax"], "node scripts/syntax-check.js");
   assert.equal(crypto.createHash("sha256").update(iconPng).digest("hex"), "dc3b2ab2b0beda8d92527552f2160be83572018c5bf17c0a6cca7c21c013cb95");
@@ -172,7 +172,7 @@ test("Diagnostic export excludes credentials and user file paths", async () => {
   const result = await backend.handleCommand("export-diagnostics", { outputDir });
   const reportText = fs.readFileSync(result.reportPath, "utf8");
   const report = JSON.parse(reportText);
-  assert.equal(report.appVersion, "1.2.5");
+  assert.equal(report.appVersion, "1.3.0");
   assert.equal(Object.prototype.hasOwnProperty.call(report.workflowPreferences, "inputDir"), false);
   assert.doesNotMatch(reportText, /password|ciphertext|connection_details/i);
 });
@@ -207,6 +207,14 @@ test("LEIE upload targets use the manual-processing directory without replacing 
   assert.equal(resolveUploadDirectoryForWorkflow("/CCRA_Uploads", "leie"), "/in/manual_process/");
   assert.equal(resolveUploadDirectoryForWorkflow("/custom/leie/", "leie"), "/custom/leie/");
   assert.equal(resolveUploadDirectoryForWorkflow("/in/manual_process/", "referral"), "/CCRA_Uploads");
+});
+
+test("Referral and LEIE upload notes identify their separate default directories", () => {
+  const rendererSource = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "app.js"), "utf8");
+  assert.match(rendererSource, /CCRS Referral uploads default to/);
+  assert.match(rendererSource, /separate from the LEIE Data default/);
+  assert.match(rendererSource, /LEIE Data uploads default to/);
+  assert.match(rendererSource, /separate from the CCRS Referral default/);
 });
 
 test("Payment Authority Code accepts up to 5 digits", () => {
@@ -620,8 +628,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.2.5");
-    assert.equal(initialInfo.appVersion.label, "Version 1.2.5");
+    assert.equal(initialInfo.appVersion.version, "1.3.0");
+    assert.equal(initialInfo.appVersion.label, "Version 1.3");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);
@@ -646,7 +654,7 @@ test("App info exposes one-time release announcement metadata", async () => {
 test("Release notes appear once after upgrading from an older release", async () => {
   const originalOverride = process.env.CCRS_USER_DATA_ROOT;
   const settingsRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-release-upgrade-"));
-  const olderReleaseKey = "1.2.3|Production V1.2.3";
+  const olderReleaseKey = "v1.2.5|Version 1.2.5|2026-08-19";
 
   try {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;

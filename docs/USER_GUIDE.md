@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Version 1.2.5`.
+This guide covers `Version 1.3`.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download `CCRS File Processing Framework Setup Version 1.2.5.exe` from the GitHub Releases page and run the installer.
+Download `CCRS File Processing Framework Setup Version 1.3.exe` from the GitHub Releases page and run the installer.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 
@@ -336,6 +336,8 @@ The standard referral remote directory is:
 ```text
 /CCRA_Uploads
 ```
+
+This location is specific to CCRS Referral uploads. LEIE Data uploads use the separate default `/in/manual_process/`.
 
 Target toggles remain disabled until the main upload option is enabled.
 

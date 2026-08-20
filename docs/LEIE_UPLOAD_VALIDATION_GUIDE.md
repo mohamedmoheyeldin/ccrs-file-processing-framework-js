@@ -4,6 +4,8 @@
 
 This document explains how to upload LEIE data, validate the database load, and confirm the results in the CCRS UI.
 
+LEIE Data upload is separate from CCRS Referral upload. LEIE sends the processed `.xlsx` file to `/in/manual_process/`; CCRS Referral sends its final `.gz` archive to `/CCRA_Uploads`.
+
 ## Recommended File Name
 
 `LEIE_UPLOAD_VALIDATION_GUIDE.md`
