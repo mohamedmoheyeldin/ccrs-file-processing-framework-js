@@ -1,4 +1,5 @@
 const { parentPort, workerData } = require("worker_threads");
+require("module").Module._initPaths();
 const { inspectLeieSource } = require("./leieProcessor");
 
 function post(payload) {
