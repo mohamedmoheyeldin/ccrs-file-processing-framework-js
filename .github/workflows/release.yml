@@ -204,8 +204,6 @@ jobs:
             "",
             "Download **$env:INSTALLER_NAME** and run it to install the application.",
             "",
-            "This release intentionally provides the Setup installer only; portable executables are not generated.",
-            "",
             "## Release highlights",
             ""
           ) + $highlights + @(

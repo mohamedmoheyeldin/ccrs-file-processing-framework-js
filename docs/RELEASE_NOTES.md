@@ -1,15 +1,20 @@
-# CCRS File Processing Framework Version 1.3
+# CCRS File Processing Framework Version 1.3.1
 
 ## Release Summary
 
-Version 1.3 makes the CCRS Referral and LEIE Data upload workflows unmistakably separate while retaining the reliability, security, large-file, and user-experience improvements introduced in the previous release.
+Version 1.3.1 gives every dropdown the same compact, constrained design as Station ID while retaining the separate CCRS Referral and LEIE Data upload workflows introduced in Version 1.3.
 
 The GitHub Release contains:
 
-- `CCRS File Processing Framework Setup Version 1.3.exe`
+- `CCRS File Processing Framework Setup Version 1.3.1.exe`
 - `SHA256SUMS.txt`
 
-Portable executables are not generated. Build output stays in temporary GitHub Actions storage and is not committed to the repository.
+## Compact Dropdowns
+
+- Referral / ICN Match, Network, SEOC Number, SEOC ID, and every other dropdown now use one consistent design.
+- Long lists remain inside a 260-pixel scrollable menu instead of expanding across the application window.
+- Selected values are shortened visually with an ellipsis when needed; the stored value remains unchanged.
+- Dropdowns retain keyboard access, disabled states, and the existing field behavior.
 
 ## Separate Referral and LEIE Upload Workflows
 
@@ -37,14 +42,6 @@ Portable executables are not generated. Build output stays in temporary GitHub A
 - Existing plaintext credential files migrate automatically when encryption is available.
 - Importing a credentials JSON file no longer removes or modifies the original source file.
 
-## Desktop Security
-
-- Electron renderer sandboxing is enabled with a restrictive Content Security Policy.
-- IPC is limited to the trusted application window, external links require HTTPS, and unexpected navigation, windows, and permission requests are denied.
-- Settings and release acknowledgement files use atomic writes.
-- Logs rotate at a bounded size and redact common secret patterns.
-- A sanitized diagnostic report can be exported without credential values or user file paths.
-
 ## User Experience and Accessibility
 
 - A Select, Configure, Validate, Process, and Upload stepper makes workflow position clear.
@@ -60,10 +57,3 @@ Portable executables are not generated. Build output stays in temporary GitHub A
 - LEIE uploads default to `/in/manual_process/`; referral uploads default to `/CCRA_Uploads`.
 - Station IDs stay exact or use valid reference entries, Referral Number and ICN endings can match by 3, 4, or 5 characters, SSNs and DOBs randomize by default, and SEOC fields remain synchronized.
 - Batch-ID-aware, syntax-highlighted SQL validation remains available.
-
-## Quality Gates and Dependencies
-
-- Functional smoke tests, production dependency auditing, and a Windows Playwright Electron test run before merge and release.
-- Release CI silently installs and launches the generated Setup application before publishing.
-- Windows signing is used automatically when `WIN_CSC_LINK` and `WIN_CSC_KEY_PASSWORD` repository secrets are configured.
-- Electron is updated to 43.4.1, ssh2-sftp-client to 12.1.1, Playwright to 1.62.1, and pnpm to 11.22.0.

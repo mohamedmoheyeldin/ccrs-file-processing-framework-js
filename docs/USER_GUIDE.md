@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Version 1.3`.
+This guide covers `Version 1.3.1`.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download `CCRS File Processing Framework Setup Version 1.3.exe` from the GitHub Releases page and run the installer.
+Download `CCRS File Processing Framework Setup Version 1.3.1.exe` from the GitHub Releases page and run the installer.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 
@@ -306,6 +306,8 @@ Rules:
 ### SEOC Number and SEOC ID
 
 Select either a SEOC Number or a SEOC ID. The other selector updates automatically so the referral receives a valid synchronized pair from the bundled reference data.
+
+All dropdowns use the same compact design as Station ID. Referral / ICN Match, Network, SEOC, and upload-user lists remain inside a scrollable menu instead of expanding beyond the application window. Long selected labels are shortened visually without changing their stored values.
 
 ## Other Optional Referral Fields
 

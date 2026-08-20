@@ -974,6 +974,79 @@ body.theme-dark .combo-toggle:hover {
   transform: rotate(180deg);
 }
 
+.compact-select-native {
+  display: none;
+}
+
+.compact-select-trigger {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 48px;
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+}
+
+.compact-select-trigger:hover {
+  transform: none;
+  background: transparent;
+}
+
+.compact-select-trigger:focus-visible {
+  outline: none;
+}
+
+.compact-select-value {
+  min-width: 0;
+  align-self: center;
+  padding: 0 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compact-select-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  border-left: 1px solid var(--panel-border);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  color: var(--text-secondary);
+}
+
+.compact-select-trigger:hover .compact-select-toggle {
+  background: rgba(13, 110, 253, 0.08);
+}
+
+body.theme-dark .compact-select-trigger:hover .compact-select-toggle {
+  background: rgba(102, 171, 255, 0.12);
+}
+
+.compact-select-menu {
+  max-height: 260px;
+}
+
+.compact-select-option {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compact-select-option[aria-selected="true"] {
+  background: rgba(13, 110, 253, 0.1);
+  font-weight: 700;
+}
+
+body.theme-dark .compact-select-option[aria-selected="true"] {
+  background: rgba(102, 171, 255, 0.14);
+}
+
 .combo-menu {
   position: absolute;
   top: calc(100% + 8px);

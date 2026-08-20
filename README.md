@@ -14,9 +14,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.3.0",
-  "releaseTag": "v1.3",
-  "label": "Version 1.3",
+  "version": "1.3.1",
+  "releaseTag": "v1.3.1",
+  "label": "Version 1.3.1",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -29,7 +29,7 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- The current public release is `Version 1.3` (`v1.3`).
+- The current public release is `Version 1.3.1` (`v1.3.1`).
 - `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
@@ -61,7 +61,7 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3`.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.1`.
 
 The workflow requires the tag to match `releaseTag` and refuses to overwrite an existing release.
 It also refuses to build a release when `releaseNotes` is empty.
@@ -114,7 +114,10 @@ Files that are kept in sync from the shipped app:
 - Stream referral gzip output to reduce peak memory use
 - Export a sanitized diagnostic report without credentials or user file paths
 
-## Version 1.3 Highlights
+## Version 1.3.1 Highlights
+- Every dropdown now matches the compact Station ID menu design.
+- Referral / ICN Match, Network, SEOC Number, and SEOC ID no longer open oversized native menus.
+- Long option lists stay constrained to a scrollable menu within the app window.
 - CCRS Referral Remote Directory notes explicitly identify `/CCRA_Uploads` as the referral upload default.
 - LEIE Data remains a separate upload workflow using `/in/manual_process/` by default.
 - Referral processing uploads final `.gz` archives, while LEIE processing uploads the processed `.xlsx` file.

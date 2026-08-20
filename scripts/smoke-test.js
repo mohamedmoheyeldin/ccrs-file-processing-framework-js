@@ -95,7 +95,7 @@ test("LEIE validation SQL includes the requested query set and syntax highlighti
   assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
 });
 
-test("Version 1.3 metadata and release automation stay consolidated", () => {
+test("Version 1.3.1 metadata and release automation stay consolidated", () => {
   const versionConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "app_version.json"), "utf8"));
   const packageConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
@@ -107,9 +107,14 @@ test("Version 1.3 metadata and release automation stay consolidated", () => {
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
 
-  assert.equal(versionConfig.version, "1.3.0");
-  assert.equal(versionConfig.releaseTag, "v1.3");
-  assert.equal(versionConfig.label, "Version 1.3");
+  assert.equal(versionConfig.version, "1.3.1");
+  assert.equal(versionConfig.releaseTag, "v1.3.1");
+  assert.equal(versionConfig.label, "Version 1.3.1");
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Publishes one verified Windows Setup installer")), false);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Uses Electron 43")), false);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Electron sandboxing")), false);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Windows Electron end-to-end")), false);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Updates Electron to")), false);
   assert.equal(packageConfig.scripts["test:smoke"], "node scripts/smoke-test.js");
   assert.equal(packageConfig.scripts["test:syntax"], "node scripts/syntax-check.js");
   assert.equal(crypto.createHash("sha256").update(iconPng).digest("hex"), "dc3b2ab2b0beda8d92527552f2160be83572018c5bf17c0a6cca7c21c013cb95");
@@ -130,6 +135,8 @@ test("Version 1.3 metadata and release automation stay consolidated", () => {
   assert.match(rendererHtml, /Content-Security-Policy/);
   assert.match(rendererHtml, /id="cancel-job"/);
   assert.match(rendererHtml, /aria-live="polite"/);
+  assert.match(rendererHtml, /compactSelect\.js/);
+  assert.match(rendererStyles, /\.compact-select-menu\s*\{[^}]*max-height:\s*260px/s);
   assert.match(rendererStyles, /grid-template-rows:\s*auto minmax\(0, 1fr\) auto/);
   assert.match(rendererStyles, /\.release-announcement-scroll\s*\{[^}]*overflow-y:\s*auto/s);
   assert.match(mainProcess, /ccrs_app_icon\.ico/);
@@ -138,6 +145,7 @@ test("Version 1.3 metadata and release automation stay consolidated", () => {
   assert.match(releaseWorkflow, /pnpm test/);
   assert.match(releaseWorkflow, /pnpm run test:e2e/);
   assert.match(releaseWorkflow, /pnpm audit --prod/);
+  assert.doesNotMatch(releaseWorkflow, /portable executables are not generated/i);
   assert.match(releaseWorkflow, /Get-AuthenticodeSignature/);
   assert.match(releaseWorkflow, /Install and launch the packaged application/);
   assert.match(releaseWorkflow, /must include at least one releaseNotes entry/);
@@ -172,7 +180,7 @@ test("Diagnostic export excludes credentials and user file paths", async () => {
   const result = await backend.handleCommand("export-diagnostics", { outputDir });
   const reportText = fs.readFileSync(result.reportPath, "utf8");
   const report = JSON.parse(reportText);
-  assert.equal(report.appVersion, "1.3.0");
+  assert.equal(report.appVersion, "1.3.1");
   assert.equal(Object.prototype.hasOwnProperty.call(report.workflowPreferences, "inputDir"), false);
   assert.doesNotMatch(reportText, /password|ciphertext|connection_details/i);
 });
@@ -628,8 +636,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.3.0");
-    assert.equal(initialInfo.appVersion.label, "Version 1.3");
+    assert.equal(initialInfo.appVersion.version, "1.3.1");
+    assert.equal(initialInfo.appVersion.label, "Version 1.3.1");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);

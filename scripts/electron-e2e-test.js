@@ -25,6 +25,17 @@ async function run() {
     assert.equal(await window.locator("#run-process").isVisible(), true);
     assert.equal(await window.locator("#cancel-job").isHidden(), true);
     assert.equal(await window.locator("meta[http-equiv='Content-Security-Policy']").count(), 1);
+    const nativeSelectCount = await window.locator("select").count();
+    assert.equal(await window.locator(".compact-select").count(), nativeSelectCount);
+    await window.locator("[data-sub-tab='generate']").click();
+    await window.locator("#toggle-optional-fields").click();
+    await window.locator("#match-suffix-length").locator("..").locator(".compact-select-trigger").click();
+    const matchMenu = window.locator("#match-suffix-length").locator("..").locator(".compact-select-menu");
+    assert.equal(await matchMenu.isVisible(), true);
+    assert.equal(await matchMenu.locator(".compact-select-option").count(), 3);
+    assert.equal((await matchMenu.evaluate((element) => element.getBoundingClientRect().height)) <= 260, true);
+    await window.locator("#match-suffix-length").locator("..").locator('.compact-select-option[data-value="4"]').click();
+    assert.equal(await window.locator("#match-suffix-length").inputValue(), "4");
     const uploadDirectoryNote = window.locator(".upload-path-help").first();
     await uploadDirectoryNote.waitFor({ state: "visible" });
     assert.match(await uploadDirectoryNote.textContent(), /CCRS Referral uploads default to \/CCRA_Uploads/);
