@@ -41,7 +41,7 @@ Run the desktop app:
 - `pnpm start`
 
 Run smoke tests:
-- `pnpm test`
+- `pnpm verify`
 
 Run the real Electron end-to-end test:
 - `pnpm run test:e2e`
@@ -138,6 +138,8 @@ Files that are kept in sync from the shipped app:
 - Upload retries, per-server failure continuation, preflight file details, cancellation, and installed-app release testing are included.
 
 ## Validation And Testing
+Developer setup, architecture, and test-layer details are maintained in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and [docs/TESTING.md](docs/TESTING.md).
+
 The app now validates key fields before processing and shows inline messages for common mistakes such as:
 - invalid SSN format
 - invalid referral number format

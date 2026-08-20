@@ -10,6 +10,7 @@
     "start": "electron .",
     "pretest": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
     "test": "pnpm run test:syntax && pnpm run test:smoke",
+    "verify": "pnpm test",
     "test:syntax": "node scripts/syntax-check.js",
     "test:smoke": "node scripts/smoke-test.js",
     "test:e2e": "node scripts/electron-e2e-test.js",
