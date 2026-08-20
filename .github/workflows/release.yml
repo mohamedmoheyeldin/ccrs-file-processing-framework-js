@@ -151,6 +151,8 @@ jobs:
       - name: Install and launch the packaged application
         run: |
           $installRoot = Join-Path $env:RUNNER_TEMP "ccrs-installed-smoke"
+          $smokeResultPath = Join-Path $env:RUNNER_TEMP "ccrs-installed-smoke-result.json"
+          Remove-Item -LiteralPath $smokeResultPath -Force -ErrorAction SilentlyContinue
           $installerResult = Start-Process -FilePath $env:INSTALLER_PATH -ArgumentList @("/S", "/D=$installRoot") -Wait -PassThru
           if ($installerResult.ExitCode -ne 0) {
             throw "Silent installation failed with exit code $($installerResult.ExitCode)."
@@ -161,9 +163,20 @@ jobs:
           if (-not $appExecutable) {
             throw "The installed application executable was not found."
           }
+          $env:CCRS_SMOKE_RESULT_PATH = $smokeResultPath
           $launchResult = Start-Process -FilePath $appExecutable.FullName -ArgumentList "--smoke-test" -Wait -PassThru
           if ($launchResult.ExitCode -ne 0) {
+            if (Test-Path -LiteralPath $smokeResultPath) {
+              Get-Content -LiteralPath $smokeResultPath
+            }
             throw "The installed application smoke launch failed with exit code $($launchResult.ExitCode)."
+          }
+          if (-not (Test-Path -LiteralPath $smokeResultPath)) {
+            throw "The installed application did not produce its smoke-test result."
+          }
+          $smokeResult = Get-Content -LiteralPath $smokeResultPath -Raw | ConvertFrom-Json
+          if (-not $smokeResult.ok) {
+            throw "The installed application reported a failed smoke test: $($smokeResult.error)"
           }
 
       - name: Preserve workflow artifacts

@@ -64,7 +64,9 @@ function createWindow() {
 
 async function runPackagedSmokeTest() {
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-installed-smoke-"));
+  const resultPath = String(process.env.CCRS_SMOKE_RESULT_PATH || "").trim();
   let exitCode = 0;
+  let resultPayload = { ok: true };
   try {
     const result = await runBackgroundCommand(mainWindow.webContents, "generate", {
       outputDir,
@@ -84,7 +86,11 @@ async function runPackagedSmokeTest() {
   } catch (error) {
     console.error("Installed application smoke test failed.", error);
     exitCode = 1;
+    resultPayload = { ok: false, error: error?.stack || error?.message || String(error) };
   } finally {
+    if (resultPath) {
+      fs.writeFileSync(resultPath, `${JSON.stringify(resultPayload, null, 2)}\n`, "utf8");
+    }
     fs.rmSync(outputDir, { recursive: true, force: true });
     app.exit(exitCode);
   }
@@ -114,6 +120,13 @@ function runBackgroundCommand(webContents, command, payload = {}) {
   );
   const worker = new Worker(workerPath, {
     workerData: { command, payload: preparedPayload },
+    env: {
+      ...process.env,
+      NODE_PATH: [
+        app.isPackaged ? path.join(process.resourcesPath, "app.asar", "node_modules") : "",
+        process.env.NODE_PATH || "",
+      ].filter(Boolean).join(path.delimiter),
+    },
   });
 
   return new Promise((resolve, reject) => {
