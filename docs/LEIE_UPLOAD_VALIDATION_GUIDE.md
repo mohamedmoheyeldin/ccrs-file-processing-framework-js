@@ -53,6 +53,7 @@ Use the correct URL for each environment:
 1. Confirm you have the correct LEIE `.xlsx` file.
 2. Verify the file is the final version to be loaded.
 3. Count the number of records in the `.xlsx` file because you will compare that count to the database load count later.
+4. Review the application's preflight summary for file size and row count. Split an oversized source into approved batches rather than bypassing workstation safety limits.
 
 ## Step 2: Upload the File with WinSCP
 
@@ -61,6 +62,8 @@ Use the correct URL for each environment:
 3. Go to the target environment's manual-processing directory: `/in/manual_process/`.
 4. Upload the LEIE `.xlsx` file.
 5. Confirm the file was transferred successfully.
+
+When uploading from the CCRS application, the transfer is retried after transient errors, verified by remote byte size, and reported independently for each environment. The Cancel control can stop an active application job; inspect the output folder before restarting a cancelled process.
 
 Repeat this process for each environment in the required load order.
 
@@ -146,3 +149,4 @@ Use this sequence when performing the work:
 - Always compare the database row count to the source `.xlsx` record count.
 - If the counts do not match, stop and investigate before moving to the next environment.
 - Notify the team before deploying or loading the file in `PROD`.
+- Imported application upload credentials are encrypted with Windows-protected storage. Do not copy the protected runtime credential file to another user profile or workstation.

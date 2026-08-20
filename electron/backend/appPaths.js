@@ -11,10 +11,12 @@ try {
 const USER_CONFIG_DIRECTORY_NAME = "CCRS File Processing Framework";
 
 function isPackagedApp() {
-  return Boolean(electron && electron.app && electron.app.isPackaged);
+  return process.env.CCRS_IS_PACKAGED === "1" || Boolean(electron && electron.app && electron.app.isPackaged);
 }
 
 function getBundleRoot() {
+  const overridePath = String(process.env.CCRS_BUNDLE_ROOT || "").trim();
+  if (overridePath) return overridePath;
   if (isPackagedApp()) {
     return process.resourcesPath;
   }
@@ -22,6 +24,8 @@ function getBundleRoot() {
 }
 
 function getRuntimeRoot() {
+  const overridePath = String(process.env.CCRS_RUNTIME_ROOT || "").trim();
+  if (overridePath) return overridePath;
   if (isPackagedApp()) {
     return path.dirname(process.execPath);
   }

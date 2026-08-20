@@ -78,10 +78,10 @@ function buildGeneratedReferralSources(fileCount, referralsPerFile) {
         throw new Error(`The selected template does not contain any Referrals: ${path.basename(templatePath)}`);
       }
 
-      const generatedData = JSON.parse(JSON.stringify(templateData));
+      const generatedData = structuredClone(templateData);
       generatedData.Referrals = [];
       for (let referralIndex = 0; referralIndex < referralsPerFile; referralIndex += 1) {
-        generatedData.Referrals.push(JSON.parse(JSON.stringify(referrals[referralIndex % referrals.length])));
+        generatedData.Referrals.push(structuredClone(referrals[referralIndex % referrals.length]));
       }
 
       fs.writeFileSync(

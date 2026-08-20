@@ -15,8 +15,10 @@ contextBridge.exposeInMainWorld("ccrs", {
     ipcRenderer.invoke("backend:acknowledge-release-announcement", { releaseKey }),
   importUploadSource: (sourcePath) =>
     ipcRenderer.invoke("backend:import-upload-source", { sourcePath }),
+  exportDiagnostics: (outputDir) => ipcRenderer.invoke("backend:export-diagnostics", { outputDir }),
   testUploadTarget: (data) => ipcRenderer.invoke("backend:test-upload-target", data),
   runJob: (command, data) => ipcRenderer.invoke("backend:run", { command, data }),
+  cancelJob: () => ipcRenderer.invoke("backend:cancel"),
   onBackendEvent: (handler) => {
     const listener = (_event, payload) => handler(payload);
     ipcRenderer.on("backend:event", listener);

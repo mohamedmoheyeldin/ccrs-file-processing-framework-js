@@ -1,6 +1,7 @@
 const fs = require("fs");
 const { DEFAULT_ARCHIVE_BASENAME } = require("./zipper");
 const { bundlePath, dataPath, userDataPath } = require("./appPaths");
+const { writeFileAtomic } = require("./atomicFile");
 
 const DEFAULT_UI_SETTINGS = {
   theme: "light",
@@ -183,8 +184,7 @@ function saveUiSettings(rawValue = {}) {
     theme_mode: normalized.theme === "dark" ? "Dark" : "Light",
   };
 
-  fs.mkdirSync(userDataPath("config"), { recursive: true });
-  fs.writeFileSync(getUiSettingsPath(), JSON.stringify(payload, null, 2), "utf8");
+  writeFileAtomic(getUiSettingsPath(), `${JSON.stringify(payload, null, 2)}\n`, "utf8");
   return normalized;
 }
 

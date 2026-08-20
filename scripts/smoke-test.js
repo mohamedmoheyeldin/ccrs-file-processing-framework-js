@@ -3,6 +3,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const zlib = require("node:zlib");
 const XLSX = require("xlsx");
 
 const {
@@ -21,7 +22,10 @@ const {
   registerTemporaryPath,
 } = require("../electron/backend/runtimeCleanup");
 const { summarizeUploadProfiles, uploadFileWithSftp } = require("../electron/backend/uploader");
-const { buildArchiveBasename, formatArchiveReferralDateTime } = require("../electron/backend/zipper");
+const { buildArchiveBasename, formatArchiveReferralDateTime, zipOutput } = require("../electron/backend/zipper");
+const { writeFileAtomic } = require("../electron/backend/atomicFile");
+const { assertSourceFilesWithinLimits } = require("../electron/backend/limits");
+const { importCredentialFile, parseCredentialFile } = require("../electron/backend/secureCredentials");
 const {
   DEFAULT_UI_SETTINGS,
   loadUiSettings,
@@ -91,7 +95,7 @@ test("LEIE validation SQL includes the requested query set and syntax highlighti
   assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
 });
 
-test("Final Version 1.2 metadata and release automation stay consolidated", () => {
+test("Version 1.2.5 metadata and release automation stay consolidated", () => {
   const versionConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "app_version.json"), "utf8"));
   const packageConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
@@ -103,10 +107,11 @@ test("Final Version 1.2 metadata and release automation stay consolidated", () =
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
 
-  assert.equal(versionConfig.version, "1.2.4");
-  assert.equal(versionConfig.releaseTag, "v1.2");
-  assert.equal(versionConfig.label, "Version 1.2");
+  assert.equal(versionConfig.version, "1.2.5");
+  assert.equal(versionConfig.releaseTag, "v1.2.5");
+  assert.equal(versionConfig.label, "Version 1.2.5");
   assert.equal(packageConfig.scripts["test:smoke"], "node scripts/smoke-test.js");
+  assert.equal(packageConfig.scripts["test:syntax"], "node scripts/syntax-check.js");
   assert.equal(crypto.createHash("sha256").update(iconPng).digest("hex"), "dc3b2ab2b0beda8d92527552f2160be83572018c5bf17c0a6cca7c21c013cb95");
   assert.deepEqual([...iconIco.subarray(0, 4)], [0, 0, 1, 0]);
   assert.equal(iconIco.readUInt16LE(4), 7);
@@ -114,7 +119,7 @@ test("Final Version 1.2 metadata and release automation stay consolidated", () =
   assert.equal(packageConfig.build.files.includes("assets/icons/ccrs_app_icon.png"), true);
   assert.equal(packageConfig.build.win.icon, "assets/icons/ccrs_app_icon.ico");
   assert.equal(packageConfig.build.win.signAndEditExecutable, true);
-  assert.equal(packageConfig.build.win.signExecutable, false);
+  assert.equal(Object.prototype.hasOwnProperty.call(packageConfig.build.win, "signExecutable"), false);
   assert.equal(packageConfig.build.nsis.installerIcon, "assets/icons/ccrs_app_icon.ico");
   assert.equal(packageConfig.build.nsis.uninstallerIcon, "assets/icons/ccrs_app_icon.ico");
   assert.equal(packageConfig.build.nsis.installerHeaderIcon, "assets/icons/ccrs_app_icon.ico");
@@ -122,17 +127,78 @@ test("Final Version 1.2 metadata and release automation stay consolidated", () =
   assert.equal((rendererHtml.match(/ccrs_app_icon\.png/g) || []).length, 2);
   assert.match(rendererHtml, /class="release-announcement-scroll"/);
   assert.match(rendererHtml, />Start Using The App</);
+  assert.match(rendererHtml, /Content-Security-Policy/);
+  assert.match(rendererHtml, /id="cancel-job"/);
+  assert.match(rendererHtml, /aria-live="polite"/);
   assert.match(rendererStyles, /grid-template-rows:\s*auto minmax\(0, 1fr\) auto/);
   assert.match(rendererStyles, /\.release-announcement-scroll\s*\{[^}]*overflow-y:\s*auto/s);
   assert.match(mainProcess, /ccrs_app_icon\.ico/);
   assert.equal(fs.existsSync(path.join(projectRoot, ".github", "release.yml")), false);
   assert.match(releaseWorkflow, /\$config\.releaseTag/);
-  assert.match(releaseWorkflow, /pnpm run test:smoke/);
+  assert.match(releaseWorkflow, /pnpm test/);
+  assert.match(releaseWorkflow, /pnpm run test:e2e/);
+  assert.match(releaseWorkflow, /pnpm audit --prod/);
+  assert.match(releaseWorkflow, /Get-AuthenticodeSignature/);
+  assert.match(releaseWorkflow, /Install and launch the packaged application/);
   assert.match(releaseWorkflow, /must include at least one releaseNotes entry/);
   assert.doesNotMatch(releaseWorkflow, /--generate-notes/);
   assert.match(buildReleaseScript, /"--publish",\s*"never"/);
   assert.match(smokeWorkflow, /pull_request:/);
-  assert.match(smokeWorkflow, /pnpm run test:smoke/);
+  assert.match(smokeWorkflow, /pnpm test/);
+  assert.match(smokeWorkflow, /Electron E2E \(Windows\)/);
+  assert.match(mainProcess, /sandbox:\s*true/);
+  assert.match(mainProcess, /jobWorker\.js/);
+  assert.match(mainProcess, /backend:cancel/);
+});
+
+test("Atomic writes replace files without leaving temporary artifacts", () => {
+  const targetPath = path.join(tempRoot, "atomic", "settings.json");
+  writeFileAtomic(targetPath, "first\n");
+  writeFileAtomic(targetPath, "second\n");
+  assert.equal(fs.readFileSync(targetPath, "utf8"), "second\n");
+  assert.deepEqual(fs.readdirSync(path.dirname(targetPath)), ["settings.json"]);
+});
+
+test("Credential imports preserve the source and remain readable", () => {
+  const sourcePath = writeJsonFixture("credential-source.json", [{ Host: "example", UserName: "user", Password: "secret" }]);
+  const destinationPath = path.join(tempRoot, "secure", "credentials.json");
+  importCredentialFile(sourcePath, destinationPath);
+  assert.equal(fs.existsSync(sourcePath), true);
+  assert.equal(parseCredentialFile(destinationPath).entries[0].Password, "secret");
+});
+
+test("Diagnostic export excludes credentials and user file paths", async () => {
+  const outputDir = path.join(tempRoot, "diagnostics");
+  const result = await backend.handleCommand("export-diagnostics", { outputDir });
+  const reportText = fs.readFileSync(result.reportPath, "utf8");
+  const report = JSON.parse(reportText);
+  assert.equal(report.appVersion, "1.2.5");
+  assert.equal(Object.prototype.hasOwnProperty.call(report.workflowPreferences, "inputDir"), false);
+  assert.doesNotMatch(reportText, /password|ciphertext|connection_details/i);
+});
+
+test("Large source files are rejected before processing", () => {
+  const sourcePath = path.join(tempRoot, "limit-source.json");
+  fs.writeFileSync(sourcePath, "1234567890");
+  const originalLimit = process.env.CCRS_MAX_SOURCE_FILE_BYTES;
+  try {
+    process.env.CCRS_MAX_SOURCE_FILE_BYTES = "5";
+    assert.throws(() => assertSourceFilesWithinLimits([sourcePath]), /safety limit/);
+  } finally {
+    if (originalLimit === undefined) delete process.env.CCRS_MAX_SOURCE_FILE_BYTES;
+    else process.env.CCRS_MAX_SOURCE_FILE_BYTES = originalLimit;
+  }
+});
+
+test("Streaming gzip combines referral files without building one giant payload", async () => {
+  const outputDir = path.join(tempRoot, "streaming-gzip");
+  fs.mkdirSync(outputDir, { recursive: true });
+  fs.writeFileSync(path.join(outputDir, "one.json"), JSON.stringify({ Batch: "A", Referrals: [{ id: 1 }] }));
+  fs.writeFileSync(path.join(outputDir, "two.json"), JSON.stringify({ Batch: "A", Referrals: [{ id: 2 }, { id: 3 }] }));
+  const archivePath = await zipOutput(outputDir, "stream-test");
+  const payload = JSON.parse(zlib.gunzipSync(fs.readFileSync(archivePath)).toString("utf8"));
+  assert.equal(payload.Batch, "A");
+  assert.deepEqual(payload.Referrals.map((item) => item.id), [1, 2, 3]);
 });
 
 test("LEIE upload targets use the manual-processing directory without replacing custom paths", () => {
@@ -554,8 +620,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.2.4");
-    assert.equal(initialInfo.appVersion.label, "Version 1.2");
+    assert.equal(initialInfo.appVersion.version, "1.2.5");
+    assert.equal(initialInfo.appVersion.label, "Version 1.2.5");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);

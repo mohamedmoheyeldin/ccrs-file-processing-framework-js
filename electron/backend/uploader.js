@@ -4,6 +4,13 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 const SftpClient = require("ssh2-sftp-client");
 const { userDataPath } = require("./appPaths");
+const { writeFileAtomic } = require("./atomicFile");
+const {
+  importCredentialFile,
+  migrateCredentialFile,
+  parseCredentialFile,
+  saveCredentialEntries,
+} = require("./secureCredentials");
 
 const WINSCP_INI_PATH = userDataPath("upload_import", "WinSCP.ini");
 const CREDENTIALS_JSON_PATH = userDataPath("config", "upload_credentials.json");
@@ -13,6 +20,7 @@ const UPLOAD_SOURCE_MARKER_PATH = userDataPath("config", "upload_source_marker.j
 const SFTP_CONNECT_TIMEOUT_MS = 30_000;
 const SFTP_OPERATION_TIMEOUT_MS = 10 * 60_000;
 const SFTP_CLOSE_TIMEOUT_MS = 5_000;
+const DEFAULT_UPLOAD_ATTEMPTS = 3;
 
 function summarizeUploadProfiles(profiles) {
   return {
@@ -165,8 +173,7 @@ function saveUploadImportMarker(payload = {}) {
     imported_at: new Date().toISOString(),
   };
 
-  fs.mkdirSync(path.dirname(UPLOAD_SOURCE_MARKER_PATH), { recursive: true });
-  fs.writeFileSync(`${UPLOAD_SOURCE_MARKER_PATH}`, `${JSON.stringify(marker, null, 2)}\n`, "utf8");
+  writeFileAtomic(UPLOAD_SOURCE_MARKER_PATH, `${JSON.stringify(marker, null, 2)}\n`, "utf8");
   return marker;
 }
 
@@ -207,10 +214,9 @@ function parseCredentialsProfiles(jsonPath = CREDENTIALS_JSON_PATH) {
     return { servers: [], users: [] };
   }
 
-  let entries = JSON.parse(fs.readFileSync(resolvedPath, "utf8"));
-  if (!Array.isArray(entries)) {
-    entries = [entries];
-  }
+  const loaded = parseCredentialFile(resolvedPath);
+  const entries = loaded.entries;
+  if (!loaded.encrypted) migrateCredentialFile(resolvedPath);
 
   const servers = new Map();
   const users = new Map();
@@ -498,15 +504,8 @@ function decryptWinscpPassword(sessionHostname, sessionUsername, encryptedPasswo
   return storedFlag === checkFlag ? finalPassword.slice(key.length) : finalPassword;
 }
 
-function persistCredentialsJson(sourceJsonPath, destinationPath = CREDENTIALS_JSON_PATH) {
-  fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
-  fs.copyFileSync(sourceJsonPath, destinationPath);
-
-  if (path.resolve(sourceJsonPath).toLowerCase() !== path.resolve(destinationPath).toLowerCase()) {
-    fs.rmSync(sourceJsonPath, { force: true });
-  }
-
-  return destinationPath;
+function persistCredentialsJson(sourceJsonPath, destinationPath = CREDENTIALS_JSON_PATH, removeSource = false) {
+  return importCredentialFile(sourceJsonPath, destinationPath, removeSource);
 }
 
 function generateCredentialsJsonFromWinscpIni(iniPath, outputPath = WINSCP_GENERATED_CREDENTIALS_PATH) {
@@ -546,12 +545,11 @@ function generateCredentialsJsonFromWinscpIni(iniPath, outputPath = WINSCP_GENER
     });
   }
 
-  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-  fs.writeFileSync(outputPath, JSON.stringify(credentials, null, 2), "utf8");
-
   if (credentials.length === 0) {
     throw new Error("WinSCP.ini did not contain saved session passwords that could be converted to upload credentials.");
   }
+
+  saveCredentialEntries(outputPath, credentials);
 
   return outputPath;
 }
@@ -647,7 +645,7 @@ function importUploadSourceToConfig(sourcePath) {
     fs.mkdirSync(path.dirname(WINSCP_INI_PATH), { recursive: true });
     fs.copyFileSync(normalizedSourcePath, WINSCP_INI_PATH);
     const generatedJsonPath = generateCredentialsJsonFromWinscpIni(WINSCP_INI_PATH);
-    persistCredentialsJson(generatedJsonPath);
+    persistCredentialsJson(generatedJsonPath, CREDENTIALS_JSON_PATH, true);
     saveUploadImportMarker({
       sourceKind: "winscp_ini",
       sourcePath: WINSCP_INI_PATH,
@@ -968,6 +966,22 @@ async function uploadFile(localPath, remoteDirectory, connectionDetails) {
   return uploadFileWithSftp(localPath, normalizedRemoteDirectory, connectionDetails);
 }
 
+async function uploadFileWithRetry(localPath, remoteDirectory, connectionDetails, options = {}) {
+  const attempts = Math.max(1, Number(options.attempts || DEFAULT_UPLOAD_ATTEMPTS));
+  const baseDelayMs = Math.max(0, Number(options.baseDelayMs ?? 750));
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await uploadFile(localPath, remoteDirectory, connectionDetails);
+    } catch (error) {
+      lastError = error;
+      if (attempt >= attempts) break;
+      await new Promise((resolve) => setTimeout(resolve, baseDelayMs * 2 ** (attempt - 1)));
+    }
+  }
+  throw new Error(`Upload failed after ${attempts} attempts: ${lastError?.message || "Unknown upload error."}`);
+}
+
 module.exports = {
   getServerDisplayForTarget,
   getUploadProfileSourcePath,
@@ -980,6 +994,7 @@ module.exports = {
   testUploadConnection,
   closeSftpClient,
   uploadFile,
+  uploadFileWithRetry,
   uploadFileWithSftp,
   withTimeout,
 };

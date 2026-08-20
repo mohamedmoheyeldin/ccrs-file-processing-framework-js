@@ -1,62 +1,61 @@
-# CCRS File Processing Framework Version 1.2
+# CCRS File Processing Framework Version 1.2.5
 
 ## Release Summary
 
-Version 1.2 is the final consolidated Windows release of the current CCRS referral and LEIE processing application.
+Version 1.2.5 is the reliability, security, large-file, and user-experience update for the Version 1.2 product line.
 
 The GitHub Release contains:
 
-- `CCRS File Processing Framework Setup Version 1.2.exe`
+- `CCRS File Processing Framework Setup Version 1.2.5.exe`
 - `SHA256SUMS.txt`
 
-Portable executables are not generated. Release binaries are built in temporary GitHub Actions storage and are not committed to the repository.
+Portable executables are not generated. Build output stays in temporary GitHub Actions storage and is not committed to the repository.
 
-## LEIE Data Processing
+## Performance and Large Files
 
-- Process one LEIE Excel file or a folder containing `.xlsx`, `.xls`, `.xlsm`, or `.xlsb` files.
-- Detect duplicates using strict full-row matching.
-- Review duplicates manually or remove later matches automatically while keeping the first row.
-- Keep the original source base name as the default output file name.
-- Save the processed output as `.xlsx`.
-- Default every LEIE upload target to `/in/manual_process/` while preserving custom paths.
-- Upload to `DEV`, `PPD`, `SQA`, and `PROD`.
-- Verify the remote file size before marking a server complete.
-- Prevent a stalled SFTP disconnect from blocking the next server.
-- Continue through remaining selected servers after an individual target failure.
+- File processing, generation, LEIE work, upload tests, compression, and uploads run in background workers instead of blocking the window.
+- A visible progress bar and Cancel control keep long operations understandable and interruptible.
+- LEIE worksheets use SheetJS dense mode for more efficient large-sheet processing.
+- Source file size, combined size, LEIE rows, generated files, referrals per file, and total generated referrals have explicit safety limits.
+- Source summaries display file size and row information before processing.
+- Referral gzip output is streamed to disk instead of constructing the entire combined archive in memory.
 
-## LEIE Validation
+## Upload Reliability and Security
 
-- Enter an `etl_batch_id` once and update every query reference automatically.
-- Copy the complete database validation query set.
-- Read SQL with color-coded keywords, quoted values, numbers, and comments.
-- Follow the bundled database and CCRS Table Viewer validation guidance.
+- Referral and LEIE uploads retry transient failures with exponential backoff.
+- Every selected server is attempted even when another target fails, with independent status reporting.
+- Remote file size remains verified before an upload is considered complete.
+- Imported upload credentials are encrypted with Electron safe storage on Windows.
+- Existing plaintext credential files migrate automatically when encryption is available.
+- Importing a credentials JSON file no longer removes or modifies the original source file.
 
-## Referral Data Controls
+## Desktop Security
 
-- Preserve an exact selected Station ID without padding or adding characters.
-- Optionally use random Station IDs restricted to the bundled reference table.
-- Match the final 3, 4, or 5 characters of Referral Numbers and ICNs.
-- Generate random test SSNs and DOBs for each patient by default.
-- Apply fixed SSN and DOB values when random generation is disabled.
-- Select a synchronized SEOC Number and SEOC ID pair from bundled reference data.
-- Generate unique Payment Authority Code values within the supported five-digit range.
+- Electron renderer sandboxing is enabled with a restrictive Content Security Policy.
+- IPC is limited to the trusted application window, external links require HTTPS, and unexpected navigation, windows, and permission requests are denied.
+- Settings and release acknowledgement files use atomic writes.
+- Logs rotate at a bounded size and redact common secret patterns.
+- A sanitized diagnostic report can be exported without credential values or user file paths.
 
-## Packaging and Reliability
+## User Experience and Accessibility
 
-- Full per-user NSIS Setup installer with selectable installation directory.
-- No portable build.
-- No repository-local `dist-electron` or `release` output.
-- Runtime configuration and credentials remain under the user's AppData location.
-- Upload credentials activate only after `Import To Config`.
-- App-created temporary staging and upload-helper files are cleaned automatically.
-- Electron 43, electron-builder 26.15, and SheetJS 0.20.3.
+- A Select, Configure, Validate, Process, and Upload stepper makes workflow position clear.
+- The action and status card remains visible near the bottom of the window.
+- Status updates use an accessible live region, with improved tab, theme, and date-control semantics.
+- The minimum window size is reduced and narrow layouts reorganize into readable columns.
+- Release notes continue to use the full application window with independent scrolling and a Start Using The App button.
 
-## Quality Gates
+## Existing Workflow Features
 
-- The app displays these release notes once after a fresh installation or the first launch following an upgrade from any older version.
-- A release-specific announcement identifier prevents an older acknowledgement from suppressing newer release notes.
-- A smoke-test workflow runs for pull requests targeting `main` and for updates to `main`.
-- The release workflow runs the smoke suite again before creating the installer.
-- The release workflow validates the executable header and minimum size.
-- The published installer is accompanied by a SHA-256 checksum.
-- Release authentication is isolated from electron-builder so only the intentional final GitHub Release is created.
+- Original LEIE source name remains the default output name.
+- Strict full-row duplicate detection and optional automatic removal remain available.
+- LEIE uploads default to `/in/manual_process/`; referral uploads default to `/CCRA_Uploads`.
+- Station IDs stay exact or use valid reference entries, Referral Number and ICN endings can match by 3, 4, or 5 characters, SSNs and DOBs randomize by default, and SEOC fields remain synchronized.
+- Batch-ID-aware, syntax-highlighted SQL validation remains available.
+
+## Quality Gates and Dependencies
+
+- Functional smoke tests, production dependency auditing, and a Windows Playwright Electron test run before merge and release.
+- Release CI silently installs and launches the generated Setup application before publishing.
+- Windows signing is used automatically when `WIN_CSC_LINK` and `WIN_CSC_KEY_PASSWORD` repository secrets are configured.
+- Electron is updated to 43.4.1, ssh2-sftp-client to 12.1.1, Playwright to 1.62.1, and pnpm to 11.22.0.

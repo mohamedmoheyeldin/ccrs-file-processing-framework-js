@@ -14,9 +14,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.2.4",
-  "releaseTag": "v1.2",
-  "label": "Version 1.2",
+  "version": "1.2.5",
+  "releaseTag": "v1.2.5",
+  "label": "Version 1.2.5",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -29,18 +29,22 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- The final public release is `Version 1.2` (`v1.2`), backed by Windows build version `1.2.4`.
-- `npm start`, `npm test`, and `npm run dist` automatically sync `package.json` and `package-lock.json` from this file before running.
+- The current public release is `Version 1.2.5` (`v1.2.5`).
+- `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
 Install dependencies once:
-- `npm install`
+- `corepack enable`
+- `pnpm install --frozen-lockfile`
 
 Run the desktop app:
-- `npm start`
+- `pnpm start`
 
 Run smoke tests:
-- `npm test`
+- `pnpm test`
+
+Run the real Electron end-to-end test:
+- `pnpm run test:e2e`
 
 ## Build And Distribution
 Release binaries are not stored in this repository. The GitHub Actions release workflow builds the Windows Setup installer in temporary runner storage, verifies it, publishes it to GitHub Releases, and then discards the temporary build files.
@@ -57,12 +61,12 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.2`.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.2.5`.
 
 The workflow requires the tag to match `releaseTag` and refuses to overwrite an existing release.
 It also refuses to build a release when `releaseNotes` is empty.
 
-Pull requests and updates to `main` run the [Smoke tests](.github/workflows/smoke-tests.yml) workflow. The release workflow runs the same smoke suite again before packaging.
+Pull requests and updates to `main` run functional smoke tests, a production dependency audit, and a Windows Electron end-to-end test. Release CI repeats those checks, builds the Setup installer, silently installs it, launches the installed app, verifies the executable, and then publishes it.
 
 Full release notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
 
@@ -78,7 +82,7 @@ Runtime files are stored under the current user's AppData folder so the app can 
 
 Files users commonly work with:
 - `config\upload_profiles.json`
-- `config\upload_credentials.json`
+- `config\upload_credentials.json` (encrypted with Windows-protected storage after import)
 - `docs\USER_GUIDE.pdf`
 
 Files that are kept in sync from the shipped app:
@@ -105,8 +109,12 @@ Files that are kept in sync from the shipped app:
 - Verify each LEIE upload and continue through every selected server even when one target fails
 - Default every LEIE server upload to `/in/manual_process/` while retaining `/CCRA_Uploads` for referral workflows
 - Automatically clean app-created temporary staging folders and upload helper files after a run or when the app closes
+- Process long-running work in background workers with progress and cancellation
+- Enforce configurable large-file and generation safety limits
+- Stream referral gzip output to reduce peak memory use
+- Export a sanitized diagnostic report without credentials or user file paths
 
-## V1.2 Highlights
+## V1.2.5 Highlights
 - New LEIE processing flow with strict full-row duplicate detection and clearer scan status feedback.
 - New in-app LEIE upload validation support:
   - quick access to `LEIE Upload and Validation Guide`
@@ -118,6 +126,9 @@ Files that are kept in sync from the shipped app:
   - fixed the security issue around where `WinSCP.ini` is sourced and persisted
 - Bug fixes across LEIE scan, release update visibility, and upload gating behavior.
 - UI polish for smoother interaction and clearer status messaging.
+- Background processing keeps the window responsive during file, gzip, and upload operations.
+- Imported credentials are protected by Windows encryption and existing plaintext credentials migrate automatically.
+- Upload retries, per-server failure continuation, preflight file details, cancellation, and installed-app release testing are included.
 
 ## Validation And Testing
 The app now validates key fields before processing and shows inline messages for common mistakes such as:
@@ -138,6 +149,9 @@ Smoke coverage lives in [scripts/smoke-test.js](scripts/smoke-test.js). The curr
 - runtime cleanup of tracked temp artifacts
 - upload profile summaries
 - preview validation field errors
+- secure credential imports, atomic settings writes, source limits, and streaming gzip output
+
+The Windows Playwright test in [scripts/electron-e2e-test.js](scripts/electron-e2e-test.js) launches the actual Electron UI and verifies a background referral generation job.
 
 ## User Documentation
 The user guide source lives in [docs/USER_GUIDE.md](docs/USER_GUIDE.md).

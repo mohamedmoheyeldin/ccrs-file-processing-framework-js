@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { writeFileAtomic } = require("../electron/backend/atomicFile");
 
 const repoRoot = path.resolve(__dirname, "..");
 const appVersionPath = path.join(repoRoot, "config", "app_version.json");
@@ -12,7 +13,7 @@ function readJson(filePath) {
 }
 
 function writeJson(filePath, data) {
-  fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
+  writeFileAtomic(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
 }
 
 function deriveBuildVersion(label) {

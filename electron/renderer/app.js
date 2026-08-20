@@ -37,6 +37,10 @@ const state = {
   uiSettingsSaveTimer: null,
   acknowledgedReleaseKey: "",
   releaseAnnouncementOpen: false,
+  jobCancellable: false,
+  cancelRequested: false,
+  previewTimer: null,
+  previewRequestId: 0,
 };
 
 const elements = {};
@@ -125,14 +129,38 @@ function setStatus(label, message) {
   } else {
     elements.statusBadge.classList.add("idle");
   }
+  window.ccrsJobUi.syncWorkflowProgress(normalizedLabel);
 }
 
-function setBusy(busy) {
+function setJobProgress(current = 0, total = 0) {
+  window.ccrsJobUi.updateProgress(elements.jobProgress, state.busy, current, total);
+}
+
+function setBusy(busy, cancellable = false) {
   state.busy = busy;
-  for (const element of document.querySelectorAll("button, input, select")) {
-    element.disabled = busy;
-  }
+  state.jobCancellable = Boolean(busy && cancellable);
+  if (!busy) state.cancelRequested = false;
+  window.ccrsJobUi.updateBusyControls({
+    busy,
+    cancellable: state.jobCancellable,
+    cancelRequested: state.cancelRequested,
+    cancelButton: elements.cancelJob,
+  });
+  setJobProgress(0, 0);
   if (!busy) syncIdentityControls();
+}
+
+async function cancelActiveJob() {
+  if (!state.jobCancellable || state.cancelRequested) return;
+  state.cancelRequested = true;
+  elements.cancelJob.disabled = true;
+  setStatus("Cancelling", "Stopping the current operation safely...");
+  const result = await window.ccrs.cancelJob();
+  if (!result?.cancelled) {
+    state.cancelRequested = false;
+    elements.cancelJob.disabled = false;
+    setStatus("Working", "The current operation is already finishing.");
+  }
 }
 
 function setReleaseAnnouncementOpen(isOpen) {
@@ -200,6 +228,13 @@ function readValue(id) {
 
 function readChecked(id) {
   return $(id).checked;
+}
+
+function formatBytes(bytes) {
+  const value = Number(bytes || 0);
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 ** 2) return `${(value / 1024).toFixed(1)} KB`;
+  return `${(value / 1024 ** 2).toFixed(1)} MB`;
 }
 
 function sanitizeStationIdInput(value) {
@@ -475,15 +510,18 @@ function setTheme(themeName) {
   document.body.classList.toggle("theme-dark", state.theme === "dark");
   for (const button of document.querySelectorAll("[data-theme]")) {
     button.classList.toggle("is-active", button.dataset.theme === state.theme);
+    button.setAttribute("aria-pressed", String(button.dataset.theme === state.theme));
   }
 }
 
 function syncTabState() {
   for (const current of document.querySelectorAll("[data-main-tab]")) {
     current.classList.toggle("is-active", current.dataset.mainTab === state.mainTab);
+    current.setAttribute("aria-selected", String(current.dataset.mainTab === state.mainTab));
   }
   for (const current of document.querySelectorAll("[data-sub-tab]")) {
     current.classList.toggle("is-active", current.dataset.subTab === state.subTab);
+    current.setAttribute("aria-selected", String(current.dataset.subTab === state.subTab));
   }
 }
 
@@ -1073,6 +1111,17 @@ function applyInfo(info) {
   setUploadReadyState("idle");
   state.leieOutputFileName = String(info.uiSettings?.leieOutputFileName || state.leieOutputFileName || "").trim();
   renderUploadTargets(info.uploadTargets || []);
+  const limits = info.constants?.processingLimits || {};
+  if (limits.maxGeneratedFiles) elements.fileCount.max = String(limits.maxGeneratedFiles);
+  if (limits.maxReferralsPerFile) elements.referralsPerFile.max = String(limits.maxReferralsPerFile);
+  if (limits.maxGeneratedFiles) {
+    elements.fileCountHelp.dataset.defaultText = `Maximum ${Number(limits.maxGeneratedFiles).toLocaleString()} files per run.`;
+    elements.fileCountHelp.textContent = elements.fileCountHelp.dataset.defaultText;
+  }
+  if (limits.maxReferralsPerFile) {
+    elements.referralsPerFileHelp.dataset.defaultText = `Maximum ${Number(limits.maxReferralsPerFile).toLocaleString()} referrals per file.`;
+    elements.referralsPerFileHelp.textContent = elements.referralsPerFileHelp.dataset.defaultText;
+  }
   applyGeneratorDefaults();
   applyUploadTargetSettings(info.uiSettings?.uploadTargets || {});
   syncUploadTargetState();
@@ -1085,7 +1134,7 @@ function applySourceInspection(inspection) {
   state.sourceInspection = inspection;
   const fileCount = Number(inspection?.fileCount || 0);
   elements.sourceFileCount.textContent = fileCount
-    ? `${fileCount} source JSON file${fileCount === 1 ? "" : "s"} selected.`
+    ? `${fileCount} source JSON file${fileCount === 1 ? "" : "s"} selected (${formatBytes(inspection.totalSourceBytes)}).`
     : "No JSON files were found in the selected folder.";
 
   state.sourceListDate = inspection?.firstListDate || "";
@@ -1248,7 +1297,7 @@ async function inspectLeieSourceFolder(options = {}) {
     }
 
     elements.sourceFileCount.textContent = inspection.fileCount
-      ? `${inspection.fileCount} source Excel file${inspection.fileCount === 1 ? "" : "s"} selected.`
+      ? `${inspection.fileCount} source Excel file${inspection.fileCount === 1 ? "" : "s"} selected: ${inspection.totalRowCount.toLocaleString()} rows, ${formatBytes(inspection.totalSourceBytes)}.`
       : "No Excel files were found in the selected source path.";
     if (inspection.excelFiles?.length) {
       const names = inspection.excelFiles.slice(0, 3).map((file) => file.name).join(", ");
@@ -1401,6 +1450,8 @@ async function updatePreviews() {
     return { fieldErrors: {} };
   }
 
+  const requestId = state.previewRequestId + 1;
+  state.previewRequestId = requestId;
   try {
     const preview = await window.ccrs.getPreview({
       replacementCode: readValue("replacement-code"),
@@ -1421,6 +1472,7 @@ async function updatePreviews() {
       upload: collectUploadSettings(),
     });
 
+    if (requestId !== state.previewRequestId) return preview;
     elements.outputJsonPreview.textContent = formatJsonPreviewList(
       preview.replacementCode,
       getPreviewFileCount()
@@ -1440,11 +1492,17 @@ async function updatePreviews() {
     applyFieldErrors(preview.fieldErrors || {});
     return preview;
   } catch (error) {
+    if (requestId !== state.previewRequestId) return null;
     updateStationIdMatch();
     elements.referralPreview.textContent = error.message;
     elements.referralPreview.classList.add("is-error");
     return null;
   }
+}
+
+function schedulePreviewUpdate() {
+  window.clearTimeout(state.previewTimer);
+  state.previewTimer = window.setTimeout(() => updatePreviews(), 140);
 }
 
 async function validateCurrentForm() {
@@ -1710,6 +1768,17 @@ async function importUploadSource() {
   }
 }
 
+async function exportDiagnostics() {
+  const outputDir = await window.ccrs.pickDirectory();
+  if (!outputDir) return;
+  try {
+    const result = await window.ccrs.exportDiagnostics(outputDir);
+    setStatus("Completed", result.message);
+  } catch (error) {
+    setStatus("Failed", error.message);
+  }
+}
+
 async function runProcess() {
   if (state.mainTab === "leie") {
     await runLeieProcess();
@@ -1739,7 +1808,7 @@ async function runLeieProcess() {
     upload: collectUploadSettings(),
   };
 
-  setBusy(true);
+  setBusy(true, true);
   setStatus("Processing", "Processing LEIE files and preparing output...");
   try {
     const result = await window.ccrs.runJob("process-leie", payload);
@@ -1784,7 +1853,7 @@ async function runGenerate() {
 }
 
 async function runJob(command, payload, label) {
-  setBusy(true);
+  setBusy(true, true);
   setStatus(label, `${label} files with the standalone JavaScript backend...`);
 
   try {
@@ -1801,6 +1870,8 @@ async function runJob(command, payload, label) {
 function setupEventHandlers() {
   setupTabs();
   wireDateControls();
+  elements.cancelJob?.addEventListener("click", cancelActiveJob);
+  elements.exportDiagnostics?.addEventListener("click", exportDiagnostics);
 
   for (const button of document.querySelectorAll("[data-theme]")) {
     button.addEventListener("click", () => {
@@ -1862,7 +1933,7 @@ function setupEventHandlers() {
       if (id === "file-count" || id === "referrals-per-file") {
         updateTemplateSummary();
       }
-      updatePreviews();
+      schedulePreviewUpdate();
       scheduleUiSettingsSave();
     });
   }
@@ -2021,6 +2092,7 @@ function setupEventHandlers() {
     if (event.type !== "progress") {
       return;
     }
+    setJobProgress(event.current, event.total);
 
     if (event.state === "file-loaded") {
       setStatus("File Loaded", "LEIE source file loaded.");
@@ -2078,6 +2150,7 @@ function setupEventHandlers() {
 function cacheElements() {
   Object.assign(elements, {
     appVersionBadge: $("app-version-badge"),
+    exportDiagnostics: $("export-diagnostics"),
     archivePreview: $("archive-preview"),
     archiveNameHelp: $("archive-name-help"),
     clearOutput: $("clear-output"),
@@ -2133,6 +2206,8 @@ function cacheElements() {
     runCard: $("run-card"),
     runGenerate: $("run-generate"),
     runProcess: $("run-process"),
+    cancelJob: $("cancel-job"),
+    jobProgress: $("job-progress"),
     sourceCard: $("source-card"),
     sourceFileCount: $("source-file-count"),
     sourceSubtitle: $("source-subtitle"),

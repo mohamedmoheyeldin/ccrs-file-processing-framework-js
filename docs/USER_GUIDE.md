@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Version 1.2`.
+This guide covers `Version 1.2.5`.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download `CCRS File Processing Framework Setup Version 1.2.exe` from the GitHub Releases page and run the installer.
+Download `CCRS File Processing Framework Setup Version 1.2.5.exe` from the GitHub Releases page and run the installer.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 
@@ -39,7 +39,7 @@ The app automatically displays the current release notes:
 - the first time the app is opened after a new installation
 - the first time the app is opened after upgrading from any older version
 
-Select `Continue` to acknowledge the notes. The same release notes will not open again on later launches, but a future release with a new release identifier will display its own notes once. This acknowledgement is stored in the current user's AppData so reinstalling or changing the installation folder does not confuse an older release with a newer one.
+Select `Start Using The App` to acknowledge the notes. The same release notes will not open again on later launches, but a future release with a new release identifier will display its own notes once. This acknowledgement is stored in the current user's AppData so reinstalling or changing the installation folder does not confuse an older release with a newer one.
 
 ## Before You Begin
 
@@ -62,6 +62,22 @@ The app has three main tabs:
 
 - `Edit Existing Files`
 - `Generate New Files`
+
+## Workflow Progress and Large Files
+
+The workflow stepper shows `Select`, `Configure`, `Validate`, `Process`, and `Upload`. The status card remains visible near the bottom of the application and includes a progress bar during long operations.
+
+File processing, LEIE work, gzip creation, upload tests, and uploads run in background workers so the window remains responsive. Select `Cancel` to stop a running process. A cancelled process can leave an incomplete file in the selected output folder; inspect or remove that file before restarting the same job.
+
+Before processing, the source summary reports available file size and row information. The application protects the computer with configurable safety limits for:
+
+- one source file and the combined source selection
+- LEIE worksheet rows
+- generated JSON file count
+- referrals per generated file
+- total referrals in one generated batch
+
+If a source exceeds a safety limit, split it into smaller approved batches or ask the application maintainer to adjust the corresponding `CCRS_MAX_*` environment setting after reviewing available memory and disk space.
 
 ## LEIE Data Processing
 
@@ -133,6 +149,7 @@ When upload is enabled, the app processes selected servers in order. For each se
 - verifies that the remote file exists and has the expected byte size
 - marks that server complete only after verification
 - closes the connection with a bounded timeout so a stalled disconnect cannot block the workflow
+- retries transient failures up to three times with increasing delay
 - moves to the next selected server
 
 If one server fails, the app records the error and continues with the remaining selected servers. The final status identifies failed targets. A successfully saved local workbook remains available even when an upload target fails.
@@ -333,6 +350,8 @@ Use `Import To Config` to import `WinSCP.ini` or a supported credentials JSON fi
 
 Importing WinSCP settings reads the saved sessions, resolves servers and users, and writes the active credentials configuration under the app's runtime data location.
 
+On Windows, imported passwords are encrypted using operating-system-protected Electron safe storage. Existing plaintext credential files are migrated automatically when the application can access Windows encryption. The original JSON or INI file selected for import is preserved.
+
 Each upload target includes `Test Connection`. Use it to verify the selected account and remote directory before a full workflow.
 
 ## Validation and Status Messages
@@ -361,6 +380,12 @@ Common statuses include:
 - `Upload Complete`
 - `Upload Warning`
 - `Failed`
+
+During a long operation, the progress bar reports the current file or server. `Cancel` remains available even though editing controls are temporarily disabled. Referral and LEIE uploads report each server independently and continue through later selected servers after an individual failure.
+
+## Diagnostic Report
+
+Select `Export Diagnostics` in the application header and choose a folder. The generated JSON report contains the application version, runtime versions, processing limits, non-sensitive workflow preferences, reference-data counts, and upload server/user counts. It does not contain passwords, credential values, input paths, output paths, or source file contents.
 
 ## Referral Output Format
 
@@ -397,6 +422,14 @@ Select or rescan the source. The default should match the original source base n
 ### LEIE Upload Appears Stuck
 
 Check the individual server status. The app verifies the remote file and limits disconnect waiting time. If a server reports an error, review its user, path, and connection test; later selected servers are still attempted.
+
+### A Large File Is Rejected
+
+Review the displayed file size or row count. Split the source into smaller approved batches. Do not raise a safety limit without confirming that the workstation has enough memory and disk space.
+
+### A Job Was Cancelled
+
+Check the output folder for an incomplete workbook, JSON file, or gzip archive. Remove incomplete output before running the same job again.
 
 ### Upload Target Is Disabled
 

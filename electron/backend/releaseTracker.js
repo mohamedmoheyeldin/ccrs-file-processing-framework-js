@@ -1,6 +1,7 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { writeFileAtomic } = require("./atomicFile");
 
 const USER_CONFIG_DIRECTORY_NAME = "CCRS File Processing Framework";
 const RELEASE_TRACKER_PATH = "config/release_tracker.json";
@@ -46,8 +47,7 @@ function saveReleaseTracker(rawValue = {}) {
   };
 
   const trackerPath = getReleaseTrackerPath();
-  fs.mkdirSync(path.dirname(trackerPath), { recursive: true });
-  fs.writeFileSync(
+  writeFileAtomic(
     trackerPath,
     `${JSON.stringify(
       {

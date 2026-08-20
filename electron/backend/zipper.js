@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const zlib = require("zlib");
+const { once } = require("events");
 
 const DEFAULT_ARCHIVE_BASENAME = "processed_files";
 const ARCHIVE_DATE_TIME_PATTERN = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
@@ -54,59 +55,68 @@ function buildArchiveBasename(payload = {}) {
   return sanitizeArchiveBasename(segments.join("_"));
 }
 
-function zipOutput(folder, archiveBasename = DEFAULT_ARCHIVE_BASENAME) {
+async function writeChunk(stream, chunk) {
+  if (!stream.write(chunk)) await once(stream, "drain");
+}
+
+async function zipOutput(folder, archiveBasename = DEFAULT_ARCHIVE_BASENAME) {
   if (!fs.existsSync(folder)) {
     return null;
   }
 
   const normalizedArchiveBase = sanitizeArchiveBasename(archiveBasename);
-  let combinedContainer = null;
-  const fallbackPayloads = [];
-
-  for (const filename of fs.readdirSync(folder).sort()) {
+  const jsonFiles = fs.readdirSync(folder).sort().filter((filename) => {
     const filePath = path.join(folder, filename);
-    if (!fs.statSync(filePath).isFile() || !filename.toLowerCase().endsWith(".json")) {
-      continue;
-    }
-
-    const rawContent = fs.readFileSync(filePath, "utf8");
-    let content = rawContent;
-    try {
-      content = JSON.parse(rawContent);
-    } catch (_error) {
-      content = rawContent;
-    }
-
-    if (content && typeof content === "object" && Array.isArray(content.Referrals)) {
-      if (combinedContainer == null) {
-        combinedContainer = { ...content, Referrals: [...content.Referrals] };
-      } else {
-        combinedContainer.Referrals = combinedContainer.Referrals || [];
-        combinedContainer.Referrals.push(...content.Referrals);
-        for (const [key, value] of Object.entries(content)) {
-          if (key === "Referrals") {
-            continue;
-          }
-          const currentValue = combinedContainer[key];
-          if (
-            !Object.prototype.hasOwnProperty.call(combinedContainer, key) ||
-            currentValue === "" ||
-            currentValue == null ||
-            (Array.isArray(currentValue) && currentValue.length === 0) ||
-            (typeof currentValue === "object" && !Array.isArray(currentValue) && Object.keys(currentValue).length === 0)
-          ) {
-            combinedContainer[key] = value;
-          }
-        }
-      }
-    } else {
-      fallbackPayloads.push({ filename, content });
-    }
-  }
+    return fs.statSync(filePath).isFile() && filename.toLowerCase().endsWith(".json");
+  });
+  if (jsonFiles.length === 0) return null;
 
   const archivePath = path.join(folder, `${normalizedArchiveBase}.gz`);
-  const payload = combinedContainer != null ? combinedContainer : fallbackPayloads;
-  fs.writeFileSync(archivePath, zlib.gzipSync(Buffer.from(JSON.stringify(payload, null, 2), "utf8")));
+  const gzip = zlib.createGzip({ level: zlib.constants.Z_BEST_SPEED });
+  const output = fs.createWriteStream(archivePath);
+  gzip.pipe(output);
+
+  const firstPath = path.join(folder, jsonFiles[0]);
+  let firstContent;
+  try {
+    firstContent = JSON.parse(fs.readFileSync(firstPath, "utf8"));
+  } catch (_error) {
+    firstContent = null;
+  }
+  const referralMode = Boolean(firstContent && typeof firstContent === "object" && Array.isArray(firstContent.Referrals));
+
+  if (referralMode) {
+    const metadata = { ...firstContent };
+    delete metadata.Referrals;
+    const metadataJson = JSON.stringify(metadata);
+    await writeChunk(gzip, `${metadataJson.slice(0, -1)},"Referrals":[`);
+    let firstReferral = true;
+    for (const filename of jsonFiles) {
+      const content = JSON.parse(fs.readFileSync(path.join(folder, filename), "utf8"));
+      for (const referral of Array.isArray(content.Referrals) ? content.Referrals : []) {
+        await writeChunk(gzip, `${firstReferral ? "" : ","}${JSON.stringify(referral)}`);
+        firstReferral = false;
+      }
+    }
+    await writeChunk(gzip, "]}");
+  } else {
+    await writeChunk(gzip, "[");
+    for (let index = 0; index < jsonFiles.length; index += 1) {
+      const filename = jsonFiles[index];
+      const rawContent = fs.readFileSync(path.join(folder, filename), "utf8");
+      let content = rawContent;
+      try {
+        content = JSON.parse(rawContent);
+      } catch (_error) {
+        // Preserve non-JSON input as text in the fallback archive format.
+      }
+      await writeChunk(gzip, `${index ? "," : ""}${JSON.stringify({ filename, content })}`);
+    }
+    await writeChunk(gzip, "]");
+  }
+
+  gzip.end();
+  await once(output, "finish");
   return archivePath;
 }
 

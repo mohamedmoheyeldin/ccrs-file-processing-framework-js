@@ -51,6 +51,8 @@ const {
 } = require("./uploader");
 const { sanitizeFilenameBase } = require("./renamer");
 const { buildArchiveBasename, DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename } = require("./zipper");
+const { assertSourceFilesWithinLimits, getProcessingLimits } = require("./limits");
+const { writeFileAtomic } = require("./atomicFile");
 
 ensureRuntimeFiles();
 setupLogger();
@@ -202,6 +204,7 @@ function getInfo() {
     seocOptions: getSeocOptions(),
     uiSettings,
     constants: {
+      processingLimits: getProcessingLimits(),
       icnModes: ICN_MODES,
       icnTestPrefix: ICN_TEST_PREFIX,
       icnSuffixLength: ICN_TEST_SUFFIX_LENGTH,
@@ -221,6 +224,44 @@ function getInfo() {
       uiSettingsPath: getUiSettingsPath(),
     },
   };
+}
+
+function exportDiagnosticReport(payload = {}) {
+  const outputDir = String(payload.outputDir || "").trim();
+  if (!outputDir) throw new Error("Please choose a folder for the diagnostic report.");
+  fs.mkdirSync(outputDir, { recursive: true });
+  const appVersion = loadAppVersionInfo();
+  const profiles = loadUploadProfiles();
+  const settings = loadUiSettings();
+  const report = {
+    generatedAt: new Date().toISOString(),
+    appVersion: appVersion.version,
+    appLabel: appVersion.displayLabel,
+    platform: process.platform,
+    architecture: process.arch,
+    runtimeVersions: process.versions,
+    uploadProfileSummary: summarizeUploadProfiles(profiles),
+    processingLimits: getProcessingLimits(),
+    workflowPreferences: {
+      theme: settings.theme,
+      mainTab: settings.mainTab,
+      subTab: settings.subTab,
+      randomizeSsn: settings.randomizeSsn,
+      randomizeDob: settings.randomizeDob,
+      randomizeStationId: settings.randomizeStationId,
+      matchSuffixLength: settings.matchSuffixLength,
+      uploadEnabled: settings.uploadEnabled,
+      leieDuplicateHandling: settings.leieDuplicateHandling,
+    },
+    health: {
+      stationOptionCount: loadStationOptions().length,
+      seocOptionCount: getSeocOptions().length,
+      userGuideAvailable: fs.existsSync(dataPath("docs", "USER_GUIDE.pdf")),
+    },
+  };
+  const reportPath = path.join(outputDir, `ccrs-diagnostics-${Date.now()}.json`);
+  writeFileAtomic(reportPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  return { reportPath, message: `Diagnostic report saved to ${reportPath}.` };
 }
 
 function inspectSource(payload) {
@@ -245,6 +286,7 @@ function inspectSource(payload) {
       sourceFiles: [],
     };
   }
+  const totalSourceBytes = assertSourceFilesWithinLimits(sourceFiles);
 
   const firstFile = sourceFiles[0];
   let defaults = {};
@@ -265,6 +307,7 @@ function inspectSource(payload) {
   return {
     inputDir,
     fileCount: sourceFiles.length,
+    totalSourceBytes,
     firstListDate,
     defaults,
     sourceFiles: sourceFiles.map((filePath) => ({
@@ -378,6 +421,16 @@ function collectFieldErrors(payload) {
   if (payload.referralsPerFile !== undefined && Number(payload.referralsPerFile || 0) <= 0) {
     fieldErrors.referralsPerFile = "Number of referrals per file must be greater than zero.";
   }
+  const processingLimits = getProcessingLimits();
+  if (Number(payload.fileCount || 0) > processingLimits.maxGeneratedFiles) {
+    fieldErrors.fileCount = `Number of JSON files cannot exceed ${processingLimits.maxGeneratedFiles.toLocaleString()}.`;
+  }
+  if (Number(payload.referralsPerFile || 0) > processingLimits.maxReferralsPerFile) {
+    fieldErrors.referralsPerFile = `Referrals per file cannot exceed ${processingLimits.maxReferralsPerFile.toLocaleString()}.`;
+  }
+  if (Number(payload.fileCount || 0) * Number(payload.referralsPerFile || 0) > processingLimits.maxGeneratedReferrals) {
+    fieldErrors.referralsPerFile = `The generated batch cannot exceed ${processingLimits.maxGeneratedReferrals.toLocaleString()} referrals.`;
+  }
 
   try {
     validateIcnSettings(icnSettings);
@@ -415,8 +468,26 @@ function buildUploadOptions(payload) {
 
   return {
     enabled: true,
-    targets: resolveUploadTargets(loadUploadProfiles(), uploadPayload.targets || []),
+    targets: Array.isArray(uploadPayload.resolvedTargets)
+      ? uploadPayload.resolvedTargets
+      : resolveUploadTargets(loadUploadProfiles(), uploadPayload.targets || []),
   };
+}
+
+function prepareBackgroundPayload(command, payload = {}) {
+  const prepared = structuredClone(payload || {});
+  if (prepared.upload?.enabled) {
+    prepared.upload.resolvedTargets = resolveUploadTargets(loadUploadProfiles(), prepared.upload.targets || []);
+  }
+  if (command === "test-upload-target") {
+    const [resolvedTarget] = resolveUploadTargets(loadUploadProfiles(), [{
+      server_name: String(prepared.server_name || "").trim(),
+      user_name: String(prepared.user_name || "").trim(),
+      remote_directory: String(prepared.remote_directory || "").trim(),
+    }]);
+    prepared.resolvedTarget = resolvedTarget;
+  }
+  return prepared;
 }
 
 function buildCommonArgs(payload, progressCallback) {
@@ -492,6 +563,16 @@ async function runGenerate(payload, emitProgress) {
   if (referralsPerFile <= 0) {
     throw new Error("Referrals per file must be greater than zero.");
   }
+  const limits = getProcessingLimits();
+  if (fileCount > limits.maxGeneratedFiles) {
+    throw new Error(`Files to generate cannot exceed ${limits.maxGeneratedFiles.toLocaleString()}.`);
+  }
+  if (referralsPerFile > limits.maxReferralsPerFile) {
+    throw new Error(`Referrals per file cannot exceed ${limits.maxReferralsPerFile.toLocaleString()}.`);
+  }
+  if (fileCount * referralsPerFile > limits.maxGeneratedReferrals) {
+    throw new Error(`The generated batch cannot exceed ${limits.maxGeneratedReferrals.toLocaleString()} referrals.`);
+  }
 
   const args = buildCommonArgs(payload, emitProgress);
   if (!args.outputDir) {
@@ -524,6 +605,11 @@ async function runGenerate(payload, emitProgress) {
 }
 
 async function runTestUploadTarget(payload) {
+  if (payload.resolvedTarget) {
+    const resolvedTarget = payload.resolvedTarget;
+    const message = await testUploadConnection(resolvedTarget.connection_details, resolvedTarget.remote_directory);
+    return { message: `${resolvedTarget.server_name}: ${message}` };
+  }
   const target = {
     server_name: (payload.server_name || "").trim(),
     user_name: (payload.user_name || "").trim(),
@@ -555,6 +641,7 @@ async function handleCommand(command, payload, emitProgress) {
       uiSettings: saveUiSettings(payload),
     };
   }
+  if (command === "export-diagnostics") return exportDiagnosticReport(payload);
   if (command === "acknowledge-release-announcement") {
     const releaseKey = String(payload.releaseKey || "").trim();
     saveReleaseTracker({ acknowledgedReleaseKey: releaseKey });
@@ -593,4 +680,5 @@ module.exports = {
   cleanupRuntimeArtifacts,
   cleanupStaleRuntimeArtifacts,
   handleCommand,
+  prepareBackgroundPayload,
 };

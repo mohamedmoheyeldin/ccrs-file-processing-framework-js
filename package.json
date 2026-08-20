@@ -1,6 +1,6 @@
 {
   "name": "ccrs-file-processing-framework",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Pure JavaScript Electron desktop app for the CCRS File Processing Framework.",
   "main": "electron/main.js",
   "author": "Mohamed Moheyeldin (Eldin)",
@@ -9,18 +9,21 @@
     "prestart": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
     "start": "electron .",
     "pretest": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
-    "test": "npm run test:smoke",
+    "test": "pnpm run test:syntax && pnpm run test:smoke",
+    "test:syntax": "node scripts/syntax-check.js",
     "test:smoke": "node scripts/smoke-test.js",
+    "test:e2e": "node scripts/electron-e2e-test.js",
     "predist": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
     "dist": "node scripts/build-release.js"
   },
   "dependencies": {
-    "ssh2-sftp-client": "^12.0.1",
+    "ssh2-sftp-client": "^12.1.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "electron": "^43.4.0",
-    "electron-builder": "^26.15.3"
+    "electron": "^43.4.1",
+    "electron-builder": "^26.15.3",
+    "playwright": "^1.62.1"
   },
   "build": {
     "appId": "com.ccrs.fileprocessingframework",
@@ -30,6 +33,9 @@
       "assets/icons/ccrs_app_icon.ico",
       "assets/icons/ccrs_app_icon.png",
       "package.json"
+    ],
+    "asarUnpack": [
+      "electron/backend/**/*"
     ],
     "extraResources": [
       {
@@ -79,8 +85,6 @@
       "icon": "assets/icons/ccrs_app_icon.ico",
       "defaultArch": "x64",
       "signAndEditExecutable": true,
-      "signExecutable": false,
-      "verifyUpdateCodeSignature": false,
       "target": [
         {
           "target": "nsis",
@@ -94,11 +98,11 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "perMachine": false,
-      "uninstallDisplayName": "CCRS File Processing Framework Version 1.2",
+      "uninstallDisplayName": "CCRS File Processing Framework Version 1.2.5",
       "installerIcon": "assets/icons/ccrs_app_icon.ico",
       "uninstallerIcon": "assets/icons/ccrs_app_icon.ico",
       "installerHeaderIcon": "assets/icons/ccrs_app_icon.ico"
     }
   },
-  "packageManager": "pnpm@10.33.0"
+  "packageManager": "pnpm@11.22.0"
 }

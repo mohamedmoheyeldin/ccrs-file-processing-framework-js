@@ -1,7 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 const XLSX = require("xlsx");
-const { uploadFile, loadUploadProfiles, resolveUploadTargets } = require("./uploader");
+const { uploadFileWithRetry, loadUploadProfiles, resolveUploadTargets } = require("./uploader");
+const { assertSourceFilesWithinLimits, getProcessingLimits } = require("./limits");
 
 const STRICT_DUPLICATE_MODE = "full-row";
 const ACCEPTED_EXCEL_EXTENSIONS = new Set([".xlsx", ".xls", ".xlsm", ".xlsb"]);
@@ -67,8 +68,10 @@ function getExcelFiles(inputDir) {
 }
 
 function readWorkbookRows(filePath) {
+  assertSourceFilesWithinLimits([filePath]);
   const workbook = XLSX.readFile(filePath, {
     cellDates: false,
+    dense: true,
     raw: false,
   });
 
@@ -119,7 +122,12 @@ function readSheetMatrix(sheet) {
   }
 
   const range = XLSX.utils.decode_range(ref);
+  const potentialRowCount = range.e.r - range.s.r + 1;
+  if (potentialRowCount > getProcessingLimits().maxLeieRows + 1) {
+    throw new Error(`The worksheet exceeds the ${getProcessingLimits().maxLeieRows.toLocaleString()}-row safety limit.`);
+  }
   const matrix = [];
+  const denseData = Array.isArray(sheet?.["!data"]) ? sheet["!data"] : null;
 
   for (let rowIndex = range.s.r; rowIndex <= range.e.r; rowIndex += 1) {
     const row = [];
@@ -127,7 +135,7 @@ function readSheetMatrix(sheet) {
 
     for (let columnIndex = range.s.c; columnIndex <= range.e.c; columnIndex += 1) {
       const address = XLSX.utils.encode_cell({ r: rowIndex, c: columnIndex });
-      const cell = sheet[address];
+      const cell = denseData ? denseData[rowIndex]?.[columnIndex] : sheet[address];
       let value = "";
 
       if (cell && cell.v !== undefined && cell.v !== null) {
@@ -163,6 +171,7 @@ function resolveDuplicateColumn(headers) {
 function collectSourceData(inputDir, duplicateKey = "full-row") {
   const duplicateMode = getDuplicateMode(duplicateKey);
   const excelFiles = getExcelFiles(inputDir);
+  const totalSourceBytes = assertSourceFilesWithinLimits(excelFiles);
 
   const files = [];
   const validationErrors = [];
@@ -219,6 +228,7 @@ function collectSourceData(inputDir, duplicateKey = "full-row") {
 
   return {
     duplicateMode,
+    totalSourceBytes,
     excelFiles,
     files,
     duplicateKeyResolvers,
@@ -251,10 +261,12 @@ function inspectLeieSource(payload = {}) {
     duplicateKey: sourceData.duplicateMode,
     fileCount: sourceData.excelFiles.length,
     totalRowCount: sourceData.files.reduce((sum, file) => sum + file.rows.length, 0),
+    totalSourceBytes: sourceData.totalSourceBytes,
     excelFiles: sourceData.files.map((file) => ({
       name: file.fileName,
       path: file.filePath,
       rowCount: file.rows.length,
+      sizeBytes: fs.statSync(file.filePath).size,
     })),
     duplicates: sourceData.duplicates,
     validationErrors: sourceData.validationErrors,
@@ -335,7 +347,9 @@ function buildLeieUploadOptions(payload = {}) {
 
   return {
     enabled: true,
-    targets: resolveUploadTargets(loadUploadProfiles(), uploadPayload.targets || []),
+    targets: Array.isArray(uploadPayload.resolvedTargets)
+      ? uploadPayload.resolvedTargets
+      : resolveUploadTargets(loadUploadProfiles(), uploadPayload.targets || []),
   };
 }
 
@@ -353,6 +367,10 @@ async function processLeieFiles(payload = {}, progressCallback) {
   }
 
   const sourceData = collectSourceData(inputDir, duplicateMode);
+  const totalRows = sourceData.files.reduce((sum, file) => sum + file.rows.length, 0);
+  if (totalRows > getProcessingLimits().maxLeieRows) {
+    throw new Error(`LEIE source exceeds the ${getProcessingLimits().maxLeieRows.toLocaleString()}-row safety limit.`);
+  }
   if (sourceData.excelFiles.length === 0) {
     throw new Error("No Excel files (.xlsx, .xls, .xlsm, .xlsb) were found in the selected source path.");
   }
@@ -387,6 +405,7 @@ async function processLeieFiles(payload = {}, progressCallback) {
 
   const processed = buildDedupedRows(sourceData, duplicateMode, duplicateHandling);
   const worksheet = XLSX.utils.json_to_sheet(processed.rows, {
+    dense: true,
     header: processed.headers,
     skipHeader: false,
   });
@@ -415,7 +434,7 @@ async function processLeieFiles(payload = {}, progressCallback) {
       }
 
       try {
-        const uploadedPath = await uploadFile(
+        const uploadedPath = await uploadFileWithRetry(
           outputPath,
           uploadTarget.remote_directory,
           uploadTarget.connection_details

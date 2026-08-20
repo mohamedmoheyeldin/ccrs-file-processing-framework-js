@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
     <title>CCRS File Processing Framework</title>
     <link rel="icon" href="../../assets/icons/ccrs_app_icon.ico" sizes="any" />
     <link rel="stylesheet" href="./styles.css" />
@@ -12,6 +13,7 @@
       <header class="topbar glass-card">
         <div class="topbar-side">
           <button id="open-user-guide" class="toolbar-button primary-soft">User Guide</button>
+          <button id="export-diagnostics" class="toolbar-button">Export Diagnostics</button>
         </div>
         <div class="topbar-center">
           <div class="topbar-title-row">
@@ -26,19 +28,19 @@
         <div class="topbar-side topbar-side-end">
           <div class="theme-picker">
             <span>Theme</span>
-            <div class="segmented-control compact">
-              <button class="segment is-active" data-theme="light">Light</button>
-              <button class="segment" data-theme="dark">Dark</button>
+            <div class="segmented-control compact" role="group" aria-label="Theme">
+              <button class="segment is-active" data-theme="light" aria-pressed="true">Light</button>
+              <button class="segment" data-theme="dark" aria-pressed="false">Dark</button>
             </div>
           </div>
         </div>
       </header>
 
       <section class="main-tabs">
-        <div class="segmented-control centered">
-          <button class="segment is-active" data-main-tab="referral">Referral Files</button>
-          <button class="segment" data-main-tab="leie">LEIE Data Processing</button>
-          <button class="segment" data-main-tab="other">More Features Coming Soon</button>
+        <div class="segmented-control centered" role="tablist" aria-label="Processing workflow">
+          <button class="segment is-active" data-main-tab="referral" role="tab" aria-selected="true">Referral Files</button>
+          <button class="segment" data-main-tab="leie" role="tab" aria-selected="false">LEIE Data Processing</button>
+          <button class="segment" data-main-tab="other" role="tab" aria-selected="false">More Features Coming Soon</button>
         </div>
         <div id="main-tab-copy" class="tab-copy">
           Choose source files, apply targeted JSON updates, and export clean output in one pass.
@@ -48,9 +50,9 @@
       <section class="workspace">
         <main class="content">
           <div id="subtab-row" class="subtab-row">
-            <div class="segmented-control">
-              <button class="segment is-active" data-sub-tab="edit">Edit Existing Files</button>
-              <button class="segment" data-sub-tab="generate">Generate New Files</button>
+            <div class="segmented-control" role="tablist" aria-label="Referral workflow mode">
+              <button class="segment is-active" data-sub-tab="edit" role="tab" aria-selected="true">Edit Existing Files</button>
+              <button class="segment" data-sub-tab="generate" role="tab" aria-selected="false">Generate New Files</button>
             </div>
           </div>
 
@@ -65,6 +67,13 @@
                 </div>
                 <div id="template-summary-pill" class="pill-note hidden"></div>
               </div>
+              <ol id="workflow-stepper" class="workflow-stepper" aria-label="Workflow progress">
+                <li class="is-active" data-workflow-step="source">1. Select</li>
+                <li data-workflow-step="configure">2. Configure</li>
+                <li data-workflow-step="validate">3. Validate</li>
+                <li data-workflow-step="process">4. Process</li>
+                <li data-workflow-step="upload">5. Upload</li>
+              </ol>
             </article>
 
             <article id="future-card" class="content-card glass-card hidden">
@@ -223,51 +232,51 @@
                 </div>
                 <div class="date-segments">
                   <div class="date-field" data-date-part="year">
-                    <label>Year</label>
+                    <label for="list-date-year">Year</label>
                     <div class="date-control">
-                      <button type="button" class="date-step" data-step="-1">-</button>
+                      <button type="button" class="date-step" data-step="-1" aria-label="Decrease year">-</button>
                       <input id="list-date-year" maxlength="4" value="0000" />
-                      <button type="button" class="date-step" data-step="1">+</button>
+                      <button type="button" class="date-step" data-step="1" aria-label="Increase year">+</button>
                     </div>
                   </div>
                   <div class="date-field" data-date-part="month">
-                    <label>Month</label>
+                    <label for="list-date-month">Month</label>
                     <div class="date-control">
-                      <button type="button" class="date-step" data-step="-1">-</button>
+                      <button type="button" class="date-step" data-step="-1" aria-label="Decrease month">-</button>
                       <input id="list-date-month" maxlength="2" value="00" />
-                      <button type="button" class="date-step" data-step="1">+</button>
+                      <button type="button" class="date-step" data-step="1" aria-label="Increase month">+</button>
                     </div>
                   </div>
                   <div class="date-field" data-date-part="day">
-                    <label>Day</label>
+                    <label for="list-date-day">Day</label>
                     <div class="date-control">
-                      <button type="button" class="date-step" data-step="-1">-</button>
+                      <button type="button" class="date-step" data-step="-1" aria-label="Decrease day">-</button>
                       <input id="list-date-day" maxlength="2" value="00" />
-                      <button type="button" class="date-step" data-step="1">+</button>
+                      <button type="button" class="date-step" data-step="1" aria-label="Increase day">+</button>
                     </div>
                   </div>
                   <div class="date-field" data-date-part="hour">
-                    <label>Hour</label>
+                    <label for="list-date-hour">Hour</label>
                     <div class="date-control">
-                      <button type="button" class="date-step" data-step="-1">-</button>
+                      <button type="button" class="date-step" data-step="-1" aria-label="Decrease hour">-</button>
                       <input id="list-date-hour" maxlength="2" value="00" />
-                      <button type="button" class="date-step" data-step="1">+</button>
+                      <button type="button" class="date-step" data-step="1" aria-label="Increase hour">+</button>
                     </div>
                   </div>
                   <div class="date-field" data-date-part="minute">
-                    <label>Minute</label>
+                    <label for="list-date-minute">Minute</label>
                     <div class="date-control">
-                      <button type="button" class="date-step" data-step="-1">-</button>
+                      <button type="button" class="date-step" data-step="-1" aria-label="Decrease minute">-</button>
                       <input id="list-date-minute" maxlength="2" value="00" />
-                      <button type="button" class="date-step" data-step="1">+</button>
+                      <button type="button" class="date-step" data-step="1" aria-label="Increase minute">+</button>
                     </div>
                   </div>
                   <div class="date-field" data-date-part="second">
-                    <label>Second</label>
+                    <label for="list-date-second">Second</label>
                     <div class="date-control">
-                      <button type="button" class="date-step" data-step="-1">-</button>
+                      <button type="button" class="date-step" data-step="-1" aria-label="Decrease second">-</button>
                       <input id="list-date-second" maxlength="2" value="00" />
-                      <button type="button" class="date-step" data-step="1">+</button>
+                      <button type="button" class="date-step" data-step="1" aria-label="Increase second">+</button>
                     </div>
                   </div>
                 </div>
@@ -554,13 +563,15 @@
 
             <article id="run-card" class="content-card glass-card">
               <div class="run-panel">
-                <div class="status-panel inline-status">
+                <div class="status-panel inline-status" role="status" aria-live="polite" aria-atomic="true">
                   <span id="status-badge" class="status-badge idle">Idle</span>
                   <p id="status-message">Choose a workflow, then run processing.</p>
                 </div>
+                <progress id="job-progress" class="job-progress hidden" max="100" value="0">0%</progress>
                 <div class="action-row">
                   <button id="run-process" class="toolbar-button primary">Run Processing</button>
                   <button id="run-generate" class="toolbar-button primary hidden">Generate Files</button>
+                  <button id="cancel-job" class="toolbar-button danger hidden" data-allow-while-busy="true">Cancel</button>
                 </div>
               </div>
             </article>
@@ -601,6 +612,7 @@
 
     <script src="./leieSql.js"></script>
     <script src="./uploadDefaults.js"></script>
+    <script src="./jobUi.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

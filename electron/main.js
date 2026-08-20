@@ -1,9 +1,35 @@
-const { app, BrowserWindow, dialog, ipcMain, shell } = require("electron");
+const fs = require("fs");
+const os = require("os");
+const { randomUUID } = require("crypto");
+const { Worker } = require("worker_threads");
+const { app, BrowserWindow, dialog, ipcMain, session, shell } = require("electron");
 const path = require("path");
 const backend = require("./backend");
 
 let mainWindow;
+const activeJobs = new Map();
 const APP_USER_MODEL_ID = "com.ccrs.fileprocessingframework";
+const BACKGROUND_COMMANDS = new Set(["inspect-source", "inspect-leie-source", "process", "process-leie", "generate", "test-upload-target"]);
+const CANCELLABLE_COMMANDS = new Set(["process", "process-leie", "generate", "test-upload-target"]);
+
+process.env.CCRS_IS_PACKAGED = app.isPackaged ? "1" : "0";
+process.env.CCRS_BUNDLE_ROOT = app.isPackaged ? process.resourcesPath : path.resolve(__dirname, "..");
+process.env.CCRS_RUNTIME_ROOT = app.isPackaged ? path.dirname(process.execPath) : path.resolve(__dirname, "..");
+
+function assertTrustedSender(event) {
+  if (!mainWindow || event.sender.id !== mainWindow.webContents.id) {
+    throw new Error("Request rejected because it did not come from the application window.");
+  }
+}
+
+function isAllowedExternalUrl(rawUrl) {
+  try {
+    const parsed = new URL(String(rawUrl || ""));
+    return parsed.protocol === "https:";
+  } catch (_error) {
+    return false;
+  }
+}
 
 function getWindowsIconPath() {
   return app.isPackaged
@@ -15,8 +41,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1360,
     height: 900,
-    minWidth: 1120,
-    minHeight: 760,
+    minWidth: 760,
+    minHeight: 640,
     backgroundColor: "#ececec",
     icon: getWindowsIconPath(),
     autoHideMenuBar: true,
@@ -24,10 +50,44 @@ function createWindow() {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
   });
 
   mainWindow.loadFile(path.join(__dirname, "renderer", "index.html"));
+  mainWindow.webContents.on("will-navigate", (event) => event.preventDefault());
+  mainWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+  if (process.argv.includes("--smoke-test")) {
+    mainWindow.webContents.once("did-finish-load", runPackagedSmokeTest);
+  }
+}
+
+async function runPackagedSmokeTest() {
+  const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-installed-smoke-"));
+  let exitCode = 0;
+  try {
+    const result = await runBackgroundCommand(mainWindow.webContents, "generate", {
+      outputDir,
+      replacementCode: "installed_smoke",
+      archiveBasename: "installed_smoke_archive",
+      clearOutput: true,
+      keepProcessedJson: false,
+      fileCount: 1,
+      referralsPerFile: 1,
+      icnSettings: { mode: "test-dynamic" },
+      identityOptions: { randomizeSsn: true, randomizeDob: true, matchSuffixLength: 5 },
+      optionalOverrides: {},
+      upload: { enabled: false, targets: [] },
+    });
+    if (!/Done\. Processed 1 file/.test(result?.message || "")) throw new Error("Background generation did not finish.");
+    if (!fs.existsSync(path.join(outputDir, "installed_smoke_archive.gz"))) throw new Error("Smoke archive was not created.");
+  } catch (error) {
+    console.error("Installed application smoke test failed.", error);
+    exitCode = 1;
+  } finally {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+    app.exit(exitCode);
+  }
 }
 
 function runBackendCommand(webContents, command, payload = {}) {
@@ -44,14 +104,73 @@ function runBackendCommand(webContents, command, payload = {}) {
   });
 }
 
-ipcMain.handle("dialog:pick-directory", async () => {
+function runBackgroundCommand(webContents, command, payload = {}) {
+  const jobId = randomUUID();
+  const preparedPayload = backend.prepareBackgroundPayload(command, payload);
+  const workerPath = path.join(
+    app.isPackaged ? __dirname.replace(`${path.sep}app.asar${path.sep}`, `${path.sep}app.asar.unpacked${path.sep}`) : __dirname,
+    "backend",
+    "jobWorker.js"
+  );
+  const worker = new Worker(workerPath, {
+    workerData: { command, payload: preparedPayload },
+  });
+
+  return new Promise((resolve, reject) => {
+    const job = { jobId, command, worker, webContentsId: webContents.id, cancelled: false, settled: false };
+    activeJobs.set(jobId, job);
+
+    const finish = (callback, value) => {
+      if (job.settled) return;
+      job.settled = true;
+      activeJobs.delete(jobId);
+      callback(value);
+    };
+
+    worker.on("message", (message) => {
+      if (message?.type === "progress" && !webContents.isDestroyed()) {
+        webContents.send("backend:event", { ...message, jobId });
+      } else if (message?.type === "result") {
+        finish(resolve, message.result);
+      } else if (message?.type === "error") {
+        finish(reject, new Error(message.error || "Background job failed."));
+      }
+    });
+    worker.on("error", (error) => finish(reject, error));
+    worker.on("exit", (code) => {
+      if (job.cancelled) finish(reject, new Error("Operation cancelled. Partial output files may have been removed or left incomplete."));
+      else if (code !== 0) finish(reject, new Error(`Background job exited with code ${code}.`));
+      else if (!job.settled) finish(reject, new Error("Background job exited before returning a result."));
+    });
+  });
+}
+
+function cancelLatestJob(webContentsId) {
+  const candidates = [...activeJobs.values()].filter(
+    (job) => job.webContentsId === webContentsId && CANCELLABLE_COMMANDS.has(job.command)
+  );
+  const job = candidates.at(-1);
+  if (!job) return false;
+  job.cancelled = true;
+  void job.worker.terminate();
+  return true;
+}
+
+function handle(channel, callback) {
+  ipcMain.handle(channel, async (event, ...args) => {
+    assertTrustedSender(event);
+    return callback(event, ...args);
+  });
+}
+
+handle("dialog:pick-directory", async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ["openDirectory", "createDirectory"],
   });
   return result.canceled ? "" : result.filePaths[0];
 });
 
-ipcMain.handle("dialog:pick-file", async (_event, filters) => {
+handle("dialog:pick-file", async (_event, filters) => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ["openFile"],
     filters,
@@ -59,45 +178,50 @@ ipcMain.handle("dialog:pick-file", async (_event, filters) => {
   return result.canceled ? "" : result.filePaths[0];
 });
 
-ipcMain.handle("shell:open-path", async (_event, targetPath) => {
+handle("shell:open-path", async (_event, targetPath) => {
   if (!targetPath) {
     return "";
   }
-  return shell.openPath(targetPath);
+  const normalizedPath = path.resolve(String(targetPath));
+  if (!fs.existsSync(normalizedPath)) throw new Error("The requested path does not exist.");
+  return shell.openPath(normalizedPath);
 });
 
-ipcMain.handle("shell:open-external", async (_event, targetUrl) => {
+handle("shell:open-external", async (_event, targetUrl) => {
   const normalizedUrl = String(targetUrl || "").trim();
-  if (!normalizedUrl) {
-    return false;
-  }
+  if (!isAllowedExternalUrl(normalizedUrl)) throw new Error("Only trusted HTTPS links can be opened.");
   await shell.openExternal(normalizedUrl);
   return true;
 });
 
-ipcMain.handle("backend:info", async (event) => runBackendCommand(event.sender, "info"));
-ipcMain.handle("backend:inspect-source", async (event, payload) =>
-  runBackendCommand(event.sender, "inspect-source", payload)
+handle("backend:info", async (event) => runBackendCommand(event.sender, "info"));
+handle("backend:inspect-source", async (event, payload) =>
+  runBackgroundCommand(event.sender, "inspect-source", payload)
 );
-ipcMain.handle("backend:inspect-leie-source", async (event, payload) =>
-  runBackendCommand(event.sender, "inspect-leie-source", payload)
+handle("backend:inspect-leie-source", async (event, payload) =>
+  runBackgroundCommand(event.sender, "inspect-leie-source", payload)
 );
-ipcMain.handle("backend:preview", async (event, payload) => runBackendCommand(event.sender, "preview", payload));
-ipcMain.handle("backend:save-ui-settings", async (event, payload) =>
+handle("backend:preview", async (event, payload) => runBackendCommand(event.sender, "preview", payload));
+handle("backend:save-ui-settings", async (event, payload) =>
   runBackendCommand(event.sender, "save-ui-settings", payload)
 );
-ipcMain.handle("backend:acknowledge-release-announcement", async (event, payload) =>
+handle("backend:acknowledge-release-announcement", async (event, payload) =>
   runBackendCommand(event.sender, "acknowledge-release-announcement", payload)
 );
-ipcMain.handle("backend:import-upload-source", async (event, payload) =>
+handle("backend:import-upload-source", async (event, payload) =>
   runBackendCommand(event.sender, "import-upload-source", payload)
 );
-ipcMain.handle("backend:test-upload-target", async (event, payload) =>
-  runBackendCommand(event.sender, "test-upload-target", payload)
+handle("backend:export-diagnostics", async (event, payload) =>
+  runBackendCommand(event.sender, "export-diagnostics", payload)
 );
-ipcMain.handle("backend:run", async (event, payload) =>
-  runBackendCommand(event.sender, payload.command, payload.data)
+handle("backend:test-upload-target", async (event, payload) =>
+  runBackgroundCommand(event.sender, "test-upload-target", payload)
 );
+handle("backend:run", async (event, payload) => {
+  if (!BACKGROUND_COMMANDS.has(payload.command)) throw new Error(`Unsupported background command: ${payload.command}`);
+  return runBackgroundCommand(event.sender, payload.command, payload.data);
+});
+handle("backend:cancel", async (event) => ({ cancelled: cancelLatestJob(event.sender.id) }));
 
 app.whenReady().then(() => {
   app.setAppUserModelId(APP_USER_MODEL_ID);
@@ -106,6 +230,7 @@ app.whenReady().then(() => {
   } catch (error) {
     console.error("Unable to clean stale runtime artifacts.", error);
   }
+  session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
   createWindow();
 }).then(() => {
   app.on("activate", () => {
@@ -116,6 +241,7 @@ app.whenReady().then(() => {
 });
 
 app.on("before-quit", () => {
+  for (const job of activeJobs.values()) void job.worker.terminate();
   try {
     backend.cleanupRuntimeArtifacts();
   } catch (error) {

@@ -4,4 +4,11 @@ node_modules/
 src/__pycache__/
 /dist-electron/
 /release/
+/build/
+/output/
+/logs/
+*.tmp
+.env
+.env.*
+!.env.example
 .codex

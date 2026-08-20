@@ -3,8 +3,9 @@ const { clearDirectory, directoryHasContents, getFiles, removeJsonFiles, saveFil
 const { log } = require("./logger");
 const { renameFile } = require("./renamer");
 const { modifyContent } = require("./contentEditor");
-const { uploadFile } = require("./uploader");
+const { uploadFileWithRetry } = require("./uploader");
 const { zipOutput } = require("./zipper");
+const { assertSourceFilesWithinLimits } = require("./limits");
 
 async function processFiles(
   inputDir,
@@ -27,6 +28,7 @@ async function processFiles(
     log("warning", "No files found in input directory.");
     return "No files found in the selected source folder.";
   }
+  assertSourceFilesWithinLimits(files);
 
   let processedCount = 0;
   let errorCount = 0;
@@ -80,8 +82,9 @@ async function processFiles(
     }
   }
 
-  const archivePath = zipOutput(outputDir, archiveBasename);
+  const archivePath = await zipOutput(outputDir, archiveBasename);
   const uploadedPaths = [];
+  const uploadErrors = [];
 
   if (archivePath) {
     if (uploadOptions && uploadOptions.enabled) {
@@ -91,16 +94,33 @@ async function processFiles(
         if (progressCallback) {
           progressCallback(index + 1, selectedTargets.length, path.basename(archivePath), "uploading", uploadTarget.server_name);
         }
-        const uploadedPath = await uploadFile(
-          archivePath,
-          uploadTarget.remote_directory,
-          uploadTarget.connection_details
-        );
-        uploadedPaths.push({
-          server_name: uploadTarget.server_name,
-          remote_path: uploadedPath,
-        });
-        log("info", `Uploaded gzip file to ${uploadTarget.server_name}: ${uploadedPath}`);
+        try {
+          const uploadedPath = await uploadFileWithRetry(
+            archivePath,
+            uploadTarget.remote_directory,
+            uploadTarget.connection_details
+          );
+          uploadedPaths.push({ server_name: uploadTarget.server_name, remote_path: uploadedPath });
+          log("info", `Uploaded gzip file to ${uploadTarget.server_name}: ${uploadedPath}`);
+          progressCallback?.(
+            index + 1,
+            selectedTargets.length,
+            path.basename(archivePath),
+            "upload-target-complete",
+            uploadTarget.server_name
+          );
+        } catch (error) {
+          uploadErrors.push({ server_name: uploadTarget.server_name, message: error.message });
+          log("error", `Upload failed for ${uploadTarget.server_name}: ${error.message}`);
+          progressCallback?.(
+            index + 1,
+            selectedTargets.length,
+            path.basename(archivePath),
+            "upload-target-error",
+            uploadTarget.server_name,
+            error.message
+          );
+        }
       }
     }
 
@@ -110,6 +130,13 @@ async function processFiles(
     }
 
     log("info", `Created gzip file: ${archivePath}`);
+    if (uploadErrors.length > 0) {
+      throw new Error(
+        `Archive was created at ${archivePath}, but ${uploadErrors.length} upload target${uploadErrors.length === 1 ? "" : "s"} failed: ${uploadErrors
+          .map((item) => `${item.server_name}: ${item.message}`)
+          .join("; ")}`
+      );
+    }
     const uploadedMessage =
       uploadedPaths.length > 0
         ? ` Uploaded file to ${uploadedPaths.map((item) => `${item.server_name} (${item.remote_path})`).join(", ")}.`
