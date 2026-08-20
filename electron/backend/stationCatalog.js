@@ -2,6 +2,8 @@ const fs = require("fs");
 const { bundlePath, dataPath } = require("./appPaths");
 
 const STATION_OPTIONS_FILE = "station_options.json";
+const EMBEDDED_STATION_ID_PATTERN = /^[A-Z0-9]{3,7}$/;
+const CONFIGURED_STATION_ID_PATTERN = /^(?!\d{4}$)[A-Z0-9]{3,7}$/;
 
 let cachedStationOptions = null;
 
@@ -10,12 +12,19 @@ function normalizeStationOption(option) {
     return null;
   }
 
-  const stationKey = String(option.stationKey || option.station_key || "").trim();
+  const configuredStationKey = String(option.stationKey || option.station_key || "").trim().toUpperCase();
   const stationName = String(option.stationName || option.station_name || "")
     .trim()
     .replace(/\s+/g, " ");
+  const stationNameGroups = [...stationName.matchAll(/\(([^()]*)\)/g)]
+    .map((match) => String(match[1] || "").trim().toUpperCase());
+  const embeddedStationId = stationNameGroups[1] || "";
+  const hasValidEmbeddedStationId = EMBEDDED_STATION_ID_PATTERN.test(embeddedStationId);
+  const stationKey = hasValidEmbeddedStationId
+    ? embeddedStationId
+    : configuredStationKey;
 
-  if (!stationKey || !stationName) {
+  if ((!hasValidEmbeddedStationId && !CONFIGURED_STATION_ID_PATTERN.test(stationKey)) || !stationName) {
     return null;
   }
 
@@ -74,4 +83,5 @@ function loadStationOptions() {
 
 module.exports = {
   loadStationOptions,
+  normalizeStationOptions,
 };

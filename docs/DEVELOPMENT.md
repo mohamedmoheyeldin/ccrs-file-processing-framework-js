@@ -25,6 +25,7 @@ pnpm verify
 - Use the existing background-worker and cancellation paths for long-running work.
 - Do not use real credentials or production upload targets during development.
 - Keep release output outside the repository; the build script enforces this boundary.
+- Keep Station IDs aligned with `DIM_VA_STATION.station_id`. Do not use source-row numbers as `stationKey`; run `pnpm verify` after any station catalog change.
 
 ## Windows-only work
 

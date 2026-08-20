@@ -36,6 +36,12 @@ async function run() {
     assert.equal((await matchMenu.evaluate((element) => element.getBoundingClientRect().height)) <= 260, true);
     await window.locator("#match-suffix-length").locator("..").locator('.compact-select-option[data-value="4"]').click();
     assert.equal(await window.locator("#match-suffix-length").inputValue(), "4");
+    await window.locator("#override-station-id").fill("614GA01");
+    await window.locator("#station-id-toggle").click();
+    assert.equal(await window.locator("#station-id-menu .combo-option-title", { hasText: "614GA01" }).count(), 1);
+    assert.equal(await window.locator("#station-id-menu .combo-option-title", { hasText: "2242" }).count(), 0);
+    await window.locator("#station-id-menu .combo-option", { hasText: "Tremont VA Clinic" }).click();
+    assert.equal(await window.locator("#override-station-id").inputValue(), "614GA01");
     const uploadDirectoryNote = window.locator(".upload-path-help").first();
     await uploadDirectoryNote.waitFor({ state: "visible" });
     assert.match(await uploadDirectoryNote.textContent(), /CCRS Referral uploads default to \/CCRA_Uploads/);

@@ -1,13 +1,21 @@
-# CCRS File Processing Framework Version 1.3.1
+# CCRS File Processing Framework Version 1.3.2
 
 ## Release Summary
 
-Version 1.3.1 gives every dropdown the same compact, constrained design as Station ID while retaining the separate CCRS Referral and LEIE Data upload workflows introduced in Version 1.3.
+Version 1.3.2 corrects the Station ID catalog so referral output uses real `DIM_VA_STATION.station_id` values instead of synthetic catalog row numbers.
 
 The GitHub Release contains:
 
-- `CCRS File Processing Framework Setup Version 1.3.1.exe`
+- `CCRS File Processing Framework Setup Version 1.3.2.exe`
 - `SHA256SUMS.txt`
+
+## Correct DIM_VA_STATION IDs
+
+- Catalog row number `2242` is replaced by the actual Tremont VA Clinic Station ID `614GA01`.
+- All 1,577 source rows were re-evaluated; the app now exposes 1,570 unique valid Station IDs after removing duplicates, test records, and an obsolete `_OLD` entry.
+- Manual and random Station ID modes use the corrected catalog.
+- Valid VA Station IDs from three through seven characters are supported.
+- Upgrades refresh the shipped Station ID catalog so an older installed catalog cannot continue producing synthetic values.
 
 ## Compact Dropdowns
 

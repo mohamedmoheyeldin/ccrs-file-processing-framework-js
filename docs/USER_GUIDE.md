@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Version 1.3.1`.
+This guide covers `Version 1.3.2`.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download `CCRS File Processing Framework Setup Version 1.3.1.exe` from the GitHub Releases page and run the installer.
+Download `CCRS File Processing Framework Setup Version 1.3.2.exe` from the GitHub Releases page and run the installer.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 
@@ -296,12 +296,16 @@ Uncheck the corresponding random option only when a fixed value must be applied.
 
 Choose an exact `station_key` from the reference-backed dropdown or enable random valid Station IDs.
 
+The dropdown uses the actual `DIM_VA_STATION.station_id`. For example, Tremont VA Clinic uses `614GA01`; the former catalog row number `2242` is not a Station ID and is no longer accepted or generated.
+
 Rules:
 
 - a selected or entered Station ID is never padded or extended
 - a three-character Station ID remains three characters
+- valid VA Station IDs may contain three through seven letters and numbers
 - manual values must exactly match the reference table
 - random mode uses only valid entries from `config/station_options.json`
+- the shipped catalog is refreshed during app upgrades
 
 ### SEOC Number and SEOC ID
 

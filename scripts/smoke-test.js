@@ -50,6 +50,8 @@ const {
   LEIE_DEFAULT_UPLOAD_DIRECTORY,
   resolveUploadDirectoryForWorkflow,
 } = require("../electron/renderer/uploadDefaults");
+const { normalizeStationOptions } = require("../electron/backend/stationCatalog");
+const { ensureRuntimeFiles } = require("../electron/backend/appPaths");
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-smoke-"));
 const projectRoot = path.resolve(__dirname, "..");
@@ -95,7 +97,7 @@ test("LEIE validation SQL includes the requested query set and syntax highlighti
   assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
 });
 
-test("Version 1.3.1 metadata and release automation stay consolidated", () => {
+test("Version 1.3.2 metadata and release automation stay consolidated", () => {
   const versionConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "app_version.json"), "utf8"));
   const packageConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
@@ -107,9 +109,9 @@ test("Version 1.3.1 metadata and release automation stay consolidated", () => {
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
 
-  assert.equal(versionConfig.version, "1.3.1");
-  assert.equal(versionConfig.releaseTag, "v1.3.1");
-  assert.equal(versionConfig.label, "Version 1.3.1");
+  assert.equal(versionConfig.version, "1.3.2");
+  assert.equal(versionConfig.releaseTag, "v1.3.2");
+  assert.equal(versionConfig.label, "Version 1.3.2");
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Publishes one verified Windows Setup installer")), false);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Uses Electron 43")), false);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Electron sandboxing")), false);
@@ -180,7 +182,7 @@ test("Diagnostic export excludes credentials and user file paths", async () => {
   const result = await backend.handleCommand("export-diagnostics", { outputDir });
   const reportText = fs.readFileSync(result.reportPath, "utf8");
   const report = JSON.parse(reportText);
-  assert.equal(report.appVersion, "1.3.1");
+  assert.equal(report.appVersion, "1.3.2");
   assert.equal(Object.prototype.hasOwnProperty.call(report.workflowPreferences, "inputDir"), false);
   assert.doesNotMatch(reportText, /password|ciphertext|connection_details/i);
 });
@@ -245,16 +247,79 @@ test("Payment Authority Code generation increments and stops at 99999", () => {
 
 test("Optional override normalization keeps the validated Payment Authority Code", () => {
   const overrides = generateOptionalFieldOverrides({
-    StationID: "1501",
+    StationID: "402",
     PaymentAuthorityCode: "54321",
   });
 
   assert.equal(overrides.PaymentAuthorityCode, "54321");
-  assert.equal(overrides.StationID, "1501");
+  assert.equal(overrides.StationID, "402");
   assert.throws(
     () => generateOptionalFieldOverrides({ StationID: "150" }),
     /must exactly match a station_key/
   );
+});
+
+test("Legacy station row numbers normalize to actual DIM_VA_STATION IDs", () => {
+  const normalized = normalizeStationOptions([
+    { stationKey: "2242", stationName: "(V09) (614GA01) Tremont VA Clinic" },
+    { stationKey: "1501", stationName: "(1V01) (402) Togus VA Medical Center" },
+    { stationKey: "2813", stationName: "Testing Station" },
+    { stationKey: "520GC", stationName: "Eglin Air Force Base VA Clinic" },
+    { stationKey: "9999", stationName: "(V99) (1234) Future VA Station" },
+    { stationKey: "3083", stationName: "(3V23) (656QA) St. Cloud VA Mobile Clinic" },
+    { stationKey: "1735", stationName: "(3V23) (656QA) St. Cloud VA Mobile Clinics" },
+  ]);
+
+  assert.deepEqual(normalized.map((option) => option.stationKey), ["614GA01", "402", "520GC", "1234", "656QA"]);
+  assert.equal(normalized.some((option) => option.stationKey === "2242"), false);
+});
+
+test("Bundled station keys match their DIM_VA_STATION IDs", () => {
+  const bundled = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "station_options.json"), "utf8"));
+  assert.equal(bundled.length, 1570);
+  assert.equal(new Set(bundled.map((option) => option.stationKey)).size, bundled.length);
+  for (const option of bundled) {
+    const groups = [...option.stationName.matchAll(/\(([^()]*)\)/g)].map((match) => match[1].trim().toUpperCase());
+    assert.equal(option.stationKey, groups[1]);
+    assert.match(option.stationKey, /^[A-Z0-9]{3,7}$/);
+    assert.doesNotMatch(option.stationKey, /_OLD$/);
+  }
+});
+
+test("Packaged upgrades refresh the installed Station ID catalog", () => {
+  const bundleRoot = path.join(tempRoot, "station-bundle");
+  const userDataRoot = path.join(tempRoot, "station-user-data");
+  fs.mkdirSync(path.join(bundleRoot, "config"), { recursive: true });
+  fs.mkdirSync(path.join(userDataRoot, "config"), { recursive: true });
+  fs.writeFileSync(
+    path.join(bundleRoot, "config", "station_options.json"),
+    JSON.stringify([{ stationKey: "614GA01", stationName: "(V09) (614GA01) Tremont VA Clinic" }])
+  );
+  fs.writeFileSync(
+    path.join(userDataRoot, "config", "station_options.json"),
+    JSON.stringify([{ stationKey: "2242", stationName: "(V09) (614GA01) Tremont VA Clinic" }])
+  );
+
+  const originalPackaged = process.env.CCRS_IS_PACKAGED;
+  const originalBundleRoot = process.env.CCRS_BUNDLE_ROOT;
+  const originalUserDataRoot = process.env.CCRS_USER_DATA_ROOT;
+  try {
+    process.env.CCRS_IS_PACKAGED = "1";
+    process.env.CCRS_BUNDLE_ROOT = bundleRoot;
+    process.env.CCRS_USER_DATA_ROOT = userDataRoot;
+    ensureRuntimeFiles();
+    const installed = JSON.parse(fs.readFileSync(path.join(userDataRoot, "config", "station_options.json"), "utf8"));
+    assert.equal(installed[0].stationKey, "614GA01");
+  } finally {
+    for (const [key, value] of [
+      ["CCRS_IS_PACKAGED", originalPackaged],
+      ["CCRS_BUNDLE_ROOT", originalBundleRoot],
+      ["CCRS_USER_DATA_ROOT", originalUserDataRoot],
+    ]) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
 });
 
 test("modifyContent randomizes identity data and matches Referral Number and ICN endings", () => {
@@ -268,7 +333,7 @@ test("modifyContent randomizes identity data and matches Referral Number and ICN
         SSN: "999-99-0001",
         DOB: "1970-01-01",
       },
-      ProgramAuthority: { StationID: "1501", SeocKey: "69", SeocID: "OLD" },
+      ProgramAuthority: { StationID: "402", SeocKey: "69", SeocID: "OLD" },
     })),
   });
 
@@ -279,7 +344,7 @@ test("modifyContent randomizes identity data and matches Referral Number and ICN
     "999-99-0001",
     1,
     1,
-    { StationID: "1501", SeocKey: "107", SeocID: "PMR_PHYSICAL THERAPY_1.0.12_PRCT" },
+    { StationID: "614GA01", SeocKey: "107", SeocID: "PMR_PHYSICAL THERAPY_1.0.12_PRCT" },
     1,
     prepareIcnSettings(),
     1,
@@ -287,7 +352,7 @@ test("modifyContent randomizes identity data and matches Referral Number and ICN
   );
   const referrals = JSON.parse(result.content).Referrals;
 
-  assert.deepEqual(referrals.map((item) => item.ProgramAuthority.StationID), ["1501", "1501"]);
+  assert.deepEqual(referrals.map((item) => item.ProgramAuthority.StationID), ["614GA01", "614GA01"]);
   assert.deepEqual(referrals.map((item) => item.ProgramAuthority.SeocKey), ["107", "107"]);
   assert.deepEqual(referrals.map((item) => item.ProgramAuthority.SeocID), [
     "PMR_PHYSICAL THERAPY_1.0.12_PRCT",
@@ -314,6 +379,8 @@ test("modifyContent uses only reference Station IDs in random mode", () => {
   const validKeys = new Set(require("../electron/backend/stationCatalog").loadStationOptions().map((option) => option.stationKey));
   for (const referral of JSON.parse(result.content).Referrals) {
     assert.equal(validKeys.has(referral.StationID), true);
+    assert.match(referral.StationID, /^[A-Z0-9]{3,7}$/);
+    assert.notEqual(referral.StationID, "2242");
   }
 });
 
@@ -542,14 +609,19 @@ test("App info exposes unique Station ID dropdown options", async () => {
   const info = await backend.handleCommand("info", {});
 
   assert.equal(Array.isArray(info.stationOptions), true);
-  assert.equal(info.stationOptions.length >= 1500, true);
+  assert.equal(info.stationOptions.length, 1570);
 
   const stationKeys = info.stationOptions.map((option) => option.stationKey);
   assert.equal(new Set(stationKeys).size, stationKeys.length);
 
-  const sample = info.stationOptions.find((option) => option.stationKey === "1501");
+  assert.equal(stationKeys.includes("2242"), false);
+  const sample = info.stationOptions.find((option) => option.stationKey === "402");
   assert.equal(Boolean(sample), true);
   assert.match(sample.stationName, /Togus VA Medical Center/);
+  const tremont = info.stationOptions.find((option) => option.stationKey === "614GA01");
+  assert.equal(Boolean(tremont), true);
+  assert.match(tremont.stationName, /Tremont VA Clinic/);
+  assert.equal(info.constants.stationIdMaxLength, 7);
 });
 
 test("App info exposes valid synchronized SEOC pairs", async () => {
@@ -636,8 +708,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.3.1");
-    assert.equal(initialInfo.appVersion.label, "Version 1.3.1");
+    assert.equal(initialInfo.appVersion.version, "1.3.2");
+    assert.equal(initialInfo.appVersion.label, "Version 1.3.2");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);

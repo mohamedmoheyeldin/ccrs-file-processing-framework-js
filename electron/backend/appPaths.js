@@ -121,7 +121,7 @@ function ensureRuntimeFiles() {
 
   copyIfMissing(bundlePath("config", "mappings.json"), dataPath("config", "mappings.json"));
   copyIfMissing(bundlePath("config", "rules.json"), dataPath("config", "rules.json"));
-  copyIfMissing(bundlePath("config", "station_options.json"), dataPath("config", "station_options.json"));
+  syncFromBundle(bundlePath("config", "station_options.json"), dataPath("config", "station_options.json"));
   syncFromBundle(bundlePath("config", "app_version.json"), dataPath("config", "app_version.json"));
   copyIfMissing(bundlePath("config", "ui_settings.json"), userDataPath("config", "ui_settings.json"));
   copyIfMissing(bundlePath("upload_import", "README.txt"), userDataPath("upload_import", "README.txt"));

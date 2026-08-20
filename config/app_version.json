@@ -1,9 +1,12 @@
 {
-  "version": "1.3.1",
-  "releaseTag": "v1.3.1",
-  "label": "Version 1.3.1",
-  "announcementId": "v1.3.1|Version 1.3.1|2026-08-19-compact-dropdowns",
+  "version": "1.3.2",
+  "releaseTag": "v1.3.2",
+  "label": "Version 1.3.2",
+  "announcementId": "v1.3.2|Version 1.3.2|2026-08-20-dim-va-station-ids",
   "releaseNotes": [
+    "Replaces synthetic station row numbers such as 2242 with the actual DIM_VA_STATION ID, such as 614GA01 for Tremont VA Clinic.",
+    "Refreshes the bundled Station ID catalog during upgrades and removes duplicate, test, and obsolete catalog rows.",
+    "Supports valid three- through seven-character VA Station IDs for manual and random referral generation.",
     "Makes Referral / ICN Match, Network, SEOC, upload-user, and every other dropdown use the same compact, scrollable design as Station ID.",
     "Clearly identifies /CCRA_Uploads as the default remote directory for CCRS Referral uploads.",
     "Keeps LEIE Data uploads separate with /in/manual_process/ as their workflow-specific default.",
