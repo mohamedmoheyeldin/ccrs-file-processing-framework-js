@@ -59,6 +59,8 @@ async function assertControlSystem(window) {
         return {
           userWidth: Number(userControl?.getBoundingClientRect().width.toFixed(1) || 0),
           pathWidth: Number(pathControl?.getBoundingClientRect().width.toFixed(1) || 0),
+          userTop: Number(userControl?.getBoundingClientRect().top.toFixed(1) || 0),
+          pathTop: Number(pathControl?.getBoundingClientRect().top.toFixed(1) || 0),
         };
       });
 
@@ -70,7 +72,9 @@ async function assertControlSystem(window) {
   assert.deepEqual(audit.undersizedTargets, []);
   assert.deepEqual(audit.unnamedControls, []);
   for (const pair of audit.uploadPairs) {
-    assert.equal(Math.abs(pair.userWidth - pair.pathWidth) <= 0.5, true);
+    assert.equal(pair.userWidth < pair.pathWidth, true);
+    assert.equal(pair.pathWidth / pair.userWidth >= 1.45 && pair.pathWidth / pair.userWidth <= 1.55, true);
+    assert.equal(Math.abs(pair.userTop - pair.pathTop) <= 0.5, true);
   }
 }
 

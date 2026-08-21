@@ -65,7 +65,7 @@ The app has three main tabs:
 
 ## Consistent Controls and Keyboard Use
 
-Text boxes, dropdowns, and date fields use the same 48-pixel control height throughout the application. Related fields share the available row width, and upload user and remote-directory fields align in equal columns. Narrow windows automatically stack these fields without changing their control height.
+Text boxes, dropdowns, and date fields use the same 48-pixel control height throughout the application. Related fields share the available row width. Upload User remains compact beside the wider Remote Directory field on the same row, while narrow windows automatically stack them without changing their control height.
 
 Use `Tab` and `Shift+Tab` to move between controls. In a dropdown, use `Arrow Up` or `Arrow Down` to open and move through choices, `Home` or `End` to jump to the first or last choice, `Enter` or `Space` to select, and `Escape` to close the list and return focus to the field. A visible focus outline identifies the active control.
 
