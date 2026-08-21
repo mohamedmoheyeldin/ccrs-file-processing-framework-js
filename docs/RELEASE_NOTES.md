@@ -1,13 +1,35 @@
-# CCRS File Processing Framework Version 1.3.3
+# CCRS File Processing Framework Version 1.3.4
 
 ## Release Summary
 
-Version 1.3.3 corrects test SSN generation, makes automatic Station ID assignment strictly reference-backed, and adds six special selection-only SEOC pairs.
+Version 1.3.4 completes an application-wide control-system pass so form fields remain visually consistent, responsive, keyboard accessible, and easier to use in both light and dark themes.
 
 The GitHub Release contains:
 
-- `CCRS.File.Processing.Framework.Setup.Version.1.3.3.exe`
+- `CCRS.File.Processing.Framework.Setup.Version.1.3.4.exe`
 - `SHA256SUMS.txt`
+
+## Unified Form Controls
+
+- Standard text boxes, native selects, compact dropdowns, and date composites use one 48-pixel height, shared padding, and the same corner radius.
+- Form controls no longer stretch because a neighboring field has longer helper text.
+- Upload user and remote-directory fields use equal columns on wide layouts and stack cleanly on narrow layouts.
+- One-off fixed dropdown and text-box widths have been removed from the upload workflow.
+
+## Keyboard and Accessibility Improvements
+
+- Dropdowns open and navigate with the Arrow keys and support Home, End, Enter, Space, and Escape.
+- Dropdown triggers expose their controlled menu and accurately reflect disabled and invalid states.
+- Buttons, dropdown choices, radio chips, and checkbox chips provide interaction targets of at least 44 pixels.
+- Focus indicators and accessible labels are present across visible enabled form controls.
+- Muted text and active controls have improved contrast in light and dark themes.
+
+## Automated UI Regression Coverage
+
+- The Electron end-to-end test measures every visible standard text box and dropdown on Referral and LEIE screens and requires the shared 48-pixel height.
+- The test rejects undersized interaction targets, unnamed enabled fields, uneven upload columns, and broken keyboard dropdown selection.
+
+## Version 1.3.3 Changes
 
 ## Correct Test SSNs
 

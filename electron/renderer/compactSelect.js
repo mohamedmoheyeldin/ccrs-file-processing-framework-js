@@ -1,6 +1,7 @@
 (function initializeCompactSelects() {
   const enhancedSelects = new WeakSet();
   const selectRecords = new Set();
+  let selectSequence = 0;
 
   function selectedOption(select) {
     return select.options[select.selectedIndex] || select.options[0] || null;
@@ -19,16 +20,20 @@
   }
 
   function render(record) {
-    const { select, trigger, valueLabel, menu } = record;
+    const { select, wrapper, trigger, valueLabel, menu } = record;
     const current = selectedOption(select);
     valueLabel.textContent = current?.textContent?.trim() || "Select an option";
     trigger.disabled = select.disabled;
+    wrapper.classList.toggle("is-disabled", select.disabled);
+    wrapper.classList.toggle("is-invalid", select.classList.contains("is-invalid"));
+    trigger.setAttribute("aria-invalid", String(select.classList.contains("is-invalid")));
     menu.innerHTML = "";
 
-    for (const option of select.options) {
+    for (const [index, option] of [...select.options].entries()) {
       const item = document.createElement("button");
       item.type = "button";
       item.className = "combo-option compact-select-option";
+      item.id = `${menu.id}-option-${index}`;
       item.setAttribute("role", "option");
       item.setAttribute("aria-selected", String(option === current));
       item.disabled = option.disabled;
@@ -43,6 +48,26 @@
       });
       menu.appendChild(item);
     }
+  }
+
+  function menuOptions(record) {
+    return [...record.menu.querySelectorAll(".compact-select-option:not(:disabled)")];
+  }
+
+  function focusSelectedOption(record, fallbackIndex = 0) {
+    const options = menuOptions(record);
+    if (options.length === 0) return;
+    const selectedIndex = options.findIndex((option) => option.getAttribute("aria-selected") === "true");
+    options[selectedIndex >= 0 ? selectedIndex : fallbackIndex]?.focus();
+  }
+
+  function focusRelativeOption(record, direction) {
+    const options = menuOptions(record);
+    if (options.length === 0) return;
+    const currentIndex = options.indexOf(document.activeElement);
+    const startIndex = currentIndex >= 0 ? currentIndex : options.findIndex((option) => option.getAttribute("aria-selected") === "true");
+    const nextIndex = (Math.max(startIndex, 0) + direction + options.length) % options.length;
+    options[nextIndex].focus();
   }
 
   function toggle(record) {
@@ -82,8 +107,12 @@
     trigger.append(valueLabel, toggleArea);
 
     const menu = document.createElement("div");
+    selectSequence += 1;
+    menu.id = `compact-select-menu-${selectSequence}`;
     menu.className = "combo-menu compact-select-menu hidden";
     menu.setAttribute("role", "listbox");
+    menu.setAttribute("aria-label", fieldLabel || "Options");
+    trigger.setAttribute("aria-controls", menu.id);
     wrapper.append(trigger, menu);
     select.before(wrapper);
     wrapper.appendChild(select);
@@ -95,11 +124,34 @@
 
     trigger.addEventListener("click", () => toggle(record));
     trigger.addEventListener("keydown", (event) => {
-      if (["ArrowDown", "ArrowUp", "Enter", " "].includes(event.key)) {
+      if (["ArrowDown", "ArrowUp"].includes(event.key)) {
+        event.preventDefault();
+        if (!record.wrapper.classList.contains("is-open")) toggle(record);
+        focusSelectedOption(record, event.key === "ArrowUp" ? menuOptions(record).length - 1 : 0);
+      } else if (["Enter", " "].includes(event.key)) {
         event.preventDefault();
         toggle(record);
+        if (record.wrapper.classList.contains("is-open")) focusSelectedOption(record);
       } else if (event.key === "Escape") {
         close(record);
+      }
+    });
+
+    menu.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close(record);
+        trigger.focus();
+      } else if (event.key === "ArrowDown") {
+        event.preventDefault();
+        focusRelativeOption(record, 1);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        focusRelativeOption(record, -1);
+      } else if (event.key === "Home" || event.key === "End") {
+        event.preventDefault();
+        const options = menuOptions(record);
+        options[event.key === "Home" ? 0 : options.length - 1]?.focus();
       }
     });
 

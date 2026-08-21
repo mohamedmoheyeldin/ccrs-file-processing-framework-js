@@ -14,9 +14,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.3.3",
-  "releaseTag": "v1.3.3",
-  "label": "Version 1.3.3",
+  "version": "1.3.4",
+  "releaseTag": "v1.3.4",
+  "label": "Version 1.3.4",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -29,7 +29,7 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- The current public release is `Version 1.3.3` (`v1.3.3`).
+- The current public release is `Version 1.3.4` (`v1.3.4`).
 - `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
@@ -61,7 +61,7 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.3`.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.4`.
 
 The workflow requires the tag to match `releaseTag` and refuses to overwrite an existing release.
 It also refuses to build a release when `releaseNotes` is empty.
@@ -116,14 +116,14 @@ Files that are kept in sync from the shipped app:
 - Stream referral gzip output to reduce peak memory use
 - Export a sanitized diagnostic report without credentials or user file paths
 
-## Version 1.3.3 Highlights
-- Every generated test SSN begins with `999` and remains unique for each patient in the generated batch.
-- Fixed SSN overrides must also use the `999-99-0001` test-data pattern.
-- Automatic Station ID mode shuffles the 1,570-entry reference list and assigns only exact listed IDs.
-- Station IDs do not repeat within a generated batch until every available reference entry has been used.
-- Added special SEOC keys `67`, `158`, `191`, `233`, `268`, and `1160` with their synchronized SEOC IDs.
-- Special SEOCs are clearly labeled and are never introduced by bundled referral generation; they are applied only when selected explicitly.
-- Upgrades refresh both Station and special-SEOC reference configuration.
+## Version 1.3.4 Highlights
+- Text boxes, dropdown shells, date fields, and toolbar controls use shared sizing tokens instead of page-specific dimensions.
+- All standard text boxes and dropdowns render at 48 pixels high, with consistent padding and corner radius.
+- Upload user and remote-directory fields use equal columns and collapse cleanly on narrow windows.
+- Buttons, dropdown options, checkbox chips, and radio chips provide interaction targets of at least 44 pixels.
+- Compact dropdowns support Arrow keys, Home, End, Escape, Enter, and Space with visible focus and accurate accessibility state.
+- Light and dark themes use stronger text and action contrast.
+- Electron end-to-end tests measure controls across Referral and LEIE workflows and reject inconsistent sizing or missing accessible names.
 
 ## Validation And Testing
 Developer setup, architecture, and test-layer details are maintained in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and [docs/TESTING.md](docs/TESTING.md).

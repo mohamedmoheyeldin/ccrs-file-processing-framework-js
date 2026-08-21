@@ -4,6 +4,76 @@ const os = require("node:os");
 const path = require("node:path");
 const { _electron: electron } = require("playwright");
 
+async function assertControlSystem(window) {
+  const audit = await window.evaluate(() => {
+    function isVisible(element) {
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
+      return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+    }
+
+    const expectedHeight = Number.parseFloat(
+      window.getComputedStyle(document.documentElement).getPropertyValue("--control-height")
+    );
+    const standardControls = [...document.querySelectorAll(
+      'input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), .combo-shell'
+    )].filter((element) =>
+      isVisible(element) &&
+      !element.classList.contains("clipboard-copy-field") &&
+      !(element.matches("input") && element.closest(".combo-shell"))
+    );
+    const nonStandardControls = standardControls
+      .map((element) => ({
+        id: element.id || element.className || element.tagName,
+        height: Number(element.getBoundingClientRect().height.toFixed(1)),
+      }))
+      .filter((item) => Math.abs(item.height - expectedHeight) > 0.5);
+
+    const undersizedTargets = [...document.querySelectorAll("button, label.radio-chip, label.checkbox-chip")]
+      .filter(isVisible)
+      .map((element) => ({
+        id: element.id || element.className || element.textContent.trim().slice(0, 40),
+        height: Number(element.getBoundingClientRect().height.toFixed(1)),
+      }))
+      .filter((item) => item.height < 44);
+
+    const unnamedControls = [...document.querySelectorAll("input, select, textarea, button")]
+      .filter((element) => isVisible(element) && !element.disabled)
+      .filter((element) => {
+        const hasLabel = Boolean(element.labels?.length);
+        const hasName = Boolean(
+          element.getAttribute("aria-label") ||
+          element.getAttribute("aria-labelledby") ||
+          element.textContent.trim() ||
+          element.title
+        );
+        return !hasLabel && !hasName;
+      })
+      .map((element) => element.id || element.className || element.tagName);
+
+    const uploadPairs = [...document.querySelectorAll(".upload-target-grid")]
+      .filter(isVisible)
+      .map((grid) => {
+        const userControl = grid.querySelector(".compact-select");
+        const pathControl = grid.querySelector(".upload-path");
+        return {
+          userWidth: Number(userControl?.getBoundingClientRect().width.toFixed(1) || 0),
+          pathWidth: Number(pathControl?.getBoundingClientRect().width.toFixed(1) || 0),
+        };
+      });
+
+    return { expectedHeight, nonStandardControls, undersizedTargets, unnamedControls, uploadPairs };
+  });
+
+  assert.equal(audit.expectedHeight, 48);
+  assert.deepEqual(audit.nonStandardControls, []);
+  assert.deepEqual(audit.undersizedTargets, []);
+  assert.deepEqual(audit.unnamedControls, []);
+  for (const pair of audit.uploadPairs) {
+    assert.equal(Math.abs(pair.userWidth - pair.pathWidth) <= 0.5, true);
+  }
+}
+
 async function run() {
   const projectRoot = path.resolve(__dirname, "..");
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-e2e-output-"));
@@ -29,12 +99,16 @@ async function run() {
     assert.equal(await window.locator(".compact-select").count(), nativeSelectCount);
     await window.locator("[data-sub-tab='generate']").click();
     await window.locator("#toggle-optional-fields").click();
-    await window.locator("#match-suffix-length").locator("..").locator(".compact-select-trigger").click();
+    const matchTrigger = window.locator("#match-suffix-length").locator("..").locator(".compact-select-trigger");
+    await matchTrigger.focus();
+    await matchTrigger.press("ArrowDown");
     const matchMenu = window.locator("#match-suffix-length").locator("..").locator(".compact-select-menu");
     assert.equal(await matchMenu.isVisible(), true);
     assert.equal(await matchMenu.locator(".compact-select-option").count(), 3);
     assert.equal((await matchMenu.evaluate((element) => element.getBoundingClientRect().height)) <= 260, true);
-    await window.locator("#match-suffix-length").locator("..").locator('.compact-select-option[data-value="4"]').click();
+    const fourCharacterOption = matchMenu.locator('.compact-select-option[data-value="4"]');
+    await fourCharacterOption.focus();
+    await fourCharacterOption.press("Enter");
     assert.equal(await window.locator("#match-suffix-length").inputValue(), "4");
     await window.locator("#override-station-id").fill("614GA01");
     await window.locator("#station-id-toggle").click();
@@ -50,8 +124,10 @@ async function run() {
     const uploadDirectoryNote = window.locator(".upload-path-help").first();
     await uploadDirectoryNote.waitFor({ state: "visible" });
     assert.match(await uploadDirectoryNote.textContent(), /CCRS Referral uploads default to \/CCRA_Uploads/);
+    await assertControlSystem(window);
     await window.locator("[data-main-tab='leie']").click();
     assert.match(await uploadDirectoryNote.textContent(), /LEIE Data uploads default to \/in\/manual_process\//);
+    await assertControlSystem(window);
     await window.locator("[data-main-tab='referral']").click();
     if (process.env.CCRS_E2E_SCREENSHOT) {
       await window.screenshot({ path: process.env.CCRS_E2E_SCREENSHOT, fullPage: true });

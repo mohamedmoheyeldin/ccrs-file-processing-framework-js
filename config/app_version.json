@@ -1,11 +1,11 @@
 {
-  "version": "1.3.3",
-  "releaseTag": "v1.3.3",
-  "label": "Version 1.3.3",
-  "announcementId": "v1.3.3|Version 1.3.3|2026-08-21-identity-station-seoc-corrections",
+  "version": "1.3.4",
+  "releaseTag": "v1.3.4",
+  "label": "Version 1.3.4",
+  "announcementId": "v1.3.4|Version 1.3.4|2026-08-21-unified-control-system",
   "releaseNotes": [
-    "Generates a different test SSN for each patient while always preserving the required 999 prefix.",
-    "Assigns automatic Station IDs only from the displayed reference list and avoids repeats within a generated batch until the list is exhausted.",
-    "Adds six special synchronized SEOC key and ID pairs that are available only through explicit user selection."
+    "Standardizes text boxes and dropdowns across every workflow with the same height, spacing, and responsive width behavior.",
+    "Makes upload user and remote-directory fields align evenly while preserving readable layouts on smaller windows.",
+    "Improves dropdown keyboard navigation, focus visibility, touch targets, field labeling, and light and dark theme contrast."
   ]
 }

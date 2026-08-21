@@ -13,6 +13,12 @@ The CCRS File Processing Framework is a local Electron desktop application for p
 - `scripts/` contains documentation generation, metadata synchronization, tests, and release automation.
 - `docs/` contains user and developer documentation packaged with the app.
 
+## Renderer control system
+
+`electron/renderer/styles.css` defines shared tokens for the 48-pixel form-control height, 44-pixel minimum interaction target, padding, toggle width, and corner radius. Native inputs, compact dropdown shells, date composites, and toolbar controls consume those tokens so a field cannot grow because an adjacent field has longer helper text. Responsive grids control width and stacking rather than assigning page-specific control sizes.
+
+`electron/renderer/compactSelect.js` progressively enhances native selects while keeping the original value and change-event behavior. Its generated listbox exposes labels, disabled and invalid states, controlled-menu relationships, visible focus, and keyboard navigation. The native select remains the application data source.
+
 ## Data and security boundary
 
 Runtime data is copied to the current Windows user's AppData area. Upload credentials are protected with Windows-provided encryption after import. Local credentials, WinSCP imports, logs, generated output, and temporary work directories must not be committed.
