@@ -150,6 +150,7 @@ test("Version 1.3.5 metadata, control system, and release automation stay consol
   assert.match(rendererStyles, /--control-touch-target:\s*44px/);
   assert.match(rendererStyles, /\.field-block\s*\{[^}]*align-content:\s*start/s);
   assert.match(rendererStyles, /\.upload-target-grid\s*\{[^}]*minmax\(0, 2fr\) minmax\(0, 3fr\)/s);
+  assert.match(rendererStyles, /\.upload-target-grid\s*\{[^}]*align-items:\s*start/s);
   assert.doesNotMatch(rendererStyles, /\.upload-target-grid\s*\{[^}]*180px/s);
   assert.match(rendererApp, /stationIdCombobox\.contains\(document\.activeElement\)/);
   assert.match(compactSelect, /aria-controls/);
