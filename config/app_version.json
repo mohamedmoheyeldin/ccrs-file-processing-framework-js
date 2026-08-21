@@ -1,11 +1,11 @@
 {
-  "version": "1.3.4",
-  "releaseTag": "v1.3.4",
-  "label": "Version 1.3.4",
-  "announcementId": "v1.3.4|Version 1.3.4|2026-08-21-unified-control-system",
+  "version": "1.3.5",
+  "releaseTag": "v1.3.5",
+  "label": "Version 1.3.5",
+  "announcementId": "v1.3.5|Version 1.3.5|2026-08-21-upload-field-proportions",
   "releaseNotes": [
-    "Standardizes text boxes and dropdowns across every workflow with the same height, spacing, and responsive width behavior.",
-    "Makes upload user and remote-directory fields align evenly while preserving readable layouts on smaller windows.",
-    "Improves dropdown keyboard navigation, focus visibility, touch targets, field labeling, and light and dark theme contrast."
+    "Keeps Upload User compact and gives the longer Remote Directory field more room with a responsive 40/60 layout.",
+    "Preserves same-row alignment on wide windows and clean stacked controls on narrow windows.",
+    "Adds Electron regression checks for upload-field width proportions and vertical alignment."
   ]
 }

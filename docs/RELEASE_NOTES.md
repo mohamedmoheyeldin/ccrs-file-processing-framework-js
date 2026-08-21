@@ -1,22 +1,45 @@
-# CCRS File Processing Framework Version 1.3.4
+# CCRS File Processing Framework Version 1.3.5
 
 ## Release Summary
 
-Version 1.3.4 completes an application-wide control-system pass so form fields remain visually consistent, responsive, keyboard accessible, and easier to use in both light and dark themes.
+Version 1.3.5 refines the upload-target form layout introduced by Version 1.3.4. Upload User now remains compact while the longer Remote Directory value receives more horizontal room, without changing the established control height, responsive behavior, accessibility, or upload workflow.
 
 The GitHub Release contains:
 
-- `CCRS.File.Processing.Framework.Setup.Version.1.3.4.exe`
+- `CCRS.File.Processing.Framework.Setup.Version.1.3.5.exe`
 - `SHA256SUMS.txt`
 
-## Unified Form Controls
+## Proportional Upload Fields
+
+- Upload User occupies two-fifths of the available wide-screen row and Remote Directory occupies three-fifths.
+- The 40/60 proportion gives typical remote paths more room while keeping the shorter user value easy to scan.
+- Both controls stay aligned along the same top edge and continue to use the shared 48-pixel control height.
+- Narrow windows continue to stack the fields into a single readable column.
+
+## Regression Coverage
+
+- The Electron end-to-end test verifies that Remote Directory is wider than Upload User at the expected 3:2 ratio.
+- The same test verifies that both fields remain vertically aligned on wide layouts.
+- The cross-platform smoke suite protects the responsive grid definition and Setup-only release contract.
+
+## Documentation and Release History
+
+- The README and User Guide now identify Version 1.3.5 and its Setup installer.
+- Historical sections link directly to the published Version 1.3.4, Version 1.3.3, and Version 1.3.2 GitHub Releases.
+- The generated User Guide PDF and LEIE Upload and Validation Guide PDF are refreshed for the release package.
+
+## [Version 1.3.4](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.4) Release Notes
+
+Version 1.3.4 completed an application-wide control-system pass so form fields remain visually consistent, responsive, keyboard accessible, and easier to use in both light and dark themes.
+
+### Unified Form Controls
 
 - Standard text boxes, native selects, compact dropdowns, and date composites use one 48-pixel height, shared padding, and the same corner radius.
 - Form controls no longer stretch because a neighboring field has longer helper text.
-- Upload user and remote-directory fields use equal columns on wide layouts and stack cleanly on narrow layouts.
+- Upload user and remote-directory fields share one row on wide layouts and stack cleanly on narrow layouts.
 - One-off fixed dropdown and text-box widths have been removed from the upload workflow.
 
-## Keyboard and Accessibility Improvements
+### Keyboard and Accessibility Improvements
 
 - Dropdowns open and navigate with the Arrow keys and support Home, End, Enter, Space, and Escape.
 - Dropdown triggers expose their controlled menu and accurately reflect disabled and invalid states.
@@ -24,28 +47,28 @@ The GitHub Release contains:
 - Focus indicators and accessible labels are present across visible enabled form controls.
 - Muted text and active controls have improved contrast in light and dark themes.
 
-## Automated UI Regression Coverage
+### Automated UI Regression Coverage
 
 - The Electron end-to-end test measures every visible standard text box and dropdown on Referral and LEIE screens and requires the shared 48-pixel height.
-- The test rejects undersized interaction targets, unnamed enabled fields, uneven upload columns, and broken keyboard dropdown selection.
+- The test rejects undersized interaction targets, unnamed enabled fields, invalid upload-field proportions, and broken keyboard dropdown selection.
 
-## Version 1.3.3 Changes
+## [Version 1.3.3](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.3) Release Notes
 
-## Correct Test SSNs
+### Correct Test SSNs
 
 - Every automatically generated test SSN starts with `999`.
 - The remaining six digits change for each patient, producing values in the `999-00-0000` through `999-99-9999` test range.
 - Generated SSNs do not repeat within the supported referral-generation limit.
 - A fixed SSN is accepted only when it starts with `999` and uses the `999-99-0001` display format.
 
-## Reference-Only Automatic Station IDs
+### Reference-Only Automatic Station IDs
 
 - Automatic mode shuffles the installed Station ID reference list and assigns only exact `stationKey` values from that list.
 - Each referral receives a changing Station ID without repeats until the 1,570-entry list is exhausted.
 - Output validation tests compare every automatic value with the same list displayed by the application.
 - Manual Station ID entry still requires an exact reference match.
 
-## Special Selection-Only SEOCs
+### Special Selection-Only SEOCs
 
 The following synchronized pairs are available in both SEOC selectors. They are never automatically introduced by the bundled generator and are applied only when explicitly selected:
 
@@ -58,9 +81,9 @@ The following synchronized pairs are available in both SEOC selectors. They are 
 | `268` | `MHC_MENTAL HEALTH RESIDENTIAL TREATMENT_1.15.7` |
 | `1160` | `MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT_1.22.2` |
 
-## Version 1.3.2 Changes
+## [Version 1.3.2](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.2) Release Notes
 
-## Correct DIM_VA_STATION IDs
+### Correct DIM_VA_STATION IDs
 
 - Catalog row number `2242` is replaced by the actual Tremont VA Clinic Station ID `614GA01`.
 - All 1,577 source rows were re-evaluated; the app now exposes 1,570 unique valid Station IDs after removing duplicates, test records, and an obsolete `_OLD` entry.
@@ -68,14 +91,14 @@ The following synchronized pairs are available in both SEOC selectors. They are 
 - Valid VA Station IDs from three through seven characters are supported.
 - Upgrades refresh the shipped Station ID catalog so an older installed catalog cannot continue producing synthetic values.
 
-## Compact Dropdowns
+### Compact Dropdowns
 
 - Referral / ICN Match, Network, SEOC Number, SEOC ID, and every other dropdown now use one consistent design.
 - Long lists remain inside a 260-pixel scrollable menu instead of expanding across the application window.
 - Selected values are shortened visually with an ellipsis when needed; the stored value remains unchanged.
 - Dropdowns retain keyboard access, disabled states, and the existing field behavior.
 
-## Separate Referral and LEIE Upload Workflows
+### Separate Referral and LEIE Upload Workflows
 
 - CCRS Referral processing uploads the final `.gz` archive and defaults every Remote Directory field to `/CCRA_Uploads`.
 - LEIE Data processing uploads the processed `.xlsx` file and defaults every Remote Directory field to `/in/manual_process/`.
@@ -83,7 +106,7 @@ The following synchronized pairs are available in both SEOC selectors. They are 
 - Switching workflows changes recognized standard defaults without replacing a custom remote directory entered by the user.
 - Smoke and Windows Electron end-to-end tests verify both visible defaults and workflow switching behavior.
 
-## Performance and Large Files
+### Performance and Large Files
 
 - File processing, generation, LEIE work, upload tests, compression, and uploads run in background workers instead of blocking the window.
 - A visible progress bar and Cancel control keep long operations understandable and interruptible.
@@ -92,7 +115,7 @@ The following synchronized pairs are available in both SEOC selectors. They are 
 - Source summaries display file size and row information before processing.
 - Referral gzip output is streamed to disk instead of constructing the entire combined archive in memory.
 
-## Upload Reliability and Security
+### Upload Reliability and Security
 
 - Referral and LEIE uploads retry transient failures with exponential backoff.
 - Every selected server is attempted even when another target fails, with independent status reporting.
@@ -101,7 +124,7 @@ The following synchronized pairs are available in both SEOC selectors. They are 
 - Existing plaintext credential files migrate automatically when encryption is available.
 - Importing a credentials JSON file no longer removes or modifies the original source file.
 
-## User Experience and Accessibility
+### User Experience and Accessibility
 
 - A Select, Configure, Validate, Process, and Upload stepper makes workflow position clear.
 - The action and status card remains visible near the bottom of the window.
@@ -109,7 +132,7 @@ The following synchronized pairs are available in both SEOC selectors. They are 
 - The minimum window size is reduced and narrow layouts reorganize into readable columns.
 - Release notes continue to use the full application window with independent scrolling and a Start Using The App button.
 
-## Existing Workflow Features
+### Existing Workflow Features
 
 - Original LEIE source name remains the default output name.
 - Strict full-row duplicate detection and optional automatic removal remain available.

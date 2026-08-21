@@ -29,7 +29,7 @@ pnpm verify
 - Keep automatic SSNs in the `999-00-0000` through `999-99-9999` test range and preserve uniqueness across the supported generated batch.
 - Add exceptional SEOCs to `config/seoc_options.json` with `selectionOnly: true`; do not add them to referral templates unless business rules explicitly permit automatic assignment.
 - Use the renderer control tokens in `styles.css` for form sizing. Standard text inputs, selects, compact dropdown shells, and date composites must use `--control-height`; interactive buttons and options must meet `--control-touch-target`.
-- Keep form rows responsive with flexible grid columns. Do not introduce one-off field heights or fixed control widths that diverge from the shared control system.
+- Keep form rows responsive with flexible grid columns. Preserve the upload-target row's 2:3 Upload User-to-Remote Directory proportion and its narrow-screen stacking behavior. Do not introduce one-off field heights or fixed control widths that diverge from the shared control system.
 - Preserve native labels, accessible names, visible focus, disabled state, invalid state, and keyboard operation when enhancing a form control.
 
 ## Windows-only work
