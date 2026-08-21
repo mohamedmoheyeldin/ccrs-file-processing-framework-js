@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Version 1.3.2`.
+This guide covers `Version 1.3.3`.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download `CCRS File Processing Framework Setup Version 1.3.2.exe` from the GitHub Releases page and run the installer.
+Download `CCRS.File.Processing.Framework.Setup.Version.1.3.3.exe` from the GitHub Releases page and run the installer.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 
@@ -288,9 +288,9 @@ Generated ICNs remain unique. Choose `3`, `4`, or `5` to make the ending of each
 
 ### SSN and DOB
 
-Random generation is enabled by default. Each patient receives a random test SSN and random DOB.
+Random generation is enabled by default. Each patient receives a different random test SSN and random DOB. Every generated SSN starts with `999`; only the remaining six digits change.
 
-Uncheck the corresponding random option only when a fixed value must be applied. Fixed SSNs must use the displayed test format, and dates must use `YYYY-MM-DD`.
+Uncheck the corresponding random option only when a fixed value must be applied. Fixed SSNs must also begin with `999` and use the displayed `999-99-0001` format. Dates must use `YYYY-MM-DD`.
 
 ### Station ID
 
@@ -304,12 +304,26 @@ Rules:
 - a three-character Station ID remains three characters
 - valid VA Station IDs may contain three through seven letters and numbers
 - manual values must exactly match the reference table
-- random mode uses only valid entries from `config/station_options.json`
+- automatic mode shuffles only the valid entries from `config/station_options.json`
+- automatic IDs change between referrals without repeating until the reference list is exhausted
 - the shipped catalog is refreshed during app upgrades
 
 ### SEOC Number and SEOC ID
 
 Select either a SEOC Number or a SEOC ID. The other selector updates automatically so the referral receives a valid synchronized pair from the bundled reference data.
+
+The following special pairs are marked `Special: explicit selection only`. The bundled generator never assigns them automatically:
+
+| SEOC key | SEOC ID |
+| --- | --- |
+| `67` | `INF_FERTILITY-1332 EXISTING OVARY_1.1.17` |
+| `158` | `EUC_EMERGENCY CARE_1.2.8` |
+| `191` | `EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE_1.1.7` |
+| `233` | `SSC_TRANSPLANT BONE MARROW COMP EVAL_1.5.14_REV` |
+| `268` | `MHC_MENTAL HEALTH RESIDENTIAL TREATMENT_1.15.7` |
+| `1160` | `MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT_1.22.2` |
+
+To use one, select its key or ID. The matching value is filled automatically. Leave both selectors at `Keep source SEOC` when no explicit override is required.
 
 All dropdowns use the same compact design as Station ID. Referral / ICN Match, Network, SEOC, and upload-user lists remain inside a scrollable menu instead of expanding beyond the application window. Long selected labels are shortened visually without changing their stored values.
 
@@ -368,7 +382,7 @@ The app validates fields before running and displays messages next to invalid in
 
 Validation includes:
 
-- SSN format
+- SSN `999` prefix and format
 - Referral Number format
 - Station ID reference match
 - Payment Authority Code range

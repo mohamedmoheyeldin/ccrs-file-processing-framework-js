@@ -10,10 +10,12 @@ const {
   ICN_MODES,
   generateOptionalFieldOverrides,
   generatePaymentAuthorityCodeValue,
+  generateRandomSsn,
   generateReferralNumber,
   modifyContent,
   prepareIcnSettings,
   validatePaymentAuthorityCode,
+  validateSsn,
 } = require("../electron/backend/contentEditor");
 const backend = require("../electron/backend");
 const {
@@ -97,7 +99,7 @@ test("LEIE validation SQL includes the requested query set and syntax highlighti
   assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
 });
 
-test("Version 1.3.2 metadata and release automation stay consolidated", () => {
+test("Version 1.3.3 metadata and release automation stay consolidated", () => {
   const versionConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "app_version.json"), "utf8"));
   const packageConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
@@ -109,9 +111,9 @@ test("Version 1.3.2 metadata and release automation stay consolidated", () => {
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
 
-  assert.equal(versionConfig.version, "1.3.2");
-  assert.equal(versionConfig.releaseTag, "v1.3.2");
-  assert.equal(versionConfig.label, "Version 1.3.2");
+  assert.equal(versionConfig.version, "1.3.3");
+  assert.equal(versionConfig.releaseTag, "v1.3.3");
+  assert.equal(versionConfig.label, "Version 1.3.3");
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Publishes one verified Windows Setup installer")), false);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Uses Electron 43")), false);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Electron sandboxing")), false);
@@ -182,7 +184,7 @@ test("Diagnostic export excludes credentials and user file paths", async () => {
   const result = await backend.handleCommand("export-diagnostics", { outputDir });
   const reportText = fs.readFileSync(result.reportPath, "utf8");
   const report = JSON.parse(reportText);
-  assert.equal(report.appVersion, "1.3.2");
+  assert.equal(report.appVersion, "1.3.3");
   assert.equal(Object.prototype.hasOwnProperty.call(report.workflowPreferences, "inputDir"), false);
   assert.doesNotMatch(reportText, /password|ciphertext|connection_details/i);
 });
@@ -286,7 +288,7 @@ test("Bundled station keys match their DIM_VA_STATION IDs", () => {
   }
 });
 
-test("Packaged upgrades refresh the installed Station ID catalog", () => {
+test("Packaged upgrades refresh the installed Station ID and special SEOC catalogs", () => {
   const bundleRoot = path.join(tempRoot, "station-bundle");
   const userDataRoot = path.join(tempRoot, "station-user-data");
   fs.mkdirSync(path.join(bundleRoot, "config"), { recursive: true });
@@ -299,6 +301,11 @@ test("Packaged upgrades refresh the installed Station ID catalog", () => {
     path.join(userDataRoot, "config", "station_options.json"),
     JSON.stringify([{ stationKey: "2242", stationName: "(V09) (614GA01) Tremont VA Clinic" }])
   );
+  fs.writeFileSync(
+    path.join(bundleRoot, "config", "seoc_options.json"),
+    JSON.stringify([{ seocKey: "67", seocId: "INF_FERTILITY-1332 EXISTING OVARY_1.1.17", selectionOnly: true }])
+  );
+  fs.writeFileSync(path.join(userDataRoot, "config", "seoc_options.json"), "[]");
 
   const originalPackaged = process.env.CCRS_IS_PACKAGED;
   const originalBundleRoot = process.env.CCRS_BUNDLE_ROOT;
@@ -310,6 +317,9 @@ test("Packaged upgrades refresh the installed Station ID catalog", () => {
     ensureRuntimeFiles();
     const installed = JSON.parse(fs.readFileSync(path.join(userDataRoot, "config", "station_options.json"), "utf8"));
     assert.equal(installed[0].stationKey, "614GA01");
+    const installedSeocs = JSON.parse(fs.readFileSync(path.join(userDataRoot, "config", "seoc_options.json"), "utf8"));
+    assert.equal(installedSeocs[0].seocKey, "67");
+    assert.equal(installedSeocs[0].selectionOnly, true);
   } finally {
     for (const [key, value] of [
       ["CCRS_IS_PACKAGED", originalPackaged],
@@ -359,11 +369,21 @@ test("modifyContent randomizes identity data and matches Referral Number and ICN
     "PMR_PHYSICAL THERAPY_1.0.12_PRCT",
   ]);
   for (const referral of referrals) {
-    assert.match(referral.Patient.SSN, /^9\d{2}-\d{2}-\d{4}$/);
+    assert.match(referral.Patient.SSN, /^999-\d{2}-\d{4}$/);
     assert.match(referral.Patient.DOB, /^(19|20)\d{2}-\d{2}-\d{2}$/);
     assert.equal(referral.Patient.ICN.slice(-5), referral.ReferralNumber.slice(-5));
   }
   assert.notEqual(referrals[0].Patient.SSN, referrals[1].Patient.SSN);
+});
+
+test("Generated test SSNs always start with 999 and remain unique", () => {
+  const generated = Array.from({ length: 1000 }, (_, index) => generateRandomSsn(index + 1));
+  assert.equal(new Set(generated).size, generated.length);
+  for (const ssn of generated) {
+    assert.match(ssn, /^999-\d{2}-\d{4}$/);
+  }
+  assert.throws(() => validateSsn("995-12-3456"), /must start with 999/);
+  assert.doesNotThrow(() => validateSsn("999-12-3456"));
 });
 
 test("modifyContent uses only reference Station IDs in random mode", () => {
@@ -373,14 +393,45 @@ test("modifyContent uses only reference Station IDs in random mode", () => {
       { ReferralNumber: "VA0000000002", StationID: "BAD", ICN: "2", FirstName: "C", LastName: "D", SSN: "999-99-0001" },
     ],
   });
-  const result = modifyContent(filePath, "", null, "999-99-0001", 1, 1, {}, 1, prepareIcnSettings(), 1, {
+  const stationIdentityOptions = {
     randomizeStationId: true,
-  });
+    generatedStationKeys: ["NOT-IN-REFERENCE-LIST"],
+  };
+  const result = modifyContent(
+    filePath,
+    "",
+    null,
+    "999-99-0001",
+    1,
+    2,
+    {},
+    1,
+    prepareIcnSettings(),
+    1,
+    stationIdentityOptions
+  );
+  const secondResult = modifyContent(
+    filePath,
+    "",
+    null,
+    "999-99-0001",
+    2,
+    2,
+    {},
+    1,
+    prepareIcnSettings(),
+    1,
+    stationIdentityOptions
+  );
   const validKeys = new Set(require("../electron/backend/stationCatalog").loadStationOptions().map((option) => option.stationKey));
-  for (const referral of JSON.parse(result.content).Referrals) {
-    assert.equal(validKeys.has(referral.StationID), true);
-    assert.match(referral.StationID, /^[A-Z0-9]{3,7}$/);
-    assert.notEqual(referral.StationID, "2242");
+  const generatedStationIds = [result, secondResult].flatMap((item) =>
+    JSON.parse(item.content).Referrals.map((referral) => referral.StationID)
+  );
+  assert.equal(new Set(generatedStationIds).size, generatedStationIds.length);
+  for (const stationId of generatedStationIds) {
+    assert.equal(validKeys.has(stationId), true);
+    assert.match(stationId, /^[A-Z0-9]{3,7}$/);
+    assert.notEqual(stationId, "2242");
   }
 });
 
@@ -628,9 +679,45 @@ test("App info exposes valid synchronized SEOC pairs", async () => {
   const info = await backend.handleCommand("info", {});
   assert.equal(Array.isArray(info.seocOptions), true);
   assert.deepEqual(info.seocOptions, [
-    { seocKey: "69", seocId: "RAD_INTERVENTIONAL RADIOLOGY_1.0.12_REV_PRCT" },
-    { seocKey: "107", seocId: "PMR_PHYSICAL THERAPY_1.0.12_PRCT" },
+    { seocKey: "67", seocId: "INF_FERTILITY-1332 EXISTING OVARY_1.1.17", selectionOnly: true },
+    { seocKey: "69", seocId: "RAD_INTERVENTIONAL RADIOLOGY_1.0.12_REV_PRCT", selectionOnly: false },
+    { seocKey: "107", seocId: "PMR_PHYSICAL THERAPY_1.0.12_PRCT", selectionOnly: false },
+    { seocKey: "158", seocId: "EUC_EMERGENCY CARE_1.2.8", selectionOnly: true },
+    { seocKey: "191", seocId: "EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE_1.1.7", selectionOnly: true },
+    { seocKey: "233", seocId: "SSC_TRANSPLANT BONE MARROW COMP EVAL_1.5.14_REV", selectionOnly: true },
+    { seocKey: "268", seocId: "MHC_MENTAL HEALTH RESIDENTIAL TREATMENT_1.15.7", selectionOnly: true },
+    { seocKey: "1160", seocId: "MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT_1.22.2", selectionOnly: true },
   ]);
+});
+
+test("Special SEOCs are selection-only and apply as synchronized explicit overrides", () => {
+  const specialKeys = new Set(["67", "158", "191", "233", "268", "1160"]);
+  for (const templatePath of fs.readdirSync(path.join(projectRoot, "templates", "referrals"))) {
+    const template = JSON.parse(fs.readFileSync(path.join(projectRoot, "templates", "referrals", templatePath), "utf8"));
+    for (const referral of template.Referrals || []) {
+      assert.equal(specialKeys.has(String(referral.ProgramAuthority?.SeocKey || "")), false);
+    }
+  }
+
+  const filePath = writeJsonFixture("special-seoc.json", {
+    Referrals: [{
+      ReferralNumber: "VA0000000001",
+      Patient: { ICN: "1", FirstName: "A", LastName: "B", SSN: "999-99-0001" },
+      ProgramAuthority: { StationID: "402", SeocKey: "69", SeocID: "RAD_INTERVENTIONAL RADIOLOGY_1.0.12_REV_PRCT" },
+    }],
+  });
+  const result = modifyContent(
+    filePath,
+    "",
+    null,
+    "999-99-0001",
+    1,
+    1,
+    { SeocKey: "67", SeocID: "INF_FERTILITY-1332 EXISTING OVARY_1.1.17" }
+  );
+  const authority = JSON.parse(result.content).Referrals[0].ProgramAuthority;
+  assert.equal(authority.SeocKey, "67");
+  assert.equal(authority.SeocID, "INF_FERTILITY-1332 EXISTING OVARY_1.1.17");
 });
 
 test("Archive basename can append Network and Referral DateTime safely", () => {
@@ -708,8 +795,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.3.2");
-    assert.equal(initialInfo.appVersion.label, "Version 1.3.2");
+    assert.equal(initialInfo.appVersion.version, "1.3.3");
+    assert.equal(initialInfo.appVersion.label, "Version 1.3.3");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);
@@ -893,7 +980,7 @@ test("Preview validation reports field-level errors without throwing", async () 
     },
   });
 
-  assert.equal(preview.fieldErrors.ssnValue, "SSN must use the format 999-99-0001.");
+  assert.equal(preview.fieldErrors.ssnValue, "SSN must start with 999 and use the format 999-99-0001.");
   assert.equal(preview.fieldErrors.icnValue, "Enter up to 13 letters or numbers after TEST.");
   assert.equal(preview.fieldErrors.PaymentAuthorityCode, "Payment Authority Code must be a whole number between 0 and 99999.");
   assert.equal(preview.fieldErrors.DOB, "DOB must use the format YYYY-MM-DD.");

@@ -1,10 +1,11 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { bundlePath } = require("./appPaths");
+const { bundlePath, dataPath } = require("./appPaths");
 const { registerTemporaryPath, removePath } = require("./runtimeCleanup");
 
 const TEMPLATE_DIRECTORY = bundlePath("templates", "referrals");
+const SEOC_OPTIONS_FILE = "seoc_options.json";
 
 function getReferralTemplatePaths() {
   if (!fs.existsSync(TEMPLATE_DIRECTORY)) {
@@ -45,18 +46,40 @@ function getGeneratorDefaults() {
 function getSeocOptions() {
   const options = [];
   const seen = new Set();
+
+  function addOption(rawOption, selectionOnly = false) {
+    const seocKey = String(rawOption?.seocKey || rawOption?.SeocKey || "").trim();
+    const seocId = String(rawOption?.seocId || rawOption?.SeocID || "").trim();
+    const pairKey = `${seocKey}\u0000${seocId}`;
+    if (!seocKey || !seocId || seen.has(pairKey)) return;
+    seen.add(pairKey);
+    options.push({ seocKey, seocId, selectionOnly: Boolean(selectionOnly) });
+  }
+
   for (const templatePath of getReferralTemplatePaths()) {
     const templateData = JSON.parse(fs.readFileSync(templatePath, "utf8"));
     for (const referral of Array.isArray(templateData.Referrals) ? templateData.Referrals : []) {
       const authority = referral.ProgramAuthority || referral;
-      const seocKey = String(authority.SeocKey || "").trim();
-      const seocId = String(authority.SeocID || "").trim();
-      const pairKey = `${seocKey}\u0000${seocId}`;
-      if (!seocKey || !seocId || seen.has(pairKey)) continue;
-      seen.add(pairKey);
-      options.push({ seocKey, seocId });
+      addOption(authority, false);
     }
   }
+
+  for (const optionsPath of [
+    dataPath("config", SEOC_OPTIONS_FILE),
+    bundlePath("config", SEOC_OPTIONS_FILE),
+  ]) {
+    try {
+      if (!fs.existsSync(optionsPath)) continue;
+      const configuredOptions = JSON.parse(fs.readFileSync(optionsPath, "utf8"));
+      for (const configuredOption of Array.isArray(configuredOptions) ? configuredOptions : []) {
+        addOption(configuredOption, configuredOption.selectionOnly !== false);
+      }
+      break;
+    } catch (_error) {
+      // Ignore an invalid runtime file and fall back to the bundled options.
+    }
+  }
+
   return options.sort((left, right) => Number(left.seocKey) - Number(right.seocKey));
 }
 

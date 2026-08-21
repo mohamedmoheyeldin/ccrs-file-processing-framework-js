@@ -19,6 +19,10 @@ Runtime data is copied to the current Windows user's AppData area. Upload creden
 
 `config/station_options.json` is authoritative shipped reference data and is refreshed from the application bundle during upgrades. `electron/backend/stationCatalog.js` normalizes legacy catalogs by deriving the actual VA Station ID from the second parenthesized code in each station name, rejects non-station/test rows, and de-duplicates IDs before they reach manual or random referral generation.
 
+Automatic Station assignment shuffles the normalized catalog and consumes its exact keys sequentially, so generated values cannot drift outside the list and do not repeat until all available entries have been used. Patient test SSNs use a fixed `999` prefix with a six-digit generated suffix.
+
+`config/seoc_options.json` contains special SEOC pairs that must be visible for explicit selection but must not enter template-driven generation. `electron/backend/referralGenerator.js` merges those selection-only pairs with normal template pairs for the UI while leaving the referral templates unchanged.
+
 ## Release boundary
 
 `config/app_version.json` is the canonical release record. `scripts/sync-build-version.js` propagates it to package metadata before start, test, and distribution tasks. `scripts/build-release.js` builds a Windows x64 NSIS Setup installer in a validated temporary directory outside the repository. GitHub Actions performs the authoritative Windows UI, installation, launch, executable, checksum, and release checks.

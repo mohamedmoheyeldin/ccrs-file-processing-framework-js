@@ -17,7 +17,7 @@ function loadMappings() {
 }
 
 const LIST_DATE_FORMAT = "YYYY-MM-DD HH:mm:ss";
-const SSN_PATTERN = /^\d{3}-\d{2}-\d{4}$/;
+const SSN_PATTERN = /^999-\d{2}-\d{4}$/;
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const ISO_DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
 const OPTIONAL_RANDOM_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -39,8 +39,9 @@ const ICN_MODES = {
   TEST_CUSTOM_SUFFIX: "test-custom-suffix",
   CUSTOM_FULL: "custom-full",
 };
-const RANDOM_SSN_BASE = Math.floor(Math.random() * 99999999);
+const RANDOM_SSN_BASE = Math.floor(Math.random() * 1000000);
 const RANDOM_DOB_BASE = Math.floor(Math.random() * 24107);
+const RANDOM_STATION_ASSIGNMENT_STATES = new WeakMap();
 const TRACKED_JSON_FIELDS = [
   "SSN",
   "DOB",
@@ -88,7 +89,7 @@ function randomFromCharset(charset, length) {
 
 function validateSsn(ssnValue) {
   if (!SSN_PATTERN.test((ssnValue || "").trim())) {
-    throw new Error("SSN must use the format 999-99-0001.");
+    throw new Error("SSN must start with 999 and use the format 999-99-0001.");
   }
 }
 
@@ -161,8 +162,8 @@ function validateStationId(value) {
 
 function generateRandomSsn(sequenceIndex = 1) {
   const offset = Math.max(sequenceIndex - 1, 0);
-  const value = 900000001 + ((RANDOM_SSN_BASE + offset) % 99999999);
-  const digits = String(value).padStart(9, "0");
+  const generatedSuffix = String((RANDOM_SSN_BASE + offset) % 1000000).padStart(6, "0");
+  const digits = `999${generatedSuffix}`;
   return `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5)}`;
 }
 
@@ -598,11 +599,29 @@ function applyOptionalOverrides(data, overrides) {
   apply(data);
 }
 
-function applyRandomValidStationIds(data) {
+function applyRandomValidStationIds(data, identityOptions = {}) {
   const stationOptions = loadStationOptions();
   if (stationOptions.length === 0) {
     throw new Error("No valid Station IDs are available in the reference list.");
   }
+
+  let assignmentState = RANDOM_STATION_ASSIGNMENT_STATES.get(identityOptions);
+  if (!assignmentState) {
+    const stationKeys = stationOptions.map((option) => option.stationKey);
+    for (let index = stationKeys.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [stationKeys[index], stationKeys[swapIndex]] = [
+        stationKeys[swapIndex],
+        stationKeys[index],
+      ];
+    }
+    assignmentState = { stationKeys, stationIndex: 0 };
+    RANDOM_STATION_ASSIGNMENT_STATES.set(identityOptions, assignmentState);
+  }
+  const shuffledStationKeys = assignmentState.stationKeys;
+  const validStationKeys = new Set(shuffledStationKeys);
+  let stationIndex = assignmentState.stationIndex;
+
   function apply(currentData) {
     if (Array.isArray(currentData)) {
       currentData.forEach(apply);
@@ -611,7 +630,13 @@ function applyRandomValidStationIds(data) {
     if (!currentData || typeof currentData !== "object") return;
     for (const [key, value] of Object.entries(currentData)) {
       if (key === "StationID") {
-        currentData[key] = randomChoice(stationOptions).stationKey;
+        const stationKey = shuffledStationKeys[stationIndex % shuffledStationKeys.length];
+        if (!validStationKeys.has(stationKey)) {
+          throw new Error("Generated Station ID did not match the reference list.");
+        }
+        currentData[key] = stationKey;
+        stationIndex += 1;
+        assignmentState.stationIndex = stationIndex;
       } else {
         apply(value);
       }
@@ -821,7 +846,7 @@ function modifyContent(
   if (optionalOverrides && Object.keys(optionalOverrides).length > 0) {
     applyOptionalOverrides(data, optionalOverrides);
   }
-  if (identityOptions.randomizeStationId) applyRandomValidStationIds(data);
+  if (identityOptions.randomizeStationId) applyRandomValidStationIds(data, identityOptions);
   alignReferralAndIcnSuffixes(data, identityOptions.matchSuffixLength);
   ensureSourceVariableFieldsAreUnique(data, optionalOverrides);
 

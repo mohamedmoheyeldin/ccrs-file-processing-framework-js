@@ -1,0 +1,32 @@
+[
+  {
+    "seocKey": "67",
+    "seocId": "INF_FERTILITY-1332 EXISTING OVARY_1.1.17",
+    "selectionOnly": true
+  },
+  {
+    "seocKey": "158",
+    "seocId": "EUC_EMERGENCY CARE_1.2.8",
+    "selectionOnly": true
+  },
+  {
+    "seocKey": "191",
+    "seocId": "EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE_1.1.7",
+    "selectionOnly": true
+  },
+  {
+    "seocKey": "233",
+    "seocId": "SSC_TRANSPLANT BONE MARROW COMP EVAL_1.5.14_REV",
+    "selectionOnly": true
+  },
+  {
+    "seocKey": "268",
+    "seocId": "MHC_MENTAL HEALTH RESIDENTIAL TREATMENT_1.15.7",
+    "selectionOnly": true
+  },
+  {
+    "seocKey": "1160",
+    "seocId": "MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT_1.22.2",
+    "selectionOnly": true
+  }
+]

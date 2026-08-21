@@ -11,7 +11,7 @@ This regenerates packaged documentation, synchronizes version metadata, checks J
 ## Test layers
 
 - `pnpm run test:syntax` parses the application and automation JavaScript.
-- `pnpm run test:smoke` exercises processing, validation, Station ID catalog normalization, security boundaries, temporary-file cleanup, and release helpers without opening the UI.
+- `pnpm run test:smoke` exercises processing, validation, Station ID catalog normalization and reference-only assignment, `999`-prefixed unique SSNs, selection-only SEOCs, security boundaries, temporary-file cleanup, and release helpers without opening the UI.
 - `pnpm run test:e2e` launches the real Electron application and verifies a background referral-generation workflow. It is a native Windows check.
 - `pnpm run dist` builds the NSIS Setup installer. Release CI additionally installs and launches that package, validates its executable, and generates its checksum.
 

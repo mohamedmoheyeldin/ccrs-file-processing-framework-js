@@ -14,9 +14,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.3.2",
-  "releaseTag": "v1.3.2",
-  "label": "Version 1.3.2",
+  "version": "1.3.3",
+  "releaseTag": "v1.3.3",
+  "label": "Version 1.3.3",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -29,7 +29,7 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- The current public release is `Version 1.3.2` (`v1.3.2`).
+- The current public release is `Version 1.3.3` (`v1.3.3`).
 - `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
@@ -61,7 +61,7 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.2`.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.3`.
 
 The workflow requires the tag to match `releaseTag` and refuses to overwrite an existing release.
 It also refuses to build a release when `releaseNotes` is empty.
@@ -88,6 +88,7 @@ Files users commonly work with:
 Files that are kept in sync from the shipped app:
 - `config\app_version.json`
 - `config\station_options.json`
+- `config\seoc_options.json`
 - `docs\USER_GUIDE.md`
 - `docs\USER_GUIDE.pdf`
 - `docs\LEIE_UPLOAD_VALIDATION_GUIDE.md`
@@ -98,9 +99,9 @@ Files that are kept in sync from the shipped app:
 - Keep the original LEIE source file name as the default output name
 - Generate new referral JSON files from bundled templates
 - Use the bundled CCN1 all-fields reference templates stored under `templates\referrals`
-- Generate random SSNs and DOBs per patient, or apply fixed overrides when needed
-- Use an exact reference Station ID or randomly select valid Station IDs from the bundled catalog
-- Select synchronized SEOC Number and SEOC ID pairs from the bundled referral references
+- Generate unique `999`-prefixed test SSNs and random DOBs per patient, or apply fixed overrides when needed
+- Use an exact reference Station ID or assign changing Station IDs exclusively from the bundled catalog
+- Select synchronized SEOC Number and SEOC ID pairs, including six special selection-only pairs
 - Choose how ICNs should be generated: keep `TEST`, keep `TEST` with a custom suffix, or use a custom full ICN base
 - Match the last 3, 4, or 5 characters of each Referral Number and ICN
 - Produce final `.gz` archives
@@ -115,32 +116,14 @@ Files that are kept in sync from the shipped app:
 - Stream referral gzip output to reduce peak memory use
 - Export a sanitized diagnostic report without credentials or user file paths
 
-## Version 1.3.2 Highlights
-- Station selections now use the actual `DIM_VA_STATION.station_id`, not the catalog's former synthetic row number.
-- Tremont VA Clinic now produces `614GA01`; the invalid synthetic value `2242` is no longer available.
-- The catalog contains 1,570 unique VA Station IDs and excludes duplicate, test, and obsolete rows.
-- Valid Station IDs from three through seven characters are supported and the authoritative catalog refreshes during upgrades.
-- Every dropdown now matches the compact Station ID menu design.
-- Referral / ICN Match, Network, SEOC Number, and SEOC ID no longer open oversized native menus.
-- Long option lists stay constrained to a scrollable menu within the app window.
-- CCRS Referral Remote Directory notes explicitly identify `/CCRA_Uploads` as the referral upload default.
-- LEIE Data remains a separate upload workflow using `/in/manual_process/` by default.
-- Referral processing uploads final `.gz` archives, while LEIE processing uploads the processed `.xlsx` file.
-- Workflow switching changes recognized standard defaults without overwriting a custom remote directory.
-- New LEIE processing flow with strict full-row duplicate detection and clearer scan status feedback.
-- New in-app LEIE upload validation support:
-  - quick access to `LEIE Upload and Validation Guide`
-  - Step 4 database validation SQL with copy support
-  - Step 5 CCRS UI validation checklist in the Upload section
-- Security updates for upload config handling:
-  - upload profiles are no longer auto-loaded from random machine locations
-  - upload data is used only after `Import To Config`
-  - fixed the security issue around where `WinSCP.ini` is sourced and persisted
-- Bug fixes across LEIE scan, release update visibility, and upload gating behavior.
-- UI polish for smoother interaction and clearer status messaging.
-- Background processing keeps the window responsive during file, gzip, and upload operations.
-- Imported credentials are protected by Windows encryption and existing plaintext credentials migrate automatically.
-- Upload retries, per-server failure continuation, preflight file details, cancellation, and installed-app release testing are included.
+## Version 1.3.3 Highlights
+- Every generated test SSN begins with `999` and remains unique for each patient in the generated batch.
+- Fixed SSN overrides must also use the `999-99-0001` test-data pattern.
+- Automatic Station ID mode shuffles the 1,570-entry reference list and assigns only exact listed IDs.
+- Station IDs do not repeat within a generated batch until every available reference entry has been used.
+- Added special SEOC keys `67`, `158`, `191`, `233`, `268`, and `1160` with their synchronized SEOC IDs.
+- Special SEOCs are clearly labeled and are never introduced by bundled referral generation; they are applied only when selected explicitly.
+- Upgrades refresh both Station and special-SEOC reference configuration.
 
 ## Validation And Testing
 Developer setup, architecture, and test-layer details are maintained in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and [docs/TESTING.md](docs/TESTING.md).

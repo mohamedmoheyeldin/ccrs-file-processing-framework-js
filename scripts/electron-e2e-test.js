@@ -42,6 +42,11 @@ async function run() {
     assert.equal(await window.locator("#station-id-menu .combo-option-title", { hasText: "2242" }).count(), 0);
     await window.locator("#station-id-menu .combo-option", { hasText: "Tremont VA Clinic" }).click();
     assert.equal(await window.locator("#override-station-id").inputValue(), "614GA01");
+    assert.equal(
+      await window.locator('#override-seoc-key option[value="67"]').textContent(),
+      "67 — INF_FERTILITY-1332 EXISTING OVARY_1.1.17 — Special: explicit selection only"
+    );
+    assert.equal(await window.locator('#override-seoc-key option[value="1160"]').count(), 1);
     const uploadDirectoryNote = window.locator(".upload-path-help").first();
     await uploadDirectoryNote.waitFor({ state: "visible" });
     assert.match(await uploadDirectoryNote.textContent(), /CCRS Referral uploads default to \/CCRA_Uploads/);
@@ -59,17 +64,39 @@ async function run() {
       replacementCode: "e2e_referral",
       archiveBasename: "e2e_archive",
       clearOutput: true,
-      keepProcessedJson: false,
-      fileCount: 1,
+      keepProcessedJson: true,
+      fileCount: 2,
       referralsPerFile: 2,
       referralReplacementCode: "",
       icnSettings: { mode: "test-dynamic" },
-      identityOptions: { randomizeSsn: true, randomizeDob: true, matchSuffixLength: 5 },
+      identityOptions: { randomizeSsn: true, randomizeDob: true, randomizeStationId: true, matchSuffixLength: 5 },
       optionalOverrides: {},
       upload: { enabled: false, targets: [] },
     }), outputDir);
-    assert.match(result.message, /Done\. Processed 1 file/);
+    assert.match(result.message, /Done\. Processed 2 files/);
     assert.equal(fs.existsSync(path.join(outputDir, "e2e_archive.gz")), true);
+    const outputJsonPaths = fs.readdirSync(outputDir)
+      .map((name) => path.join(outputDir, name))
+      .filter((filePath) => filePath.toLowerCase().endsWith(".json"));
+    assert.equal(outputJsonPaths.length, 2);
+    const generatedReferrals = outputJsonPaths.flatMap(
+      (filePath) => JSON.parse(fs.readFileSync(filePath, "utf8")).Referrals
+    );
+    const appInfo = await window.evaluate(() => window.ccrs.getInfo());
+    const validStationIds = new Set(appInfo.stationOptions.map((option) => option.stationKey));
+    const specialSeocKeys = new Set(["67", "158", "191", "233", "268", "1160"]);
+    assert.equal(new Set(generatedReferrals.map((referral) => referral.Patient.SSN)).size, 4);
+    const stationIds = generatedReferrals.map(
+      (referral) => referral.ProgramAuthority?.StationID || referral.StationID
+    );
+    assert.equal(new Set(stationIds).size, 4);
+    for (const referral of generatedReferrals) {
+      const stationId = referral.ProgramAuthority?.StationID || referral.StationID;
+      const seocKey = referral.ProgramAuthority?.SeocKey || referral.SeocKey;
+      assert.match(referral.Patient.SSN, /^999-\d{2}-\d{4}$/);
+      assert.equal(validStationIds.has(stationId), true);
+      assert.equal(specialSeocKeys.has(String(seocKey)), false);
+    }
   } finally {
     await electronApp.close();
     fs.rmSync(outputDir, { recursive: true, force: true });

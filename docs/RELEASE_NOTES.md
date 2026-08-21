@@ -1,13 +1,42 @@
-# CCRS File Processing Framework Version 1.3.2
+# CCRS File Processing Framework Version 1.3.3
 
 ## Release Summary
 
-Version 1.3.2 corrects the Station ID catalog so referral output uses real `DIM_VA_STATION.station_id` values instead of synthetic catalog row numbers.
+Version 1.3.3 corrects test SSN generation, makes automatic Station ID assignment strictly reference-backed, and adds six special selection-only SEOC pairs.
 
 The GitHub Release contains:
 
-- `CCRS File Processing Framework Setup Version 1.3.2.exe`
+- `CCRS.File.Processing.Framework.Setup.Version.1.3.3.exe`
 - `SHA256SUMS.txt`
+
+## Correct Test SSNs
+
+- Every automatically generated test SSN starts with `999`.
+- The remaining six digits change for each patient, producing values in the `999-00-0000` through `999-99-9999` test range.
+- Generated SSNs do not repeat within the supported referral-generation limit.
+- A fixed SSN is accepted only when it starts with `999` and uses the `999-99-0001` display format.
+
+## Reference-Only Automatic Station IDs
+
+- Automatic mode shuffles the installed Station ID reference list and assigns only exact `stationKey` values from that list.
+- Each referral receives a changing Station ID without repeats until the 1,570-entry list is exhausted.
+- Output validation tests compare every automatic value with the same list displayed by the application.
+- Manual Station ID entry still requires an exact reference match.
+
+## Special Selection-Only SEOCs
+
+The following synchronized pairs are available in both SEOC selectors. They are never automatically introduced by the bundled generator and are applied only when explicitly selected:
+
+| SEOC key | SEOC ID |
+| --- | --- |
+| `67` | `INF_FERTILITY-1332 EXISTING OVARY_1.1.17` |
+| `158` | `EUC_EMERGENCY CARE_1.2.8` |
+| `191` | `EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE_1.1.7` |
+| `233` | `SSC_TRANSPLANT BONE MARROW COMP EVAL_1.5.14_REV` |
+| `268` | `MHC_MENTAL HEALTH RESIDENTIAL TREATMENT_1.15.7` |
+| `1160` | `MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT_1.22.2` |
+
+## Version 1.3.2 Changes
 
 ## Correct DIM_VA_STATION IDs
 

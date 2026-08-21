@@ -312,8 +312,9 @@ function renderSeocOptions() {
   keySelect.innerHTML = '<option value="">Keep source SEOC</option>';
   idSelect.innerHTML = '<option value="">Keep source SEOC</option>';
   for (const option of getSeocOptions()) {
-    keySelect.add(new Option(`${option.seocKey} — ${option.seocId}`, option.seocKey));
-    idSelect.add(new Option(option.seocId, option.seocId));
+    const selectionOnlyLabel = option.selectionOnly ? " — Special: explicit selection only" : "";
+    keySelect.add(new Option(`${option.seocKey} — ${option.seocId}${selectionOnlyLabel}`, option.seocKey));
+    idSelect.add(new Option(`${option.seocId}${selectionOnlyLabel}`, option.seocId));
   }
   keySelect.value = selectedKey;
   idSelect.value = selectedId;
