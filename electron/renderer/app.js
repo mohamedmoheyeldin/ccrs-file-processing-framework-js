@@ -1981,7 +1981,11 @@ function setupEventHandlers() {
     }
   });
   elements.overrideStationId.addEventListener("blur", () => {
-    window.setTimeout(() => setStationMenuOpen(false), 120);
+    window.setTimeout(() => {
+      if (!elements.stationIdCombobox.contains(document.activeElement)) {
+        setStationMenuOpen(false);
+      }
+    }, 120);
   });
   elements.stationIdToggle.addEventListener("click", () => {
     renderStationOptions(getStationOptions());

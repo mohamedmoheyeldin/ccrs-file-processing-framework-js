@@ -108,6 +108,7 @@ test("Version 1.3.5 metadata, control system, and release automation stay consol
   const buildReleaseScript = fs.readFileSync(path.join(projectRoot, "scripts", "build-release.js"), "utf8");
   const rendererHtml = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "index.html"), "utf8");
   const rendererStyles = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "styles.css"), "utf8");
+  const rendererApp = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "app.js"), "utf8");
   const compactSelect = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "compactSelect.js"), "utf8");
   const mainProcess = fs.readFileSync(path.join(projectRoot, "electron", "main.js"), "utf8");
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
@@ -150,6 +151,7 @@ test("Version 1.3.5 metadata, control system, and release automation stay consol
   assert.match(rendererStyles, /\.field-block\s*\{[^}]*align-content:\s*start/s);
   assert.match(rendererStyles, /\.upload-target-grid\s*\{[^}]*minmax\(0, 2fr\) minmax\(0, 3fr\)/s);
   assert.doesNotMatch(rendererStyles, /\.upload-target-grid\s*\{[^}]*180px/s);
+  assert.match(rendererApp, /stationIdCombobox\.contains\(document\.activeElement\)/);
   assert.match(compactSelect, /aria-controls/);
   assert.match(compactSelect, /event\.key === "Home" \|\| event\.key === "End"/);
   assert.match(compactSelect, /aria-invalid/);

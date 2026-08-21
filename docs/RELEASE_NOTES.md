@@ -22,6 +22,12 @@ The GitHub Release contains:
 - The same test verifies that both fields remain vertically aligned on wide layouts.
 - The cross-platform smoke suite protects the responsive grid definition and Setup-only release contract.
 
+## Station ID Selection Reliability
+
+- The Station ID menu stays open while keyboard or pointer focus moves from its search field to an option inside the menu.
+- Choosing an option still closes the menu, fills the exact reference-backed Station ID, and refreshes the referral preview.
+- The Windows Electron end-to-end test selects Tremont VA Clinic and verifies its exact `614GA01` Station ID.
+
 ## Documentation and Release History
 
 - The README and User Guide now identify Version 1.3.5 and its Setup installer.

@@ -6,6 +6,7 @@
   "releaseNotes": [
     "Keeps Upload User compact and gives the longer Remote Directory field more room with a responsive 40/60 layout.",
     "Preserves same-row alignment on wide windows and clean stacked controls on narrow windows.",
-    "Adds Electron regression checks for upload-field width proportions and vertical alignment."
+    "Adds Electron regression checks for upload-field width proportions and vertical alignment.",
+    "Keeps the Station ID menu open while focus moves from its search field to a station option, making option selection reliable."
   ]
 }

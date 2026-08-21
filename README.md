@@ -120,6 +120,7 @@ Files that are kept in sync from the shipped app:
 - Upload User uses a compact 40% share of the row while the longer Remote Directory field receives 60%.
 - Both controls remain vertically aligned on wide windows and stack cleanly on narrow windows.
 - Electron end-to-end coverage verifies the field-width ratio and same-row alignment.
+- Station ID option selection remains open while focus moves from the search field into its menu.
 - Full current and historical notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
 
 Previous release notes:

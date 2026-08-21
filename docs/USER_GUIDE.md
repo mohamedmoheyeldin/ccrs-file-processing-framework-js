@@ -306,6 +306,8 @@ Choose an exact `station_key` from the reference-backed dropdown or enable rando
 
 The dropdown uses the actual `DIM_VA_STATION.station_id`. For example, Tremont VA Clinic uses `614GA01`; the former catalog row number `2242` is not a Station ID and is no longer accepted or generated.
 
+Type a Station ID or clinic name to filter the menu, then select the matching option. The menu remains open while focus moves from the search field to an option.
+
 Rules:
 
 - a selected or entered Station ID is never padded or extended
