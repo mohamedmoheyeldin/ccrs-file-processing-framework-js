@@ -1,12 +1,12 @@
 {
-  "version": "1.3.5",
-  "releaseTag": "v1.3.5",
-  "label": "Version 1.3.5",
-  "announcementId": "v1.3.5|Version 1.3.5|2026-08-21-upload-field-proportions",
+  "version": "1.3.6",
+  "releaseTag": "v1.3.6",
+  "label": "Version 1.3.6",
+  "announcementId": "v1.3.6|Version 1.3.6|2026-08-24-structured-stations",
   "releaseNotes": [
-    "Keeps Upload User compact and gives the longer Remote Directory field more room with a responsive 40/60 layout.",
-    "Preserves same-row alignment on wide windows and clean stacked controls on narrow windows.",
-    "Adds Electron regression checks for upload-field width proportions and vertical alignment.",
-    "Keeps the Station ID menu open while focus moves from its search field to a station option, making option selection reliable."
+    "Uses all 1,573 rows and all 14 columns from the approved station workbook as the structured station source.",
+    "Adds one optional Stations selector that searches station key, station ID, VISN, station name, and parent station ID.",
+    "Applies the selected station_id to referral data while keeping rows without a station_id visible but unavailable for selection.",
+    "Makes the optional blank choices for SEOC Number and SEOC ID explicit in the interface."
   ]
 }

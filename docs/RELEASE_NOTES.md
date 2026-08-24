@@ -1,11 +1,39 @@
-# CCRS File Processing Framework Version 1.3.5
+# CCRS File Processing Framework Version 1.3.6
 
-## Unreleased station-source update
+## Release Summary
+
+Version 1.3.6 replaces the reduced legacy Station ID list with a complete structured conversion of the approved station workbook. The application now exposes one optional Stations selector that makes the five requested station identifiers clear and searchable while preserving all workbook fields for application use.
+
+The GitHub Release contains:
+
+- `CCRS.File.Processing.Framework.Setup.Version.1.3.6.exe`
+- `SHA256SUMS.txt`
+
+## Structured Station Source
 
 - Converts all 1,573 rows and all 14 columns from the approved station workbook into `config/stations.json`; blank and `NULL` cells become JSON `null`.
 - Uses that structured file as the application's main station source.
 - Replaces the Station ID lookup with one optional Stations control that searches and displays `station_key`, `station_id`, `visn_id`, `station_name`, and `parent_station_id`.
 - Keeps SEOC Number and SEOC ID optional and labels their blank choices clearly.
+
+## Selection and Data Behavior
+
+- Selecting a station applies its exact `station_id` to referral data.
+- All 1,573 source rows remain searchable and visible; 1,572 rows have a selectable `station_id`.
+- The single row without `station_id` is retained for completeness and clearly disabled in the selector.
+- Manual and random Station IDs must come from the same structured source.
+
+## Regression Coverage
+
+- Smoke tests verify the full row count, all 14 source columns, unique station keys and IDs, null conversion, packaged upgrade refresh, and reference-only assignment.
+- Electron end-to-end coverage searches the structured station data, selects Tremont VA Clinic, and verifies generated referrals use only source-backed station IDs.
+
+## Documentation
+
+- README, architecture, development, testing, release notes, User Guide, and generated User Guide PDF describe the new source and workflow.
+- The workbook import can be repeated with `pnpm data:stations -- /path/to/stations.xlsx`.
+
+## [Version 1.3.5](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.5) Release Notes
 
 ## Release Summary
 

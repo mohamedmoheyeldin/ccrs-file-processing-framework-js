@@ -14,9 +14,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.3.5",
-  "releaseTag": "v1.3.5",
-  "label": "Version 1.3.5",
+  "version": "1.3.6",
+  "releaseTag": "v1.3.6",
+  "label": "Version 1.3.6",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -29,7 +29,7 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- The current public release is `Version 1.3.5` (`v1.3.5`).
+- The current public release is `Version 1.3.6` (`v1.3.6`).
 - `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
@@ -61,7 +61,7 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.5`.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.6`.
 
 The workflow requires the tag to match `releaseTag` and refuses to overwrite an existing release.
 It also refuses to build a release when `releaseNotes` is empty.
@@ -127,15 +127,16 @@ pnpm data:stations -- /path/to/stations.xlsx
 pnpm verify
 ```
 
-## Version 1.3.5 Highlights
-- Upload User uses a compact 40% share of the row while the longer Remote Directory field receives 60%.
-- Both controls remain vertically aligned on wide windows and stack cleanly on narrow windows.
-- Electron end-to-end coverage verifies the field-width ratio and same-row alignment.
-- Station ID option selection remains open while focus moves from the search field into its menu.
+## Version 1.3.6 Highlights
+- All 1,573 workbook rows and all 14 columns are preserved in structured JSON as the main station source.
+- One optional Stations selector searches and displays `station_key`, `station_id`, `visn_id`, `station_name`, and `parent_station_id`.
+- Selecting a station applies its exact `station_id`; the one source row without an ID remains visible but disabled.
+- SEOC Number and SEOC ID remain optional, with explicit blank choices in the interface.
 - Full current and historical notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
 
 Previous release notes:
 
+- [Version 1.3.5](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.5)
 - [Version 1.3.4](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.4)
 - [Version 1.3.3](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.3)
 - [Version 1.3.2](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.2)
