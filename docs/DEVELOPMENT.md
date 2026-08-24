@@ -25,7 +25,7 @@ pnpm verify
 - Use the existing background-worker and cancellation paths for long-running work.
 - Do not use real credentials or production upload targets during development.
 - Keep release output outside the repository; the build script enforces this boundary.
-- Keep Station IDs aligned with `DIM_VA_STATION.station_id`. Do not use source-row numbers as `stationKey`; run `pnpm verify` after any station catalog change.
+- Treat `config/stations.json` as generated data. Refresh it with `pnpm data:stations -- /path/to/stations.xlsx`, preserve every source row and column, and run `pnpm verify` after any station-source change.
 - Keep automatic SSNs in the `999-00-0000` through `999-99-9999` test range and preserve uniqueness across the supported generated batch.
 - Add exceptional SEOCs to `config/seoc_options.json` with `selectionOnly: true`; do not add them to referral templates unless business rules explicitly permit automatic assignment.
 - Use the renderer control tokens in `styles.css` for form sizing. Standard text inputs, selects, compact dropdown shells, and date composites must use `--control-height`; interactive buttons and options must meet `--control-touch-target`.

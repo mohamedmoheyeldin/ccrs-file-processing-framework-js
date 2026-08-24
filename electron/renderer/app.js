@@ -237,16 +237,6 @@ function formatBytes(bytes) {
   return `${(value / 1024 ** 2).toFixed(1)} MB`;
 }
 
-function sanitizeStationIdInput(value) {
-  const normalized = String(value || "").trim();
-  const prefixedKeyMatch = normalized.match(/^([A-Za-z0-9]{1,5})(?:\s*[-|].*)$/);
-  if (prefixedKeyMatch) {
-    return prefixedKeyMatch[1];
-  }
-
-  return ((normalized.match(/[A-Za-z0-9]/g) || []).join("")).slice(0, 5);
-}
-
 function isExcelPath(value) {
   return /\.(xlsx|xls|xlsm|xlsb)$/i.test(String(value || "").trim());
 }
@@ -296,7 +286,7 @@ async function copyLeieValidationSql() {
 }
 
 function getStationOptions() {
-  return Array.isArray(state.info?.stationOptions) ? state.info.stationOptions : [];
+  return Array.isArray(state.info?.stations) ? state.info.stations : [];
 }
 
 function getSeocOptions() {
@@ -309,8 +299,8 @@ function renderSeocOptions() {
   if (!keySelect || !idSelect) return;
   const selectedKey = keySelect.value;
   const selectedId = idSelect.value;
-  keySelect.innerHTML = '<option value="">Keep source SEOC</option>';
-  idSelect.innerHTML = '<option value="">Keep source SEOC</option>';
+  keySelect.innerHTML = '<option value="">No SEOC Number override (optional)</option>';
+  idSelect.innerHTML = '<option value="">No SEOC ID override (optional)</option>';
   for (const option of getSeocOptions()) {
     const selectionOnlyLabel = option.selectionOnly ? " — Special: explicit selection only" : "";
     keySelect.add(new Option(`${option.seocKey} — ${option.seocId}${selectionOnlyLabel}`, option.seocKey));
@@ -337,12 +327,12 @@ function syncIdentityControls() {
 }
 
 function findStationOption(value) {
-  const normalized = String(value || "").trim();
+  const normalized = String(value || "").trim().toUpperCase();
   if (!normalized) {
     return null;
   }
 
-  return getStationOptions().find((option) => option.stationKey === normalized) || null;
+  return getStationOptions().find((station) => String(station.station_id || "").toUpperCase() === normalized) || null;
 }
 
 function renderStationOptions(options = []) {
@@ -357,14 +347,20 @@ function renderStationOptions(options = []) {
       if (!normalizedQuery) {
         return true;
       }
-      const searchTarget = `${option.stationKey} ${option.stationName}`.toLowerCase();
+      const searchTarget = [
+        option.station_key,
+        option.station_id,
+        option.visn_id,
+        option.station_name,
+        option.parent_station_id,
+      ].filter(Boolean).join(" ").toLowerCase();
       return searchTarget.includes(normalizedQuery);
     });
 
   if (filteredOptions.length === 0) {
     const emptyState = document.createElement("div");
     emptyState.className = "combo-empty";
-    emptyState.textContent = "No matching station found. Choose a station_key from the reference list.";
+    emptyState.textContent = "No matching station found. Search by station key, ID, VISN, name, or parent station ID.";
     fragment.appendChild(emptyState);
   }
 
@@ -372,13 +368,34 @@ function renderStationOptions(options = []) {
     const element = document.createElement("button");
     element.type = "button";
     element.className = "combo-option";
-    element.title = `${option.stationKey} - ${option.stationName}`;
-    element.innerHTML = `
-      <span class="combo-option-title">${option.stationKey}</span>
-      <span class="combo-option-copy">${option.stationName}</span>
-    `;
+    element.setAttribute("role", "option");
+    element.disabled = !option.station_id;
+    element.title = option.station_id
+      ? `${option.station_id} - ${option.station_name || "Unnamed station"}`
+      : "This source row has no station_id and cannot be selected.";
+    const title = document.createElement("span");
+    title.className = "combo-option-title";
+    title.textContent = option.station_name || "Unnamed station";
+    element.appendChild(title);
+    const details = document.createElement("span");
+    details.className = "station-option-fields";
+    for (const [label, value] of [
+      ["station_key", option.station_key],
+      ["station_id", option.station_id],
+      ["visn_id", option.visn_id],
+      ["station_name", option.station_name],
+      ["parent_station_id", option.parent_station_id],
+    ]) {
+      const field = document.createElement("span");
+      field.className = "station-option-field";
+      const fieldLabel = document.createElement("strong");
+      fieldLabel.textContent = `${label}:`;
+      field.append(fieldLabel, document.createTextNode(` ${value || "—"}`));
+      details.appendChild(field);
+    }
+    element.appendChild(details);
     element.addEventListener("click", async () => {
-      elements.overrideStationId.value = option.stationKey;
+      elements.overrideStationId.value = option.station_id;
       setStationMenuOpen(false);
       updateStationIdMatch();
       await updatePreviews();
@@ -396,6 +413,7 @@ function setStationMenuOpen(isOpen) {
 
   elements.stationIdCombobox.classList.toggle("is-open", Boolean(isOpen));
   elements.stationIdMenu.classList.toggle("hidden", !isOpen);
+  elements.overrideStationId.setAttribute("aria-expanded", String(Boolean(isOpen)));
 }
 
 function updateStationIdMatch() {
@@ -406,14 +424,15 @@ function updateStationIdMatch() {
   if (readChecked("randomize-station-id")) {
     elements.stationIdMatch.classList.add("is-success");
     elements.stationIdMatch.classList.remove("is-error");
-    elements.stationIdMatch.textContent = `Random selection will use only the ${getStationOptions().length.toLocaleString()} Station IDs in the reference list.`;
+    const selectableCount = getStationOptions().filter((station) => station.station_id).length;
+    elements.stationIdMatch.textContent = `Random selection will use the ${selectableCount.toLocaleString()} rows that have a station_id.`;
     return;
   }
 
   const stationId = readValue("override-station-id");
   if (!stationId) {
     elements.stationIdMatch.classList.remove("is-success", "is-error");
-    elements.stationIdMatch.textContent = `Loaded ${getStationOptions().length.toLocaleString()} valid Station IDs. Choose an exact station_key or enable random valid IDs.`;
+    elements.stationIdMatch.textContent = `Loaded all ${getStationOptions().length.toLocaleString()} station rows. Selection is optional; search any of the five displayed fields.`;
     return;
   }
 
@@ -421,13 +440,13 @@ function updateStationIdMatch() {
   if (match) {
     elements.stationIdMatch.classList.add("is-success");
     elements.stationIdMatch.classList.remove("is-error");
-    elements.stationIdMatch.textContent = `Matched station: ${match.stationKey} | ${match.stationName}`;
+    elements.stationIdMatch.textContent = `Selected: station_key ${match.station_key} | station_id ${match.station_id} | VISN ${match.visn_id || "—"} | ${match.station_name || "Unnamed station"} | parent ${match.parent_station_id || "—"}`;
     return;
   }
 
   elements.stationIdMatch.classList.remove("is-success");
   elements.stationIdMatch.classList.add("is-error");
-  elements.stationIdMatch.textContent = "No exact reference match. Select a valid station_key from the list.";
+  elements.stationIdMatch.textContent = "Search results are shown above. Choose a station to apply its station_id, or clear this optional field.";
 }
 
 function sanitizePaymentAuthorityCodeInput(value, fallbackValue = "") {
@@ -607,8 +626,9 @@ function adjustDatePart(partKey, delta) {
 }
 
 function collectOptionalOverrides() {
+  const selectedStation = findStationOption(readValue("override-station-id"));
   const rawValues = {
-    StationID: readChecked("randomize-station-id") ? "" : readValue("override-station-id"),
+    StationID: readChecked("randomize-station-id") ? "" : selectedStation?.station_id || "",
     PaymentAuthorityCode: readValue("override-payment-authority-code"),
     ReferralPeriod: readValue("override-referral-period"),
     Network: readValue("override-network"),
@@ -725,7 +745,7 @@ function collectUiSettings() {
     matchSuffixLength: readValue("match-suffix-length"),
     icnMode: getSelectedIcnMode(),
     icnCustomValue: readValue("icn-custom-value"),
-    overrideStationId: readValue("override-station-id"),
+    overrideStationId: findStationOption(readValue("override-station-id"))?.station_id || "",
     overridePaymentAuthorityCode: readValue("override-payment-authority-code"),
     overrideReferralPeriod: readValue("override-referral-period"),
     overrideNetwork: readValue("override-network"),
@@ -1102,7 +1122,7 @@ function applyInfo(info) {
   state.acknowledgedReleaseKey = String(
     info.releaseAnnouncement?.acknowledgedReleaseKey || state.acknowledgedReleaseKey || ""
   ).trim();
-  renderStationOptions(info.stationOptions || []);
+  renderStationOptions(info.stations || []);
   renderSeocOptions();
   elements.appVersionBadge.textContent = info.appVersionLabel || "";
   elements.appVersionBadge.classList.toggle("hidden", !info.appVersionLabel);
@@ -1922,7 +1942,6 @@ function setupEventHandlers() {
         $(id).value = sanitizeIcnInput($(id).value);
       }
       if (id === "override-station-id") {
-        $(id).value = sanitizeStationIdInput($(id).value);
         renderStationOptions(getStationOptions());
         setStationMenuOpen(true);
       }

@@ -116,8 +116,8 @@ async function run() {
     assert.equal(await window.locator("#match-suffix-length").inputValue(), "4");
     await window.locator("#override-station-id").fill("614GA01");
     await window.locator("#station-id-toggle").click();
-    assert.equal(await window.locator("#station-id-menu .combo-option-title", { hasText: "614GA01" }).count(), 1);
-    assert.equal(await window.locator("#station-id-menu .combo-option-title", { hasText: "2242" }).count(), 0);
+    assert.equal(await window.locator("#station-id-menu .station-option-field", { hasText: "station_id: 614GA01" }).count(), 1);
+    assert.equal(await window.locator("#station-id-menu .station-option-field", { hasText: "station_key: 2242" }).count(), 1);
     await window.locator("#station-id-menu .combo-option", { hasText: "Tremont VA Clinic" }).click();
     assert.equal(await window.locator("#override-station-id").inputValue(), "614GA01");
     assert.equal(
@@ -163,7 +163,7 @@ async function run() {
       (filePath) => JSON.parse(fs.readFileSync(filePath, "utf8")).Referrals
     );
     const appInfo = await window.evaluate(() => window.ccrs.getInfo());
-    const validStationIds = new Set(appInfo.stationOptions.map((option) => option.stationKey));
+    const validStationIds = new Set(appInfo.stations.map((station) => station.station_id).filter(Boolean));
     const specialSeocKeys = new Set(["67", "158", "191", "233", "268", "1160"]);
     assert.equal(new Set(generatedReferrals.map((referral) => referral.Patient.SSN)).size, 4);
     const stationIds = generatedReferrals.map(

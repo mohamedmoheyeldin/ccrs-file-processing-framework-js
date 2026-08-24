@@ -14,6 +14,7 @@
     "test:syntax": "node scripts/syntax-check.js",
     "test:smoke": "node scripts/smoke-test.js",
     "test:e2e": "node scripts/electron-e2e-test.js",
+    "data:stations": "node scripts/import-stations.js",
     "predist": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
     "dist": "node scripts/build-release.js"
   },

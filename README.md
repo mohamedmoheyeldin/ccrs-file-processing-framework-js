@@ -87,7 +87,7 @@ Files users commonly work with:
 
 Files that are kept in sync from the shipped app:
 - `config\app_version.json`
-- `config\station_options.json`
+- `config\stations.json`
 - `config\seoc_options.json`
 - `docs\USER_GUIDE.md`
 - `docs\USER_GUIDE.pdf`
@@ -100,8 +100,8 @@ Files that are kept in sync from the shipped app:
 - Generate new referral JSON files from bundled templates
 - Use the bundled CCN1 all-fields reference templates stored under `templates\referrals`
 - Generate unique `999`-prefixed test SSNs and random DOBs per patient, or apply fixed overrides when needed
-- Use an exact reference Station ID or assign changing Station IDs exclusively from the bundled catalog
-- Select synchronized SEOC Number and SEOC ID pairs, including six special selection-only pairs
+- Search all imported station rows by station key, station ID, VISN, station name, or parent station ID; selection is optional
+- Optionally select synchronized SEOC Number and SEOC ID pairs, including six special selection-only pairs
 - Choose how ICNs should be generated: keep `TEST`, keep `TEST` with a custom suffix, or use a custom full ICN base
 - Match the last 3, 4, or 5 characters of each Referral Number and ICN
 - Produce final `.gz` archives
@@ -115,6 +115,17 @@ Files that are kept in sync from the shipped app:
 - Enforce configurable large-file and generation safety limits
 - Stream referral gzip output to reduce peak memory use
 - Export a sanitized diagnostic report without credentials or user file paths
+
+## Station reference data
+
+`config\stations.json` is the application's main station source. It contains every row and column imported from the approved Excel workbook, with blank and Excel `NULL` cells represented as JSON `null`. The Stations control displays and searches `station_key`, `station_id`, `visn_id`, `station_name`, and `parent_station_id`; selecting a row applies its `station_id` to referral data.
+
+To refresh the structured source from a replacement workbook:
+
+```bash
+pnpm data:stations -- /path/to/stations.xlsx
+pnpm verify
+```
 
 ## Version 1.3.5 Highlights
 - Upload User uses a compact 40% share of the row while the longer Remote Directory field receives 60%.

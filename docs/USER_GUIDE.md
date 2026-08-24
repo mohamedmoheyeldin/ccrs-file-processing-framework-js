@@ -300,27 +300,31 @@ Random generation is enabled by default. Each patient receives a different rando
 
 Uncheck the corresponding random option only when a fixed value must be applied. Fixed SSNs must also begin with `999` and use the displayed `999-99-0001` format. Dates must use `YYYY-MM-DD`.
 
-### Station ID
+### Stations
 
-Choose an exact `station_key` from the reference-backed dropdown or enable random valid Station IDs.
+Stations is one optional, searchable dropdown. Leave it blank to keep the source StationID unchanged, or enable random Station IDs.
 
-The dropdown uses the actual `DIM_VA_STATION.station_id`. For example, Tremont VA Clinic uses `614GA01`; the former catalog row number `2242` is not a Station ID and is no longer accepted or generated.
+The dropdown is driven by `config/stations.json`, the structured conversion of the approved Excel sheet. Every spreadsheet row and all source columns are retained. The menu clearly displays and searches these five values:
 
-Type a Station ID or clinic name to filter the menu, then select the matching option. The menu remains open while focus moves from the search field to an option.
+- `station_key`
+- `station_id`
+- `visn_id`
+- `station_name`
+- `parent_station_id`
+
+Type any part of those values, then select the matching station. Selection applies that row's `station_id` to referral data. A source row without `station_id` remains visible for completeness but is disabled because it cannot provide a StationID.
 
 Rules:
 
-- a selected or entered Station ID is never padded or extended
-- a three-character Station ID remains three characters
-- valid VA Station IDs may contain three through seven letters and numbers
-- manual values must exactly match the reference table
-- automatic mode shuffles only the valid entries from `config/station_options.json`
+- a selected Station ID is never padded or extended
+- manual values must exactly match `station_id` in `config/stations.json`
+- automatic mode uses only rows that contain `station_id`
 - automatic IDs change between referrals without repeating until the reference list is exhausted
-- the shipped catalog is refreshed during app upgrades
+- the shipped structured source is refreshed during app upgrades
 
 ### SEOC Number and SEOC ID
 
-Select either a SEOC Number or a SEOC ID. The other selector updates automatically so the referral receives a valid synchronized pair from the bundled reference data.
+Both selectors are optional. Leave them blank to preserve source SEOC values. If you select either a SEOC Number or a SEOC ID, the other selector updates automatically so the referral receives a valid synchronized pair from the bundled reference data.
 
 The following special pairs are marked `Special: explicit selection only`. The bundled generator never assigns them automatically:
 
@@ -333,9 +337,9 @@ The following special pairs are marked `Special: explicit selection only`. The b
 | `268` | `MHC_MENTAL HEALTH RESIDENTIAL TREATMENT_1.15.7` |
 | `1160` | `MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT_1.22.2` |
 
-To use one, select its key or ID. The matching value is filled automatically. Leave both selectors at `Keep source SEOC` when no explicit override is required.
+To use one, select its key or ID. The matching value is filled automatically. Leave both selectors at their optional blank choices when no explicit override is required.
 
-All dropdowns use the same compact design as Station ID. Referral / ICN Match, Network, SEOC, and upload-user lists remain inside a scrollable menu instead of expanding beyond the application window. Long selected labels are shortened visually without changing their stored values.
+All dropdowns use the same compact design. Referral / ICN Match, Network, SEOC, and upload-user lists remain inside a scrollable menu instead of expanding beyond the application window. Long selected labels are shortened visually without changing their stored values.
 
 ## Other Optional Referral Fields
 

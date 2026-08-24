@@ -1,5 +1,12 @@
 # CCRS File Processing Framework Version 1.3.5
 
+## Unreleased station-source update
+
+- Converts all 1,573 rows and all 14 columns from the approved station workbook into `config/stations.json`; blank and `NULL` cells become JSON `null`.
+- Uses that structured file as the application's main station source.
+- Replaces the Station ID lookup with one optional Stations control that searches and displays `station_key`, `station_id`, `visn_id`, `station_name`, and `parent_station_id`.
+- Keeps SEOC Number and SEOC ID optional and labels their blank choices clearly.
+
 ## Release Summary
 
 Version 1.3.5 refines the upload-target form layout introduced by Version 1.3.4. Upload User now remains compact while the longer Remote Directory value receives more horizontal room, without changing the established control height, responsive behavior, accessibility, or upload workflow.

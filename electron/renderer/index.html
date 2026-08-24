@@ -321,29 +321,32 @@
                     <small class="helper-text">The selected ending of each Referral Number is copied to its ICN.</small>
                   </label>
                   <label class="field-block">
-                    <span>Station ID</span>
+                    <span>Stations (Optional)</span>
                     <div id="station-id-combobox" class="combo-shell">
                       <input
                         id="override-station-id"
                         type="text"
-                        maxlength="7"
-                        placeholder="Type a station_key or choose from the list"
+                        placeholder="Search station key, ID, VISN, name, or parent ID"
                         autocomplete="off"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-controls="station-id-menu"
+                        aria-expanded="false"
                       />
                       <button
                         id="station-id-toggle"
                         type="button"
                         class="combo-toggle"
-                        aria-label="Show Station ID options"
+                        aria-label="Show station options"
                       >
                         <span class="combo-chevron" aria-hidden="true"></span>
                       </button>
-                      <div id="station-id-menu" class="combo-menu hidden"></div>
+                      <div id="station-id-menu" class="combo-menu hidden" role="listbox" aria-label="Stations"></div>
                     </div>
                     <small id="station-id-match" class="helper-text">
-                      Choose an exact station_key from the reference list.
+                      No station override. Search any of the five station fields or leave this blank.
                     </small>
-                    <label class="radio-chip"><input id="randomize-station-id" type="checkbox" /><span>Use random valid Station IDs from the reference list</span></label>
+                    <label class="radio-chip"><input id="randomize-station-id" type="checkbox" /><span>Use random station IDs from rows that contain station_id</span></label>
                     <small id="station-id-preview" class="helper-text">Preview: no Station ID override</small>
                   </label>
                   <label class="field-block">
@@ -373,13 +376,13 @@
                     <small id="dob-help" class="helper-text">Uncheck random generation to use an optional fixed date in YYYY-MM-DD format.</small>
                   </label>
                   <label class="field-block">
-                    <span>SEOC Number</span>
-                    <select id="override-seoc-key"><option value="">Keep source SEOC</option></select>
+                    <span>SEOC Number (Optional)</span>
+                    <select id="override-seoc-key"><option value="">No SEOC Number override (optional)</option></select>
                   </label>
                   <label class="field-block">
-                    <span>SEOC ID</span>
-                    <select id="override-seoc-id"><option value="">Keep source SEOC</option></select>
-                    <small class="helper-text">Selecting either value synchronizes the valid SEOC pair. Special SEOCs are applied only when you explicitly select them.</small>
+                    <span>SEOC ID (Optional)</span>
+                    <select id="override-seoc-id"><option value="">No SEOC ID override (optional)</option></select>
+                    <small class="helper-text">Leave both blank to keep source SEOC values. Selecting either value synchronizes the valid SEOC pair.</small>
                   </label>
                   <label class="field-block">
                     <span>Referral Category</span>

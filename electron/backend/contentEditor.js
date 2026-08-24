@@ -22,7 +22,7 @@ const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const ISO_DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
 const OPTIONAL_RANDOM_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const NUMERIC_RANDOM_CHARSET = "0123456789";
-const STATION_ID_MAX_LENGTH = 7;
+const STATION_ID_MAX_LENGTH = 9;
 const PAYMENT_AUTHORITY_CODE_LENGTH = 5;
 const PAYMENT_AUTHORITY_CODE_MAX = 99999;
 const PAYMENT_AUTHORITY_CODE_DEFAULT_START = 10000;
@@ -127,7 +127,7 @@ function validateIsoDateTime(value, fieldLabel) {
 }
 
 function normalizeStationId(value) {
-  return ((value || "").trim().match(/[A-Za-z0-9]/g) || []).join("");
+  return String(value || "").trim().toUpperCase();
 }
 
 function normalizePaymentAuthorityCode(value) {
@@ -155,7 +155,7 @@ function validateStationId(value) {
     throw new Error(`Station ID must be ${STATION_ID_MAX_LENGTH} characters or less.`);
   }
   if (!loadStationOptions().some((option) => option.stationKey === normalized)) {
-    throw new Error("Station ID must exactly match a station_key from the reference list.");
+    throw new Error("Station ID must exactly match a station_id from the station reference data.");
   }
   return normalized;
 }

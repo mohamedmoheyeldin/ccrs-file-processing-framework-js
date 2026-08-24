@@ -23,9 +23,9 @@ The CCRS File Processing Framework is a local Electron desktop application for p
 
 Runtime data is copied to the current Windows user's AppData area. Upload credentials are protected with Windows-provided encryption after import. Local credentials, WinSCP imports, logs, generated output, and temporary work directories must not be committed.
 
-`config/station_options.json` is authoritative shipped reference data and is refreshed from the application bundle during upgrades. `electron/backend/stationCatalog.js` normalizes legacy catalogs by deriving the actual VA Station ID from the second parenthesized code in each station name, rejects non-station/test rows, and de-duplicates IDs before they reach manual or random referral generation.
+`config/stations.json` is the authoritative shipped station source and is refreshed from the application bundle during upgrades. It preserves every row and all 14 columns from the approved workbook; spreadsheet `NULL` and blank cells are stored as JSON `null`. `electron/backend/stationCatalog.js` de-duplicates by `station_key`, exposes the complete records to the searchable Stations control, and derives selectable/random StationID values from rows that contain `station_id`.
 
-Automatic Station assignment shuffles the normalized catalog and consumes its exact keys sequentially, so generated values cannot drift outside the list and do not repeat until all available entries have been used. Patient test SSNs use a fixed `999` prefix with a six-digit generated suffix.
+Automatic Station assignment shuffles the available `station_id` values and consumes them sequentially, so generated values cannot drift outside the structured source and do not repeat until all available entries have been used. Patient test SSNs use a fixed `999` prefix with a six-digit generated suffix.
 
 `config/seoc_options.json` contains special SEOC pairs that must be visible for explicit selection but must not enter template-driven generation. `electron/backend/referralGenerator.js` merges those selection-only pairs with normal template pairs for the UI while leaving the referral templates unchanged.
 

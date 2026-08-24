@@ -34,7 +34,7 @@ const {
   getSeocOptions,
 } = require("./referralGenerator");
 const { cleanupRuntimeArtifacts, cleanupStaleRuntimeArtifacts, removePath } = require("./runtimeCleanup");
-const { loadStationOptions } = require("./stationCatalog");
+const { loadStationOptions, loadStations } = require("./stationCatalog");
 const { getUiSettingsPath, loadUiSettings, saveUiSettings } = require("./userSettings");
 const { inspectLeieSource, processLeieFiles } = require("./leieProcessor");
 const { loadReleaseTracker, saveReleaseTracker } = require("./releaseTracker");
@@ -200,7 +200,7 @@ function getInfo() {
     uploadProfileSummary: summarizeUploadProfiles(profiles),
     uploadTargets: buildUploadTargets(profiles),
     generatorDefaults: getGeneratorDefaults(),
-    stationOptions: loadStationOptions(),
+    stations: loadStations(),
     seocOptions: getSeocOptions(),
     uiSettings,
     constants: {
@@ -254,7 +254,8 @@ function exportDiagnosticReport(payload = {}) {
       leieDuplicateHandling: settings.leieDuplicateHandling,
     },
     health: {
-      stationOptionCount: loadStationOptions().length,
+      stationCount: loadStations().length,
+      selectableStationCount: loadStationOptions().length,
       seocOptionCount: getSeocOptions().length,
       userGuideAvailable: fs.existsSync(dataPath("docs", "USER_GUIDE.pdf")),
     },

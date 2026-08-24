@@ -52,8 +52,9 @@ const {
   LEIE_DEFAULT_UPLOAD_DIRECTORY,
   resolveUploadDirectoryForWorkflow,
 } = require("../electron/renderer/uploadDefaults");
-const { normalizeStationOptions } = require("../electron/backend/stationCatalog");
+const { normalizeStations } = require("../electron/backend/stationCatalog");
 const { ensureRuntimeFiles } = require("../electron/backend/appPaths");
+const { normalizeCell } = require("./import-stations");
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-smoke-"));
 const projectRoot = path.resolve(__dirname, "..");
@@ -270,37 +271,47 @@ test("Optional override normalization keeps the validated Payment Authority Code
 
   assert.equal(overrides.PaymentAuthorityCode, "54321");
   assert.equal(overrides.StationID, "402");
+  assert.equal(generateOptionalFieldOverrides({ StationID: "564GF_OLD" }).StationID, "564GF_OLD");
+  assert.equal(generateOptionalFieldOverrides({ StationID: "aa" }).StationID, "AA");
   assert.throws(
     () => generateOptionalFieldOverrides({ StationID: "150" }),
-    /must exactly match a station_key/
+    /must exactly match a station_id/
   );
 });
 
-test("Legacy station row numbers normalize to actual DIM_VA_STATION IDs", () => {
-  const normalized = normalizeStationOptions([
-    { stationKey: "2242", stationName: "(V09) (614GA01) Tremont VA Clinic" },
-    { stationKey: "1501", stationName: "(1V01) (402) Togus VA Medical Center" },
-    { stationKey: "2813", stationName: "Testing Station" },
-    { stationKey: "520GC", stationName: "Eglin Air Force Base VA Clinic" },
-    { stationKey: "9999", stationName: "(V99) (1234) Future VA Station" },
-    { stationKey: "3083", stationName: "(3V23) (656QA) St. Cloud VA Mobile Clinic" },
-    { stationKey: "1735", stationName: "(3V23) (656QA) St. Cloud VA Mobile Clinics" },
+test("Station records normalize nulls and de-duplicate by station_key", () => {
+  const normalized = normalizeStations([
+    { station_key: "2823", station_id: "402HL", station_name: "  Bingham   VA Mobile Clinic " },
+    { station_key: "2823", station_id: "DUPLICATE", station_name: "Duplicate" },
+    { station_key: "2014", station_id: "NULL", station_name: null, parent_station_id: "642" },
   ]);
 
-  assert.deepEqual(normalized.map((option) => option.stationKey), ["614GA01", "402", "520GC", "1234", "656QA"]);
-  assert.equal(normalized.some((option) => option.stationKey === "2242"), false);
+  assert.deepEqual(normalized, [
+    { station_key: "2823", station_id: "402HL", station_name: "Bingham VA Mobile Clinic" },
+    { station_key: "2014", station_id: null, station_name: null, parent_station_id: "642" },
+  ]);
+  assert.equal(normalizeCell("NULL"), null);
+  assert.equal(normalizeCell(" 402HL "), "402HL");
 });
 
-test("Bundled station keys match their DIM_VA_STATION IDs", () => {
-  const bundled = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "station_options.json"), "utf8"));
-  assert.equal(bundled.length, 1570);
-  assert.equal(new Set(bundled.map((option) => option.stationKey)).size, bundled.length);
-  for (const option of bundled) {
-    const groups = [...option.stationName.matchAll(/\(([^()]*)\)/g)].map((match) => match[1].trim().toUpperCase());
-    assert.equal(option.stationKey, groups[1]);
-    assert.match(option.stationKey, /^[A-Z0-9]{3,7}$/);
-    assert.doesNotMatch(option.stationKey, /_OLD$/);
-  }
+test("Bundled station JSON preserves every spreadsheet row and column", () => {
+  const bundled = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "stations.json"), "utf8"));
+  assert.equal(bundled.length, 1573);
+  assert.equal(new Set(bundled.map((station) => station.station_key)).size, bundled.length);
+  assert.equal(new Set(bundled.map((station) => station.station_id)).size, bundled.length);
+  assert.deepEqual(Object.keys(bundled[0]), [
+    "station_key", "station_id", "visn_id", "is_current", "start_date", "end_date",
+    "source_system", "source_entity", "station_name", "last_updated_date",
+    "last_updated_user", "vssc_station_id", "parent_station_id", "CPAC",
+  ]);
+  const missingStationId = bundled.find((station) => station.station_key === "2014");
+  assert.equal(missingStationId.station_id, null);
+  assert.equal(missingStationId.station_name, null);
+  assert.equal(missingStationId.parent_station_id, "642");
+  const bingham = bundled.find((station) => station.station_key === "2823");
+  assert.equal(bingham.station_id, "402HL");
+  assert.equal(bingham.visn_id, "1");
+  assert.equal(bingham.parent_station_id, "402");
 });
 
 test("Packaged upgrades refresh the installed Station ID and special SEOC catalogs", () => {
@@ -309,12 +320,12 @@ test("Packaged upgrades refresh the installed Station ID and special SEOC catalo
   fs.mkdirSync(path.join(bundleRoot, "config"), { recursive: true });
   fs.mkdirSync(path.join(userDataRoot, "config"), { recursive: true });
   fs.writeFileSync(
-    path.join(bundleRoot, "config", "station_options.json"),
-    JSON.stringify([{ stationKey: "614GA01", stationName: "(V09) (614GA01) Tremont VA Clinic" }])
+    path.join(bundleRoot, "config", "stations.json"),
+    JSON.stringify([{ station_key: "2242", station_id: "614GA01", station_name: "Tremont VA Clinic" }])
   );
   fs.writeFileSync(
-    path.join(userDataRoot, "config", "station_options.json"),
-    JSON.stringify([{ stationKey: "2242", stationName: "(V09) (614GA01) Tremont VA Clinic" }])
+    path.join(userDataRoot, "config", "stations.json"),
+    JSON.stringify([{ station_key: "old", station_id: "OLD", station_name: "Old station" }])
   );
   fs.writeFileSync(
     path.join(bundleRoot, "config", "seoc_options.json"),
@@ -330,8 +341,8 @@ test("Packaged upgrades refresh the installed Station ID and special SEOC catalo
     process.env.CCRS_BUNDLE_ROOT = bundleRoot;
     process.env.CCRS_USER_DATA_ROOT = userDataRoot;
     ensureRuntimeFiles();
-    const installed = JSON.parse(fs.readFileSync(path.join(userDataRoot, "config", "station_options.json"), "utf8"));
-    assert.equal(installed[0].stationKey, "614GA01");
+    const installed = JSON.parse(fs.readFileSync(path.join(userDataRoot, "config", "stations.json"), "utf8"));
+    assert.equal(installed[0].station_id, "614GA01");
     const installedSeocs = JSON.parse(fs.readFileSync(path.join(userDataRoot, "config", "seoc_options.json"), "utf8"));
     assert.equal(installedSeocs[0].seocKey, "67");
     assert.equal(installedSeocs[0].selectionOnly, true);
@@ -671,23 +682,22 @@ test("Upload profile summary reports server and user counts", () => {
   });
 });
 
-test("App info exposes unique Station ID dropdown options", async () => {
+test("App info exposes the complete searchable station source", async () => {
   const info = await backend.handleCommand("info", {});
 
-  assert.equal(Array.isArray(info.stationOptions), true);
-  assert.equal(info.stationOptions.length, 1570);
+  assert.equal(Array.isArray(info.stations), true);
+  assert.equal(info.stations.length, 1573);
 
-  const stationKeys = info.stationOptions.map((option) => option.stationKey);
+  const stationKeys = info.stations.map((station) => station.station_key);
   assert.equal(new Set(stationKeys).size, stationKeys.length);
 
-  assert.equal(stationKeys.includes("2242"), false);
-  const sample = info.stationOptions.find((option) => option.stationKey === "402");
+  const sample = info.stations.find((station) => station.station_id === "402");
   assert.equal(Boolean(sample), true);
-  assert.match(sample.stationName, /Togus VA Medical Center/);
-  const tremont = info.stationOptions.find((option) => option.stationKey === "614GA01");
+  assert.match(sample.station_name, /Togus VA Medical Center/);
+  const tremont = info.stations.find((station) => station.station_id === "614GA01");
   assert.equal(Boolean(tremont), true);
-  assert.match(tremont.stationName, /Tremont VA Clinic/);
-  assert.equal(info.constants.stationIdMaxLength, 7);
+  assert.match(tremont.station_name, /Tremont VA Clinic/);
+  assert.equal(info.constants.stationIdMaxLength, 9);
 });
 
 test("App info exposes valid synchronized SEOC pairs", async () => {

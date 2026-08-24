@@ -1,87 +1,101 @@
 const fs = require("fs");
 const { bundlePath, dataPath } = require("./appPaths");
 
-const STATION_OPTIONS_FILE = "station_options.json";
-const EMBEDDED_STATION_ID_PATTERN = /^[A-Z0-9]{3,7}$/;
-const CONFIGURED_STATION_ID_PATTERN = /^(?!\d{4}$)[A-Z0-9]{3,7}$/;
+const STATIONS_FILE = "stations.json";
+const DISPLAY_FIELDS = [
+  "station_key",
+  "station_id",
+  "visn_id",
+  "station_name",
+  "parent_station_id",
+];
 
-let cachedStationOptions = null;
+let cachedStations = null;
 
-function normalizeStationOption(option) {
-  if (!option || typeof option !== "object") {
+function normalizeStation(station) {
+  if (!station || typeof station !== "object") {
     return null;
   }
 
-  const configuredStationKey = String(option.stationKey || option.station_key || "").trim().toUpperCase();
-  const stationName = String(option.stationName || option.station_name || "")
-    .trim()
-    .replace(/\s+/g, " ");
-  const stationNameGroups = [...stationName.matchAll(/\(([^()]*)\)/g)]
-    .map((match) => String(match[1] || "").trim().toUpperCase());
-  const embeddedStationId = stationNameGroups[1] || "";
-  const hasValidEmbeddedStationId = EMBEDDED_STATION_ID_PATTERN.test(embeddedStationId);
-  const stationKey = hasValidEmbeddedStationId
-    ? embeddedStationId
-    : configuredStationKey;
+  const normalized = Object.fromEntries(Object.entries(station).map(([key, value]) => {
+    if (value === undefined || value === null || String(value).trim().toUpperCase() === "NULL") {
+      return [key, null];
+    }
+    return [key, String(value).trim().replace(/\s+/g, " ")];
+  }));
+  normalized.station_key = normalized.station_key || normalized.stationKey || null;
+  normalized.station_id = normalized.station_id || normalized.stationId || null;
+  normalized.station_name = normalized.station_name || normalized.stationName || null;
 
-  if ((!hasValidEmbeddedStationId && !CONFIGURED_STATION_ID_PATTERN.test(stationKey)) || !stationName) {
+  if (!normalized.station_key) {
     return null;
   }
 
-  return { stationKey, stationName };
+  return normalized;
 }
 
-function normalizeStationOptions(rawOptions) {
-  const options = [];
+function normalizeStations(rawStations) {
+  const stations = [];
   const seenKeys = new Set();
 
-  for (const rawOption of Array.isArray(rawOptions) ? rawOptions : []) {
-    const option = normalizeStationOption(rawOption);
-    if (!option || seenKeys.has(option.stationKey)) {
+  for (const rawStation of Array.isArray(rawStations) ? rawStations : []) {
+    const station = normalizeStation(rawStation);
+    if (!station || seenKeys.has(station.station_key)) {
       continue;
     }
 
-    seenKeys.add(option.stationKey);
-    options.push(option);
+    seenKeys.add(station.station_key);
+    stations.push(station);
   }
 
-  return options;
+  return stations;
 }
 
-function tryLoadStationOptions(filePath) {
+function tryLoadStations(filePath) {
   if (!fs.existsSync(filePath)) {
     return null;
   }
 
   const raw = JSON.parse(fs.readFileSync(filePath, "utf8"));
-  return normalizeStationOptions(raw);
+  return normalizeStations(raw);
 }
 
-function loadStationOptions() {
-  if (cachedStationOptions) {
-    return cachedStationOptions;
+function loadStations() {
+  if (cachedStations) {
+    return cachedStations;
   }
 
   for (const filePath of [
-    dataPath("config", STATION_OPTIONS_FILE),
-    bundlePath("config", STATION_OPTIONS_FILE),
+    dataPath("config", STATIONS_FILE),
+    bundlePath("config", STATIONS_FILE),
   ]) {
     try {
-      const options = tryLoadStationOptions(filePath);
-      if (options) {
-        cachedStationOptions = options;
-        return cachedStationOptions;
+      const stations = tryLoadStations(filePath);
+      if (stations) {
+        cachedStations = stations;
+        return cachedStations;
       }
     } catch (_error) {
       // Ignore invalid catalog files and fall back to the next location.
     }
   }
 
-  cachedStationOptions = [];
-  return cachedStationOptions;
+  cachedStations = [];
+  return cachedStations;
+}
+
+function loadStationOptions() {
+  return loadStations()
+    .filter((station) => station.station_id)
+    .map((station) => ({
+      stationKey: station.station_id,
+      stationName: station.station_name || `Station key ${station.station_key}`,
+    }));
 }
 
 module.exports = {
+  DISPLAY_FIELDS,
+  loadStations,
   loadStationOptions,
-  normalizeStationOptions,
+  normalizeStations,
 };
