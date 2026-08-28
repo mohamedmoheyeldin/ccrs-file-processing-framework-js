@@ -21,11 +21,17 @@ The CCRS File Processing Framework is a local Electron desktop application for p
 
 `electron/renderer/jobUi.js` keeps the sticky status area synchronized with the workflow stepper. Determinate backend events show item counts and percentages; indeterminate operations remove the native progress value so Windows displays ongoing activity. Renderer messages identify scanning, validation, processing, packaging, connection tests, uploads, diagnostics, completion, warnings, and failures without exposing sensitive paths or credentials.
 
+`electron/renderer/runReview.js` owns the pre-run safety review and production confirmation state. Backend events include structured `phase`, `state`, `current`, `total`, and message fields; the renderer still accepts legacy positional events from the separate LEIE implementation while it migrates.
+
 ## Data and security boundary
 
 Runtime data is copied to the current Windows user's AppData area. Upload credentials are protected with Windows-provided encryption after import. Local credentials, WinSCP imports, logs, generated output, and temporary work directories must not be committed.
 
-Referral upload authorization is enforced twice: the renderer displays only DEV, PPD, and SQA for Referral Files, and the backend rejects any other Referral target before resolving credentials. LEIE remains a separate workflow and retains DEV, PPD, SQA, and PROD support.
+`electron/backend/workflowPolicy.js` is authoritative for upload environments. The renderer consumes that policy from application information, and the backend validates it before resolving credentials. Referral Files allow DEV, PPD, and SQA. LEIE allows DEV, PPD, SQA, and PROD; the renderer also requires typed confirmation before a PROD run.
+
+`electron/backend/batchSafety.js` canonicalizes paths, rejects identical or nested source/output folders, owns isolated run staging, calculates SHA-256 values, detects output collisions, and promotes complete artifacts. `referralValidator.js` performs the versioned source-shape preflight. `runHistory.js` stores at most 20 sanitized run summaries in AppData and intentionally excludes credentials and source contents.
+
+Referral processing is fail-closed: all files must pass validation and transformation, Referral Numbers must be unique, and the gzip must complete in staging before any result is promoted. The generated manifest provides the business and file-integrity audit record. Upload failures do not invalidate the local artifact; failed destinations can be resolved from current protected credentials and retried without rebuilding the batch.
 
 `config/stations.json` is the authoritative shipped station source and is refreshed from the application bundle during upgrades. It preserves every row and all 14 columns from the approved workbook; spreadsheet `NULL` and blank cells are stored as JSON `null`. `electron/backend/stationCatalog.js` de-duplicates by `station_key`, exposes the complete records to the searchable Stations control, and derives selectable/random StationID values from rows that contain `station_id`.
 

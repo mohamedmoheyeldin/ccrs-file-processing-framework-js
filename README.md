@@ -14,9 +14,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.3.8",
-  "releaseTag": "v1.3.8",
-  "label": "Version 1.3.8",
+  "version": "1.3.9",
+  "releaseTag": "v1.3.9",
+  "label": "Version 1.3.9",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -29,7 +29,7 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- The current user release is `Version 1.3.8` (`v1.3.8`). Version 1.3.7 was released internally and is included in Version 1.3.8.
+- The current user release is `Version 1.3.9` (`v1.3.9`). Version 1.3.7 remains documented as an internal release included in Version 1.3.8 and later releases.
 - `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
@@ -61,7 +61,7 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.8`.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.9`.
 
 The workflow requires the tag to match `releaseTag` and refuses to overwrite an existing release.
 It also refuses to build a release when `releaseNotes` is empty.
@@ -115,6 +115,11 @@ Files that are kept in sync from the shipped app:
 - Enforce configurable large-file and generation safety limits
 - Stream referral gzip output to reduce peak memory use
 - Export a sanitized diagnostic report without credentials or user file paths
+- Review a complete safety summary before processing or upload
+- Preserve unrelated output files through isolated per-run staging and collision checks
+- Write a batch manifest with counts, uniqueness results, station distribution, hashes, and upload outcomes
+- Open recent output, inspect its manifest, copy its path, or retry only failed uploads
+- Save named generation presets without storing folders or upload credentials
 
 ## Station reference data
 
@@ -127,15 +132,19 @@ pnpm data:stations -- /path/to/stations.xlsx
 pnpm verify
 ```
 
-## Version 1.3.8 Highlights
-- Referral Files can be uploaded only to DEV, PPD, and SQA; PROD remains available for LEIE Data only.
-- The shared status area explains the current action, file or server, completion count, percentage, and next step when applicable.
-- Indeterminate work such as scanning, packaging, connection testing, and diagnostics remains visibly in progress instead of appearing idle.
-- The consolidated user release includes all internally released Version 1.3.7 referral-generation, naming, station, responsiveness, and Electron 44 improvements.
+## Version 1.3.9 Highlights
+- Source and output folders must be separate, and the app stages each run before changing the selected output folder.
+- Any invalid referral file stops the batch before an incomplete archive can be created or uploaded.
+- A pre-run safety review makes output behavior, station choices, and upload destinations explicit; LEIE PROD requires typed confirmation.
+- Every referral archive receives an auditable manifest with SHA-256 hashes and business-result summaries.
+- Recent-run actions support opening results, viewing the manifest, copying the output path, and retrying only failed uploads.
+- Named generation presets preserve reusable business settings without retaining folders or credentials.
+- Structured phases keep progress and cancellation messages aligned with the actual backend state.
 - Full current and historical notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
 
 Previous release notes:
 
+- [Version 1.3.8](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.8)
 - [Version 1.3.7](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.7) — internal release included in Version 1.3.8
 - [Version 1.3.6](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.6)
 - [Version 1.3.5](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.5)

@@ -9,8 +9,8 @@ const backend = require("./backend");
 let mainWindow;
 const activeJobs = new Map();
 const APP_USER_MODEL_ID = "com.ccrs.fileprocessingframework";
-const BACKGROUND_COMMANDS = new Set(["inspect-source", "inspect-leie-source", "process", "process-leie", "generate", "test-upload-target"]);
-const CANCELLABLE_COMMANDS = new Set(["process", "process-leie", "generate", "test-upload-target"]);
+const BACKGROUND_COMMANDS = new Set(["inspect-source", "inspect-leie-source", "process", "process-leie", "generate", "retry-upload", "test-upload-target"]);
+const CANCELLABLE_COMMANDS = new Set(["process", "process-leie", "generate", "retry-upload", "test-upload-target"]);
 
 process.env.CCRS_IS_PACKAGED = app.isPackaged ? "1" : "0";
 process.env.CCRS_BUNDLE_ROOT = app.isPackaged ? process.resourcesPath : path.resolve(__dirname, "..");
@@ -81,10 +81,11 @@ async function runPackagedSmokeTest() {
       optionalOverrides: {},
       upload: { enabled: false, targets: [] },
     });
-    if (!/Done\. Processed 1 file/.test(result?.message || "")) throw new Error("Background generation did not finish.");
-    if (!fs.readdirSync(outputDir).some((name) => /^installed_smoke_archive_\d{8}_\d{6}\.gz$/.test(name))) {
+    if (!result?.archivePath || !result?.manifestPath) throw new Error("Background generation did not return its archive and manifest.");
+    if (!fs.existsSync(result.archivePath) || !fs.readdirSync(outputDir).some((name) => /^installed_smoke_archive_\d{8}_\d{6}\.gz$/.test(name))) {
       throw new Error("Smoke archive was not created.");
     }
+    if (!fs.existsSync(result.manifestPath)) throw new Error("Smoke batch manifest was not created.");
   } catch (error) {
     console.error("Installed application smoke test failed.", error);
     exitCode = 1;
@@ -100,6 +101,10 @@ async function runPackagedSmokeTest() {
 
 function runBackendCommand(webContents, command, payload = {}) {
   return backend.handleCommand(command, payload, (current, total, filename, state, uploadTarget, detail) => {
+    if (current && typeof current === "object") {
+      webContents.send("backend:event", { type: "progress", ...current });
+      return;
+    }
     webContents.send("backend:event", {
       type: "progress",
       current,
@@ -153,7 +158,7 @@ function runBackgroundCommand(webContents, command, payload = {}) {
     });
     worker.on("error", (error) => finish(reject, error));
     worker.on("exit", (code) => {
-      if (job.cancelled) finish(reject, new Error("Operation cancelled. Partial output files may have been removed or left incomplete."));
+      if (job.cancelled) finish(reject, new Error("Operation cancelled safely. Completed output from earlier runs was not changed."));
       else if (code !== 0) finish(reject, new Error(`Background job exited with code ${code}.`));
       else if (!job.settled) finish(reject, new Error("Background job exited before returning a result."));
     });

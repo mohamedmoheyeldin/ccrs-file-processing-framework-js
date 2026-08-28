@@ -439,6 +439,7 @@
                     <input id="output-dir" type="text" placeholder="Choose where output files should be written" />
                     <button data-pick="output-dir" class="toolbar-button invert-active">Save To</button>
                   </div>
+                  <small id="output-dir-help" class="helper-text">Use a separate folder from the source folder.</small>
                 </label>
                 <label class="field-block">
                   <span id="output-name-label">Name for the processed JSON files</span>
@@ -576,6 +577,18 @@
 
             <article id="run-card" class="content-card glass-card">
               <div class="run-panel">
+                <div id="preset-toolbar" class="preset-toolbar">
+                  <label class="field-block">
+                    <span>Generation preset</span>
+                    <select id="generation-preset"><option value="">Choose a saved preset</option></select>
+                  </label>
+                  <label class="field-block">
+                    <span>Preset name</span>
+                    <input id="generation-preset-name" type="text" maxlength="60" placeholder="Example: SQA 10-station batch" />
+                  </label>
+                  <button id="save-generation-preset" class="toolbar-button">Save Preset</button>
+                  <button id="delete-generation-preset" class="toolbar-button danger">Delete</button>
+                </div>
                 <div class="status-panel inline-status" role="status" aria-live="polite" aria-atomic="true">
                   <span id="status-badge" class="status-badge idle">Ready</span>
                   <p id="status-message">Choose a Referral Files workflow, then select the required files and folders.</p>
@@ -592,10 +605,40 @@
                   <button id="run-generate" class="toolbar-button primary hidden">Generate Files</button>
                   <button id="cancel-job" class="toolbar-button danger hidden" data-allow-while-busy="true">Cancel</button>
                 </div>
+                <div id="result-actions" class="result-actions hidden">
+                  <button id="open-output-folder" class="toolbar-button">Open Output Folder</button>
+                  <button id="open-batch-manifest" class="toolbar-button">View Batch Manifest</button>
+                  <button id="copy-archive-path" class="toolbar-button">Copy Output Path</button>
+                  <button id="retry-failed-uploads" class="toolbar-button primary hidden">Retry Failed Uploads</button>
+                </div>
+                <details id="recent-runs" class="recent-runs">
+                  <summary>Recent runs</summary>
+                  <div id="recent-runs-list" class="recent-runs-list">No completed runs yet.</div>
+                </details>
               </div>
             </article>
           </section>
         </main>
+      </section>
+    </div>
+
+    <div id="pre-run-overlay" class="modal-overlay hidden">
+      <section id="pre-run-panel" class="modal-panel glass-card pre-run-modal" role="dialog" aria-modal="true" aria-labelledby="pre-run-title">
+        <div class="release-announcement-header">
+          <span class="eyebrow">Safety Review</span>
+          <h2 id="pre-run-title">Review this run</h2>
+          <p>Confirm the business settings and exact destinations before the app changes or uploads files.</p>
+        </div>
+        <div id="pre-run-summary" class="pre-run-summary"></div>
+        <label id="prod-confirm-wrap" class="field-block hidden">
+          <span>Production confirmation</span>
+          <input id="prod-confirm-input" type="text" autocomplete="off" placeholder="Type PROD to confirm" />
+          <small class="helper-text">Production upload remains blocked until you type PROD.</small>
+        </label>
+        <div class="release-announcement-actions">
+          <button id="pre-run-cancel" class="toolbar-button">Go Back</button>
+          <button id="pre-run-confirm" class="toolbar-button primary">Start Safely</button>
+        </div>
       </section>
     </div>
 
@@ -632,6 +675,7 @@
     <script src="./leieSql.js"></script>
     <script src="./uploadDefaults.js"></script>
     <script src="./jobUi.js"></script>
+    <script src="./runReview.js"></script>
     <script src="./compactSelect.js"></script>
     <script src="./app.js"></script>
   </body>

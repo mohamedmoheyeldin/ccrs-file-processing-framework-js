@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Version 1.3.8`, including the capabilities previously released internally as Version 1.3.7.
+This guide covers `Version 1.3.9`, including the safer batch, audit, recovery, and preset workflows.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download `CCRS.File.Processing.Framework.Setup.Version.1.3.8.exe` from the GitHub Releases page and run the installer.
+Download `CCRS.File.Processing.Framework.Setup.Version.1.3.9.exe` from the GitHub Releases page and run the installer.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 
@@ -75,7 +75,9 @@ Use `Tab` and `Shift+Tab` to move between controls. In a dropdown, use `Arrow Up
 
 The workflow stepper shows `Select`, `Configure`, `Validate`, `Process`, and `Upload`. The status card remains visible near the bottom of the application and identifies the current action, the file or server being handled, and what happens next. When totals are known, it shows completed items and a percentage. Scanning, packaging, connection testing, configuration imports, and diagnostics show visible in-progress feedback even when a numeric percentage is not available.
 
-File processing, LEIE work, gzip creation, upload tests, and uploads run in background workers so the window remains responsive. Select `Cancel` to stop a running process. A cancelled process can leave an incomplete file in the selected output folder; inspect or remove that file before restarting the same job.
+File processing, LEIE work, gzip creation, upload tests, and uploads run in background workers so the window remains responsive. Select `Cancel` to stop a running process. Referral work is isolated in temporary staging, so cancellation does not alter completed output from earlier runs; stale app-created staging folders are cleaned automatically.
+
+Before any process or generation run starts, the Safety Review displays the workflow, source, output folder, output behavior, expected archive, station plan, and upload destinations. Choose `Go Back` to correct a setting or `Start Safely` to continue. A LEIE upload that includes PROD remains blocked until `PROD` is typed into the confirmation field.
 
 Before processing, the source summary reports available file size and row information. The application protects the computer with configurable safety limits for:
 
@@ -239,6 +241,8 @@ Choose the output folder and optionally enter:
 
 The app adds `.json` and `.gz` extensions automatically. Referral archives always end with the current local date and time in `YYYYMMDD_HHMMSS` format. Enable **Start JSON and .gz names with iFAMS** when both output types must share the `iFAMS` prefix.
 
+The source and output folders must be separate and cannot be nested. `Keep existing files` preserves unrelated files and stops if a new result would reuse an existing name. `Delete everything first` clears the output folder only after the new batch has processed and packaged successfully in isolation.
+
 Examples:
 
 - `batch101` becomes `batch101.json`
@@ -251,6 +255,10 @@ Examples:
 
 Select `Run Processing`. The app applies changes, creates processed JSON files, builds the final `.gz`, and uploads the archive when upload is enabled.
 
+If any source file is malformed or cannot be processed, the full batch stops. No incomplete referral archive is created or uploaded. Correct the reported file and run the workflow again.
+
+Each successful archive includes a matching `.manifest.json` file. The manifest records counts, Referral Number uniqueness, station distribution, source and archive SHA-256 hashes, and upload outcomes.
+
 ## Generate New Referral Files
 
 Use `Generate New Files` to create referrals from the bundled templates.
@@ -262,7 +270,11 @@ Choose:
 - referral details and optional overrides
 - output naming
 
-This mode does not require a source folder and does not upload. Select `Generate Files` to run it.
+This mode does not require a source folder. It can optionally upload the completed archive to the selected Referral environments. Select `Generate Files` to review and run it.
+
+### Generation Presets
+
+Enter a `Preset name` and select `Save Preset` to keep reusable generation settings such as file/referral counts, naming, ICN mode, selected Stations, and optional referral overrides. Presets intentionally exclude source/output folders, upload selections, and credentials. Choose a saved preset to apply it while preserving the current folders and upload configuration, or select `Delete` to remove it.
 
 ## Referral Number and ICN
 
@@ -388,6 +400,17 @@ The standard referral remote directory is:
 This location is specific to CCRS Referral uploads. LEIE Data uploads use the separate default `/in/manual_process/`.
 
 Target toggles remain disabled until the main upload option is enabled.
+
+If one destination fails after the local artifact is complete, the app records the failed target and continues recording the completed ones. Select `Retry Failed Uploads` to resend the existing artifact only to the failed destinations. Do not rerun generation or processing unless the underlying data must change.
+
+## Recent Runs and Result Actions
+
+The `Recent runs` area stores the latest 20 sanitized run summaries in the current user's AppData. It does not store credentials or source-file contents. Select a run to make these actions available:
+
+- `Open Output Folder`
+- `View Batch Manifest` for referral runs
+- `Copy Output Path`
+- `Retry Failed Uploads` when a target still needs attention
 
 ## Upload Credentials
 
