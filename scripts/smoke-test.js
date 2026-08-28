@@ -1268,7 +1268,7 @@ test("Windows packaging targets only the setup installer", () => {
 test("Release builds use temporary storage outside the project", () => {
   const paths = resolveReleasePaths({ repoRoot: projectRoot });
 
-  assert.equal(path.relative(projectRoot, paths.workRoot).startsWith(".."), true);
+  assert.doesNotThrow(() => assertSafeTemporaryWorkRoot(paths.workRoot, projectRoot));
   assert.throws(
     () => assertSafeTemporaryWorkRoot(projectRoot, projectRoot),
     /unsafe release work directory/

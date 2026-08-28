@@ -12,12 +12,21 @@ function stripWindowsExtendedPathPrefix(targetPath) {
 
 function canonicalPath(targetPath) {
   const resolved = path.resolve(String(targetPath || "").trim());
-  let canonical = resolved;
-  try {
-    canonical = fs.realpathSync.native(resolved);
-  } catch (_error) {
-    // A new output folder cannot be resolved yet; its absolute path is still safe to compare.
+  let existingAncestor = resolved;
+  const missingSegments = [];
+  while (!fs.existsSync(existingAncestor)) {
+    const parent = path.dirname(existingAncestor);
+    if (parent === existingAncestor) break;
+    missingSegments.unshift(path.basename(existingAncestor));
+    existingAncestor = parent;
   }
+  let canonical = existingAncestor;
+  try {
+    canonical = fs.realpathSync.native(existingAncestor);
+  } catch (_error) {
+    canonical = existingAncestor;
+  }
+  canonical = path.join(canonical, ...missingSegments);
   canonical = stripWindowsExtendedPathPrefix(canonical);
   return process.platform === "win32" ? canonical.toLowerCase() : canonical;
 }
