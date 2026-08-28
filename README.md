@@ -14,9 +14,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.3.6",
-  "releaseTag": "v1.3.6",
-  "label": "Version 1.3.6",
+  "version": "1.3.7",
+  "releaseTag": "v1.3.7",
+  "label": "Version 1.3.7",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -29,7 +29,7 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- The current public release is `Version 1.3.6` (`v1.3.6`).
+- The current public release is `Version 1.3.7` (`v1.3.7`).
 - `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
@@ -61,7 +61,7 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.6`.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.7`.
 
 The workflow requires the tag to match `releaseTag` and refuses to overwrite an existing release.
 It also refuses to build a release when `releaseNotes` is empty.
@@ -102,7 +102,7 @@ Files that are kept in sync from the shipped app:
 - Generate unique `999`-prefixed test SSNs and random DOBs per patient, or apply fixed overrides when needed
 - Search all imported station rows by station key, station ID, VISN, station name, or parent station ID; selection is optional
 - Optionally select synchronized SEOC Number and SEOC ID pairs, including six special selection-only pairs
-- Choose how ICNs should be generated: keep `TEST`, keep `TEST` with a custom suffix, or use a custom full ICN base
+- Choose how ICNs should be generated: derive `TEST` plus the Referral Number body, keep `TEST`, keep `TEST` with a custom suffix, or use a custom full ICN base
 - Match the last 3, 4, or 5 characters of each Referral Number and ICN
 - Produce final `.gz` archives
 - Import upload settings from `WinSCP.ini` or credentials JSON
@@ -127,15 +127,16 @@ pnpm data:stations -- /path/to/stations.xlsx
 pnpm verify
 ```
 
-## Version 1.3.6 Highlights
-- All 1,573 workbook rows and all 14 columns are preserved in structured JSON as the main station source.
-- One optional Stations selector searches and displays `station_key`, `station_id`, `visn_id`, `station_name`, and `parent_station_id`.
-- Selecting a station applies its exact `station_id`; the one source row without an ID remains visible but disabled.
-- SEOC Number and SEOC ID remain optional, with explicit blank choices in the interface.
+## Version 1.3.7 Highlights
+- ICNs can be built directly from Referral Numbers, such as `VA26S600001` becoming `TEST26S600001`.
+- Multiple selected stations are shuffled across all referrals in a batch, while generated Referral Numbers remain unique.
+- Optional iFAMS prefixes are available for Referral Numbers, JSON files, and timestamped gzip archives.
+- The station selector and settings updates are faster and smoother, and Electron is updated to Version 44.
 - Full current and historical notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
 
 Previous release notes:
 
+- [Version 1.3.6](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.6)
 - [Version 1.3.5](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.5)
 - [Version 1.3.4](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.4)
 - [Version 1.3.3](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.3)

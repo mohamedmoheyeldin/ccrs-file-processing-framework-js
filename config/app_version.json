@@ -1,12 +1,13 @@
 {
-  "version": "1.3.6",
-  "releaseTag": "v1.3.6",
-  "label": "Version 1.3.6",
-  "announcementId": "v1.3.6|Version 1.3.6|2026-08-24-structured-stations",
+  "version": "1.3.7",
+  "releaseTag": "v1.3.7",
+  "label": "Version 1.3.7",
+  "announcementId": "v1.3.7|Version 1.3.7|2026-08-28-referral-generation",
   "releaseNotes": [
-    "Uses all 1,573 rows and all 14 columns from the approved station workbook as the structured station source.",
-    "Adds one optional Stations selector that searches station key, station ID, VISN, station name, and parent station ID.",
-    "Applies the selected station_id to referral data while keeping rows without a station_id visible but unavailable for selection.",
-    "Makes the optional blank choices for SEOC Number and SEOC ID explicit in the interface."
+    "Builds each ICN directly from its Referral Number, so VA26S600001 or iFAMS26S600001 becomes TEST26S600001.",
+    "Supports selecting multiple stations and shuffles the selected station IDs across every referral in the generated batch.",
+    "Adds optional iFAMS prefixes for Referral Numbers, JSON files, and timestamped gzip archives.",
+    "Guarantees that generated Referral Numbers remain unique across the complete batch.",
+    "Makes the station selector and settings updates faster and smoother, and updates Electron to Version 44."
   ]
 }

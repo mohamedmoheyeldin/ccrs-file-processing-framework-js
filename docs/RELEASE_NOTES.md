@@ -1,8 +1,52 @@
-# CCRS File Processing Framework Version 1.3.6
+# CCRS File Processing Framework Version 1.3.7
 
 ## Release Summary
 
-Version 1.3.6 replaces the reduced legacy Station ID list with a complete structured conversion of the approved station workbook. The application now exposes one optional Stations selector that makes the five requested station identifiers clear and searchable while preserving all workbook fields for application use.
+Version 1.3.7 improves high-volume referral generation with referral-derived ICNs, unique Referral Numbers, multi-station assignment, predictable iFAMS naming, and a faster station-selection experience.
+
+The GitHub Release contains:
+
+- `CCRS.File.Processing.Framework.Setup.Version.1.3.7.exe`
+- `SHA256SUMS.txt`
+
+## Referral and ICN Generation
+
+- Adds an ICN mode that derives the value from each Referral Number: `VA26S600001` or `iFAMS26S600001` becomes `TEST26S600001`.
+- Guarantees unique generated Referral Numbers across the entire batch, including batches split across multiple JSON files.
+- Adds an optional iFAMS prefix for generated Referral Numbers.
+
+## Multi-Station Assignment
+
+- The Stations control supports selecting multiple station rows and displays the selection as removable chips.
+- Selected Station IDs are shuffled across all referrals in the generated batch.
+- A single selected station still applies consistently, and the existing all-stations random mode remains available.
+
+## File Naming
+
+- Generated gzip archives use the current timestamp in the form `referrals_YYYYMMDD_HHMMSS.gz`.
+- An optional iFAMS naming setting prefixes generated JSON and gzip file names.
+
+## Responsiveness and Dependencies
+
+- The station catalog is indexed once and search results are limited to a focused visible set instead of rendering all 1,573 rows at startup.
+- Preview work, settings writes, and station interactions are coalesced or debounced to reduce unnecessary UI work.
+- Subtle transitions and reduced-motion support make interactions feel smoother without compromising accessibility.
+- Electron is updated to Version 44, with current direct dependencies and no known production audit vulnerabilities at release preparation time.
+
+## Regression Coverage
+
+- Smoke tests cover referral-derived ICNs, batch-wide uniqueness, multi-station distribution, and iFAMS/timestamp naming.
+- Windows Electron end-to-end coverage verifies the updated multi-select station interaction and generation workflow.
+
+## Documentation
+
+- README, architecture, testing, release notes, User Guide, and generated PDFs describe the Version 1.3.7 workflows.
+
+## [Version 1.3.6](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.6) Release Notes
+
+## Release Summary
+
+Version 1.3.6 replaces the reduced legacy Station ID list with a complete structured conversion of the approved station workbook. The application exposes one optional Stations selector that makes the five requested station identifiers clear and searchable while preserving all workbook fields for application use.
 
 The GitHub Release contains:
 
