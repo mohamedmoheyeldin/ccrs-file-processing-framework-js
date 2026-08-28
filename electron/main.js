@@ -82,7 +82,9 @@ async function runPackagedSmokeTest() {
       upload: { enabled: false, targets: [] },
     });
     if (!/Done\. Processed 1 file/.test(result?.message || "")) throw new Error("Background generation did not finish.");
-    if (!fs.existsSync(path.join(outputDir, "installed_smoke_archive.gz"))) throw new Error("Smoke archive was not created.");
+    if (!fs.readdirSync(outputDir).some((name) => /^installed_smoke_archive_\d{8}_\d{6}\.gz$/.test(name))) {
+      throw new Error("Smoke archive was not created.");
+    }
   } catch (error) {
     console.error("Installed application smoke test failed.", error);
     exitCode = 1;

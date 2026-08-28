@@ -237,14 +237,15 @@ Choose the output folder and optionally enter:
 - the final `.gz` archive name
 - archive additions such as `Network` and `Referral DateTime`
 
-The app adds `.json` and `.gz` extensions automatically.
+The app adds `.json` and `.gz` extensions automatically. Referral archives always end with the current local date and time in `YYYYMMDD_HHMMSS` format. Enable **Start JSON and .gz names with iFAMS** when both output types must share the `iFAMS` prefix.
 
 Examples:
 
 - `batch101` becomes `batch101.json`
 - multiple files become `batch101_1.json`, `batch101_2.json`, and so on
-- `ccra_referrals_20260326` becomes `ccra_referrals_20260326.gz`
-- archive additions can produce `customname_CCN1_20260401_134500.gz`
+- the default archive becomes `referrals_20260401_134500.gz`
+- the iFAMS option produces names such as `iFAMS_referrals_20260401_134500.gz` and `iFAMS_referrals_20260401_134500_1.json`
+- archive additions can produce `customname_CCN1_20260401_134500_20260402_090807.gz`
 
 ### Run
 
@@ -267,7 +268,7 @@ This mode does not require a source folder and does not upload. Select `Generate
 
 ### Referral Number
 
-Enter the user-controlled portion only. The app adds `VA` automatically and produces a 12-character final value.
+Enter the user-controlled portion only. The app adds `VA` automatically. Enable **Start generated Referral Numbers with iFAMS instead of VA** to use the `iFAMS` prefix for that batch. Numeric bodies are zero-padded; alphanumeric bodies keep the characters the user entered.
 
 Rules:
 
@@ -278,7 +279,8 @@ Rules:
 Examples:
 
 - `1` becomes `VA0000000001`
-- `eldin` becomes `VA00000eldin`
+- `26S600001` becomes `VA26S600001`
+- with the iFAMS option, `26S600001` becomes `iFAMS26S600001`
 
 ### ICN
 
@@ -289,6 +291,7 @@ Available modes are:
 - keep `TEST` and generate the remaining characters
 - keep `TEST` and enter a custom alphanumeric suffix
 - enter a custom full ICN base and generate the remaining characters
+- build each ICN directly from its Referral Number by removing the `VA` or `iFAMS` prefix and adding `TEST`; for example, `VA26S600001` becomes `TEST26S600001`
 
 Generated ICNs remain unique. Choose `3`, `4`, or `5` to make the ending of each ICN match the ending of its Referral Number.
 
@@ -302,7 +305,7 @@ Uncheck the corresponding random option only when a fixed value must be applied.
 
 ### Stations
 
-Stations is one optional, searchable dropdown. Leave it blank to keep the source StationID unchanged, or enable random Station IDs.
+Stations is one optional, searchable multi-select dropdown. Leave it blank to keep the source StationID unchanged, select one station to apply it throughout the batch, or select several stations to mix them across the generated referrals. The separate all-stations option uses the complete selectable catalog.
 
 The dropdown is driven by `config/stations.json`, the structured conversion of the approved Excel sheet. Every spreadsheet row and all source columns are retained. The menu clearly displays and searches these five values:
 
@@ -312,14 +315,17 @@ The dropdown is driven by `config/stations.json`, the structured conversion of t
 - `station_name`
 - `parent_station_id`
 
-Type any part of those values, then select the matching station. Selection applies that row's `station_id` to referral data. A source row without `station_id` remains visible for completeness but is disabled because it cannot provide a StationID.
+Type any part of those values, then select each matching station. Selected stations appear as removable chips below the search field. A source row without `station_id` remains visible for completeness but is disabled because it cannot provide a StationID.
+
+For faster searching, the dropdown displays at most 60 rows at once while searching the complete station catalog. Continue typing when the result summary indicates that more matches are available.
 
 Rules:
 
 - a selected Station ID is never padded or extended
-- manual values must exactly match `station_id` in `config/stations.json`
-- automatic mode uses only rows that contain `station_id`
-- automatic IDs change between referrals without repeating until the reference list is exhausted
+- every selected value must exactly match `station_id` in `config/stations.json`
+- subset mode assigns only the stations selected by the user
+- all-stations mode uses only rows that contain `station_id`
+- randomized IDs change between referrals without repeating until the selected set or full reference list is exhausted
 - the shipped structured source is refreshed during app upgrades
 
 ### SEOC Number and SEOC ID

@@ -114,12 +114,18 @@ async function run() {
     await fourCharacterOption.focus();
     await fourCharacterOption.press("Enter");
     assert.equal(await window.locator("#match-suffix-length").inputValue(), "4");
+    assert.equal(await window.locator("#station-id-menu .combo-option").count(), 0);
+    await window.locator("#override-station-id").focus();
+    await window.locator("#station-id-menu .combo-option").first().waitFor({ state: "visible" });
+    assert.equal(await window.locator("#station-id-menu .combo-option").count(), 60);
+    assert.match(await window.locator("#station-id-menu .combo-result-summary").textContent(), /complete catalog/);
     await window.locator("#override-station-id").fill("614GA01");
     await window.locator("#station-id-toggle").click();
     assert.equal(await window.locator("#station-id-menu .station-option-field", { hasText: "station_id: 614GA01" }).count(), 1);
     assert.equal(await window.locator("#station-id-menu .station-option-field", { hasText: "station_key: 2242" }).count(), 1);
     await window.locator("#station-id-menu .combo-option", { hasText: "Tremont VA Clinic" }).click();
-    assert.equal(await window.locator("#override-station-id").inputValue(), "614GA01");
+    assert.equal(await window.locator("#override-station-id").inputValue(), "");
+    assert.equal(await window.locator("#selected-stations .selected-station-chip", { hasText: "614GA01" }).count(), 1);
     assert.equal(
       await window.locator('#override-seoc-key option[value="67"]').textContent(),
       "67 — INF_FERTILITY-1332 EXISTING OVARY_1.1.17 — Special: explicit selection only"
@@ -154,7 +160,7 @@ async function run() {
       upload: { enabled: false, targets: [] },
     }), outputDir);
     assert.match(result.message, /Done\. Processed 2 files/);
-    assert.equal(fs.existsSync(path.join(outputDir, "e2e_archive.gz")), true);
+    assert.equal(fs.readdirSync(outputDir).some((name) => /^e2e_archive_\d{8}_\d{6}\.gz$/.test(name)), true);
     const outputJsonPaths = fs.readdirSync(outputDir)
       .map((name) => path.join(outputDir, name))
       .filter((filePath) => filePath.toLowerCase().endsWith(".json"));

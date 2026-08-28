@@ -8,6 +8,7 @@ const XLSX = require("xlsx");
 
 const {
   ICN_MODES,
+  generateIcnFromReferralNumber,
   generateOptionalFieldOverrides,
   generatePaymentAuthorityCodeValue,
   generateRandomSsn,
@@ -24,7 +25,12 @@ const {
   registerTemporaryPath,
 } = require("../electron/backend/runtimeCleanup");
 const { summarizeUploadProfiles, uploadFileWithSftp } = require("../electron/backend/uploader");
-const { buildArchiveBasename, formatArchiveReferralDateTime, zipOutput } = require("../electron/backend/zipper");
+const {
+  buildArchiveBasename,
+  formatArchiveReferralDateTime,
+  formatCurrentDateTime,
+  zipOutput,
+} = require("../electron/backend/zipper");
 const { writeFileAtomic } = require("../electron/backend/atomicFile");
 const { assertSourceFilesWithinLimits } = require("../electron/backend/limits");
 const { importCredentialFile, parseCredentialFile } = require("../electron/backend/secureCredentials");
@@ -476,7 +482,83 @@ test("Optional date overrides reject invalid formats", () => {
 test("Referral number generation preserves the VA prefix and increments", () => {
   assert.equal(generateReferralNumber("123", 1), "VA0000000123");
   assert.equal(generateReferralNumber("123", 2), "VA0000000124");
-  assert.equal(generateReferralNumber("ABC123", 2), "VA0000ABC124");
+  assert.equal(generateReferralNumber("ABC123", 2), "VAABC124");
+});
+
+test("Referral numbers can use iFAMS and map directly to matching TEST ICNs", () => {
+  assert.equal(generateReferralNumber("26S600001", 1, "iFAMS"), "iFAMS26S600001");
+  assert.equal(generateReferralNumber("26S600001", 2, "iFAMS"), "iFAMS26S600002");
+  assert.equal(generateIcnFromReferralNumber("VA26S600001"), "TEST26S600001");
+  assert.equal(generateIcnFromReferralNumber("iFAMS26S600001"), "TEST26S600001");
+});
+
+test("modifyContent derives ICNs from unique referral numbers and mixes only selected stations", () => {
+  const filePath = writeJsonFixture("matched-referrals.json", {
+    Referrals: Array.from({ length: 6 }, (_, index) => ({
+      ReferralNumber: `VA000000000${index + 1}`,
+      Patient: { ICN: String(index + 1), FirstName: "A", LastName: "B", SSN: "999-99-0001" },
+      ProgramAuthority: { StationID: "402" },
+    })),
+  });
+  const result = modifyContent(
+    filePath,
+    "26S600001",
+    null,
+    "999-99-0001",
+    1,
+    1,
+    {},
+    1,
+    prepareIcnSettings({ mode: ICN_MODES.REFERRAL_MATCH }),
+    1,
+    { selectedStationIds: ["402", "614GA01", "570"], referralPrefix: "VA" }
+  );
+  const referrals = JSON.parse(result.content).Referrals;
+  assert.equal(new Set(referrals.map((item) => item.ReferralNumber)).size, referrals.length);
+  for (const referral of referrals) {
+    assert.equal(referral.Patient.ICN, generateIcnFromReferralNumber(referral.ReferralNumber));
+    assert.equal(["402", "614GA01", "570"].includes(referral.ProgramAuthority.StationID), true);
+  }
+  assert.equal(new Set(referrals.map((item) => item.ProgramAuthority.StationID)).size, 3);
+});
+
+test("Generated batches keep referral numbers unique and share timestamped iFAMS JSON and gzip names", async () => {
+  const outputDir = path.join(tempRoot, "ifams-generated-batch");
+  fs.mkdirSync(outputDir, { recursive: true });
+  await backend.handleCommand("generate", {
+    outputDir,
+    fileCount: 3,
+    referralsPerFile: 4,
+    icnSettings: { mode: ICN_MODES.REFERRAL_MATCH },
+    identityOptions: {
+      randomizeSsn: true,
+      randomizeDob: true,
+      randomizeStationId: false,
+      selectedStationIds: ["402", "570"],
+      referralPrefix: "iFAMS",
+    },
+    archiveBasename: "referrals",
+    archiveNamingOptions: { useIfamsPrefix: true },
+    keepProcessedJson: true,
+  });
+
+  const names = fs.readdirSync(outputDir).sort();
+  const gzipName = names.find((name) => name.endsWith(".gz"));
+  const jsonNames = names.filter((name) => name.endsWith(".json"));
+  assert.match(gzipName, /^iFAMS_referrals_\d{8}_\d{6}\.gz$/);
+  assert.equal(jsonNames.length, 3);
+  assert.equal(jsonNames.every((name) => name.startsWith(gzipName.slice(0, -3))), true);
+
+  const referrals = jsonNames.flatMap((name) => JSON.parse(
+    fs.readFileSync(path.join(outputDir, name), "utf8")
+  ).Referrals);
+  assert.equal(referrals.length, 12);
+  assert.equal(new Set(referrals.map((item) => item.ReferralNumber)).size, referrals.length);
+  for (const referral of referrals) {
+    assert.match(referral.ReferralNumber, /^iFAMS/);
+    assert.equal(referral.Patient.ICN, generateIcnFromReferralNumber(referral.ReferralNumber));
+    assert.equal(["402", "570"].includes(referral.ProgramAuthority?.StationID || referral.StationID), true);
+  }
 });
 
 test("modifyContent applies Payment Authority Code overrides uniquely across referrals", () => {
@@ -747,6 +829,7 @@ test("Special SEOCs are selection-only and apply as synchronized explicit overri
 });
 
 test("Archive basename can append Network and Referral DateTime safely", () => {
+  const now = new Date(2026, 3, 2, 9, 8, 7);
   const archiveBasename = buildArchiveBasename({
     archiveBasename: "My Custom Export",
     archiveNamingOptions: {
@@ -757,10 +840,25 @@ test("Archive basename can append Network and Referral DateTime safely", () => {
       Network: "CCN1",
       ReferralDateTime: "2026-04-01 13:45:00",
     },
-  });
+  }, now);
 
-  assert.equal(archiveBasename, "My_Custom_Export_CCN1_20260401_134500");
+  assert.equal(archiveBasename, "My_Custom_Export_CCN1_20260401_134500_20260402_090807");
   assert.equal(formatArchiveReferralDateTime("2026-04-01 13:45:00"), "20260401_134500");
+  assert.equal(formatCurrentDateTime(now), "20260402_090807");
+  assert.equal(
+    buildArchiveBasename({
+      archiveBasename: "referrals",
+      archiveNamingOptions: { useIfamsPrefix: true },
+    }, now),
+    "iFAMS_referrals_20260402_090807"
+  );
+  assert.equal(
+    buildArchiveBasename({
+      archiveBasename: "iFAMS_referrals",
+      archiveNamingOptions: { useIfamsPrefix: true },
+    }, now),
+    "iFAMS_referrals_20260402_090807"
+  );
 });
 
 test("UI settings normalize legacy theme values and persist user choices", () => {

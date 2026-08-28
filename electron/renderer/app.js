@@ -7,6 +7,7 @@ const DATE_PARTS = [
   { key: "second", width: 2, min: 0, max: 59 },
 ];
 const PAYMENT_AUTHORITY_CODE_MAX = 99999;
+const STATION_RESULT_LIMIT = 60;
 const { buildLeieValidationSql, highlightSql } = window.ccrsLeieSql;
 const {
   LEIE_DEFAULT_UPLOAD_DIRECTORY,
@@ -41,6 +42,14 @@ const state = {
   cancelRequested: false,
   previewTimer: null,
   previewRequestId: 0,
+  selectedStationIds: [],
+  stationById: new Map(),
+  stationSearchIndex: [],
+  stationSelectableCount: 0,
+  stationRenderFrame: null,
+  lastSavedUiSettingsSignature: "",
+  previewCacheSignature: "",
+  previewCacheResult: null,
 };
 
 const elements = {};
@@ -326,36 +335,57 @@ function syncIdentityControls() {
   elements.stationIdToggle.disabled = readChecked("randomize-station-id");
 }
 
+function renderSelectedStations() {
+  if (!elements.selectedStations) return;
+  elements.selectedStations.innerHTML = "";
+  for (const stationId of state.selectedStationIds) {
+    const station = findStationOption(stationId);
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "selected-station-chip";
+    chip.textContent = `${stationId} — ${station?.station_name || "Selected station"} ×`;
+    chip.title = `Remove Station ID ${stationId}`;
+    chip.addEventListener("click", () => {
+      state.selectedStationIds = state.selectedStationIds.filter((value) => value !== stationId);
+      renderSelectedStations();
+      scheduleStationOptionsRender();
+      updateStationIdMatch();
+      schedulePreviewUpdate();
+      scheduleUiSettingsSave();
+    });
+    elements.selectedStations.appendChild(chip);
+  }
+}
+
 function findStationOption(value) {
   const normalized = String(value || "").trim().toUpperCase();
   if (!normalized) {
     return null;
   }
 
-  return getStationOptions().find((station) => String(station.station_id || "").toUpperCase() === normalized) || null;
+  return state.stationById.get(normalized) || null;
 }
 
-function renderStationOptions(options = []) {
+function scheduleStationOptionsRender() {
+  if (state.stationRenderFrame !== null) {
+    window.cancelAnimationFrame(state.stationRenderFrame);
+  }
+  state.stationRenderFrame = window.requestAnimationFrame(() => {
+    state.stationRenderFrame = null;
+    renderStationOptions();
+  });
+}
+
+function renderStationOptions() {
   if (!elements.stationIdMenu) {
     return;
   }
-  elements.stationIdMenu.innerHTML = "";
   const normalizedQuery = readValue("override-station-id").toLowerCase();
   const fragment = document.createDocumentFragment();
-  const filteredOptions = options
-    .filter((option) => {
-      if (!normalizedQuery) {
-        return true;
-      }
-      const searchTarget = [
-        option.station_key,
-        option.station_id,
-        option.visn_id,
-        option.station_name,
-        option.parent_station_id,
-      ].filter(Boolean).join(" ").toLowerCase();
-      return searchTarget.includes(normalizedQuery);
-    });
+  const matchingEntries = normalizedQuery
+    ? state.stationSearchIndex.filter((entry) => entry.searchText.includes(normalizedQuery))
+    : state.stationSearchIndex;
+  const filteredOptions = matchingEntries.slice(0, STATION_RESULT_LIMIT).map((entry) => entry.option);
 
   if (filteredOptions.length === 0) {
     const emptyState = document.createElement("div");
@@ -369,6 +399,10 @@ function renderStationOptions(options = []) {
     element.type = "button";
     element.className = "combo-option";
     element.setAttribute("role", "option");
+    element.dataset.stationId = option.station_id || "";
+    const isSelected = state.selectedStationIds.includes(option.station_id);
+    element.setAttribute("aria-selected", String(isSelected));
+    element.classList.toggle("is-selected", isSelected);
     element.disabled = !option.station_id;
     element.title = option.station_id
       ? `${option.station_id} - ${option.station_name || "Unnamed station"}`
@@ -394,16 +428,19 @@ function renderStationOptions(options = []) {
       details.appendChild(field);
     }
     element.appendChild(details);
-    element.addEventListener("click", async () => {
-      elements.overrideStationId.value = option.station_id;
-      setStationMenuOpen(false);
-      updateStationIdMatch();
-      await updatePreviews();
-    });
     fragment.appendChild(element);
   }
 
-  elements.stationIdMenu.appendChild(fragment);
+  if (matchingEntries.length > STATION_RESULT_LIMIT) {
+    const resultSummary = document.createElement("div");
+    resultSummary.className = "combo-result-summary";
+    resultSummary.textContent = normalizedQuery
+      ? `Showing the first ${STATION_RESULT_LIMIT} of ${matchingEntries.length.toLocaleString()} matches. Keep typing to narrow the list.`
+      : `Showing ${STATION_RESULT_LIMIT} of ${matchingEntries.length.toLocaleString()} stations. Type to search the complete catalog.`;
+    fragment.appendChild(resultSummary);
+  }
+
+  elements.stationIdMenu.replaceChildren(fragment);
 }
 
 function setStationMenuOpen(isOpen) {
@@ -424,8 +461,14 @@ function updateStationIdMatch() {
   if (readChecked("randomize-station-id")) {
     elements.stationIdMatch.classList.add("is-success");
     elements.stationIdMatch.classList.remove("is-error");
-    const selectableCount = getStationOptions().filter((station) => station.station_id).length;
-    elements.stationIdMatch.textContent = `Random selection will use the ${selectableCount.toLocaleString()} rows that have a station_id.`;
+    elements.stationIdMatch.textContent = `Random selection will use the ${state.stationSelectableCount.toLocaleString()} rows that have a station_id.`;
+    return;
+  }
+
+  if (state.selectedStationIds.length > 0) {
+    elements.stationIdMatch.classList.add("is-success");
+    elements.stationIdMatch.classList.remove("is-error");
+    elements.stationIdMatch.textContent = `${state.selectedStationIds.length.toLocaleString()} station${state.selectedStationIds.length === 1 ? "" : "s"} selected. Referrals will be assigned randomly from this selected set.`;
     return;
   }
 
@@ -626,9 +669,8 @@ function adjustDatePart(partKey, delta) {
 }
 
 function collectOptionalOverrides() {
-  const selectedStation = findStationOption(readValue("override-station-id"));
   const rawValues = {
-    StationID: readChecked("randomize-station-id") ? "" : selectedStation?.station_id || "",
+    StationID: "",
     PaymentAuthorityCode: readValue("override-payment-authority-code"),
     ReferralPeriod: readValue("override-referral-period"),
     Network: readValue("override-network"),
@@ -679,7 +721,22 @@ function collectArchiveNamingOptions() {
   return {
     includeNetwork: readChecked("archive-append-network"),
     includeReferralDateTime: readChecked("archive-append-referral-date-time"),
+    useIfamsPrefix: readChecked("use-ifams-filename-prefix"),
   };
+}
+
+function syncReferralPrefixState() {
+  const prefix = getReferralPrefix();
+  if (elements.referralCode) {
+    elements.referralCode.placeholder = `Enter only the part after ${prefix}`;
+  }
+  if (elements.referralPrefixHelp) {
+    elements.referralPrefixHelp.textContent = `\`${prefix}\` will be generated automatically. Enter only the rest of the Referral Number.`;
+  }
+}
+
+function getReferralPrefix() {
+  return readChecked("use-ifams-referral-prefix") ? "iFAMS" : "VA";
 }
 
 function sharedPayload() {
@@ -695,6 +752,8 @@ function sharedPayload() {
       randomizeSsn: readChecked("randomize-ssn"),
       randomizeDob: readChecked("randomize-dob"),
       randomizeStationId: readChecked("randomize-station-id"),
+      selectedStationIds: readChecked("randomize-station-id") ? [] : [...state.selectedStationIds],
+      referralPrefix: getReferralPrefix(),
       matchSuffixLength: Number(readValue("match-suffix-length")),
     },
     listDateOverride: getListDateOverride(),
@@ -737,6 +796,8 @@ function collectUiSettings() {
     archiveBasename: readValue("archive-basename"),
     archiveAppendNetwork: readChecked("archive-append-network"),
     archiveAppendReferralDateTime: readChecked("archive-append-referral-date-time"),
+    useIfamsFilenamePrefix: readChecked("use-ifams-filename-prefix"),
+    useIfamsReferralPrefix: readChecked("use-ifams-referral-prefix"),
     referralCode: readValue("referral-code"),
     ssnValue: readValue("ssn-value"),
     randomizeSsn: readChecked("randomize-ssn"),
@@ -745,7 +806,7 @@ function collectUiSettings() {
     matchSuffixLength: readValue("match-suffix-length"),
     icnMode: getSelectedIcnMode(),
     icnCustomValue: readValue("icn-custom-value"),
-    overrideStationId: findStationOption(readValue("override-station-id"))?.station_id || "",
+    selectedStationIds: [...state.selectedStationIds],
     overridePaymentAuthorityCode: readValue("override-payment-authority-code"),
     overrideReferralPeriod: readValue("override-referral-period"),
     overrideNetwork: readValue("override-network"),
@@ -774,12 +835,16 @@ function collectUiSettings() {
 function scheduleUiSettingsSave() {
   clearTimeout(state.uiSettingsSaveTimer);
   state.uiSettingsSaveTimer = window.setTimeout(async () => {
+    const settings = collectUiSettings();
+    const signature = JSON.stringify(settings);
+    if (signature === state.lastSavedUiSettingsSignature) return;
     try {
-      await window.ccrs.saveUiSettings(collectUiSettings());
+      await window.ccrs.saveUiSettings(settings);
+      state.lastSavedUiSettingsSignature = signature;
     } catch (error) {
       console.error("Unable to save UI settings.", error);
     }
-  }, 180);
+  }, 450);
 }
 
 function applyUploadTargetSettings(uploadTargets = {}) {
@@ -848,7 +913,6 @@ async function applyUiSettings(settings = {}) {
     "referral-code": settings.referralCode,
     "ssn-value": settings.ssnValue,
     "icn-custom-value": settings.icnCustomValue,
-    "override-station-id": settings.overrideStationId,
     "override-payment-authority-code": settings.overridePaymentAuthorityCode,
     "override-referral-period": settings.overrideReferralPeriod,
     "override-network": settings.overrideNetwork,
@@ -885,6 +949,8 @@ async function applyUiSettings(settings = {}) {
 
   $("archive-append-network").checked = Boolean(settings.archiveAppendNetwork);
   $("archive-append-referral-date-time").checked = Boolean(settings.archiveAppendReferralDateTime);
+  $("use-ifams-filename-prefix").checked = Boolean(settings.useIfamsFilenamePrefix);
+  $("use-ifams-referral-prefix").checked = Boolean(settings.useIfamsReferralPrefix);
   $("clear-output").checked = Boolean(settings.clearOutput);
   $("keep-existing-files").checked = !Boolean(settings.clearOutput);
   $("keep-processed-json").checked = settings.keepProcessedJson !== false;
@@ -892,17 +958,26 @@ async function applyUiSettings(settings = {}) {
   $("randomize-ssn").checked = settings.randomizeSsn !== false;
   $("randomize-dob").checked = settings.randomizeDob !== false;
   $("randomize-station-id").checked = Boolean(settings.randomizeStationId);
+  state.selectedStationIds = [...new Set(
+    (Array.isArray(settings.selectedStationIds)
+      ? settings.selectedStationIds
+      : [settings.overrideStationId])
+      .map((value) => String(value || "").trim().toUpperCase())
+      .filter((value) => findStationOption(value))
+  )];
 
   syncIcnFieldState();
+  syncReferralPrefixState();
   syncIdentityControls();
   syncLeieValidationSql();
   updateTemplateSummary();
   syncWorkflowText();
   $("leie-action-auto").checked = state.leieDuplicateHandling === "auto-remove";
   $("leie-action-manual").checked = state.leieDuplicateHandling !== "auto-remove";
-  renderStationOptions(getStationOptions());
+  renderSelectedStations();
   applyUploadTargetSettings(settings.uploadTargets || {});
   syncUploadTargetState();
+  state.lastSavedUiSettingsSignature = JSON.stringify(collectUiSettings());
 
   try {
     if (readValue("input-dir")) {
@@ -1088,7 +1163,7 @@ function syncIcnFieldState() {
     return;
   }
 
-  input.disabled = mode === "test-dynamic";
+  input.disabled = mode === "test-dynamic" || mode === "referral-match";
   input.value = sanitizeIcnInput(input.value, mode);
 
   if (mode === "test-custom-suffix") {
@@ -1098,6 +1173,12 @@ function syncIcnFieldState() {
 
   if (mode === "custom-full") {
     input.placeholder = `Enter up to ${totalLength} letters or numbers`;
+    return;
+  }
+
+  if (mode === "referral-match") {
+    input.value = "";
+    input.placeholder = "Generated from each Referral Number";
     return;
   }
 
@@ -1119,10 +1200,28 @@ function applyGeneratorDefaults() {
 
 function applyInfo(info) {
   state.info = info;
+  state.stationById = new Map();
+  state.stationSelectableCount = 0;
+  state.stationSearchIndex = (info.stations || []).map((option) => {
+    const stationId = String(option.station_id || "").trim().toUpperCase();
+    if (stationId && !state.stationById.has(stationId)) {
+      state.stationById.set(stationId, option);
+    }
+    if (stationId) state.stationSelectableCount += 1;
+    return {
+      option,
+      searchText: [
+        option.station_key,
+        option.station_id,
+        option.visn_id,
+        option.station_name,
+        option.parent_station_id,
+      ].filter(Boolean).join(" ").toLowerCase(),
+    };
+  });
   state.acknowledgedReleaseKey = String(
     info.releaseAnnouncement?.acknowledgedReleaseKey || state.acknowledgedReleaseKey || ""
   ).trim();
-  renderStationOptions(info.stations || []);
   renderSeocOptions();
   elements.appVersionBadge.textContent = info.appVersionLabel || "";
   elements.appVersionBadge.classList.toggle("hidden", !info.appVersionLabel);
@@ -1471,29 +1570,40 @@ async function updatePreviews() {
     return { fieldErrors: {} };
   }
 
+  const previewPayload = {
+    replacementCode: readValue("replacement-code"),
+    archiveBasename: readValue("archive-basename"),
+    archiveNamingOptions: collectArchiveNamingOptions(),
+    referralReplacementCode: readValue("referral-code"),
+    icnSettings: collectIcnSettings(),
+    ssnValue: readValue("ssn-value"),
+    identityOptions: {
+      randomizeSsn: readChecked("randomize-ssn"),
+      randomizeDob: readChecked("randomize-dob"),
+      randomizeStationId: readChecked("randomize-station-id"),
+      selectedStationIds: readChecked("randomize-station-id") ? [] : [...state.selectedStationIds],
+      referralPrefix: getReferralPrefix(),
+      matchSuffixLength: Number(readValue("match-suffix-length")),
+    },
+    optionalOverrides: collectOptionalOverrides(),
+    fileCount: Number(readValue("file-count") || 0),
+    referralsPerFile: Number(readValue("referrals-per-file") || 0),
+    upload: collectUploadSettings(),
+  };
+  const previewSignature = JSON.stringify(previewPayload);
   const requestId = state.previewRequestId + 1;
-  state.previewRequestId = requestId;
   try {
-    const preview = await window.ccrs.getPreview({
-      replacementCode: readValue("replacement-code"),
-      archiveBasename: readValue("archive-basename"),
-      archiveNamingOptions: collectArchiveNamingOptions(),
-      referralReplacementCode: readValue("referral-code"),
-      icnSettings: collectIcnSettings(),
-      ssnValue: readValue("ssn-value"),
-      identityOptions: {
-        randomizeSsn: readChecked("randomize-ssn"),
-        randomizeDob: readChecked("randomize-dob"),
-        randomizeStationId: readChecked("randomize-station-id"),
-        matchSuffixLength: Number(readValue("match-suffix-length")),
-      },
-      optionalOverrides: collectOptionalOverrides(),
-      fileCount: Number(readValue("file-count") || 0),
-      referralsPerFile: Number(readValue("referrals-per-file") || 0),
-      upload: collectUploadSettings(),
-    });
+    let preview = state.previewCacheSignature === previewSignature
+      ? state.previewCacheResult
+      : null;
+    if (!preview) {
+      state.previewRequestId = requestId;
+      preview = await window.ccrs.getPreview(previewPayload);
+      if (requestId !== state.previewRequestId) return preview;
+      state.previewCacheSignature = previewSignature;
+      state.previewCacheResult = preview;
+    }
 
-    if (requestId !== state.previewRequestId) return preview;
     elements.outputJsonPreview.textContent = formatJsonPreviewList(
       preview.replacementCode,
       getPreviewFileCount()
@@ -1503,9 +1613,11 @@ async function updatePreviews() {
       ? `Preview: ${preview.referralNumber}`
       : "Preview: default referral numbers from source files";
     elements.icnPreview.textContent = preview.icnPreview || "Preview: TEST + 13 generated digits";
-    elements.stationIdPreview.textContent = preview.optionalOverrides.StationID
-      ? `Preview: ${preview.optionalOverrides.StationID}`
-      : "Preview: no Station ID override";
+    elements.stationIdPreview.textContent = readChecked("randomize-station-id")
+      ? "Preview: randomized from all reference stations"
+      : state.selectedStationIds.length > 0
+        ? `Preview: randomized from ${state.selectedStationIds.join(", ")}`
+        : "Preview: no Station ID override";
     updateStationIdMatch();
     elements.paymentAuthorityCodePreview.textContent = preview.optionalOverrides.PaymentAuthorityCode
       ? `Preview: ${preview.optionalOverrides.PaymentAuthorityCode}`
@@ -1523,7 +1635,7 @@ async function updatePreviews() {
 
 function schedulePreviewUpdate() {
   window.clearTimeout(state.previewTimer);
-  state.previewTimer = window.setTimeout(() => updatePreviews(), 140);
+  state.previewTimer = window.setTimeout(() => updatePreviews(), 110);
 }
 
 async function validateCurrentForm() {
@@ -1911,7 +2023,9 @@ function setupEventHandlers() {
     "archive-basename",
     "archive-append-network",
     "archive-append-referral-date-time",
+    "use-ifams-filename-prefix",
     "referral-code",
+    "use-ifams-referral-prefix",
     "icn-custom-value",
     "ssn-value",
     "match-suffix-length",
@@ -1938,11 +2052,14 @@ function setupEventHandlers() {
       if (id === "referral-code") {
         $(id).value = sanitizeReferralNumberInput($(id).value);
       }
+      if (id === "use-ifams-referral-prefix") {
+        syncReferralPrefixState();
+      }
       if (id === "icn-custom-value") {
         $(id).value = sanitizeIcnInput($(id).value);
       }
       if (id === "override-station-id") {
-        renderStationOptions(getStationOptions());
+        scheduleStationOptionsRender();
         setStationMenuOpen(true);
       }
       if (id === "override-payment-authority-code") {
@@ -1985,7 +2102,7 @@ function setupEventHandlers() {
   });
 
   elements.overrideStationId.addEventListener("focus", () => {
-    renderStationOptions(getStationOptions());
+    scheduleStationOptionsRender();
     setStationMenuOpen(true);
   });
   elements.overrideStationId.addEventListener("keydown", (event) => {
@@ -1995,7 +2112,7 @@ function setupEventHandlers() {
     }
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      renderStationOptions(getStationOptions());
+      scheduleStationOptionsRender();
       setStationMenuOpen(true);
     }
   });
@@ -2007,9 +2124,26 @@ function setupEventHandlers() {
     }, 120);
   });
   elements.stationIdToggle.addEventListener("click", () => {
-    renderStationOptions(getStationOptions());
+    scheduleStationOptionsRender();
     setStationMenuOpen(!elements.stationIdCombobox.classList.contains("is-open"));
     elements.overrideStationId.focus();
+  });
+  elements.stationIdMenu.addEventListener("click", (event) => {
+    const stationOption = event.target.closest("[data-station-id]");
+    const stationId = stationOption?.dataset.stationId;
+    if (!stationId || stationOption.disabled) return;
+    if (state.selectedStationIds.includes(stationId)) {
+      state.selectedStationIds = state.selectedStationIds.filter((value) => value !== stationId);
+    } else {
+      state.selectedStationIds.push(stationId);
+    }
+    elements.overrideStationId.value = "";
+    renderSelectedStations();
+    scheduleStationOptionsRender();
+    setStationMenuOpen(true);
+    updateStationIdMatch();
+    schedulePreviewUpdate();
+    scheduleUiSettingsSave();
   });
   document.addEventListener("pointerdown", (event) => {
     if (!elements.stationIdCombobox.contains(event.target)) {
@@ -2224,6 +2358,7 @@ function cacheElements() {
     referralLastUpdateDateHelp: $("referral-last-update-date-help"),
     paymentAuthorityCodePreview: $("payment-authority-code-preview"),
     referralCode: $("referral-code"),
+    referralPrefixHelp: $("referral-prefix-help"),
     referralPreview: $("referral-preview"),
     referralDetailsCard: $("referral-details-card"),
     referralsPerFile: $("referrals-per-file"),
@@ -2240,6 +2375,7 @@ function cacheElements() {
     stationIdCombobox: $("station-id-combobox"),
     stationIdMatch: $("station-id-match"),
     stationIdMenu: $("station-id-menu"),
+    selectedStations: $("selected-stations"),
     stationIdToggle: $("station-id-toggle"),
     statusBadge: $("status-badge"),
     statusMessage: $("status-message"),

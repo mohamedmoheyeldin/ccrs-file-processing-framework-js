@@ -15,6 +15,7 @@ const {
   extractJsonChangeDefaults,
   extractListDate,
   generateOptionalFieldOverrides,
+  normalizeReferralPrefix,
   prepareIcnSettings,
   validateIsoDate,
   validateIcnSettings,
@@ -330,7 +331,10 @@ function buildPreview(payload) {
 
   let normalizedReferral = "";
   if (referralValue && !fieldErrors.referralReplacementCode) {
-    normalizedReferral = validateReferralNumberStart(referralValue);
+    normalizedReferral = validateReferralNumberStart(
+      referralValue,
+      payload.identityOptions?.referralPrefix
+    );
   }
 
   const normalizedOptionalOverrides = {};
@@ -376,7 +380,10 @@ function collectFieldErrors(payload) {
 
   if ((payload.referralReplacementCode || "").trim()) {
     try {
-      validateReferralNumberStart(payload.referralReplacementCode);
+      validateReferralNumberStart(
+        payload.referralReplacementCode,
+        payload.identityOptions?.referralPrefix
+      );
     } catch (error) {
       fieldErrors.referralReplacementCode = error.message;
     }
@@ -492,11 +499,21 @@ function prepareBackgroundPayload(command, payload = {}) {
 }
 
 function buildCommonArgs(payload, progressCallback) {
+  const referralPrefix = normalizeReferralPrefix(payload.identityOptions?.referralPrefix);
+  const selectedStationIds = [...new Set(
+    (Array.isArray(payload.identityOptions?.selectedStationIds)
+      ? payload.identityOptions.selectedStationIds
+      : [])
+      .map((stationId) => validateStationId(stationId))
+      .filter(Boolean)
+  )];
   const ssnValue = (payload.ssnValue || "999-99-0001").trim();
   const identityOptions = {
     randomizeSsn: payload.identityOptions?.randomizeSsn !== false,
     randomizeDob: payload.identityOptions?.randomizeDob !== false,
     randomizeStationId: Boolean(payload.identityOptions?.randomizeStationId),
+    selectedStationIds,
+    referralPrefix,
     matchSuffixLength: [3, 4, 5].includes(Number(payload.identityOptions?.matchSuffixLength))
       ? Number(payload.identityOptions.matchSuffixLength)
       : 5,
@@ -505,12 +522,17 @@ function buildCommonArgs(payload, progressCallback) {
 
   let referralCode = (payload.referralReplacementCode || "").trim();
   if (referralCode) {
-    referralCode = validateReferralNumberStart(referralCode);
+    referralCode = validateReferralNumberStart(referralCode, referralPrefix);
   }
+
+  const archiveBasename = buildArchiveBasename(payload);
+  const useIfamsFilenamePrefix = Boolean(payload.archiveNamingOptions?.useIfamsPrefix);
 
   return {
     outputDir: (payload.outputDir || "").trim(),
-    replacementCode: (payload.replacementCode || "").trim(),
+    replacementCode: useIfamsFilenamePrefix
+      ? archiveBasename
+      : (payload.replacementCode || "").trim(),
     clearOutput: Boolean(payload.clearOutput),
     referralReplacementCode: referralCode,
     icnSettings: prepareIcnSettings(payload.icnSettings || {}),
@@ -521,8 +543,14 @@ function buildCommonArgs(payload, progressCallback) {
     keepProcessedJson: Boolean(payload.keepProcessedJson),
     progressCallback,
     uploadOptions: buildUploadOptions(payload),
-    archiveBasename: buildArchiveBasename(payload),
+    archiveBasename,
   };
+}
+
+function buildGeneratedReferralStart(totalReferrals, now = new Date()) {
+  const maxStart = (10 ** REFERRAL_NUMBER_DIGIT_COUNT) - Math.max(Number(totalReferrals) || 1, 1);
+  const timeSeed = Number(String(now.getTime()).slice(-REFERRAL_NUMBER_DIGIT_COUNT));
+  return String(Math.min(timeSeed, maxStart)).padStart(REFERRAL_NUMBER_DIGIT_COUNT, "0");
 }
 
 async function runProcess(payload, emitProgress) {
@@ -535,7 +563,6 @@ async function runProcess(payload, emitProgress) {
   if (!args.outputDir) {
     throw new Error("Please select an output folder.");
   }
-
   const message = await processFiles(
     inputDir,
     args.outputDir,
@@ -578,6 +605,9 @@ async function runGenerate(payload, emitProgress) {
   const args = buildCommonArgs(payload, emitProgress);
   if (!args.outputDir) {
     throw new Error("Please select an output folder.");
+  }
+  if (!args.referralReplacementCode) {
+    args.referralReplacementCode = buildGeneratedReferralStart(fileCount * referralsPerFile);
   }
 
   let generatedInputDir = "";

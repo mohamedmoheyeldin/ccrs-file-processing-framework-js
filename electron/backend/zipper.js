@@ -3,7 +3,8 @@ const path = require("path");
 const zlib = require("zlib");
 const { once } = require("events");
 
-const DEFAULT_ARCHIVE_BASENAME = "processed_files";
+const DEFAULT_ARCHIVE_BASENAME = "referrals";
+const IFAMS_FILENAME_PREFIX = "iFAMS";
 const ARCHIVE_DATE_TIME_PATTERN = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
 
 function sanitizeArchiveBasename(value) {
@@ -35,10 +36,20 @@ function formatArchiveReferralDateTime(value) {
   return `${match[1]}${match[2]}${match[3]}_${match[4]}${match[5]}${match[6]}`;
 }
 
-function buildArchiveBasename(payload = {}) {
+function formatCurrentDateTime(date = new Date()) {
+  const pad = (value) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}_${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
+}
+
+function buildArchiveBasename(payload = {}, now = new Date()) {
   const archiveNamingOptions = payload.archiveNamingOptions || {};
   const optionalOverrides = payload.optionalOverrides || {};
-  const segments = [sanitizeArchiveBasename(payload.archiveBasename || DEFAULT_ARCHIVE_BASENAME)];
+  const segments = [];
+  const baseSegment = sanitizeArchiveBasename(payload.archiveBasename || DEFAULT_ARCHIVE_BASENAME);
+  if (archiveNamingOptions.useIfamsPrefix && !/^ifams(?:_|$)/i.test(baseSegment)) {
+    segments.push(IFAMS_FILENAME_PREFIX);
+  }
+  segments.push(baseSegment);
 
   if (archiveNamingOptions.includeNetwork) {
     const networkSegment = sanitizeArchiveSegment(optionalOverrides.Network || "");
@@ -51,6 +62,8 @@ function buildArchiveBasename(payload = {}) {
   if (archiveNamingOptions.includeReferralDateTime) {
     segments.push(formatArchiveReferralDateTime(optionalOverrides.ReferralDateTime || ""));
   }
+
+  segments.push(formatCurrentDateTime(now));
 
   return sanitizeArchiveBasename(segments.join("_"));
 }
@@ -123,6 +136,8 @@ async function zipOutput(folder, archiveBasename = DEFAULT_ARCHIVE_BASENAME) {
 module.exports = {
   buildArchiveBasename,
   DEFAULT_ARCHIVE_BASENAME,
+  IFAMS_FILENAME_PREFIX,
+  formatCurrentDateTime,
   formatArchiveReferralDateTime,
   sanitizeArchiveBasename,
   zipOutput,

@@ -57,6 +57,10 @@ body {
   min-height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   font-family: var(--font-stack);
@@ -606,6 +610,10 @@ body.theme-dark .segmented-control {
   overflow: hidden;
 }
 
+.content-card:not(#run-card) {
+  contain: layout paint;
+}
+
 .content-card::before {
   content: "";
   position: absolute;
@@ -1090,6 +1098,11 @@ body.theme-dark .compact-select-option[aria-selected="true"] {
   z-index: 20;
 }
 
+.combo-menu:not(.hidden) {
+  transform-origin: top center;
+  animation: menu-enter 120ms ease-out both;
+}
+
 .combo-option,
 .combo-empty {
   width: 100%;
@@ -1147,6 +1160,43 @@ body.theme-dark .combo-option:focus-visible {
 .station-option-field {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.selected-stations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selected-station-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--control-touch-target);
+  padding: 5px 10px;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  background: var(--panel-strong);
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+}
+
+.selected-station-chip:hover,
+.combo-option.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.selected-station-chip:hover {
+  transform: translateY(-1px);
+}
+
+.combo-result-summary {
+  padding: 10px 12px 4px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
 }
 
 .combo-option:disabled {
@@ -1452,6 +1502,47 @@ body.theme-dark .date-step {
   margin-top: 14px;
   padding-top: 14px;
   border-top: 1px solid var(--panel-border);
+}
+
+.optional-fields:not(.hidden) {
+  animation: section-enter 160ms ease-out both;
+}
+
+@keyframes menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes section-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .upload-meta-row {

@@ -25,7 +25,9 @@ Runtime data is copied to the current Windows user's AppData area. Upload creden
 
 `config/stations.json` is the authoritative shipped station source and is refreshed from the application bundle during upgrades. It preserves every row and all 14 columns from the approved workbook; spreadsheet `NULL` and blank cells are stored as JSON `null`. `electron/backend/stationCatalog.js` de-duplicates by `station_key`, exposes the complete records to the searchable Stations control, and derives selectable/random StationID values from rows that contain `station_id`.
 
-Automatic Station assignment shuffles the available `station_id` values and consumes them sequentially, so generated values cannot drift outside the structured source and do not repeat until all available entries have been used. Patient test SSNs use a fixed `999` prefix with a six-digit generated suffix.
+The renderer indexes station search text once when application information loads, leaves the dropdown DOM empty until it is opened, coalesces search input with `requestAnimationFrame`, and caps each rendered result page at 60 rows. Workflow cards use isolated layout and paint containment, duplicate previews are served from an in-memory signature cache, and unchanged UI settings are not written again.
+
+Automatic Station assignment shuffles either the user's selected `station_id` subset or the complete selectable catalog and consumes it sequentially, so generated values cannot drift outside the structured source and do not repeat until the active set has been used. Patient test SSNs use a fixed `999` prefix with a six-digit generated suffix. Referral generation maintains one sequence across all files in a batch; the referral-match ICN mode deterministically converts each referral by replacing its `VA` or `iFAMS` prefix with `TEST`.
 
 `config/seoc_options.json` contains special SEOC pairs that must be visible for explicit selection but must not enter template-driven generation. `electron/backend/referralGenerator.js` merges those selection-only pairs with normal template pairs for the UI while leaving the referral templates unchanged.
 

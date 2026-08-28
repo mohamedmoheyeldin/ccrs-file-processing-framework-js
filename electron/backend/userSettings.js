@@ -15,6 +15,8 @@ const DEFAULT_UI_SETTINGS = {
   archiveBasename: DEFAULT_ARCHIVE_BASENAME,
   archiveAppendNetwork: false,
   archiveAppendReferralDateTime: false,
+  useIfamsFilenamePrefix: false,
+  useIfamsReferralPrefix: false,
   referralCode: "",
   ssnValue: "999-99-0001",
   randomizeSsn: true,
@@ -24,6 +26,7 @@ const DEFAULT_UI_SETTINGS = {
   icnMode: "test-dynamic",
   icnCustomValue: "",
   overrideStationId: "",
+  selectedStationIds: [],
   overridePaymentAuthorityCode: "",
   overrideReferralPeriod: "",
   overrideNetwork: "",
@@ -96,6 +99,8 @@ function normalizeUiSettings(rawValue = {}) {
       rawValue.archiveAppendReferralDateTime,
       DEFAULT_UI_SETTINGS.archiveAppendReferralDateTime
     ),
+    useIfamsFilenamePrefix: toBoolean(rawValue.useIfamsFilenamePrefix, DEFAULT_UI_SETTINGS.useIfamsFilenamePrefix),
+    useIfamsReferralPrefix: toBoolean(rawValue.useIfamsReferralPrefix, DEFAULT_UI_SETTINGS.useIfamsReferralPrefix),
     referralCode: String(rawValue.referralCode || "").trim(),
     ssnValue: String(rawValue.ssnValue || DEFAULT_UI_SETTINGS.ssnValue).trim() || DEFAULT_UI_SETTINGS.ssnValue,
     randomizeSsn: toBoolean(rawValue.randomizeSsn, DEFAULT_UI_SETTINGS.randomizeSsn),
@@ -107,6 +112,11 @@ function normalizeUiSettings(rawValue = {}) {
     icnMode: String(rawValue.icnMode || DEFAULT_UI_SETTINGS.icnMode).trim() || DEFAULT_UI_SETTINGS.icnMode,
     icnCustomValue: String(rawValue.icnCustomValue || "").trim(),
     overrideStationId: String(rawValue.overrideStationId || "").trim(),
+    selectedStationIds: [...new Set(
+      (Array.isArray(rawValue.selectedStationIds) ? rawValue.selectedStationIds : [])
+        .map((value) => String(value || "").trim().toUpperCase())
+        .filter(Boolean)
+    )],
     overridePaymentAuthorityCode: String(rawValue.overridePaymentAuthorityCode || "").trim(),
     overrideReferralPeriod: String(rawValue.overrideReferralPeriod || "").trim(),
     overrideNetwork: String(rawValue.overrideNetwork || "").trim(),

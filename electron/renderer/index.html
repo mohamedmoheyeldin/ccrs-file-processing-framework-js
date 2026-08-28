@@ -214,7 +214,8 @@
                 <label class="field-block">
                   <span>Referral Number</span>
                   <input id="referral-code" type="text" placeholder="Enter only the part after VA" />
-                  <small class="helper-text">`VA` will be generated automatically. Enter only the rest of the Referral Number.</small>
+                  <label class="checkbox-chip"><input id="use-ifams-referral-prefix" type="checkbox" /><span>Start generated Referral Numbers with iFAMS instead of VA</span></label>
+                  <small id="referral-prefix-help" class="helper-text">`VA` will be generated automatically. Enter only the rest of the Referral Number.</small>
                   <small id="referral-preview" class="helper-text">Preview: default referral numbers from source files</small>
                 </label>
                 <label class="field-block">
@@ -304,6 +305,10 @@
                         <input id="icn-mode-custom-full" name="icn-mode" type="radio" value="custom-full" />
                         <span>Custom full ICN</span>
                       </label>
+                      <label class="radio-chip">
+                        <input id="icn-mode-referral-match" name="icn-mode" type="radio" value="referral-match" />
+                        <span>Build ICN from Referral Number</span>
+                      </label>
                     </div>
                   </label>
                   <label class="field-block">
@@ -346,7 +351,8 @@
                     <small id="station-id-match" class="helper-text">
                       No station override. Search any of the five station fields or leave this blank.
                     </small>
-                    <label class="radio-chip"><input id="randomize-station-id" type="checkbox" /><span>Use random station IDs from rows that contain station_id</span></label>
+                    <div id="selected-stations" class="selected-stations" aria-live="polite"></div>
+                    <label class="radio-chip"><input id="randomize-station-id" type="checkbox" /><span>Use all available station IDs instead of a selected subset</span></label>
                     <small id="station-id-preview" class="helper-text">Preview: no Station ID override</small>
                   </label>
                   <label class="field-block">
@@ -450,7 +456,7 @@
                   <div class="archive-naming-grid">
                     <label class="field-block">
                       <span>Name for the final .gz file</span>
-                      <input id="archive-basename" type="text" value="processed_files" />
+                      <input id="archive-basename" type="text" value="referrals" />
                       <small id="archive-name-help" class="helper-text">
                         Enter a custom base name. The app adds `.gz` automatically.
                       </small>
@@ -466,13 +472,17 @@
                           <input id="archive-append-referral-date-time" type="checkbox" />
                           <span>Append Referral DateTime</span>
                         </label>
+                        <label class="checkbox-chip">
+                          <input id="use-ifams-filename-prefix" type="checkbox" />
+                          <span>Start JSON and .gz names with iFAMS</span>
+                        </label>
                       </div>
                       <div class="retention-label">
-                        Example: `customname_CCN1_20260401_134500.gz`
+                        Example: `iFAMS_referrals_20260401_134500.gz`
                       </div>
                     </div>
                   </div>
-                  <small id="archive-preview" class="helper-text">Preview: processed_files.gz</small>
+                  <small id="archive-preview" class="helper-text">Preview: referrals_YYYYMMDD_HHMMSS.gz</small>
                 </div>
                 <div id="output-retention-card" class="field-block field-span-2 output-retention-card">
                   <span>If save folder already has files</span>
