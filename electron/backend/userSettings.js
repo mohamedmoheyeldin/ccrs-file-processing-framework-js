@@ -49,7 +49,15 @@ const DEFAULT_UI_SETTINGS = {
   leieDuplicateHandling: "manual",
   leieOutputFileName: "",
   leieValidationBatchId: "",
+  generationPresets: [],
 };
+
+function normalizeGenerationPresets(rawValue) {
+  return (Array.isArray(rawValue) ? rawValue : []).slice(0, 20).map((preset) => ({
+    name: String(preset?.name || "").trim().slice(0, 60),
+    settings: preset?.settings && typeof preset.settings === "object" ? preset.settings : {},
+  })).filter((preset) => preset.name);
+}
 
 function toBoolean(value, fallbackValue = false) {
   if (value === undefined || value === null || value === "") {
@@ -145,6 +153,7 @@ function normalizeUiSettings(rawValue = {}) {
       DEFAULT_UI_SETTINGS.leieDuplicateHandling,
     leieOutputFileName: String(rawValue.leieOutputFileName || "").trim(),
     leieValidationBatchId: String(rawValue.leieValidationBatchId || "").trim(),
+    generationPresets: normalizeGenerationPresets(rawValue.generationPresets),
   };
 
   if (!["referral", "leie", "other"].includes(normalized.mainTab)) {

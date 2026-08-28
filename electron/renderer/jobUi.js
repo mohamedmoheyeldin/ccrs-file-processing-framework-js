@@ -1,7 +1,12 @@
 (function exposeJobUi(globalObject) {
-  function syncWorkflowProgress(statusLabel = "Idle") {
+  function syncWorkflowProgress(statusLabel = "Idle", phase = "") {
     const normalized = String(statusLabel).toLowerCase();
-    let activeStep = normalized.includes("upload") || normalized.includes("uploaded") || normalized.includes("testing connection") ? 4
+    const normalizedPhase = String(phase || "").toLowerCase();
+    let activeStep = normalizedPhase === "upload" ? 4
+      : normalizedPhase === "packaging" || normalizedPhase === "processing" ? 3
+        : normalizedPhase === "preflight" || normalizedPhase === "validation" ? 2
+          : normalizedPhase === "configuration" ? 1
+            : normalized.includes("upload") || normalized.includes("uploaded") || normalized.includes("testing connection") ? 4
       : normalized.includes("process") || normalized.includes("generat") || normalized.includes("working") || normalized.includes("packag") || normalized.includes("archive") ? 3
         : normalized.includes("valid") || normalized.includes("duplicate") || normalized.includes("scanning") ? 2
           : normalized.includes("config") || normalized.includes("import") ? 1

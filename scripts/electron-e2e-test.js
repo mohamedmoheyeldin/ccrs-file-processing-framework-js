@@ -100,6 +100,8 @@ async function run() {
     assert.equal(await window.locator("#cancel-job").isHidden(), true);
     assert.equal(await window.locator("#status-badge").textContent(), "Ready");
     assert.equal(await window.locator("#job-progress-wrap").isHidden(), true);
+    assert.equal(await window.locator("#pre-run-overlay").isHidden(), true);
+    assert.equal(await window.locator("#generation-preset").locator("..").locator(".compact-select-trigger").isVisible(), true);
     assert.equal(await window.locator("meta[http-equiv='Content-Security-Policy']").count(), 1);
     const nativeSelectCount = await window.locator("select").count();
     assert.equal(await window.locator(".compact-select").count(), nativeSelectCount);
@@ -167,15 +169,16 @@ async function run() {
       optionalOverrides: {},
       upload: { enabled: false, targets: [] },
     }), outputDir);
-    assert.match(result.message, /Done\. Processed 2 files/);
+    assert.match(result.message, /Completed safely\. Processed 2 files/);
     assert.match(await window.locator("#status-message").textContent(), /was created successfully/);
     assert.equal(await window.locator("#job-progress-wrap").isVisible(), true);
     assert.equal(await window.locator("#job-progress-value").textContent(), "100%");
     assert.equal(fs.readdirSync(outputDir).some((name) => /^e2e_archive_\d{8}_\d{6}\.gz$/.test(name)), true);
     const outputJsonPaths = fs.readdirSync(outputDir)
       .map((name) => path.join(outputDir, name))
-      .filter((filePath) => filePath.toLowerCase().endsWith(".json"));
+      .filter((filePath) => filePath.toLowerCase().endsWith(".json") && !filePath.toLowerCase().endsWith(".manifest.json"));
     assert.equal(outputJsonPaths.length, 2);
+    assert.equal(fs.readdirSync(outputDir).some((name) => name.endsWith(".manifest.json")), true);
     const generatedReferrals = outputJsonPaths.flatMap(
       (filePath) => JSON.parse(fs.readFileSync(filePath, "utf8")).Referrals
     );

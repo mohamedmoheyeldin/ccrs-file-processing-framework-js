@@ -31,6 +31,11 @@ pnpm verify
 - Use the renderer control tokens in `styles.css` for form sizing. Standard text inputs, selects, compact dropdown shells, and date composites must use `--control-height`; interactive buttons and options must meet `--control-touch-target`.
 - Keep form rows responsive with flexible grid columns. Preserve the upload-target row's 2:3 Upload User-to-Remote Directory proportion and its narrow-screen stacking behavior. Do not introduce one-off field heights or fixed control widths that diverge from the shared control system.
 - Preserve native labels, accessible names, visible focus, disabled state, invalid state, and keyboard operation when enhancing a form control.
+- Keep source/output validation and staging in `batchSafety.js`; never delete output before the current run has successfully processed and packaged.
+- Keep upload-environment authorization in `workflowPolicy.js`; renderer filtering is a usability layer, not the security boundary.
+- Treat a referral file error as a batch failure. Do not add partial referral archives or uploads without an explicit approved business requirement.
+- Keep run history and manifests free of credentials and source contents. Hashes, names, counts, destinations, and outcomes are allowed.
+- Emit structured progress events for new work using `phase`, `state`, `current`, `total`, and `message`.
 
 ## Windows-only work
 

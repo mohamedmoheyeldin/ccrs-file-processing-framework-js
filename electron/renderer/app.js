@@ -8,7 +8,7 @@ const DATE_PARTS = [
 ];
 const PAYMENT_AUTHORITY_CODE_MAX = 99999;
 const STATION_RESULT_LIMIT = 60;
-const REFERRAL_UPLOAD_TARGET_NAMES = new Set(["DEV", "PPD", "SQA"]);
+let referralUploadTargetNames = new Set(["DEV", "PPD", "SQA"]);
 const ACTIVE_STATUS_PATTERN = /working|processing|generating|uploading|importing|scanning|validating|packaging|archive|cancelling|testing|preparing/i;
 const { buildLeieValidationSql, highlightSql } = window.ccrsLeieSql;
 const {
@@ -56,10 +56,14 @@ const state = {
   lastSavedUiSettingsSignature: "",
   previewCacheSignature: "",
   previewCacheResult: null,
+  generationPresets: [],
+  currentPhase: "idle",
+  lastRun: null,
 };
 
 const elements = {};
 const STATIC_HELPER_IDS = [
+  "outputDirHelp",
   "ssnHelp",
   "archiveNameHelp",
   "fileCountHelp",
@@ -139,14 +143,14 @@ function setStatus(label, message) {
   elements.statusBadge.className = "status-badge";
   if (badgeClass.includes("failed") || badgeClass.includes("warning")) {
     elements.statusBadge.classList.add("failed");
-  } else if (badgeClass.includes("completed") || badgeClass.includes("ready to save") || badgeClass.includes("uploaded")) {
+  } else if (badgeClass.includes("complete") || badgeClass.includes("ready to save") || badgeClass.includes("uploaded")) {
     elements.statusBadge.classList.add("completed");
   } else if (state.activityActive) {
     elements.statusBadge.classList.add("working");
   } else {
     elements.statusBadge.classList.add("idle");
   }
-  window.ccrsJobUi.syncWorkflowProgress(normalizedLabel);
+  window.ccrsJobUi.syncWorkflowProgress(normalizedLabel, state.currentPhase);
   setJobProgress(state.progressCurrent, state.progressTotal);
 }
 
@@ -167,7 +171,10 @@ function setJobProgress(current = 0, total = 0) {
 function setBusy(busy, cancellable = false) {
   state.busy = busy;
   state.jobCancellable = Boolean(busy && cancellable);
-  if (!busy) state.cancelRequested = false;
+  if (!busy) {
+    state.cancelRequested = false;
+    state.currentPhase = "idle";
+  }
   state.activityActive = busy || ACTIVE_STATUS_PATTERN.test(state.statusLabel);
   window.ccrsJobUi.updateBusyControls({
     busy,
@@ -176,7 +183,10 @@ function setBusy(busy, cancellable = false) {
     cancelButton: elements.cancelJob,
   });
   setJobProgress(0, 0);
-  if (!busy) syncIdentityControls();
+  if (!busy) {
+    syncIdentityControls();
+    window.ccrsJobUi.syncWorkflowProgress(state.statusLabel, state.currentPhase);
+  }
 }
 
 async function cancelActiveJob() {
@@ -737,7 +747,7 @@ function isUploadTargetAvailableForWorkflow(targetName) {
   if (state.mainTab !== "referral") {
     return true;
   }
-  return REFERRAL_UPLOAD_TARGET_NAMES.has(String(targetName || "").trim().toUpperCase());
+  return referralUploadTargetNames.has(String(targetName || "").trim().toUpperCase());
 }
 
 function collectIcnSettings() {
@@ -859,7 +869,61 @@ function collectUiSettings() {
     leieDuplicateHandling: state.leieDuplicateHandling,
     leieOutputFileName: state.mainTab === "leie" ? readValue("replacement-code") : state.leieOutputFileName,
     leieValidationBatchId: readValue("leie-validation-batch-id"),
+    generationPresets: state.generationPresets,
   };
+}
+
+function renderGenerationPresets() {
+  if (!elements.generationPreset) return;
+  const selected = elements.generationPreset.value;
+  elements.generationPreset.innerHTML = '<option value="">Choose a saved preset</option>';
+  state.generationPresets.forEach((preset, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = preset.name;
+    elements.generationPreset.appendChild(option);
+  });
+  if ([...elements.generationPreset.options].some((option) => option.value === selected)) elements.generationPreset.value = selected;
+}
+
+function safePresetSettings() {
+  const settings = collectUiSettings();
+  for (const key of ["inputDir", "outputDir", "uploadEnabled", "uploadTargets", "generationPresets", "acknowledgedReleaseKey", "leieValidationBatchId", "leieOutputFileName"]) delete settings[key];
+  settings.mainTab = "referral";
+  return settings;
+}
+
+function saveGenerationPreset() {
+  const name = readValue("generation-preset-name").slice(0, 60);
+  if (!name) {
+    setStatus("Preset Name Needed", "Enter a name before saving this generation preset.");
+    return;
+  }
+  const preset = { name, settings: safePresetSettings() };
+  state.generationPresets = [preset, ...state.generationPresets.filter((item) => item.name.toLowerCase() !== name.toLowerCase())].slice(0, 20);
+  renderGenerationPresets();
+  elements.generationPreset.value = "0";
+  scheduleUiSettingsSave();
+  setStatus("Preset Saved", `${name} was saved without folders or upload credentials.`);
+}
+
+async function applyGenerationPreset() {
+  const preset = state.generationPresets[Number(elements.generationPreset.value)];
+  if (!preset) return;
+  const current = collectUiSettings();
+  await applyUiSettings({ ...current, ...preset.settings, inputDir: current.inputDir, outputDir: current.outputDir, uploadEnabled: current.uploadEnabled, uploadTargets: current.uploadTargets, generationPresets: state.generationPresets });
+  elements.generationPresetName.value = preset.name;
+  setStatus("Preset Applied", `${preset.name} was applied. Folder and upload selections were preserved.`);
+}
+
+function deleteGenerationPreset() {
+  const index = Number(elements.generationPreset.value);
+  if (!Number.isInteger(index) || !state.generationPresets[index]) return;
+  const [removed] = state.generationPresets.splice(index, 1);
+  renderGenerationPresets();
+  elements.generationPresetName.value = "";
+  scheduleUiSettingsSave();
+  setStatus("Preset Deleted", `${removed.name} was removed.`);
 }
 
 function scheduleUiSettingsSave() {
@@ -921,6 +985,8 @@ function syncWorkflowUploadDirectories() {
 }
 
 async function applyUiSettings(settings = {}) {
+  state.generationPresets = Array.isArray(settings.generationPresets) ? settings.generationPresets : state.generationPresets;
+  renderGenerationPresets();
   setTheme(settings.theme || "light");
   state.mainTab = ["referral", "leie", "other"].includes(settings.mainTab) ? settings.mainTab : "referral";
   state.subTab = settings.subTab === "generate" ? "generate" : "edit";
@@ -1233,6 +1299,7 @@ function applyGeneratorDefaults() {
 
 function applyInfo(info) {
   state.info = info;
+  referralUploadTargetNames = new Set(info.workflowPolicy?.referralUploadTargets || ["DEV", "PPD", "SQA"]);
   state.stationById = new Map();
   state.stationSelectableCount = 0;
   state.stationSearchIndex = (info.stations || []).map((option) => {
@@ -1264,6 +1331,7 @@ function applyInfo(info) {
   setUploadReadyState("idle");
   state.leieOutputFileName = String(info.uiSettings?.leieOutputFileName || state.leieOutputFileName || "").trim();
   renderUploadTargets(info.uploadTargets || []);
+  renderRecentRuns(info.recentRuns || []);
   const limits = info.constants?.processingLimits || {};
   if (limits.maxGeneratedFiles) elements.fileCount.max = String(limits.maxGeneratedFiles);
   if (limits.maxReferralsPerFile) elements.referralsPerFile.max = String(limits.maxReferralsPerFile);
@@ -1522,6 +1590,7 @@ async function inspectSourceFolder() {
 }
 
 function applyFieldErrors(fieldErrors = {}) {
+  setStaticHelperState(elements.outputDirHelp, $("output-dir"), fieldErrors.outputDir);
   setStaticHelperState(elements.ssnHelp, $("ssn-value"), fieldErrors.ssnValue);
   setStaticHelperState(elements.archiveNameHelp, $("archive-basename"), fieldErrors.archiveBasename);
   setStaticHelperState(elements.fileCountHelp, $("file-count"), fieldErrors.fileCount);
@@ -1614,6 +1683,8 @@ async function updatePreviews() {
   }
 
   const previewPayload = {
+    inputDir: readValue("input-dir"),
+    outputDir: readValue("output-dir"),
     replacementCode: readValue("replacement-code"),
     archiveBasename: readValue("archive-basename"),
     archiveNamingOptions: collectArchiveNamingOptions(),
@@ -1679,6 +1750,62 @@ async function updatePreviews() {
 function schedulePreviewUpdate() {
   window.clearTimeout(state.previewTimer);
   state.previewTimer = window.setTimeout(() => updatePreviews(), 110);
+}
+
+function renderRecentRuns(runs = []) {
+  if (!elements.recentRunsList) return;
+  const normalizedRuns = (Array.isArray(runs) ? runs : []).slice(0, 20);
+  elements.recentRunsList.innerHTML = "";
+  if (normalizedRuns.length === 0) {
+    elements.recentRunsList.textContent = "No completed runs yet.";
+    return;
+  }
+  for (const run of normalizedRuns) {
+    const item = document.createElement("div");
+    item.className = "recent-run-item";
+    item.setAttribute("role", "button");
+    item.tabIndex = 0;
+    const name = run.archivePath ? run.archivePath.split(/[\\/]/).at(-1) : "No archive";
+    const status = document.createElement("strong");
+    status.textContent = `${run.status === "completed" ? "Completed" : "Needs attention"} · ${name}`;
+    const count = document.createElement("span");
+    count.textContent = `${Number(run.referralCount || 0).toLocaleString()} referrals`;
+    const detail = document.createElement("small");
+    detail.textContent = `${new Date(run.createdAt).toLocaleString()} · ${run.outputDir || "Output folder unavailable"}`;
+    item.append(status, count, detail);
+    item.addEventListener("click", () => {
+      state.lastRun = run;
+      showResultActions(run);
+    });
+    item.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      item.click();
+    });
+    elements.recentRunsList.appendChild(item);
+  }
+}
+
+function showResultActions(run) {
+  state.lastRun = run || null;
+  const hasRun = Boolean(run?.outputDir || run?.archivePath || run?.manifestPath);
+  elements.resultActions?.classList.toggle("hidden", !hasRun);
+  elements.openOutputFolder.disabled = !run?.outputDir;
+  elements.openBatchManifest.disabled = !run?.manifestPath;
+  elements.copyArchivePath.disabled = !run?.archivePath;
+  elements.retryFailedUploads.classList.toggle("hidden", !run?.retryable && run?.status !== "upload-failed");
+}
+
+function buildReviewItems(command, payload) {
+  return window.ccrsRunReview.buildItems(command, payload, state.sourceInspection);
+}
+
+function confirmPreRun(command, payload) {
+  return window.ccrsRunReview.confirm({ command, payload, sourceInspection: state.sourceInspection, elements: { overlay: elements.preRunOverlay, summary: elements.preRunSummary, prodWrap: elements.prodConfirmWrap, prodInput: elements.prodConfirmInput, confirmButton: elements.preRunConfirm } });
+}
+
+function closePreRun(confirmed) {
+  window.ccrsRunReview.close({ overlay: elements.preRunOverlay }, confirmed);
 }
 
 async function validateCurrentForm() {
@@ -1998,6 +2125,8 @@ async function runLeieProcess() {
     upload: collectUploadSettings(),
   };
 
+  if (!(await confirmPreRun("process-leie", payload))) return;
+
   setBusy(true, true);
   setStatus("Processing LEIE", "Loading the selected workbook, checking duplicate handling, and preparing the processed output...");
   try {
@@ -2007,6 +2136,7 @@ async function runLeieProcess() {
     } else {
       setStatus("Ready to Save", result.message || "LEIE file saved.");
     }
+    if (result.outputDir || result.archivePath || result.manifestPath) showResultActions(result.run || result);
   } catch (error) {
     setStatus("Failed", error.message);
   } finally {
@@ -2043,6 +2173,10 @@ async function runGenerate() {
 }
 
 async function runJob(command, payload, label) {
+  if (!(await confirmPreRun(command, payload))) {
+    setStatus("Ready", "The run was not started. Review or change the settings when ready.");
+    return;
+  }
   setBusy(true, true);
   setStatus(
     label,
@@ -2053,7 +2187,12 @@ async function runJob(command, payload, label) {
 
   try {
     const result = await window.ccrs.runJob(command, payload);
-    setStatus("Completed", result.message || `${label} completed.`);
+    setStatus(result.retryable ? "Upload Warning" : "Completed", result.message || `${label} completed.`);
+    const run = { ...(result.run || {}), archivePath: result.archivePath, manifestPath: result.manifestPath, outputDir: result.outputDir, retryable: result.retryable };
+    showResultActions(run);
+    const existingRuns = state.info?.recentRuns || [];
+    state.info.recentRuns = [run, ...existingRuns.filter((item) => item.runId !== run.runId)].slice(0, 20);
+    renderRecentRuns(state.info.recentRuns);
   } catch (error) {
     setStatus("Failed", error.message);
   } finally {
@@ -2062,11 +2201,47 @@ async function runJob(command, payload, label) {
   }
 }
 
+async function retryFailedUploads() {
+  if (!state.lastRun?.runId) return;
+  setBusy(true, true);
+  state.currentPhase = "upload";
+  setStatus("Retrying Uploads", "Using the existing archive to retry only the failed destinations...");
+  try {
+    const result = await window.ccrs.runJob("retry-upload", { runId: state.lastRun.runId });
+    const run = { ...(result.run || state.lastRun), archivePath: result.archivePath, manifestPath: result.manifestPath, outputDir: result.outputDir, retryable: result.retryable };
+    showResultActions(run);
+    state.info.recentRuns = [run, ...(state.info?.recentRuns || []).filter((item) => item.runId !== run.runId)].slice(0, 20);
+    renderRecentRuns(state.info.recentRuns);
+    setStatus(result.retryable ? "Upload Warning" : "Upload Complete", result.message);
+  } catch (error) {
+    setStatus("Failed", error.message);
+  } finally {
+    setBusy(false);
+    state.currentPhase = "idle";
+  }
+}
+
 function setupEventHandlers() {
   setupTabs();
   wireDateControls();
   elements.cancelJob?.addEventListener("click", cancelActiveJob);
   elements.exportDiagnostics?.addEventListener("click", exportDiagnostics);
+  elements.preRunCancel?.addEventListener("click", () => closePreRun(false));
+  elements.preRunConfirm?.addEventListener("click", () => closePreRun(true));
+  elements.prodConfirmInput?.addEventListener("input", () => {
+    elements.preRunConfirm.disabled = elements.prodConfirmInput.value.trim().toUpperCase() !== "PROD";
+  });
+  elements.openOutputFolder?.addEventListener("click", () => state.lastRun?.outputDir && window.ccrs.openPath(state.lastRun.outputDir));
+  elements.openBatchManifest?.addEventListener("click", () => state.lastRun?.manifestPath && window.ccrs.openPath(state.lastRun.manifestPath));
+  elements.copyArchivePath?.addEventListener("click", () => {
+    if (!state.lastRun?.archivePath) return;
+    window.ccrs.copyText(state.lastRun.archivePath);
+    setStatus("Copied", "The archive path was copied to the clipboard.");
+  });
+  elements.retryFailedUploads?.addEventListener("click", retryFailedUploads);
+  elements.saveGenerationPreset?.addEventListener("click", saveGenerationPreset);
+  elements.deleteGenerationPreset?.addEventListener("click", deleteGenerationPreset);
+  elements.generationPreset?.addEventListener("change", applyGenerationPreset);
 
   for (const button of document.querySelectorAll("[data-theme]")) {
     button.addEventListener("click", () => {
@@ -2312,7 +2487,13 @@ function setupEventHandlers() {
     if (event.type !== "progress") {
       return;
     }
+    state.currentPhase = event.phase || state.currentPhase || "processing";
     setJobProgress(event.current, event.total);
+
+    if (event.state === "preflight-complete") {
+      setStatus("Preflight Complete", event.message || "The source, output, and business settings passed validation.");
+      return;
+    }
 
     if (event.state === "file-loaded") {
       setStatus("Validating LEIE", `${event.filename} loaded. Step 1 of 3 is complete; checking duplicate handling next.`);
@@ -2380,7 +2561,7 @@ function setupEventHandlers() {
     }
 
     if (event.state === "error") {
-      setStatus("Processing Warning", `Could not process ${event.filename}. ${event.current} of ${event.total} files have been checked; the batch will continue when possible.`);
+      setStatus("Batch Stopped", `Could not process ${event.filename}: ${event.detail || "validation failed"}. No incomplete archive will be uploaded.`);
       return;
     }
 
@@ -2418,6 +2599,7 @@ function cacheElements() {
     outputNameLabel: $("output-name-label"),
     replacementCode: $("replacement-code"),
     outputDir: $("output-dir"),
+    outputDirHelp: $("output-dir-help"),
     outputSubtitle: $("output-subtitle"),
     overrideDob: $("override-dob"),
     overrideSeocKey: $("override-seoc-key"),
@@ -2453,6 +2635,16 @@ function cacheElements() {
     jobProgressWrap: $("job-progress-wrap"),
     jobProgressLabel: $("job-progress-label"),
     jobProgressValue: $("job-progress-value"),
+    resultActions: $("result-actions"),
+    openOutputFolder: $("open-output-folder"),
+    openBatchManifest: $("open-batch-manifest"),
+    copyArchivePath: $("copy-archive-path"),
+    retryFailedUploads: $("retry-failed-uploads"),
+    recentRunsList: $("recent-runs-list"),
+    generationPreset: $("generation-preset"),
+    generationPresetName: $("generation-preset-name"),
+    saveGenerationPreset: $("save-generation-preset"),
+    deleteGenerationPreset: $("delete-generation-preset"),
     sourceCard: $("source-card"),
     sourceFileCount: $("source-file-count"),
     sourceSubtitle: $("source-subtitle"),
@@ -2504,6 +2696,13 @@ function cacheElements() {
     leieValidationSql: $("leie-validation-sql"),
     copyLeieValidationSql: $("copy-leie-validation-sql"),
     leieValidationCopyStatus: $("leie-validation-copy-status"),
+    preRunOverlay: $("pre-run-overlay"),
+    preRunPanel: $("pre-run-panel"),
+    preRunSummary: $("pre-run-summary"),
+    preRunCancel: $("pre-run-cancel"),
+    preRunConfirm: $("pre-run-confirm"),
+    prodConfirmWrap: $("prod-confirm-wrap"),
+    prodConfirmInput: $("prod-confirm-input"),
   });
 }
 

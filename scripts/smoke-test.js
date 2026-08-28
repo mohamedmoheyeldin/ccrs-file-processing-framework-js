@@ -61,6 +61,9 @@ const {
 const { normalizeStations } = require("../electron/backend/stationCatalog");
 const { ensureRuntimeFiles } = require("../electron/backend/appPaths");
 const { normalizeCell } = require("./import-stations");
+const { assertSafeFolderRelationship } = require("../electron/backend/batchSafety");
+const { validateReferralFile } = require("../electron/backend/referralValidator");
+const { allowedUploadTargets } = require("../electron/backend/workflowPolicy");
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-smoke-"));
 const projectRoot = path.resolve(__dirname, "..");
@@ -106,7 +109,7 @@ test("LEIE validation SQL includes the requested query set and syntax highlighti
   assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
 });
 
-test("Version 1.3.8 metadata, control system, and release automation stay consolidated", () => {
+test("Version 1.3.9 metadata, safety controls, and release automation stay consolidated", () => {
   const versionConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "app_version.json"), "utf8"));
   const packageConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
@@ -116,15 +119,17 @@ test("Version 1.3.8 metadata, control system, and release automation stay consol
   const rendererHtml = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "index.html"), "utf8");
   const rendererStyles = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "styles.css"), "utf8");
   const rendererApp = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "app.js"), "utf8");
+  const workflowPolicy = fs.readFileSync(path.join(projectRoot, "electron", "backend", "workflowPolicy.js"), "utf8");
   const jobUi = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "jobUi.js"), "utf8");
   const compactSelect = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "compactSelect.js"), "utf8");
   const mainProcess = fs.readFileSync(path.join(projectRoot, "electron", "main.js"), "utf8");
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
 
-  assert.equal(versionConfig.version, "1.3.8");
-  assert.equal(versionConfig.releaseTag, "v1.3.8");
-  assert.equal(versionConfig.label, "Version 1.3.8");
+  assert.equal(versionConfig.version, "1.3.9");
+  assert.equal(versionConfig.releaseTag, "v1.3.9");
+  assert.equal(versionConfig.label, "Version 1.3.9");
+  assert.match(releaseNotes, /\[Version 1\.3\.9\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.9\)/);
   assert.match(releaseNotes, /\[Version 1\.3\.7\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.7\) Internal Release Notes/);
   assert.match(releaseNotes, /Version 1\.3\.7 was released internally/);
   assert.match(releaseNotes, /\[Version 1\.3\.6\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.6\)/);
@@ -168,7 +173,7 @@ test("Version 1.3.8 metadata, control system, and release automation stay consol
   assert.match(rendererStyles, /\.upload-target-grid\s*\{[^}]*align-items:\s*start/s);
   assert.doesNotMatch(rendererStyles, /\.upload-target-grid\s*\{[^}]*180px/s);
   assert.match(rendererApp, /stationIdCombobox\.contains\(document\.activeElement\)/);
-  assert.match(rendererApp, /REFERRAL_UPLOAD_TARGET_NAMES = new Set\(\["DEV", "PPD", "SQA"\]\)/);
+  assert.match(workflowPolicy, /REFERRAL_UPLOAD_TARGET_NAMES = Object\.freeze\(\["DEV", "PPD", "SQA"\]\)/);
   assert.match(rendererApp, /PROD is not available for Referral Files/);
   assert.match(jobUi, /progressElement\.removeAttribute\("value"\)/);
   assert.match(jobUi, /percent/);
@@ -195,6 +200,34 @@ test("Version 1.3.8 metadata, control system, and release automation stay consol
   assert.match(mainProcess, /sandbox:\s*true/);
   assert.match(mainProcess, /jobWorker\.js/);
   assert.match(mainProcess, /backend:cancel/);
+  assert.match(mainProcess, /Background generation did not return its archive and manifest/);
+  assert.match(rendererHtml, /id="pre-run-overlay"/);
+  assert.match(rendererHtml, /id="retry-failed-uploads"/);
+  assert.match(rendererHtml, /id="recent-runs"/);
+  assert.match(rendererHtml, /id="generation-preset"/);
+  assert.match(jobUi, /normalizedPhase/);
+});
+
+test("Workflow policy is authoritative for Referral and LEIE upload environments", () => {
+  assert.deepEqual(allowedUploadTargets("referral"), ["DEV", "PPD", "SQA"]);
+  assert.deepEqual(allowedUploadTargets("leie"), ["DEV", "PPD", "SQA", "PROD"]);
+});
+
+test("Source and output safety rejects identical and nested folders", () => {
+  const inputDir = path.join(tempRoot, "safe-path-input");
+  const outputDir = path.join(tempRoot, "safe-path-output");
+  fs.mkdirSync(inputDir, { recursive: true });
+  fs.mkdirSync(outputDir, { recursive: true });
+  assert.throws(() => assertSafeFolderRelationship(inputDir, inputDir), /must be different/);
+  assert.throws(() => assertSafeFolderRelationship(inputDir, path.join(inputDir, "nested")), /cannot be nested/);
+  assert.doesNotThrow(() => assertSafeFolderRelationship(inputDir, outputDir));
+});
+
+test("Referral schema preflight reports malformed business input", () => {
+  const invalidJson = writeJsonFixture("invalid-referral-shape.json", { NotReferrals: [] });
+  const result = validateReferralFile(invalidJson);
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /Referrals field must be an array/);
 });
 
 test("Atomic writes replace files without leaving temporary artifacts", () => {
@@ -218,7 +251,7 @@ test("Diagnostic export excludes credentials and user file paths", async () => {
   const result = await backend.handleCommand("export-diagnostics", { outputDir });
   const reportText = fs.readFileSync(result.reportPath, "utf8");
   const report = JSON.parse(reportText);
-  assert.equal(report.appVersion, "1.3.8");
+  assert.equal(report.appVersion, "1.3.9");
   assert.equal(Object.prototype.hasOwnProperty.call(report.workflowPreferences, "inputDir"), false);
   assert.doesNotMatch(reportText, /password|ciphertext|connection_details/i);
 });
@@ -571,10 +604,16 @@ test("Generated batches keep referral numbers unique and share timestamped iFAMS
 
   const names = fs.readdirSync(outputDir).sort();
   const gzipName = names.find((name) => name.endsWith(".gz"));
-  const jsonNames = names.filter((name) => name.endsWith(".json"));
+  const manifestName = names.find((name) => name.endsWith(".manifest.json"));
+  const jsonNames = names.filter((name) => name.endsWith(".json") && !name.endsWith(".manifest.json"));
   assert.match(gzipName, /^iFAMS_referrals_\d{8}_\d{6}\.gz$/);
   assert.equal(jsonNames.length, 3);
   assert.equal(jsonNames.every((name) => name.startsWith(gzipName.slice(0, -3))), true);
+  assert.match(manifestName, /^iFAMS_referrals_\d{8}_\d{6}\.manifest\.json$/);
+  const manifest = JSON.parse(fs.readFileSync(path.join(outputDir, manifestName), "utf8"));
+  assert.equal(manifest.referralNumbers.unique, true);
+  assert.equal(manifest.counts.referrals, 12);
+  assert.match(manifest.archive.sha256, /^[a-f0-9]{64}$/);
 
   const referrals = jsonNames.flatMap((name) => JSON.parse(
     fs.readFileSync(path.join(outputDir, name), "utf8")
@@ -586,6 +625,51 @@ test("Generated batches keep referral numbers unique and share timestamped iFAMS
     assert.equal(referral.Patient.ICN, generateIcnFromReferralNumber(referral.ReferralNumber));
     assert.equal(["402", "570"].includes(referral.ProgramAuthority?.StationID || referral.StationID), true);
   }
+});
+
+test("Keep existing files preserves unrelated JSON and excludes it from the new archive", async () => {
+  const outputDir = path.join(tempRoot, "keep-existing-output");
+  fs.mkdirSync(outputDir, { recursive: true });
+  fs.writeFileSync(path.join(outputDir, "unrelated.json"), JSON.stringify({ Referrals: [{ ReferralNumber: "OLD" }] }), "utf8");
+
+  const result = await backend.handleCommand("generate", {
+    outputDir,
+    fileCount: 1,
+    referralsPerFile: 2,
+    clearOutput: false,
+    keepProcessedJson: false,
+    archiveBasename: "safe_keep_test",
+    identityOptions: { referralPrefix: "VA" },
+    upload: { enabled: false },
+  });
+
+  assert.equal(fs.existsSync(path.join(outputDir, "unrelated.json")), true);
+  const archived = JSON.parse(zlib.gunzipSync(fs.readFileSync(result.archivePath)).toString("utf8"));
+  assert.equal(archived.Referrals.length, 2);
+  assert.equal(archived.Referrals.some((referral) => referral.ReferralNumber === "OLD"), false);
+});
+
+test("A malformed source stops the batch before output or upload artifacts are created", async () => {
+  const inputDir = path.join(tempRoot, "fail-closed-input");
+  const outputDir = path.join(tempRoot, "fail-closed-output");
+  fs.mkdirSync(inputDir, { recursive: true });
+  fs.mkdirSync(outputDir, { recursive: true });
+  fs.writeFileSync(path.join(inputDir, "valid.json"), JSON.stringify({ Referrals: [{ ReferralNumber: "VA0000000001" }] }), "utf8");
+  fs.writeFileSync(path.join(inputDir, "invalid.json"), "{ invalid", "utf8");
+  fs.writeFileSync(path.join(outputDir, "existing.txt"), "preserve", "utf8");
+
+  await assert.rejects(
+    backend.handleCommand("process", {
+      inputDir,
+      outputDir,
+      archiveBasename: "should_not_exist",
+      clearOutput: true,
+      keepProcessedJson: true,
+      upload: { enabled: false },
+    }),
+    /preflight schema validation failed/
+  );
+  assert.deepEqual(fs.readdirSync(outputDir), ["existing.txt"]);
 });
 
 test("modifyContent applies Payment Authority Code overrides uniquely across referrals", () => {
@@ -946,8 +1030,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.3.8");
-    assert.equal(initialInfo.appVersion.label, "Version 1.3.8");
+    assert.equal(initialInfo.appVersion.version, "1.3.9");
+    assert.equal(initialInfo.appVersion.label, "Version 1.3.9");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);

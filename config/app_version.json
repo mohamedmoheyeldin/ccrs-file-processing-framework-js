@@ -1,13 +1,16 @@
 {
-  "version": "1.3.8",
-  "releaseTag": "v1.3.8",
-  "label": "Version 1.3.8",
-  "announcementId": "v1.3.8|Version 1.3.8|2026-08-28-referral-upload-progress",
+  "version": "1.3.9",
+  "releaseTag": "v1.3.9",
+  "label": "Version 1.3.9",
+  "announcementId": "v1.3.9|Version 1.3.9|2026-08-28-safe-batch-operations",
   "releaseNotes": [
-    "Limits Referral Files uploads to DEV, PPD, and SQA; PROD remains available only in the separate LEIE workflow.",
-    "Shows clearer activity messages for scanning, validating, processing, packaging, connection testing, uploading, diagnostics, completion, and errors.",
-    "Displays file or server counts and percentages when totals are known, plus visible in-progress feedback during steps without a numeric total.",
-    "Includes the internally released Version 1.3.7 improvements for referral-derived ICNs, unique Referral Numbers, multi-station assignment, and iFAMS naming.",
-    "Includes the Version 1.3.7 responsiveness improvements and Electron 44 dependency update."
+    "Protects source and existing output files with separate-folder validation, isolated staging, and collision-safe publishing.",
+    "Stops the full batch before packaging or upload when any referral source fails schema or processing validation.",
+    "Adds a safety review showing the workflow, source, output behavior, archive, station plan, and upload destinations before every run.",
+    "Creates a versioned batch manifest with counts, Referral Number uniqueness, station distribution, source and archive SHA-256 hashes, and upload outcomes.",
+    "Adds recent-run history, Open Output Folder, View Batch Manifest, Copy Output Path, and retry-only-failed-upload actions.",
+    "Adds named generation presets that preserve reusable business settings without saving folders or upload credentials.",
+    "Uses backend-authoritative environment policy and requires typed PROD confirmation for LEIE production uploads.",
+    "Uses structured progress phases, safe cancellation messaging, stronger Windows E2E coverage, and modular safety, policy, validation, history, and review components."
   ]
 }

@@ -12,6 +12,10 @@ async function run() {
       workerData.command,
       workerData.payload || {},
       (current, total, filename, state, uploadTarget, detail) => {
+        if (current && typeof current === "object") {
+          post({ type: "progress", ...current });
+          return;
+        }
         post({ type: "progress", current, total, filename, state, uploadTarget, detail });
       }
     );

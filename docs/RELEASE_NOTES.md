@@ -1,4 +1,50 @@
-# CCRS File Processing Framework Version 1.3.8
+# CCRS File Processing Framework Version 1.3.9
+
+## [Version 1.3.9](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.9) Release Notes
+
+### Release Summary
+
+Version 1.3.9 makes file processing safer, more auditable, and easier to recover. It prevents source/output path mistakes, isolates each referral run before publishing results, blocks incomplete batches, adds a pre-run safety review, records batch manifests and recent runs, and retries failed uploads without repeating file generation.
+
+The GitHub Release contains:
+
+- `CCRS.File.Processing.Framework.Setup.Version.1.3.9.exe`
+- `SHA256SUMS.txt`
+
+### File and Batch Safety
+
+- Source and output folders must be different and cannot be nested inside each other.
+- Referral work runs in an isolated staging folder, so `Keep existing files` no longer removes or packages unrelated JSON files.
+- Existing-name collisions stop the run instead of overwriting an unrelated file.
+- `Delete everything first` is applied only after the staged batch has processed and packaged successfully.
+- Referral JSON is checked for a valid top-level object and `Referrals` array before transformation.
+- Any schema or processing failure stops the full batch before an archive or upload can be produced.
+- Duplicate generated Referral Numbers stop the batch before publishing.
+- LEIE output is also staged and refuses unsafe source/output relationships or silent output replacement.
+
+### Review, Progress, and Environment Controls
+
+- Every run opens a safety review showing workflow, source, output, output behavior, archive, station plan, and upload destinations.
+- LEIE production upload requires the user to type `PROD` in the safety review.
+- The backend is authoritative for Referral DEV/PPD/SQA and LEIE DEV/PPD/SQA/PROD target policy.
+- Structured progress phases drive the workflow stepper instead of relying only on matching visible message text.
+- Cancellation confirms that completed results from earlier runs were not changed.
+
+### Audit and Recovery
+
+- Every referral archive receives a `.manifest.json` report containing application version, timestamps, counts, Referral Number range and uniqueness, ICN mode, station distribution, source hashes, archive hash, and upload outcomes.
+- Recent Runs keeps the latest 20 sanitized results in the current user's AppData.
+- Result actions open the output folder, open the batch manifest, and copy the output path.
+- Failed destinations can be retried from the existing local artifact; successful destinations are not uploaded again.
+- A retry refreshes both the run history and manifest upload result.
+
+### Reusable Settings and Maintainability
+
+- Named generation presets save reusable referral settings while excluding input/output folders and upload credentials.
+- Safety, schema validation, environment policy, run history, and pre-run review live in focused modules.
+- New regression tests cover identical/nested folders, malformed input, fail-closed behavior, output preservation, manifest hashes, centralized policy, and the new UI controls.
+
+## Version 1.3.8 Historical Release Notes
 
 ## Release Summary
 

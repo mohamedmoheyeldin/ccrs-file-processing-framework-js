@@ -54,21 +54,16 @@ const { sanitizeFilenameBase } = require("./renamer");
 const { buildArchiveBasename, DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename } = require("./zipper");
 const { assertSourceFilesWithinLimits, getProcessingLimits } = require("./limits");
 const { writeFileAtomic } = require("./atomicFile");
+const { assertSafeFolderRelationship, cleanupStaleRunStagingDirectories } = require("./batchSafety");
+const { getRun, loadRunHistory, saveRun } = require("./runHistory");
+const { allowedUploadTargets, assertUploadTargets } = require("./workflowPolicy");
 
 ensureRuntimeFiles();
+cleanupStaleRunStagingDirectories();
 setupLogger();
 
-const REFERRAL_UPLOAD_TARGET_NAMES = new Set(["DEV", "PPD", "SQA"]);
-
 function assertReferralUploadTargets(targets = []) {
-  const unsupported = (Array.isArray(targets) ? targets : [])
-    .map((target) => String(target?.server_name || "").trim().toUpperCase())
-    .filter((targetName) => targetName && !REFERRAL_UPLOAD_TARGET_NAMES.has(targetName));
-  if (unsupported.length > 0) {
-    throw new Error(
-      `Referral Files can be uploaded only to DEV, PPD, or SQA. Remove ${[...new Set(unsupported)].join(", ")} and try again.`
-    );
-  }
+  assertUploadTargets("referral", targets);
 }
 
 function normalizeReleaseNotes(rawValue) {
@@ -213,6 +208,11 @@ function getInfo() {
     },
     uploadProfileSummary: summarizeUploadProfiles(profiles),
     uploadTargets: buildUploadTargets(profiles),
+    workflowPolicy: {
+      referralUploadTargets: allowedUploadTargets("referral"),
+      leieUploadTargets: allowedUploadTargets("leie"),
+    },
+    recentRuns: loadRunHistory(),
     generatorDefaults: getGeneratorDefaults(),
     stations: loadStations(),
     seocOptions: getSeocOptions(),
@@ -383,6 +383,14 @@ function collectFieldErrors(payload) {
   const icnSettings = payload.icnSettings || {};
   const optionalOverrides = payload.optionalOverrides || {};
 
+  if ((payload.inputDir || "").trim() && (payload.outputDir || "").trim()) {
+    try {
+      assertSafeFolderRelationship(payload.inputDir, payload.outputDir);
+    } catch (error) {
+      fieldErrors.outputDir = error.message;
+    }
+  }
+
   if (payload.identityOptions?.randomizeSsn === false && (payload.ssnValue || "").trim()) {
     try {
       validateSsn(payload.ssnValue);
@@ -505,6 +513,8 @@ function prepareBackgroundPayload(command, payload = {}) {
   if (prepared.upload?.enabled) {
     if (command === "process" || command === "generate") {
       assertReferralUploadTargets(prepared.upload.targets || []);
+    } else if (command === "process-leie") {
+      assertUploadTargets("leie", prepared.upload.targets || []);
     }
     prepared.upload.resolvedTargets = resolveUploadTargets(loadUploadProfiles(), prepared.upload.targets || []);
   }
@@ -584,7 +594,7 @@ async function runProcess(payload, emitProgress) {
   if (!args.outputDir) {
     throw new Error("Please select an output folder.");
   }
-  const message = await processFiles(
+  return processFiles(
     inputDir,
     args.outputDir,
     args.replacementCode,
@@ -598,9 +608,9 @@ async function runProcess(payload, emitProgress) {
     args.progressCallback,
     args.uploadOptions,
     args.archiveBasename,
-    args.identityOptions
+    args.identityOptions,
+    { appVersion: loadAppVersionInfo().version }
   );
-  return { message };
 }
 
 async function runGenerate(payload, emitProgress) {
@@ -634,7 +644,7 @@ async function runGenerate(payload, emitProgress) {
   let generatedInputDir = "";
   try {
     generatedInputDir = buildGeneratedReferralSources(fileCount, referralsPerFile);
-    const message = await processFiles(
+    return await processFiles(
       generatedInputDir,
       args.outputDir,
       args.replacementCode,
@@ -648,12 +658,56 @@ async function runGenerate(payload, emitProgress) {
       args.progressCallback,
       args.uploadOptions,
       args.archiveBasename,
-      args.identityOptions
+      args.identityOptions,
+      { appVersion: loadAppVersionInfo().version }
     );
-    return { message };
   } finally {
     removePath(generatedInputDir);
   }
+}
+
+async function retryFailedUploads(payload, emitProgress) {
+  const run = getRun(payload.runId);
+  if (!run) throw new Error("The selected run was not found in recent history.");
+  if (!run.archivePath || !fs.existsSync(run.archivePath)) {
+    throw new Error("The archive for this run is no longer available. Run processing again to create a new archive.");
+  }
+  const failed = run.uploadResults.filter((item) => item.status === "failed");
+  if (failed.length === 0) throw new Error("This run has no failed uploads to retry.");
+  assertUploadTargets(run.workflow || "referral", failed.map((item) => ({ server_name: item.serverName })));
+  const requested = failed.map((item) => ({
+    server_name: item.serverName,
+    user_name: item.userName,
+    remote_directory: item.remoteDirectory,
+  }));
+  const resolved = resolveUploadTargets(loadUploadProfiles(), requested);
+  const results = [...run.uploadResults.filter((item) => item.status !== "failed")];
+  for (let index = 0; index < resolved.length; index += 1) {
+    const target = resolved[index];
+    emitProgress?.({ phase: "upload", state: "uploading", current: index + 1, total: resolved.length, filename: path.basename(run.archivePath), uploadTarget: target.server_name, message: `Retrying upload to ${target.server_name}.` });
+    try {
+      const remotePath = await require("./uploader").uploadFileWithRetry(run.archivePath, target.remote_directory, target.connection_details);
+      results.push({ serverName: target.server_name, userName: target.user_name || "", remoteDirectory: target.remote_directory, remotePath, status: "completed", message: "Retry completed." });
+      emitProgress?.({ phase: "upload", state: "upload-target-complete", current: index + 1, total: resolved.length, filename: path.basename(run.archivePath), uploadTarget: target.server_name });
+    } catch (error) {
+      results.push({ serverName: target.server_name, userName: target.user_name || "", remoteDirectory: target.remote_directory, remotePath: "", status: "failed", message: error.message });
+      emitProgress?.({ phase: "upload", state: "upload-target-error", current: index + 1, total: resolved.length, filename: path.basename(run.archivePath), uploadTarget: target.server_name, detail: error.message });
+    }
+  }
+  const retryable = results.some((item) => item.status === "failed");
+  const updatedRun = saveRun({ ...run, status: retryable ? "upload-failed" : "completed", uploadResults: results });
+  if (run.manifestPath && fs.existsSync(run.manifestPath)) {
+    try {
+      const manifest = JSON.parse(fs.readFileSync(run.manifestPath, "utf8"));
+      manifest.uploads = results;
+      manifest.status = retryable ? "upload-failed" : "completed";
+      manifest.completedAt = new Date().toISOString();
+      writeFileAtomic(run.manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+    } catch (error) {
+      throw new Error(`Uploads were retried, but the batch manifest could not be updated: ${error.message}`);
+    }
+  }
+  return { message: retryable ? "Some uploads still failed. You can retry them again without reprocessing." : "All failed uploads completed successfully.", run: updatedRun, archivePath: run.archivePath, manifestPath: run.manifestPath, outputDir: run.outputDir, uploadResults: results, retryable };
 }
 
 async function runTestUploadTarget(payload) {
@@ -724,6 +778,9 @@ async function handleCommand(command, payload, emitProgress) {
   }
   if (command === "test-upload-target") {
     return runTestUploadTarget(payload);
+  }
+  if (command === "retry-upload") {
+    return retryFailedUploads(payload, emitProgress);
   }
   throw new Error(`Unsupported command: ${command}`);
 }

@@ -1,5 +1,8 @@
 const fs = require("fs");
 const path = require("path");
+const { assertSafeFolderRelationship, createRunId, createRunStagingDirectory, promoteStagedFiles } = require("./batchSafety");
+const { clearDirectory } = require("./fileHandler");
+const { saveRun } = require("./runHistory");
 const XLSX = require("xlsx");
 const { uploadFileWithRetry, loadUploadProfiles, resolveUploadTargets } = require("./uploader");
 const { assertSourceFilesWithinLimits, getProcessingLimits } = require("./limits");
@@ -365,6 +368,8 @@ async function processLeieFiles(payload = {}, progressCallback) {
   if (!outputDir) {
     throw new Error("Please select an output folder.");
   }
+  const sourceRoot = fs.existsSync(inputDir) && fs.statSync(inputDir).isFile() ? path.dirname(inputDir) : inputDir;
+  assertSafeFolderRelationship(sourceRoot, outputDir);
 
   const sourceData = collectSourceData(inputDir, duplicateMode);
   const totalRows = sourceData.files.reduce((sum, file) => sum + file.rows.length, 0);
@@ -400,8 +405,8 @@ async function processLeieFiles(payload = {}, progressCallback) {
   const outputBaseName = requestedOutputName || fallbackBaseName;
   const outputFileName = `${outputBaseName}.xlsx`;
   const outputPath = path.join(outputDir, outputFileName);
-
-  fs.mkdirSync(outputDir, { recursive: true });
+  const stagingDir = createRunStagingDirectory();
+  const stagedOutputPath = path.join(stagingDir, outputFileName);
 
   const processed = buildDedupedRows(sourceData, duplicateMode, duplicateHandling);
   const worksheet = XLSX.utils.json_to_sheet(processed.rows, {
@@ -411,7 +416,12 @@ async function processLeieFiles(payload = {}, progressCallback) {
   });
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "LEIE_Processed");
-  XLSX.writeFile(workbook, outputPath, { bookType: "xlsx" });
+  try {
+    XLSX.writeFile(workbook, stagedOutputPath, { bookType: "xlsx" });
+    promoteStagedFiles(stagingDir, outputDir, [outputFileName], false, clearDirectory);
+  } finally {
+    fs.rmSync(stagingDir, { recursive: true, force: true });
+  }
 
   if (progressCallback) {
     progressCallback(3, 3, outputFileName, "ready-to-save");
@@ -419,6 +429,7 @@ async function processLeieFiles(payload = {}, progressCallback) {
 
   const uploadedPaths = [];
   const uploadErrors = [];
+  const uploadResults = [];
   const uploadOptions = buildLeieUploadOptions(payload);
   if (uploadOptions && uploadOptions.enabled) {
     for (let index = 0; index < uploadOptions.targets.length; index += 1) {
@@ -444,6 +455,7 @@ async function processLeieFiles(payload = {}, progressCallback) {
           server_name: uploadTarget.server_name,
           remote_path: uploadedPath,
         });
+        uploadResults.push({ serverName: uploadTarget.server_name, userName: uploadTarget.user_name || "", remoteDirectory: uploadTarget.remote_directory, remotePath: uploadedPath, status: "completed", message: "Upload completed." });
         if (progressCallback) {
           progressCallback(
             index + 1,
@@ -458,6 +470,7 @@ async function processLeieFiles(payload = {}, progressCallback) {
           server_name: uploadTarget.server_name,
           message: error.message,
         });
+        uploadResults.push({ serverName: uploadTarget.server_name, userName: uploadTarget.user_name || "", remoteDirectory: uploadTarget.remote_directory, remotePath: "", status: "failed", message: error.message });
         if (progressCallback) {
           progressCallback(
             index + 1,
@@ -476,24 +489,24 @@ async function processLeieFiles(payload = {}, progressCallback) {
     }
   }
 
-  if (uploadErrors.length > 0) {
-    throw new Error(
-      `LEIE file was saved, but ${uploadErrors.length} upload target${uploadErrors.length === 1 ? "" : "s"} failed: ${uploadErrors
-        .map((item) => `${item.server_name}: ${item.message}`)
-        .join("; ")}`
-    );
-  }
-
   const uploadedMessage = uploadedPaths.length
     ? ` Uploaded file to ${uploadedPaths.map((item) => `${item.server_name} (${item.remote_path})`).join(", ")}.`
     : "";
 
+  const run = saveRun({ runId: createRunId(), createdAt: new Date().toISOString(), status: uploadErrors.length ? "upload-failed" : "completed", workflow: "leie", outputDir, archivePath: outputPath, manifestPath: "", processedCount: sourceData.files.length, referralCount: processed.rows.length, uploadResults });
   return {
-    message: `LEIE processing complete. Saved ${outputFileName} to ${outputDir}.${uploadedMessage}`,
+    message: uploadErrors.length
+      ? `LEIE processing complete and ${outputFileName} was saved, but ${uploadErrors.length} upload target${uploadErrors.length === 1 ? "" : "s"} failed. Use Retry Failed Uploads without processing again.`
+      : `LEIE processing complete. Saved ${outputFileName} to ${outputDir}.${uploadedMessage}`,
     outputPath,
+    outputDir,
+    archivePath: outputPath,
     outputFileName,
     duplicatesRemoved: duplicateHandling === "auto-remove" ? sourceData.duplicates.length : 0,
     uploadedPaths,
+    uploadResults,
+    retryable: uploadErrors.length > 0,
+    run,
   };
 }
 
