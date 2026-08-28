@@ -3,6 +3,13 @@ const os = require("os");
 const path = require("path");
 const { createHash, randomUUID } = require("crypto");
 
+function stripWindowsExtendedPathPrefix(targetPath) {
+  const value = String(targetPath || "");
+  if (/^\\\\\?\\UNC\\/i.test(value)) return `\\\\${value.slice(8)}`;
+  if (/^\\\\\?\\/i.test(value)) return value.slice(4);
+  return value;
+}
+
 function canonicalPath(targetPath) {
   const resolved = path.resolve(String(targetPath || "").trim());
   let canonical = resolved;
@@ -11,6 +18,7 @@ function canonicalPath(targetPath) {
   } catch (_error) {
     // A new output folder cannot be resolved yet; its absolute path is still safe to compare.
   }
+  canonical = stripWindowsExtendedPathPrefix(canonical);
   return process.platform === "win32" ? canonical.toLowerCase() : canonical;
 }
 
@@ -114,4 +122,5 @@ module.exports = {
   listFileMetadata,
   promoteStagedFiles,
   sha256File,
+  stripWindowsExtendedPathPrefix,
 };

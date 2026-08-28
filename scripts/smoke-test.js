@@ -61,7 +61,7 @@ const {
 const { normalizeStations } = require("../electron/backend/stationCatalog");
 const { ensureRuntimeFiles } = require("../electron/backend/appPaths");
 const { normalizeCell } = require("./import-stations");
-const { assertSafeFolderRelationship } = require("../electron/backend/batchSafety");
+const { assertSafeFolderRelationship, stripWindowsExtendedPathPrefix } = require("../electron/backend/batchSafety");
 const { validateReferralFile } = require("../electron/backend/referralValidator");
 const { allowedUploadTargets } = require("../electron/backend/workflowPolicy");
 
@@ -221,6 +221,8 @@ test("Source and output safety rejects identical and nested folders", () => {
   assert.throws(() => assertSafeFolderRelationship(inputDir, inputDir), /must be different/);
   assert.throws(() => assertSafeFolderRelationship(inputDir, path.join(inputDir, "nested")), /cannot be nested/);
   assert.doesNotThrow(() => assertSafeFolderRelationship(inputDir, outputDir));
+  assert.equal(stripWindowsExtendedPathPrefix("\\\\?\\C:\\Temp\\Input"), "C:\\Temp\\Input");
+  assert.equal(stripWindowsExtendedPathPrefix("\\\\?\\UNC\\server\\share\\Input"), "\\\\server\\share\\Input");
 });
 
 test("Referral schema preflight reports malformed business input", () => {
