@@ -106,7 +106,7 @@ test("LEIE validation SQL includes the requested query set and syntax highlighti
   assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
 });
 
-test("Version 1.3.7 metadata, control system, and release automation stay consolidated", () => {
+test("Version 1.3.8 metadata, control system, and release automation stay consolidated", () => {
   const versionConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "app_version.json"), "utf8"));
   const packageConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
@@ -116,14 +116,17 @@ test("Version 1.3.7 metadata, control system, and release automation stay consol
   const rendererHtml = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "index.html"), "utf8");
   const rendererStyles = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "styles.css"), "utf8");
   const rendererApp = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "app.js"), "utf8");
+  const jobUi = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "jobUi.js"), "utf8");
   const compactSelect = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "compactSelect.js"), "utf8");
   const mainProcess = fs.readFileSync(path.join(projectRoot, "electron", "main.js"), "utf8");
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
 
-  assert.equal(versionConfig.version, "1.3.7");
-  assert.equal(versionConfig.releaseTag, "v1.3.7");
-  assert.equal(versionConfig.label, "Version 1.3.7");
+  assert.equal(versionConfig.version, "1.3.8");
+  assert.equal(versionConfig.releaseTag, "v1.3.8");
+  assert.equal(versionConfig.label, "Version 1.3.8");
+  assert.match(releaseNotes, /\[Version 1\.3\.7\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.7\) Internal Release Notes/);
+  assert.match(releaseNotes, /Version 1\.3\.7 was released internally/);
   assert.match(releaseNotes, /\[Version 1\.3\.6\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.6\)/);
   assert.match(releaseNotes, /\[Version 1\.3\.5\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.5\)/);
   assert.match(releaseNotes, /\[Version 1\.3\.3\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.3\)/);
@@ -152,6 +155,9 @@ test("Version 1.3.7 metadata, control system, and release automation stay consol
   assert.match(rendererHtml, />Start Using The App</);
   assert.match(rendererHtml, /Content-Security-Policy/);
   assert.match(rendererHtml, /id="cancel-job"/);
+  assert.match(rendererHtml, /id="job-progress-wrap"/);
+  assert.match(rendererHtml, /id="job-progress-label"/);
+  assert.match(rendererHtml, /id="job-progress-value"/);
   assert.match(rendererHtml, /aria-live="polite"/);
   assert.match(rendererHtml, /compactSelect\.js/);
   assert.match(rendererStyles, /\.compact-select-menu\s*\{[^}]*max-height:\s*260px/s);
@@ -162,6 +168,10 @@ test("Version 1.3.7 metadata, control system, and release automation stay consol
   assert.match(rendererStyles, /\.upload-target-grid\s*\{[^}]*align-items:\s*start/s);
   assert.doesNotMatch(rendererStyles, /\.upload-target-grid\s*\{[^}]*180px/s);
   assert.match(rendererApp, /stationIdCombobox\.contains\(document\.activeElement\)/);
+  assert.match(rendererApp, /REFERRAL_UPLOAD_TARGET_NAMES = new Set\(\["DEV", "PPD", "SQA"\]\)/);
+  assert.match(rendererApp, /PROD is not available for Referral Files/);
+  assert.match(jobUi, /progressElement\.removeAttribute\("value"\)/);
+  assert.match(jobUi, /percent/);
   assert.match(compactSelect, /aria-controls/);
   assert.match(compactSelect, /event\.key === "Home" \|\| event\.key === "End"/);
   assert.match(compactSelect, /aria-invalid/);
@@ -208,7 +218,7 @@ test("Diagnostic export excludes credentials and user file paths", async () => {
   const result = await backend.handleCommand("export-diagnostics", { outputDir });
   const reportText = fs.readFileSync(result.reportPath, "utf8");
   const report = JSON.parse(reportText);
-  assert.equal(report.appVersion, "1.3.7");
+  assert.equal(report.appVersion, "1.3.8");
   assert.equal(Object.prototype.hasOwnProperty.call(report.workflowPreferences, "inputDir"), false);
   assert.doesNotMatch(reportText, /password|ciphertext|connection_details/i);
 });
@@ -484,6 +494,22 @@ test("Referral number generation preserves the VA prefix and increments", () => 
   assert.equal(generateReferralNumber("123", 1), "VA0000000123");
   assert.equal(generateReferralNumber("123", 2), "VA0000000124");
   assert.equal(generateReferralNumber("ABC123", 2), "VAABC124");
+});
+
+test("Referral uploads reject PROD while preserving it for the separate LEIE workflow", () => {
+  assert.throws(
+    () => backend.prepareBackgroundPayload("process", {
+      upload: {
+        enabled: true,
+        targets: [{
+          server_name: "PROD",
+          user_name: "rruser@PROD",
+          remote_directory: "/CCRA_Uploads",
+        }],
+      },
+    }),
+    /Referral Files can be uploaded only to DEV, PPD, or SQA/
+  );
 });
 
 test("Referral numbers can use iFAMS and map directly to matching TEST ICNs", () => {
@@ -920,8 +946,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.3.7");
-    assert.equal(initialInfo.appVersion.label, "Version 1.3.7");
+    assert.equal(initialInfo.appVersion.version, "1.3.8");
+    assert.equal(initialInfo.appVersion.label, "Version 1.3.8");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);

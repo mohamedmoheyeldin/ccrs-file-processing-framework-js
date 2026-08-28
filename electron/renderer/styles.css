@@ -1751,8 +1751,28 @@ body.theme-dark .archive-options-panel {
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-.job-progress {
+.job-progress-wrap {
   grid-column: 1 / -1;
+  display: grid;
+  gap: 7px;
+  padding: 0 12px;
+}
+
+.job-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+#job-progress-value {
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.job-progress {
   width: 100%;
   height: 10px;
   accent-color: var(--accent);

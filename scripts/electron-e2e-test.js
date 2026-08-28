@@ -98,6 +98,8 @@ async function run() {
     assert.equal(await window.locator("#workflow-stepper").isVisible(), true);
     assert.equal(await window.locator("#run-process").isVisible(), true);
     assert.equal(await window.locator("#cancel-job").isHidden(), true);
+    assert.equal(await window.locator("#status-badge").textContent(), "Ready");
+    assert.equal(await window.locator("#job-progress-wrap").isHidden(), true);
     assert.equal(await window.locator("meta[http-equiv='Content-Security-Policy']").count(), 1);
     const nativeSelectCount = await window.locator("select").count();
     assert.equal(await window.locator(".compact-select").count(), nativeSelectCount);
@@ -134,9 +136,15 @@ async function run() {
     const uploadDirectoryNote = window.locator(".upload-path-help").first();
     await uploadDirectoryNote.waitFor({ state: "visible" });
     assert.match(await uploadDirectoryNote.textContent(), /CCRS Referral uploads default to \/CCRA_Uploads/);
+    const referralTargets = await window.locator(".upload-target").evaluateAll((rows) => rows
+      .filter((row) => window.getComputedStyle(row).display !== "none")
+      .map((row) => row.dataset.target));
+    assert.deepEqual(referralTargets, ["DEV", "PPD", "SQA"]);
+    assert.equal(await window.locator('.upload-target[data-target="PROD"]').isHidden(), true);
     await assertControlSystem(window);
     await window.locator("[data-main-tab='leie']").click();
     assert.match(await uploadDirectoryNote.textContent(), /LEIE Data uploads default to \/in\/manual_process\//);
+    assert.equal(await window.locator('.upload-target[data-target="PROD"]').isVisible(), true);
     await assertControlSystem(window);
     await window.locator("[data-main-tab='referral']").click();
     if (process.env.CCRS_E2E_SCREENSHOT) {
@@ -160,6 +168,9 @@ async function run() {
       upload: { enabled: false, targets: [] },
     }), outputDir);
     assert.match(result.message, /Done\. Processed 2 files/);
+    assert.match(await window.locator("#status-message").textContent(), /was created successfully/);
+    assert.equal(await window.locator("#job-progress-wrap").isVisible(), true);
+    assert.equal(await window.locator("#job-progress-value").textContent(), "100%");
     assert.equal(fs.readdirSync(outputDir).some((name) => /^e2e_archive_\d{8}_\d{6}\.gz$/.test(name)), true);
     const outputJsonPaths = fs.readdirSync(outputDir)
       .map((name) => path.join(outputDir, name))

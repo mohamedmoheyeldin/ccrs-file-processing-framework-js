@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Version 1.3.7`.
+This guide covers `Version 1.3.8`, including the capabilities previously released internally as Version 1.3.7.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download `CCRS.File.Processing.Framework.Setup.Version.1.3.7.exe` from the GitHub Releases page and run the installer.
+Download `CCRS.File.Processing.Framework.Setup.Version.1.3.8.exe` from the GitHub Releases page and run the installer.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 
@@ -73,7 +73,7 @@ Use `Tab` and `Shift+Tab` to move between controls. In a dropdown, use `Arrow Up
 
 ## Workflow Progress and Large Files
 
-The workflow stepper shows `Select`, `Configure`, `Validate`, `Process`, and `Upload`. The status card remains visible near the bottom of the application and includes a progress bar during long operations.
+The workflow stepper shows `Select`, `Configure`, `Validate`, `Process`, and `Upload`. The status card remains visible near the bottom of the application and identifies the current action, the file or server being handled, and what happens next. When totals are known, it shows completed items and a percentage. Scanning, packaging, connection testing, configuration imports, and diagnostics show visible in-progress feedback even when a numeric percentage is not available.
 
 File processing, LEIE work, gzip creation, upload tests, and uploads run in background workers so the window remains responsive. Select `Cancel` to stop a running process. A cancelled process can leave an incomplete file in the selected output folder; inspect or remove that file before restarting the same job.
 
@@ -371,6 +371,14 @@ If an optional field is blank, the app keeps the source value unless that field'
 
 Referral processing uploads the final `.gz` archive. Enable `Upload the .gz file after processing`, select one or more targets, choose the user, and confirm the remote directory.
 
+Referral Files can be uploaded only to these servers:
+
+- `DEV`
+- `PPD`
+- `SQA`
+
+`PROD` is not displayed and is rejected by the Referral backend. It remains available only for the separate LEIE Data workflow.
+
 The standard referral remote directory is:
 
 ```text
@@ -412,9 +420,15 @@ Validation includes:
 - remote upload directory
 - LEIE duplicate resolution
 
-Common statuses include:
+Status messages use specific action names instead of a generic idle or working message. Common statuses include:
 
-- `File Loaded`
+- `Ready`
+- `Scanning Referral Files`
+- `Scanning LEIE`
+- `Testing Connection`
+- `Processing`
+- `Packaging`
+- `Archive Ready`
 - `Duplicates Found`
 - `Ready to Save`
 - `Uploading`
@@ -423,7 +437,7 @@ Common statuses include:
 - `Upload Warning`
 - `Failed`
 
-During a long operation, the progress bar reports the current file or server. `Cancel` remains available even though editing controls are temporarily disabled. Referral and LEIE uploads report each server independently and continue through later selected servers after an individual failure.
+During a long operation, the progress area reports the current file or server, completed count, and percentage when the backend supplies a total. An animated indeterminate bar confirms that work is continuing during steps such as archive creation. `Cancel` remains available even though editing controls are temporarily disabled. Referral and LEIE uploads report each server independently and continue through later selected servers after an individual failure.
 
 ## Diagnostic Report
 

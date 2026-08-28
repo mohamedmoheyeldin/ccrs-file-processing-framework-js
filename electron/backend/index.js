@@ -58,6 +58,19 @@ const { writeFileAtomic } = require("./atomicFile");
 ensureRuntimeFiles();
 setupLogger();
 
+const REFERRAL_UPLOAD_TARGET_NAMES = new Set(["DEV", "PPD", "SQA"]);
+
+function assertReferralUploadTargets(targets = []) {
+  const unsupported = (Array.isArray(targets) ? targets : [])
+    .map((target) => String(target?.server_name || "").trim().toUpperCase())
+    .filter((targetName) => targetName && !REFERRAL_UPLOAD_TARGET_NAMES.has(targetName));
+  if (unsupported.length > 0) {
+    throw new Error(
+      `Referral Files can be uploaded only to DEV, PPD, or SQA. Remove ${[...new Set(unsupported)].join(", ")} and try again.`
+    );
+  }
+}
+
 function normalizeReleaseNotes(rawValue) {
   return (Array.isArray(rawValue) ? rawValue : [])
     .map((note) => String(note || "").trim())
@@ -474,6 +487,11 @@ function buildUploadOptions(payload) {
     return null;
   }
 
+  const requestedTargets = Array.isArray(uploadPayload.resolvedTargets)
+    ? uploadPayload.resolvedTargets
+    : uploadPayload.targets || [];
+  assertReferralUploadTargets(requestedTargets);
+
   return {
     enabled: true,
     targets: Array.isArray(uploadPayload.resolvedTargets)
@@ -485,6 +503,9 @@ function buildUploadOptions(payload) {
 function prepareBackgroundPayload(command, payload = {}) {
   const prepared = structuredClone(payload || {});
   if (prepared.upload?.enabled) {
+    if (command === "process" || command === "generate") {
+      assertReferralUploadTargets(prepared.upload.targets || []);
+    }
     prepared.upload.resolvedTargets = resolveUploadTargets(loadUploadProfiles(), prepared.upload.targets || []);
   }
   if (command === "test-upload-target") {

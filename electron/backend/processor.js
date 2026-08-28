@@ -82,11 +82,13 @@ async function processFiles(
     }
   }
 
+  progressCallback?.(0, 0, archiveBasename || "referrals", "packaging");
   const archivePath = await zipOutput(outputDir, archiveBasename);
   const uploadedPaths = [];
   const uploadErrors = [];
 
   if (archivePath) {
+    progressCallback?.(1, 1, path.basename(archivePath), "archive-created");
     if (uploadOptions && uploadOptions.enabled) {
       const selectedTargets = uploadOptions.targets || [];
       for (let index = 0; index < selectedTargets.length; index += 1) {

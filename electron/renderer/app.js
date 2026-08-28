@@ -8,6 +8,8 @@ const DATE_PARTS = [
 ];
 const PAYMENT_AUTHORITY_CODE_MAX = 99999;
 const STATION_RESULT_LIMIT = 60;
+const REFERRAL_UPLOAD_TARGET_NAMES = new Set(["DEV", "PPD", "SQA"]);
+const ACTIVE_STATUS_PATTERN = /working|processing|generating|uploading|importing|scanning|validating|packaging|archive|cancelling|testing|preparing/i;
 const { buildLeieValidationSql, highlightSql } = window.ccrsLeieSql;
 const {
   LEIE_DEFAULT_UPLOAD_DIRECTORY,
@@ -18,6 +20,10 @@ const {
 const state = {
   info: null,
   busy: false,
+  activityActive: false,
+  statusLabel: "Ready",
+  progressCurrent: 0,
+  progressTotal: 0,
   theme: "light",
   mainTab: "referral",
   subTab: "edit",
@@ -123,32 +129,46 @@ function setUploadTargetStatus(row, message = "", stateName = "") {
 }
 
 function setStatus(label, message) {
-  const normalizedLabel = String(label || "Idle").trim();
+  const normalizedLabel = String(label || "Ready").trim();
+  state.statusLabel = normalizedLabel;
+  state.activityActive = state.busy || ACTIVE_STATUS_PATTERN.test(normalizedLabel);
   elements.statusBadge.textContent = normalizedLabel;
-  elements.statusMessage.textContent = message;
+  elements.statusMessage.textContent = String(message || "The app is ready.").trim();
 
   const badgeClass = normalizedLabel.toLowerCase();
   elements.statusBadge.className = "status-badge";
-  if (badgeClass.includes("failed")) {
+  if (badgeClass.includes("failed") || badgeClass.includes("warning")) {
     elements.statusBadge.classList.add("failed");
-  } else if (badgeClass.includes("completed")) {
+  } else if (badgeClass.includes("completed") || badgeClass.includes("ready to save") || badgeClass.includes("uploaded")) {
     elements.statusBadge.classList.add("completed");
-  } else if (badgeClass.includes("working") || badgeClass.includes("processing") || badgeClass.includes("generating") || badgeClass.includes("upload")) {
+  } else if (state.activityActive) {
     elements.statusBadge.classList.add("working");
   } else {
     elements.statusBadge.classList.add("idle");
   }
   window.ccrsJobUi.syncWorkflowProgress(normalizedLabel);
+  setJobProgress(state.progressCurrent, state.progressTotal);
 }
 
 function setJobProgress(current = 0, total = 0) {
-  window.ccrsJobUi.updateProgress(elements.jobProgress, state.busy, current, total);
+  state.progressCurrent = Number(current) || 0;
+  state.progressTotal = Number(total) || 0;
+  window.ccrsJobUi.updateProgress({
+    progressElement: elements.jobProgress,
+    progressWrap: elements.jobProgressWrap,
+    progressLabel: elements.jobProgressLabel,
+    progressValue: elements.jobProgressValue,
+    active: state.activityActive,
+    current: state.progressCurrent,
+    total: state.progressTotal,
+  });
 }
 
 function setBusy(busy, cancellable = false) {
   state.busy = busy;
   state.jobCancellable = Boolean(busy && cancellable);
   if (!busy) state.cancelRequested = false;
+  state.activityActive = busy || ACTIVE_STATUS_PATTERN.test(state.statusLabel);
   window.ccrsJobUi.updateBusyControls({
     busy,
     cancellable: state.jobCancellable,
@@ -695,6 +715,9 @@ function collectUploadSettings() {
   const targets = [];
 
   for (const row of document.querySelectorAll(".upload-target")) {
+    if (!isUploadTargetAvailableForWorkflow(row.dataset.target)) {
+      continue;
+    }
     const useTarget = row.querySelector(".upload-enabled").checked;
     if (!useTarget) {
       continue;
@@ -708,6 +731,13 @@ function collectUploadSettings() {
   }
 
   return { enabled, targets };
+}
+
+function isUploadTargetAvailableForWorkflow(targetName) {
+  if (state.mainTab !== "referral") {
+    return true;
+  }
+  return REFERRAL_UPLOAD_TARGET_NAMES.has(String(targetName || "").trim().toUpperCase());
 }
 
 function collectIcnSettings() {
@@ -1140,8 +1170,11 @@ function syncUploadTargetState() {
       continue;
     }
 
-    targetToggle.disabled = !uploadEnabled;
-    const targetActive = uploadEnabled && targetToggle.checked;
+    const available = isUploadTargetAvailableForWorkflow(row.dataset.target);
+    row.classList.toggle("hidden", !available);
+    row.setAttribute("aria-hidden", String(!available));
+    targetToggle.disabled = !available || !uploadEnabled;
+    const targetActive = available && uploadEnabled && targetToggle.checked;
 
     if (userSelect) {
       userSelect.disabled = !targetActive;
@@ -1397,6 +1430,7 @@ async function inspectLeieSourceFolder(options = {}) {
 
   state.leieInspectionError = "";
   // Reflect user selection immediately so the UI never looks stale while inspection runs.
+  setStatus("Scanning LEIE", "Reading the selected Excel data and checking every row for exact duplicates...");
   elements.sourceFileCount.textContent = "Scanning selected LEIE source...";
   elements.listDateSourceValue.textContent = inputDir;
   setLeieResultTone("working");
@@ -1433,7 +1467,9 @@ async function inspectLeieSourceFolder(options = {}) {
     } else if (inspection.hasDuplicates) {
       setStatus("Duplicates Found", "Resolve duplicates before saving the processed LEIE file.");
     } else if (inspection.fileCount > 0) {
-      setStatus("File Loaded", "LEIE source files loaded and ready for processing.");
+      setStatus("Source Ready", `${inspection.fileCount} LEIE file${inspection.fileCount === 1 ? " is" : "s are"} loaded with ${inspection.totalRowCount.toLocaleString()} rows and no duplicates. Select Save Processed File when ready.`);
+    } else {
+      setStatus("Ready", "No Excel files were found. Choose a supported LEIE workbook or another folder.");
     }
   } catch (error) {
     if (requestId !== state.leieScanRequestId) {
@@ -1470,9 +1506,16 @@ async function inspectSourceFolder() {
     return;
   }
 
+  setStatus("Scanning Referral Files", "Reading the selected folder and checking the available JSON files...");
   try {
     const inspection = await window.ccrs.inspectSource(inputDir);
     applySourceInspection(inspection);
+    setStatus(
+      inspection.fileCount > 0 ? "Source Ready" : "Ready",
+      inspection.fileCount > 0
+        ? `${inspection.fileCount} Referral JSON file${inspection.fileCount === 1 ? " is" : "s are"} ready. Review the settings, then select Run Processing.`
+        : "No Referral JSON files were found. Choose another source folder."
+    );
   } catch (error) {
     setStatus("Failed", error.message);
   }
@@ -1534,7 +1577,7 @@ async function testUploadTarget(row) {
 
   button.disabled = true;
   setUploadTargetStatus(row, "Testing connection...", "working");
-  setStatus("Working", `Testing upload connection for ${serverName}...`);
+  setStatus("Testing Connection", `Connecting to ${serverName} and confirming access to ${remoteDirectory || "the selected remote directory"}...`);
 
   try {
     const result = await window.ccrs.testUploadTarget({
@@ -1543,7 +1586,7 @@ async function testUploadTarget(row) {
       remote_directory: remoteDirectory,
     });
     setUploadTargetStatus(row, result.message, "success");
-    setStatus("Completed", result.message);
+    setStatus("Connection Ready", `${result.message} This target is ready for the next upload.`);
   } catch (error) {
     setUploadTargetStatus(row, error.message, "error");
     setStatus("Failed", error.message);
@@ -1737,11 +1780,12 @@ function syncWorkflowText() {
     : "Choose where JSON and .gz files should be written";
   elements.uploadSubtitle.textContent = isLeie
     ? "Optionally upload the processed LEIE .xlsx file to one or more saved environment profiles."
-    : "Optionally upload the final .gz file to one or more saved environment profiles.";
+    : "Optionally upload the final .gz file to the DEV, PPD, or SQA Server. PROD is not available for Referral Files.";
   elements.uploadEnabledLabel.textContent = isLeie
     ? "Upload the .xlsx file after processing"
     : "Upload the .gz file after processing";
   syncWorkflowUploadDirectories();
+  syncUploadTargetState();
 
   elements.subtabRow.classList.toggle("hidden", !isReferral);
   elements.generatorCard.classList.toggle("hidden", !isGenerate);
@@ -1778,6 +1822,15 @@ function syncWorkflowText() {
   syncLeieUiState();
   syncLeieValidationSql();
   updatePreviews();
+  if (!state.busy) {
+    if (isGenerate) {
+      setStatus("Ready", "Ready to generate Referral Files. Choose an output folder and generation options, then select Generate Files.");
+    } else if (isReferral) {
+      setStatus("Ready", "Ready to process Referral Files. Choose the source and output folders, review the settings, then select Run Processing.");
+    } else if (isLeie) {
+      setStatus("Ready", "Ready for LEIE Data. Choose an Excel file or folder to scan, resolve any duplicate issues, then save the processed file.");
+    }
+  }
 }
 
 function setupTabs() {
@@ -1880,7 +1933,7 @@ async function importUploadSource() {
 
   setBusy(true);
   setUploadReadyState("importing");
-  setStatus("Importing", "Reading upload configuration...");
+  setStatus("Importing", "Reading the selected upload configuration and preparing the available server accounts...");
 
   try {
     const result = await window.ccrs.importUploadSource(sourcePath);
@@ -1888,7 +1941,7 @@ async function importUploadSource() {
     setUploadReadyState("ready");
     const summaryText = formatUploadProfileSummary(result.importResult?.profile_summary || result.info?.uploadProfileSummary);
     setStatus(
-      "Idle",
+      "Configuration Ready",
       summaryText
         ? `Upload configuration imported successfully. ${summaryText} ready for use.`
         : "Upload configuration imported successfully."
@@ -1904,11 +1957,15 @@ async function importUploadSource() {
 async function exportDiagnostics() {
   const outputDir = await window.ccrs.pickDirectory();
   if (!outputDir) return;
+  setBusy(true);
+  setStatus("Preparing Diagnostics", "Collecting non-sensitive application details and writing the diagnostic report...");
   try {
     const result = await window.ccrs.exportDiagnostics(outputDir);
-    setStatus("Completed", result.message);
+    setStatus("Completed", `${result.message} The report does not include credentials or source-file contents.`);
   } catch (error) {
     setStatus("Failed", error.message);
+  } finally {
+    setBusy(false);
   }
 }
 
@@ -1942,7 +1999,7 @@ async function runLeieProcess() {
   };
 
   setBusy(true, true);
-  setStatus("Processing", "Processing LEIE files and preparing output...");
+  setStatus("Processing LEIE", "Loading the selected workbook, checking duplicate handling, and preparing the processed output...");
   try {
     const result = await window.ccrs.runJob("process-leie", payload);
     if (payload.upload.enabled && payload.upload.targets.length > 0) {
@@ -1987,7 +2044,12 @@ async function runGenerate() {
 
 async function runJob(command, payload, label) {
   setBusy(true, true);
-  setStatus(label, `${label} files with the standalone JavaScript backend...`);
+  setStatus(
+    label,
+    command === "generate"
+      ? `Creating ${Number(payload.fileCount || 0).toLocaleString()} JSON file${Number(payload.fileCount || 0) === 1 ? "" : "s"} with ${Number(payload.referralsPerFile || 0).toLocaleString()} referral${Number(payload.referralsPerFile || 0) === 1 ? "" : "s"} per file...`
+      : "Reading the Referral Files, applying the selected changes, and preparing the final archive..."
+  );
 
   try {
     const result = await window.ccrs.runJob(command, payload);
@@ -2253,22 +2315,22 @@ function setupEventHandlers() {
     setJobProgress(event.current, event.total);
 
     if (event.state === "file-loaded") {
-      setStatus("File Loaded", "LEIE source file loaded.");
+      setStatus("Validating LEIE", `${event.filename} loaded. Step 1 of 3 is complete; checking duplicate handling next.`);
       return;
     }
 
     if (event.state === "duplicates-found") {
-      setStatus("Duplicates Found", "Duplicates detected. Choose how to resolve them.");
+      setStatus("Duplicates Found", "Duplicate rows were detected. Choose automatic removal or resolve them manually before saving.");
       return;
     }
 
     if (event.state === "ready-to-save") {
-      setStatus("Ready to Save", "Processed LEIE file is ready.");
+      setStatus("Ready to Save", `${event.filename} was processed successfully and is ready in the selected output folder.`);
       return;
     }
 
     if (event.state === "upload-complete") {
-      setStatus("Upload Complete", "LEIE upload completed.");
+      setStatus("Upload Complete", `${event.filename} was uploaded to every selected server successfully.`);
       return;
     }
 
@@ -2278,30 +2340,51 @@ function setupEventHandlers() {
     if (event.state === "upload-target-complete") {
       setUploadTargetStatus(uploadRow, `Upload complete (${event.current}/${event.total}).`, "success");
       const nextMessage = event.current < event.total ? " Moving to the next server." : "";
-      setStatus("Uploaded", `${event.filename} uploaded to ${event.uploadTarget}.${nextMessage}`);
+      setStatus("Uploaded", `${event.filename} uploaded to ${event.uploadTarget} (${event.current} of ${event.total} servers complete).${nextMessage}`);
       return;
     }
 
     if (event.state === "upload-target-error") {
       setUploadTargetStatus(uploadRow, event.detail || "Upload failed.", "error");
       const nextMessage = event.current < event.total ? " Moving to the next server." : "";
-      setStatus("Upload Warning", `Upload to ${event.uploadTarget} failed.${nextMessage}`);
+      setStatus("Upload Warning", `Upload to ${event.uploadTarget} failed: ${event.detail || "No additional details were returned."}${nextMessage}`);
       return;
     }
 
     if (event.state === "uploading") {
       const targetText = event.uploadTarget ? ` to ${event.uploadTarget}` : "";
       setUploadTargetStatus(uploadRow, `Uploading ${event.filename}...`, "working");
-      setStatus("Uploading", `Uploading ${event.filename}${targetText}...`);
+      setStatus("Uploading", `Uploading ${event.filename}${targetText} — server ${event.current} of ${event.total}. Keep the app open until verification finishes.`);
+      return;
+    }
+
+    if (event.state === "packaging") {
+      setJobProgress(0, 0);
+      setStatus("Packaging", "All Referral Files were processed. Creating the final timestamped gzip archive...");
+      return;
+    }
+
+    if (event.state === "archive-created") {
+      setStatus("Archive Ready", `${event.filename} was created successfully. Finishing cleanup${state.busy ? " and any selected uploads" : ""}...`);
+      return;
+    }
+
+    if (event.state === "processing") {
+      setStatus("Processing LEIE", "Step 2 of 3: removing approved duplicates and writing the processed workbook...");
+      return;
+    }
+
+    if (event.state === "processed") {
+      setStatus("Processing", `Processed ${event.filename} — ${event.current} of ${event.total} files complete.`);
       return;
     }
 
     if (event.state === "error") {
-      setStatus("Failed", `Error while handling ${event.filename}.`);
+      setStatus("Processing Warning", `Could not process ${event.filename}. ${event.current} of ${event.total} files have been checked; the batch will continue when possible.`);
       return;
     }
 
-    setStatus("Working", `Handling ${event.filename} (${event.current}/${event.total})`);
+    setStatus("Working", `Handling ${event.filename} — ${event.current} of ${event.total} complete.`);
   });
 }
 
@@ -2367,6 +2450,9 @@ function cacheElements() {
     runProcess: $("run-process"),
     cancelJob: $("cancel-job"),
     jobProgress: $("job-progress"),
+    jobProgressWrap: $("job-progress-wrap"),
+    jobProgressLabel: $("job-progress-label"),
+    jobProgressValue: $("job-progress-value"),
     sourceCard: $("source-card"),
     sourceFileCount: $("source-file-count"),
     sourceSubtitle: $("source-subtitle"),

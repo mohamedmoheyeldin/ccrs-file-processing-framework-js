@@ -1,44 +1,90 @@
-# CCRS File Processing Framework Version 1.3.7
+# CCRS File Processing Framework Version 1.3.8
 
 ## Release Summary
 
-Version 1.3.7 improves high-volume referral generation with referral-derived ICNs, unique Referral Numbers, multi-station assignment, predictable iFAMS naming, and a faster station-selection experience.
+Version 1.3.8 is the consolidated user release. It includes the referral-generation and responsiveness improvements released internally as Version 1.3.7, removes PROD from Referral Files uploads, and gives users clearer status and progress feedback throughout the application.
 
 The GitHub Release contains:
+
+- `CCRS.File.Processing.Framework.Setup.Version.1.3.8.exe`
+- `SHA256SUMS.txt`
+
+## Referral Upload Environments
+
+- Referral Files expose only DEV, PPD, and SQA upload targets.
+- PROD is hidden on Referral screens and rejected by backend validation even if an older saved setting or crafted request includes it.
+- LEIE Data remains a separate workflow and retains DEV, PPD, SQA, and PROD upload support.
+
+## Status and Progress Experience
+
+- The sticky status area starts with workflow-specific readiness guidance instead of a generic idle message.
+- Scanning, importing configuration, validating, processing, packaging, connection testing, uploading, diagnostics, cancellation, completion, warnings, and failures use clear action-specific messages.
+- File and server work shows completed counts and percentages when totals are known.
+- Steps without numeric totals use visible indeterminate progress so the app never appears idle while it is working.
+- Referral archive creation reports dedicated Packaging and Archive Ready phases between file processing and upload.
+
+## Included Internal Version 1.3.7 Improvements
+
+- ICNs can be derived directly from Referral Numbers, including `VA26S600001` or `iFAMS26S600001` becoming `TEST26S600001`.
+- Generated Referral Numbers remain unique across the complete batch.
+- Multiple selected stations are shuffled across all generated referrals.
+- Optional iFAMS prefixes and timestamped JSON/gzip naming remain included.
+- Deferred station rendering, cached previews, debounced settings, smoother transitions, and Electron 44 remain included.
+
+## Regression Coverage
+
+- Smoke coverage rejects PROD for Referral processing before credential resolution and protects the determinate/indeterminate progress structure.
+- Windows Electron coverage confirms Referral shows exactly DEV, PPD, and SQA while LEIE still shows PROD.
+- The full referral-generation and station-selection regression coverage from Version 1.3.7 remains active.
+
+## Documentation
+
+- README, architecture, testing, release notes, User Guide, and generated PDFs describe the consolidated Version 1.3.8 user release.
+- Version 1.3.7 is retained below as an internal release record.
+
+## [Version 1.3.7](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.7) Internal Release Notes
+
+Version 1.3.7 was released internally. Its features are included in the consolidated Version 1.3.8 user release.
+
+### Release Summary
+
+Version 1.3.7 improves high-volume referral generation with referral-derived ICNs, unique Referral Numbers, multi-station assignment, predictable iFAMS naming, and a faster station-selection experience.
+
+The internal GitHub Release contains:
 
 - `CCRS.File.Processing.Framework.Setup.Version.1.3.7.exe`
 - `SHA256SUMS.txt`
 
-## Referral and ICN Generation
+### Referral and ICN Generation
 
 - Adds an ICN mode that derives the value from each Referral Number: `VA26S600001` or `iFAMS26S600001` becomes `TEST26S600001`.
 - Guarantees unique generated Referral Numbers across the entire batch, including batches split across multiple JSON files.
 - Adds an optional iFAMS prefix for generated Referral Numbers.
 
-## Multi-Station Assignment
+### Multi-Station Assignment
 
 - The Stations control supports selecting multiple station rows and displays the selection as removable chips.
 - Selected Station IDs are shuffled across all referrals in the generated batch.
 - A single selected station still applies consistently, and the existing all-stations random mode remains available.
 
-## File Naming
+### File Naming
 
 - Generated gzip archives use the current timestamp in the form `referrals_YYYYMMDD_HHMMSS.gz`.
 - An optional iFAMS naming setting prefixes generated JSON and gzip file names.
 
-## Responsiveness and Dependencies
+### Responsiveness and Dependencies
 
 - The station catalog is indexed once and search results are limited to a focused visible set instead of rendering all 1,573 rows at startup.
 - Preview work, settings writes, and station interactions are coalesced or debounced to reduce unnecessary UI work.
 - Subtle transitions and reduced-motion support make interactions feel smoother without compromising accessibility.
 - Electron is updated to Version 44, with current direct dependencies and no known production audit vulnerabilities at release preparation time.
 
-## Regression Coverage
+### Regression Coverage
 
 - Smoke tests cover referral-derived ICNs, batch-wide uniqueness, multi-station distribution, and iFAMS/timestamp naming.
 - Windows Electron end-to-end coverage verifies the updated multi-select station interaction and generation workflow.
 
-## Documentation
+### Documentation
 
 - README, architecture, testing, release notes, User Guide, and generated PDFs describe the Version 1.3.7 workflows.
 

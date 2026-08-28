@@ -19,9 +19,13 @@ The CCRS File Processing Framework is a local Electron desktop application for p
 
 `electron/renderer/compactSelect.js` progressively enhances native selects while keeping the original value and change-event behavior. Its generated listbox exposes labels, disabled and invalid states, controlled-menu relationships, visible focus, and keyboard navigation. The native select remains the application data source.
 
+`electron/renderer/jobUi.js` keeps the sticky status area synchronized with the workflow stepper. Determinate backend events show item counts and percentages; indeterminate operations remove the native progress value so Windows displays ongoing activity. Renderer messages identify scanning, validation, processing, packaging, connection tests, uploads, diagnostics, completion, warnings, and failures without exposing sensitive paths or credentials.
+
 ## Data and security boundary
 
 Runtime data is copied to the current Windows user's AppData area. Upload credentials are protected with Windows-provided encryption after import. Local credentials, WinSCP imports, logs, generated output, and temporary work directories must not be committed.
+
+Referral upload authorization is enforced twice: the renderer displays only DEV, PPD, and SQA for Referral Files, and the backend rejects any other Referral target before resolving credentials. LEIE remains a separate workflow and retains DEV, PPD, SQA, and PROD support.
 
 `config/stations.json` is the authoritative shipped station source and is refreshed from the application bundle during upgrades. It preserves every row and all 14 columns from the approved workbook; spreadsheet `NULL` and blank cells are stored as JSON `null`. `electron/backend/stationCatalog.js` de-duplicates by `station_key`, exposes the complete records to the searchable Stations control, and derives selectable/random StationID values from rows that contain `station_id`.
 

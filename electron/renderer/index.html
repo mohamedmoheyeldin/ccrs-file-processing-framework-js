@@ -577,10 +577,16 @@
             <article id="run-card" class="content-card glass-card">
               <div class="run-panel">
                 <div class="status-panel inline-status" role="status" aria-live="polite" aria-atomic="true">
-                  <span id="status-badge" class="status-badge idle">Idle</span>
-                  <p id="status-message">Choose a workflow, then run processing.</p>
+                  <span id="status-badge" class="status-badge idle">Ready</span>
+                  <p id="status-message">Choose a Referral Files workflow, then select the required files and folders.</p>
                 </div>
-                <progress id="job-progress" class="job-progress hidden" max="100" value="0">0%</progress>
+                <div id="job-progress-wrap" class="job-progress-wrap hidden">
+                  <div class="job-progress-meta">
+                    <span id="job-progress-label">Starting the requested work...</span>
+                    <span id="job-progress-value"></span>
+                  </div>
+                  <progress id="job-progress" class="job-progress" max="100">Working</progress>
+                </div>
                 <div class="action-row">
                   <button id="run-process" class="toolbar-button primary">Run Processing</button>
                   <button id="run-generate" class="toolbar-button primary hidden">Generate Files</button>
