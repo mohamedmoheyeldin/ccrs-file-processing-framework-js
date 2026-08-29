@@ -203,11 +203,10 @@ test("Version 1.3.9 metadata, safety controls, and release automation stay conso
   assert.match(mainProcess, /Background generation did not return its archive and manifest/);
   assert.match(rendererHtml, /id="pre-run-overlay"/);
   assert.match(rendererHtml, /id="retry-failed-uploads"/);
-  assert.match(rendererHtml, /id="recent-runs"/);
-  assert.match(rendererHtml, /id="generation-preset"/);
-  assert.match(rendererHtml, /Reuse settings from a previous batch/);
-  assert.match(rendererHtml, /What never gets saved/);
-  assert.match(rendererApp, /elements\.savedSettingsCard.*!isGenerate/);
+  assert.doesNotMatch(rendererHtml, /id="recent-runs"/);
+  assert.doesNotMatch(rendererHtml, /id="generation-preset"/);
+  assert.doesNotMatch(rendererHtml, /id="generation-preset-name"/);
+  assert.doesNotMatch(rendererApp, /renderRecentRuns|GenerationPreset/);
   assert.match(jobUi, /normalizedPhase/);
 });
 

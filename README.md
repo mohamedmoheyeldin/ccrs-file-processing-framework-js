@@ -118,8 +118,7 @@ Files that are kept in sync from the shipped app:
 - Review a complete safety summary before processing or upload
 - Preserve unrelated output files through isolated per-run staging and collision checks
 - Write a batch manifest with counts, uniqueness results, station distribution, hashes, and upload outcomes
-- Open recent output, inspect its manifest, copy its path, or retry only failed uploads
-- Save named generation presets without storing folders or upload credentials
+- Open the current output, inspect its manifest, copy its path, or retry only failed uploads
 
 ## Station reference data
 
@@ -137,8 +136,7 @@ pnpm verify
 - Any invalid referral file stops the batch before an incomplete archive can be created or uploaded.
 - A pre-run safety review makes output behavior, station choices, and upload destinations explicit; LEIE PROD requires typed confirmation.
 - Every referral archive receives an auditable manifest with SHA-256 hashes and business-result summaries.
-- Recent-run actions support opening results, viewing the manifest, copying the output path, and retrying only failed uploads.
-- Named generation presets preserve reusable business settings without retaining folders or credentials.
+- Current-run actions support opening results, viewing the manifest, copying the output path, and retrying only failed uploads.
 - Structured phases keep progress and cancellation messages aligned with the actual backend state.
 - Full current and historical notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
 

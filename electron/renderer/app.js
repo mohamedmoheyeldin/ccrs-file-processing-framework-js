@@ -56,7 +56,6 @@ const state = {
   lastSavedUiSettingsSignature: "",
   previewCacheSignature: "",
   previewCacheResult: null,
-  generationPresets: [],
   currentPhase: "idle",
   lastRun: null,
 };
@@ -869,87 +868,7 @@ function collectUiSettings() {
     leieDuplicateHandling: state.leieDuplicateHandling,
     leieOutputFileName: state.mainTab === "leie" ? readValue("replacement-code") : state.leieOutputFileName,
     leieValidationBatchId: readValue("leie-validation-batch-id"),
-    generationPresets: state.generationPresets,
   };
-}
-
-function renderGenerationPresets() {
-  if (!elements.generationPreset) return;
-  const selected = elements.generationPreset.value;
-  const hasSavedSettings = state.generationPresets.length > 0;
-  elements.generationPreset.innerHTML = `<option value="">${hasSavedSettings ? "Choose saved settings" : "No saved settings yet"}</option>`;
-  state.generationPresets.forEach((preset, index) => {
-    const option = document.createElement("option");
-    option.value = String(index);
-    option.textContent = preset.name;
-    elements.generationPreset.appendChild(option);
-  });
-  if ([...elements.generationPreset.options].some((option) => option.value === selected)) elements.generationPreset.value = selected;
-  elements.generationPreset.disabled = !hasSavedSettings;
-  elements.deleteGenerationPreset.disabled = !hasSavedSettings || !elements.generationPreset.value;
-  if (elements.savedSettingsCount) {
-    elements.savedSettingsCount.textContent = hasSavedSettings
-      ? `${state.generationPresets.length} saved setting${state.generationPresets.length === 1 ? "" : "s"}. Saved locally for this Windows user.`
-      : "No saved settings yet. This section is optional.";
-  }
-}
-
-function safePresetSettings() {
-  const settings = collectUiSettings();
-  for (const key of [
-    "theme",
-    "mainTab",
-    "subTab",
-    "optionalFieldsVisible",
-    "inputDir",
-    "outputDir",
-    "uploadEnabled",
-    "uploadTargets",
-    "generationPresets",
-    "acknowledgedReleaseKey",
-    "leieDuplicateKey",
-    "leieDuplicateHandling",
-    "leieValidationBatchId",
-    "leieOutputFileName",
-  ]) delete settings[key];
-  return settings;
-}
-
-function saveGenerationPreset() {
-  const name = readValue("generation-preset-name").slice(0, 60);
-  if (!name) {
-    setStatus("Name Required", "Enter a recognizable name before saving these generation settings.");
-    elements.generationPresetName.focus();
-    return;
-  }
-  const preset = { name, settings: safePresetSettings() };
-  state.generationPresets = [preset, ...state.generationPresets.filter((item) => item.name.toLowerCase() !== name.toLowerCase())].slice(0, 20);
-  renderGenerationPresets();
-  elements.generationPreset.value = "0";
-  elements.deleteGenerationPreset.disabled = false;
-  scheduleUiSettingsSave();
-  setStatus("Settings Saved", `${name} is ready to reuse. Folders, servers, and credentials were not saved.`);
-}
-
-async function applyGenerationPreset() {
-  const preset = state.generationPresets[Number(elements.generationPreset.value)];
-  elements.deleteGenerationPreset.disabled = !preset;
-  if (!preset) return;
-  const current = collectUiSettings();
-  await applyUiSettings({ ...current, ...preset.settings, inputDir: current.inputDir, outputDir: current.outputDir, uploadEnabled: current.uploadEnabled, uploadTargets: current.uploadTargets, generationPresets: state.generationPresets });
-  elements.generationPresetName.value = preset.name;
-  setStatus("Settings Loaded", `${preset.name} filled in the generation form. Your folders and upload choices stayed unchanged.`);
-}
-
-function deleteGenerationPreset() {
-  const index = Number(elements.generationPreset.value);
-  if (!Number.isInteger(index) || !state.generationPresets[index]) return;
-  const [removed] = state.generationPresets.splice(index, 1);
-  elements.generationPreset.value = "";
-  renderGenerationPresets();
-  elements.generationPresetName.value = "";
-  scheduleUiSettingsSave();
-  setStatus("Saved Settings Deleted", `${removed.name} was removed. Your current form values were not changed.`);
 }
 
 function scheduleUiSettingsSave() {
@@ -1011,8 +930,6 @@ function syncWorkflowUploadDirectories() {
 }
 
 async function applyUiSettings(settings = {}) {
-  state.generationPresets = Array.isArray(settings.generationPresets) ? settings.generationPresets : state.generationPresets;
-  renderGenerationPresets();
   setTheme(settings.theme || "light");
   state.mainTab = ["referral", "leie", "other"].includes(settings.mainTab) ? settings.mainTab : "referral";
   state.subTab = settings.subTab === "generate" ? "generate" : "edit";
@@ -1357,7 +1274,6 @@ function applyInfo(info) {
   setUploadReadyState("idle");
   state.leieOutputFileName = String(info.uiSettings?.leieOutputFileName || state.leieOutputFileName || "").trim();
   renderUploadTargets(info.uploadTargets || []);
-  renderRecentRuns(info.recentRuns || []);
   const limits = info.constants?.processingLimits || {};
   if (limits.maxGeneratedFiles) elements.fileCount.max = String(limits.maxGeneratedFiles);
   if (limits.maxReferralsPerFile) elements.referralsPerFile.max = String(limits.maxReferralsPerFile);
@@ -1778,40 +1694,6 @@ function schedulePreviewUpdate() {
   state.previewTimer = window.setTimeout(() => updatePreviews(), 110);
 }
 
-function renderRecentRuns(runs = []) {
-  if (!elements.recentRunsList) return;
-  const normalizedRuns = (Array.isArray(runs) ? runs : []).slice(0, 20);
-  elements.recentRunsList.innerHTML = "";
-  if (normalizedRuns.length === 0) {
-    elements.recentRunsList.textContent = "No completed runs yet.";
-    return;
-  }
-  for (const run of normalizedRuns) {
-    const item = document.createElement("div");
-    item.className = "recent-run-item";
-    item.setAttribute("role", "button");
-    item.tabIndex = 0;
-    const name = run.archivePath ? run.archivePath.split(/[\\/]/).at(-1) : "No archive";
-    const status = document.createElement("strong");
-    status.textContent = `${run.status === "completed" ? "Completed" : "Needs attention"} · ${name}`;
-    const count = document.createElement("span");
-    count.textContent = `${Number(run.referralCount || 0).toLocaleString()} referrals`;
-    const detail = document.createElement("small");
-    detail.textContent = `${new Date(run.createdAt).toLocaleString()} · ${run.outputDir || "Output folder unavailable"}`;
-    item.append(status, count, detail);
-    item.addEventListener("click", () => {
-      state.lastRun = run;
-      showResultActions(run);
-    });
-    item.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter" && event.key !== " ") return;
-      event.preventDefault();
-      item.click();
-    });
-    elements.recentRunsList.appendChild(item);
-  }
-}
-
 function showResultActions(run) {
   state.lastRun = run || null;
   const hasRun = Boolean(run?.outputDir || run?.archivePath || run?.manifestPath);
@@ -1946,7 +1828,6 @@ function syncWorkflowText() {
   elements.futureCard.classList.toggle("hidden", !isOther);
   elements.sourceCard.classList.toggle("hidden", isGenerate || isOther);
   elements.referralDetailsCard.classList.toggle("hidden", isOther || isLeie);
-  elements.savedSettingsCard?.classList.toggle("hidden", !isGenerate);
   elements.leieDuplicateCard.classList.toggle("hidden", !isLeie);
   elements.outputCard.classList.toggle("hidden", isOther);
   elements.archiveNamingCard?.classList.toggle("hidden", isLeie);
@@ -2217,9 +2098,6 @@ async function runJob(command, payload, label) {
     setStatus(result.retryable ? "Upload Warning" : "Completed", result.message || `${label} completed.`);
     const run = { ...(result.run || {}), archivePath: result.archivePath, manifestPath: result.manifestPath, outputDir: result.outputDir, retryable: result.retryable };
     showResultActions(run);
-    const existingRuns = state.info?.recentRuns || [];
-    state.info.recentRuns = [run, ...existingRuns.filter((item) => item.runId !== run.runId)].slice(0, 20);
-    renderRecentRuns(state.info.recentRuns);
   } catch (error) {
     setStatus("Failed", error.message);
   } finally {
@@ -2237,8 +2115,6 @@ async function retryFailedUploads() {
     const result = await window.ccrs.runJob("retry-upload", { runId: state.lastRun.runId });
     const run = { ...(result.run || state.lastRun), archivePath: result.archivePath, manifestPath: result.manifestPath, outputDir: result.outputDir, retryable: result.retryable };
     showResultActions(run);
-    state.info.recentRuns = [run, ...(state.info?.recentRuns || []).filter((item) => item.runId !== run.runId)].slice(0, 20);
-    renderRecentRuns(state.info.recentRuns);
     setStatus(result.retryable ? "Upload Warning" : "Upload Complete", result.message);
   } catch (error) {
     setStatus("Failed", error.message);
@@ -2266,10 +2142,6 @@ function setupEventHandlers() {
     setStatus("Copied", "The archive path was copied to the clipboard.");
   });
   elements.retryFailedUploads?.addEventListener("click", retryFailedUploads);
-  elements.saveGenerationPreset?.addEventListener("click", saveGenerationPreset);
-  elements.deleteGenerationPreset?.addEventListener("click", deleteGenerationPreset);
-  elements.generationPreset?.addEventListener("change", applyGenerationPreset);
-
   for (const button of document.querySelectorAll("[data-theme]")) {
     button.addEventListener("click", () => {
       setTheme(button.dataset.theme);
@@ -2667,13 +2539,6 @@ function cacheElements() {
     openBatchManifest: $("open-batch-manifest"),
     copyArchivePath: $("copy-archive-path"),
     retryFailedUploads: $("retry-failed-uploads"),
-    recentRunsList: $("recent-runs-list"),
-    savedSettingsCard: $("saved-settings-card"),
-    savedSettingsCount: $("saved-settings-count"),
-    generationPreset: $("generation-preset"),
-    generationPresetName: $("generation-preset-name"),
-    saveGenerationPreset: $("save-generation-preset"),
-    deleteGenerationPreset: $("delete-generation-preset"),
     sourceCard: $("source-card"),
     sourceFileCount: $("source-file-count"),
     sourceSubtitle: $("source-subtitle"),

@@ -1,5 +1,12 @@
 # CCRS File Processing Framework Version 1.3.9
 
+## Unreleased UI Simplification
+
+- Removed Generation preset, Preset name, and their saved-settings controls.
+- Removed the Recent Runs section from the interface.
+- Kept the current run's status, progress, primary action, manifest, output-folder, copy-path, and failed-upload retry controls.
+- Changed the run panel from a floating overlay to a normal final workflow section so it does not cover other fields.
+
 ## [Version 1.3.9](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.9) Release Notes
 
 ### Release Summary

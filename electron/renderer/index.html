@@ -422,53 +422,6 @@
               </div>
             </article>
 
-            <article id="saved-settings-card" class="content-card glass-card hidden">
-              <details id="saved-generation-settings" class="saved-settings">
-                <summary>
-                  <span class="saved-settings-summary-copy">
-                    <span class="saved-settings-kicker">Optional</span>
-                    <strong>Reuse settings from a previous batch</strong>
-                    <small>Save time when you regularly generate files with the same counts, naming, ICN, Station, and referral options.</small>
-                  </span>
-                  <span class="saved-settings-summary-action">Manage saved settings</span>
-                </summary>
-                <div class="saved-settings-body">
-                  <div class="saved-settings-explainer" role="note" aria-label="About saved generation settings">
-                    <div>
-                      <strong>What gets saved</strong>
-                      <p>Generation counts, Referral and ICN formats, selected Stations, file naming, output handling, and optional referral values.</p>
-                    </div>
-                    <div>
-                      <strong>What never gets saved</strong>
-                      <p>Source or output folders, server selections, usernames, passwords, and upload credentials.</p>
-                    </div>
-                  </div>
-
-                  <div class="saved-settings-grid">
-                    <label class="field-block saved-settings-load">
-                      <span>Load saved settings</span>
-                      <select id="generation-preset"><option value="">No saved settings yet</option></select>
-                      <small class="helper-text">Choosing an item fills in this generation form. Your current folders and upload choices stay unchanged.</small>
-                    </label>
-                    <button id="delete-generation-preset" class="toolbar-button danger-subtle" disabled>Delete selected</button>
-                  </div>
-
-                  <div class="saved-settings-save">
-                    <div class="saved-settings-save-copy">
-                      <h3>Save the current generation settings</h3>
-                      <p>Give the current form a recognizable name so you can load it again later.</p>
-                    </div>
-                    <label class="field-block">
-                      <span>Name for these settings</span>
-                      <input id="generation-preset-name" type="text" maxlength="60" placeholder="Example: Monthly SQA 10-station batch" />
-                    </label>
-                    <button id="save-generation-preset" class="toolbar-button">Save current settings</button>
-                  </div>
-                  <p id="saved-settings-count" class="saved-settings-count">No saved settings yet. This section is optional.</p>
-                </div>
-              </details>
-            </article>
-
             <article id="output-card" class="content-card glass-card">
               <div class="section-head">
                 <div>
@@ -646,10 +599,6 @@
                   <button id="copy-archive-path" class="toolbar-button">Copy Output Path</button>
                   <button id="retry-failed-uploads" class="toolbar-button primary hidden">Retry Failed Uploads</button>
                 </div>
-                <details id="recent-runs" class="recent-runs">
-                  <summary>Recent runs</summary>
-                  <div id="recent-runs-list" class="recent-runs-list">No completed runs yet.</div>
-                </details>
               </div>
             </article>
           </section>

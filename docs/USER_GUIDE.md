@@ -272,18 +272,6 @@ Choose:
 
 This mode does not require a source folder. It can optionally upload the completed archive to the selected Referral environments. Select `Generate Files` to review and run it.
 
-### Reuse Settings from a Previous Batch
-
-This optional section appears only under `Generate New Files` and stays collapsed unless you open it. Use it when you regularly create batches with the same business settings. You do not need it for a normal generation run.
-
-Saved settings include file and referral counts, Referral and ICN formats, selected Stations, file naming, output handling, and optional referral values. They never include source or output folders, server selections, usernames, passwords, or upload credentials.
-
-Open `Reuse settings from a previous batch`, then:
-
-- Choose an item under `Load saved settings` to fill in the generation form. Current folders and upload choices remain unchanged.
-- Enter a recognizable name under `Save the current generation settings`, then select `Save current settings` to reuse the current form later.
-- Select `Delete selected` to remove the chosen saved settings without changing the values currently shown in the form.
-
 ## Referral Number and ICN
 
 ### Referral Number
@@ -411,9 +399,9 @@ Target toggles remain disabled until the main upload option is enabled.
 
 If one destination fails after the local artifact is complete, the app records the failed target and continues recording the completed ones. Select `Retry Failed Uploads` to resend the existing artifact only to the failed destinations. Do not rerun generation or processing unless the underlying data must change.
 
-## Recent Runs and Result Actions
+## Current Run Result Actions
 
-The `Recent runs` area stores the latest 20 sanitized run summaries in the current user's AppData. It does not store credentials or source-file contents. Select a run to make these actions available:
+After the current run completes, the app shows the actions that apply to that result:
 
 - `Open Output Folder`
 - `View Batch Manifest` for referral runs

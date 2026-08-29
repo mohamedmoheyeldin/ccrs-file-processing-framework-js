@@ -55,7 +55,7 @@ const { buildArchiveBasename, DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename 
 const { assertSourceFilesWithinLimits, getProcessingLimits } = require("./limits");
 const { writeFileAtomic } = require("./atomicFile");
 const { assertSafeFolderRelationship, cleanupStaleRunStagingDirectories } = require("./batchSafety");
-const { getRun, loadRunHistory, saveRun } = require("./runHistory");
+const { getRun, saveRun } = require("./runHistory");
 const { allowedUploadTargets, assertUploadTargets } = require("./workflowPolicy");
 
 ensureRuntimeFiles();
@@ -212,7 +212,6 @@ function getInfo() {
       referralUploadTargets: allowedUploadTargets("referral"),
       leieUploadTargets: allowedUploadTargets("leie"),
     },
-    recentRuns: loadRunHistory(),
     generatorDefaults: getGeneratorDefaults(),
     stations: loadStations(),
     seocOptions: getSeocOptions(),
