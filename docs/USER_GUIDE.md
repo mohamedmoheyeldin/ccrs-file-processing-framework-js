@@ -272,9 +272,17 @@ Choose:
 
 This mode does not require a source folder. It can optionally upload the completed archive to the selected Referral environments. Select `Generate Files` to review and run it.
 
-### Generation Presets
+### Reuse Settings from a Previous Batch
 
-Enter a `Preset name` and select `Save Preset` to keep reusable generation settings such as file/referral counts, naming, ICN mode, selected Stations, and optional referral overrides. Presets intentionally exclude source/output folders, upload selections, and credentials. Choose a saved preset to apply it while preserving the current folders and upload configuration, or select `Delete` to remove it.
+This optional section appears only under `Generate New Files` and stays collapsed unless you open it. Use it when you regularly create batches with the same business settings. You do not need it for a normal generation run.
+
+Saved settings include file and referral counts, Referral and ICN formats, selected Stations, file naming, output handling, and optional referral values. They never include source or output folders, server selections, usernames, passwords, or upload credentials.
+
+Open `Reuse settings from a previous batch`, then:
+
+- Choose an item under `Load saved settings` to fill in the generation form. Current folders and upload choices remain unchanged.
+- Enter a recognizable name under `Save the current generation settings`, then select `Save current settings` to reuse the current form later.
+- Select `Delete selected` to remove the chosen saved settings without changing the values currently shown in the form.
 
 ## Referral Number and ICN
 

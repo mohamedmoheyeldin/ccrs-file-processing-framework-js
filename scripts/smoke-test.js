@@ -205,6 +205,9 @@ test("Version 1.3.9 metadata, safety controls, and release automation stay conso
   assert.match(rendererHtml, /id="retry-failed-uploads"/);
   assert.match(rendererHtml, /id="recent-runs"/);
   assert.match(rendererHtml, /id="generation-preset"/);
+  assert.match(rendererHtml, /Reuse settings from a previous batch/);
+  assert.match(rendererHtml, /What never gets saved/);
+  assert.match(rendererApp, /elements\.savedSettingsCard.*!isGenerate/);
   assert.match(jobUi, /normalizedPhase/);
 });
 

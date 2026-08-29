@@ -191,7 +191,7 @@ function markdownToHtml(markdown, title) {
         margin: 0;
         font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
         color: var(--text);
-        background: #f3f6fb;
+        background: #ffffff;
       }
       main {
         max-width: 900px;

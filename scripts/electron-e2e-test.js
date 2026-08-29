@@ -4,6 +4,13 @@ const os = require("node:os");
 const path = require("node:path");
 const { _electron: electron } = require("playwright");
 
+async function saveOptionalUiPreview(window, fileName) {
+  const previewDirectory = String(process.env.CCRS_E2E_SCREENSHOT_DIR || "").trim();
+  if (!previewDirectory) return;
+  fs.mkdirSync(previewDirectory, { recursive: true });
+  await window.screenshot({ path: path.join(previewDirectory, fileName) });
+}
+
 async function assertControlSystem(window) {
   const audit = await window.evaluate(() => {
     function isVisible(element) {
@@ -101,11 +108,20 @@ async function run() {
     assert.equal(await window.locator("#status-badge").textContent(), "Ready");
     assert.equal(await window.locator("#job-progress-wrap").isHidden(), true);
     assert.equal(await window.locator("#pre-run-overlay").isHidden(), true);
-    assert.equal(await window.locator("#generation-preset").locator("..").locator(".compact-select-trigger").isVisible(), true);
+    assert.equal(await window.locator("#saved-settings-card").isHidden(), true);
     assert.equal(await window.locator("meta[http-equiv='Content-Security-Policy']").count(), 1);
     const nativeSelectCount = await window.locator("select").count();
     assert.equal(await window.locator(".compact-select").count(), nativeSelectCount);
     await window.locator("[data-sub-tab='generate']").click();
+    assert.equal(await window.locator("#saved-settings-card").isVisible(), true);
+    assert.equal(await window.locator("#saved-generation-settings").getAttribute("open"), null);
+    assert.match(await window.locator("#saved-generation-settings summary").textContent(), /Optional.*Reuse settings from a previous batch/s);
+    await window.locator("#saved-settings-card").scrollIntoViewIfNeeded();
+    await saveOptionalUiPreview(window, "saved-settings-collapsed.png");
+    await window.locator("#saved-generation-settings summary").click();
+    assert.equal(await window.locator("#generation-preset").locator("..").locator(".compact-select-trigger").isVisible(), true);
+    assert.match(await window.locator(".saved-settings-explainer").textContent(), /What gets saved.*What never gets saved/s);
+    await saveOptionalUiPreview(window, "saved-settings-expanded.png");
     await window.locator("#toggle-optional-fields").click();
     const matchTrigger = window.locator("#match-suffix-length").locator("..").locator(".compact-select-trigger");
     await matchTrigger.focus();

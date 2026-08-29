@@ -876,7 +876,8 @@ function collectUiSettings() {
 function renderGenerationPresets() {
   if (!elements.generationPreset) return;
   const selected = elements.generationPreset.value;
-  elements.generationPreset.innerHTML = '<option value="">Choose a saved preset</option>';
+  const hasSavedSettings = state.generationPresets.length > 0;
+  elements.generationPreset.innerHTML = `<option value="">${hasSavedSettings ? "Choose saved settings" : "No saved settings yet"}</option>`;
   state.generationPresets.forEach((preset, index) => {
     const option = document.createElement("option");
     option.value = String(index);
@@ -884,46 +885,71 @@ function renderGenerationPresets() {
     elements.generationPreset.appendChild(option);
   });
   if ([...elements.generationPreset.options].some((option) => option.value === selected)) elements.generationPreset.value = selected;
+  elements.generationPreset.disabled = !hasSavedSettings;
+  elements.deleteGenerationPreset.disabled = !hasSavedSettings || !elements.generationPreset.value;
+  if (elements.savedSettingsCount) {
+    elements.savedSettingsCount.textContent = hasSavedSettings
+      ? `${state.generationPresets.length} saved setting${state.generationPresets.length === 1 ? "" : "s"}. Saved locally for this Windows user.`
+      : "No saved settings yet. This section is optional.";
+  }
 }
 
 function safePresetSettings() {
   const settings = collectUiSettings();
-  for (const key of ["inputDir", "outputDir", "uploadEnabled", "uploadTargets", "generationPresets", "acknowledgedReleaseKey", "leieValidationBatchId", "leieOutputFileName"]) delete settings[key];
-  settings.mainTab = "referral";
+  for (const key of [
+    "theme",
+    "mainTab",
+    "subTab",
+    "optionalFieldsVisible",
+    "inputDir",
+    "outputDir",
+    "uploadEnabled",
+    "uploadTargets",
+    "generationPresets",
+    "acknowledgedReleaseKey",
+    "leieDuplicateKey",
+    "leieDuplicateHandling",
+    "leieValidationBatchId",
+    "leieOutputFileName",
+  ]) delete settings[key];
   return settings;
 }
 
 function saveGenerationPreset() {
   const name = readValue("generation-preset-name").slice(0, 60);
   if (!name) {
-    setStatus("Preset Name Needed", "Enter a name before saving this generation preset.");
+    setStatus("Name Required", "Enter a recognizable name before saving these generation settings.");
+    elements.generationPresetName.focus();
     return;
   }
   const preset = { name, settings: safePresetSettings() };
   state.generationPresets = [preset, ...state.generationPresets.filter((item) => item.name.toLowerCase() !== name.toLowerCase())].slice(0, 20);
   renderGenerationPresets();
   elements.generationPreset.value = "0";
+  elements.deleteGenerationPreset.disabled = false;
   scheduleUiSettingsSave();
-  setStatus("Preset Saved", `${name} was saved without folders or upload credentials.`);
+  setStatus("Settings Saved", `${name} is ready to reuse. Folders, servers, and credentials were not saved.`);
 }
 
 async function applyGenerationPreset() {
   const preset = state.generationPresets[Number(elements.generationPreset.value)];
+  elements.deleteGenerationPreset.disabled = !preset;
   if (!preset) return;
   const current = collectUiSettings();
   await applyUiSettings({ ...current, ...preset.settings, inputDir: current.inputDir, outputDir: current.outputDir, uploadEnabled: current.uploadEnabled, uploadTargets: current.uploadTargets, generationPresets: state.generationPresets });
   elements.generationPresetName.value = preset.name;
-  setStatus("Preset Applied", `${preset.name} was applied. Folder and upload selections were preserved.`);
+  setStatus("Settings Loaded", `${preset.name} filled in the generation form. Your folders and upload choices stayed unchanged.`);
 }
 
 function deleteGenerationPreset() {
   const index = Number(elements.generationPreset.value);
   if (!Number.isInteger(index) || !state.generationPresets[index]) return;
   const [removed] = state.generationPresets.splice(index, 1);
+  elements.generationPreset.value = "";
   renderGenerationPresets();
   elements.generationPresetName.value = "";
   scheduleUiSettingsSave();
-  setStatus("Preset Deleted", `${removed.name} was removed.`);
+  setStatus("Saved Settings Deleted", `${removed.name} was removed. Your current form values were not changed.`);
 }
 
 function scheduleUiSettingsSave() {
@@ -1920,6 +1946,7 @@ function syncWorkflowText() {
   elements.futureCard.classList.toggle("hidden", !isOther);
   elements.sourceCard.classList.toggle("hidden", isGenerate || isOther);
   elements.referralDetailsCard.classList.toggle("hidden", isOther || isLeie);
+  elements.savedSettingsCard?.classList.toggle("hidden", !isGenerate);
   elements.leieDuplicateCard.classList.toggle("hidden", !isLeie);
   elements.outputCard.classList.toggle("hidden", isOther);
   elements.archiveNamingCard?.classList.toggle("hidden", isLeie);
@@ -2641,6 +2668,8 @@ function cacheElements() {
     copyArchivePath: $("copy-archive-path"),
     retryFailedUploads: $("retry-failed-uploads"),
     recentRunsList: $("recent-runs-list"),
+    savedSettingsCard: $("saved-settings-card"),
+    savedSettingsCount: $("saved-settings-count"),
     generationPreset: $("generation-preset"),
     generationPresetName: $("generation-preset-name"),
     saveGenerationPreset: $("save-generation-preset"),
