@@ -2,6 +2,8 @@
 
 ## Unreleased UI Simplification
 
+- Replaced the Referral Number prefix checkbox with clear VA, iFAMS, alternating VA + iFAMS, and custom-prefix choices.
+- Redesigned existing-file handling as explanatory selection cards, with Keep existing files recommended and the destructive option renamed Replace folder contents after success.
 - Removed Generation preset, Preset name, and their saved-settings controls.
 - Removed the Recent Runs section from the interface.
 - Kept the current run's status, progress, primary action, manifest, output-folder, copy-path, and failed-upload retry controls.

@@ -103,6 +103,7 @@ Files that are kept in sync from the shipped app:
 - Search all imported station rows by station key, station ID, VISN, station name, or parent station ID; selection is optional
 - Optionally select synchronized SEOC Number and SEOC ID pairs, including six special selection-only pairs
 - Choose how ICNs should be generated: derive `TEST` plus the Referral Number body, keep `TEST`, keep `TEST` with a custom suffix, or use a custom full ICN base
+- Choose `VA`, `iFAMS`, alternating `VA + iFAMS`, or an alphanumeric custom prefix for generated Referral Numbers
 - Match the last 3, 4, or 5 characters of each Referral Number and ICN
 - Produce final `.gz` archives
 - Import upload settings from `WinSCP.ini` or credentials JSON

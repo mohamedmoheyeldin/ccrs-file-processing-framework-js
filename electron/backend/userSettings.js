@@ -17,6 +17,8 @@ const DEFAULT_UI_SETTINGS = {
   archiveAppendReferralDateTime: false,
   useIfamsFilenamePrefix: false,
   useIfamsReferralPrefix: false,
+  referralPrefixMode: "va",
+  customReferralPrefix: "",
   referralCode: "",
   ssnValue: "999-99-0001",
   randomizeSsn: true,
@@ -101,6 +103,13 @@ function normalizeUiSettings(rawValue = {}) {
     ),
     useIfamsFilenamePrefix: toBoolean(rawValue.useIfamsFilenamePrefix, DEFAULT_UI_SETTINGS.useIfamsFilenamePrefix),
     useIfamsReferralPrefix: toBoolean(rawValue.useIfamsReferralPrefix, DEFAULT_UI_SETTINGS.useIfamsReferralPrefix),
+    referralPrefixMode: ["va", "ifams", "mixed", "custom"].includes(String(rawValue.referralPrefixMode || "").trim().toLowerCase())
+      ? String(rawValue.referralPrefixMode).trim().toLowerCase()
+      : toBoolean(rawValue.useIfamsReferralPrefix, DEFAULT_UI_SETTINGS.useIfamsReferralPrefix)
+        ? "ifams"
+        : DEFAULT_UI_SETTINGS.referralPrefixMode,
+    customReferralPrefix: ((String(rawValue.customReferralPrefix || "").match(/[A-Za-z0-9]/g) || []).join(""))
+      .slice(0, 12),
     referralCode: String(rawValue.referralCode || "").trim(),
     ssnValue: String(rawValue.ssnValue || DEFAULT_UI_SETTINGS.ssnValue).trim() || DEFAULT_UI_SETTINGS.ssnValue,
     randomizeSsn: toBoolean(rawValue.randomizeSsn, DEFAULT_UI_SETTINGS.randomizeSsn),

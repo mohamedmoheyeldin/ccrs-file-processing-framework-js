@@ -1370,6 +1370,93 @@ body.theme-dark .leie-upload-validation-step5 {
   border-color: rgba(13, 110, 253, 0.28);
 }
 
+.choice-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.choice-card {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  min-height: 76px;
+  padding: 14px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  background: var(--panel-strong);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
+.choice-card:hover {
+  border-color: rgba(13, 110, 253, 0.36);
+  transform: translateY(-1px);
+}
+
+.choice-card:has(input:checked) {
+  border-color: rgba(13, 110, 253, 0.72);
+  background: rgba(13, 110, 253, 0.08);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+body.theme-dark .choice-card:has(input:checked) {
+  background: rgba(102, 171, 255, 0.14);
+}
+
+.choice-card > input {
+  margin: 2px 0 0;
+}
+
+.choice-card > span {
+  display: grid;
+  gap: 5px;
+}
+
+.choice-card strong {
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.choice-card small {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.choice-card em {
+  display: inline-flex;
+  margin-left: 6px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(52, 199, 89, 0.15);
+  color: #188342;
+  font-size: 0.68rem;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+body.theme-dark .choice-card em {
+  color: #7ee0a1;
+}
+
+.referral-number-field,
+.output-behavior-heading {
+  gap: 10px;
+}
+
+.referral-prefix-choices {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.compact-field {
+  gap: 6px;
+}
+
 .generator-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1656,6 +1743,8 @@ body.theme-dark .upload-config-card {
 }
 
 .output-retention-card {
+  display: grid;
+  gap: 16px;
   padding: 16px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--panel-border);
@@ -1694,10 +1783,29 @@ body.theme-dark .archive-options-panel {
 }
 
 .retention-follow-up {
+  display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px 14px;
+  padding-top: 16px;
+  border-top: 1px solid var(--panel-border);
+}
+
+.retention-follow-up > div {
+  display: grid;
+  gap: 4px;
+}
+
+.compact-choice {
+  width: min(100%, 420px);
+  min-height: 68px;
+}
+
+.danger-choice:has(input:checked) {
+  border-color: rgba(214, 71, 90, 0.72);
+  background: rgba(214, 71, 90, 0.08);
+  box-shadow: 0 0 0 3px rgba(214, 71, 90, 0.1);
 }
 
 .retention-label {
@@ -1867,6 +1975,10 @@ select:disabled {
   }
 
   .archive-naming-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .choice-card-grid {
     grid-template-columns: 1fr;
   }
 

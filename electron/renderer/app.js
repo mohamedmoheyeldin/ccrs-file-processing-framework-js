@@ -567,9 +567,15 @@ function sanitizeIcnInput(value, mode = getSelectedIcnMode()) {
 function sanitizeReferralNumberInput(value) {
   const limit = getReferralNumberBodyLimit();
   let normalized = String(value || "").trim();
-
-  if (/^VA/i.test(normalized)) {
-    normalized = normalized.slice(2);
+  const prefixOptions = getReferralPrefixOptions();
+  const prefixes = [prefixOptions.customReferralPrefix, "iFAMS", "VA"]
+    .filter(Boolean)
+    .sort((left, right) => right.length - left.length);
+  for (const prefix of prefixes) {
+    if (normalized.toLowerCase().startsWith(prefix.toLowerCase())) {
+      normalized = normalized.slice(prefix.length);
+      break;
+    }
   }
 
   return ((normalized.match(/[A-Za-z0-9]/g) || []).join("")).slice(0, limit);
@@ -765,17 +771,40 @@ function collectArchiveNamingOptions() {
 }
 
 function syncReferralPrefixState() {
-  const prefix = getReferralPrefix();
+  const { referralPrefixMode, customReferralPrefix } = getReferralPrefixOptions();
+  const isCustom = referralPrefixMode === "custom";
+  elements.customReferralPrefixRow?.classList.toggle("hidden", !isCustom);
+  const prefix = referralPrefixMode === "ifams"
+    ? "iFAMS"
+    : isCustom
+      ? customReferralPrefix || "your custom prefix"
+      : referralPrefixMode === "mixed"
+        ? "VA or iFAMS"
+        : "VA";
   if (elements.referralCode) {
-    elements.referralCode.placeholder = `Enter only the part after ${prefix}`;
+    elements.referralCode.placeholder = referralPrefixMode === "mixed"
+      ? "Enter one starting number or body for both prefixes"
+      : `Enter the part after ${prefix}`;
   }
   if (elements.referralPrefixHelp) {
-    elements.referralPrefixHelp.textContent = `\`${prefix}\` will be generated automatically. Enter only the rest of the Referral Number.`;
+    elements.referralPrefixHelp.textContent = referralPrefixMode === "mixed"
+      ? "The batch alternates VA and iFAMS while incrementing one shared sequence."
+      : `${prefix} will be added automatically. Enter the starting number or body once.`;
   }
 }
 
-function getReferralPrefix() {
-  return readChecked("use-ifams-referral-prefix") ? "iFAMS" : "VA";
+function getReferralPrefixMode() {
+  return document.querySelector('input[name="referral-prefix-mode"]:checked')?.value || "va";
+}
+
+function getReferralPrefixOptions() {
+  const referralPrefixMode = getReferralPrefixMode();
+  const customReferralPrefix = readValue("custom-referral-prefix");
+  return {
+    referralPrefixMode,
+    customReferralPrefix,
+    referralPrefix: referralPrefixMode === "ifams" ? "iFAMS" : "VA",
+  };
 }
 
 function sharedPayload() {
@@ -792,7 +821,7 @@ function sharedPayload() {
       randomizeDob: readChecked("randomize-dob"),
       randomizeStationId: readChecked("randomize-station-id"),
       selectedStationIds: readChecked("randomize-station-id") ? [] : [...state.selectedStationIds],
-      referralPrefix: getReferralPrefix(),
+      ...getReferralPrefixOptions(),
       matchSuffixLength: Number(readValue("match-suffix-length")),
     },
     listDateOverride: getListDateOverride(),
@@ -836,7 +865,8 @@ function collectUiSettings() {
     archiveAppendNetwork: readChecked("archive-append-network"),
     archiveAppendReferralDateTime: readChecked("archive-append-referral-date-time"),
     useIfamsFilenamePrefix: readChecked("use-ifams-filename-prefix"),
-    useIfamsReferralPrefix: readChecked("use-ifams-referral-prefix"),
+    referralPrefixMode: getReferralPrefixMode(),
+    customReferralPrefix: readValue("custom-referral-prefix"),
     referralCode: readValue("referral-code"),
     ssnValue: readValue("ssn-value"),
     randomizeSsn: readChecked("randomize-ssn"),
@@ -989,7 +1019,14 @@ async function applyUiSettings(settings = {}) {
   $("archive-append-network").checked = Boolean(settings.archiveAppendNetwork);
   $("archive-append-referral-date-time").checked = Boolean(settings.archiveAppendReferralDateTime);
   $("use-ifams-filename-prefix").checked = Boolean(settings.useIfamsFilenamePrefix);
-  $("use-ifams-referral-prefix").checked = Boolean(settings.useIfamsReferralPrefix);
+  const referralPrefixMode = ["va", "ifams", "mixed", "custom"].includes(settings.referralPrefixMode)
+    ? settings.referralPrefixMode
+    : settings.useIfamsReferralPrefix
+      ? "ifams"
+      : "va";
+  const referralPrefixInput = document.querySelector(`input[name="referral-prefix-mode"][value="${referralPrefixMode}"]`);
+  if (referralPrefixInput) referralPrefixInput.checked = true;
+  $("custom-referral-prefix").value = settings.customReferralPrefix || "";
   $("clear-output").checked = Boolean(settings.clearOutput);
   $("keep-existing-files").checked = !Boolean(settings.clearOutput);
   $("keep-processed-json").checked = settings.keepProcessedJson !== false;
@@ -1550,7 +1587,14 @@ function applyFieldErrors(fieldErrors = {}) {
     $("override-referral-last-update-date"),
     fieldErrors.ReferralLastUpdateDate
   );
-  setPreviewHelperState(elements.referralPreview, $("referral-code"), fieldErrors.referralReplacementCode);
+  const referralError = fieldErrors.referralPrefix || fieldErrors.referralReplacementCode;
+  setPreviewHelperState(
+    elements.referralPreview,
+    fieldErrors.referralPrefix ? $("custom-referral-prefix") : $("referral-code"),
+    referralError
+  );
+  setInputValidity($("referral-code"), Boolean(fieldErrors.referralReplacementCode));
+  setInputValidity($("custom-referral-prefix"), Boolean(fieldErrors.referralPrefix));
   setPreviewHelperState(elements.icnPreview, $("icn-custom-value"), fieldErrors.icnValue);
   setPreviewHelperState(elements.stationIdPreview, $("override-station-id"), fieldErrors.StationID);
   setPreviewHelperState(
@@ -1638,7 +1682,7 @@ async function updatePreviews() {
       randomizeDob: readChecked("randomize-dob"),
       randomizeStationId: readChecked("randomize-station-id"),
       selectedStationIds: readChecked("randomize-station-id") ? [] : [...state.selectedStationIds],
-      referralPrefix: getReferralPrefix(),
+      ...getReferralPrefixOptions(),
       matchSuffixLength: Number(readValue("match-suffix-length")),
     },
     optionalOverrides: collectOptionalOverrides(),
@@ -1666,7 +1710,9 @@ async function updatePreviews() {
     );
     elements.archivePreview.textContent = `Preview: ${preview.archiveBasename}.gz`;
     elements.referralPreview.textContent = preview.referralNumber
-      ? `Preview: ${preview.referralNumber}`
+      ? getReferralPrefixMode() === "mixed"
+        ? `Preview: ${preview.referralNumber}; the next referral uses iFAMS and continues the shared sequence.`
+        : `Preview: ${preview.referralNumber}`
       : "Preview: default referral numbers from source files";
     elements.icnPreview.textContent = preview.icnPreview || "Preview: TEST + 13 generated digits";
     elements.stationIdPreview.textContent = readChecked("randomize-station-id")
@@ -2161,7 +2207,11 @@ function setupEventHandlers() {
     "archive-append-referral-date-time",
     "use-ifams-filename-prefix",
     "referral-code",
-    "use-ifams-referral-prefix",
+    "referral-prefix-va",
+    "referral-prefix-ifams",
+    "referral-prefix-mixed",
+    "referral-prefix-custom",
+    "custom-referral-prefix",
     "icn-custom-value",
     "ssn-value",
     "match-suffix-length",
@@ -2188,7 +2238,10 @@ function setupEventHandlers() {
       if (id === "referral-code") {
         $(id).value = sanitizeReferralNumberInput($(id).value);
       }
-      if (id === "use-ifams-referral-prefix") {
+      if (id.startsWith("referral-prefix-") || id === "custom-referral-prefix") {
+        if (id === "custom-referral-prefix") {
+          $(id).value = ((String($(id).value || "").match(/[A-Za-z0-9]/g) || []).join("")).slice(0, 12);
+        }
         syncReferralPrefixState();
       }
       if (id === "icn-custom-value") {
@@ -2522,6 +2575,8 @@ function cacheElements() {
     referralLastUpdateDateHelp: $("referral-last-update-date-help"),
     paymentAuthorityCodePreview: $("payment-authority-code-preview"),
     referralCode: $("referral-code"),
+    customReferralPrefix: $("custom-referral-prefix"),
+    customReferralPrefixRow: $("custom-referral-prefix-row"),
     referralPrefixHelp: $("referral-prefix-help"),
     referralPreview: $("referral-preview"),
     referralDetailsCard: $("referral-details-card"),

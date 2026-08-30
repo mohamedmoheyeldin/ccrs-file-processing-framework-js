@@ -9,13 +9,22 @@
     const stations = payload.identityOptions?.randomizeStationId
       ? "Random from all approved stations"
       : (payload.identityOptions?.selectedStationIds || []).join(", ") || "Keep source station values";
+    const referralPrefixMode = payload.identityOptions?.referralPrefixMode || "va";
+    const referralPrefix = referralPrefixMode === "ifams"
+      ? "iFAMS for every referral"
+      : referralPrefixMode === "mixed"
+        ? "Alternate VA and iFAMS"
+        : referralPrefixMode === "custom"
+          ? `${payload.identityOptions?.customReferralPrefix || "Custom"} for every referral`
+          : "VA for every referral";
     return [
       ["Workflow", command === "generate" ? "Generate Referral Files" : command === "process-leie" ? "Process LEIE Data" : "Process Referral Files"],
       ["Source", payload.inputDir || (command === "generate" ? "Built-in referral templates" : "Not selected")],
       ["Output", payload.outputDir || "Not selected"],
       [command === "generate" ? "Total referrals" : "Source files", total.toLocaleString()],
-      ["Output behavior", payload.clearOutput ? "Delete output folder contents after staging succeeds" : "Keep existing files; stop on any name collision"],
+      ["Output behavior", payload.clearOutput ? "Replace folder contents only after the new batch succeeds" : "Keep existing files; stop safely on any name collision"],
       ["Archive", command === "process-leie" ? payload.outputFileName || "Generated workbook name" : `${payload.archiveBasename || "referrals"}_YYYYMMDD_HHMMSS.gz`],
+      ["Referral prefix", command === "process-leie" ? "Not applicable" : referralPrefix],
       ["Stations", command === "process-leie" ? "Not applicable" : stations],
       ["Upload destinations", uploads.length ? uploads.map((item) => `${item.server_name}: ${item.remote_directory}`).join("; ") : "Local output only"],
     ];

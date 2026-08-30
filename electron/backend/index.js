@@ -11,16 +11,20 @@ const {
   PAYMENT_AUTHORITY_CODE_LENGTH,
   REFERRAL_NUMBER_DIGIT_COUNT,
   REFERRAL_NUMBER_PREFIX,
+  REFERRAL_PREFIX_MODES,
   STATION_ID_MAX_LENGTH,
   extractJsonChangeDefaults,
   extractListDate,
   generateOptionalFieldOverrides,
   normalizeReferralPrefix,
+  normalizeReferralPrefixMode,
   prepareIcnSettings,
+  resolveReferralPrefix,
   validateIsoDate,
   validateIcnSettings,
   validateIsoDateTime,
   validatePaymentAuthorityCode,
+  validateCustomReferralPrefix,
   validateReferralNumberStart,
   validateSsn,
   validateStationId,
@@ -342,10 +346,13 @@ function buildPreview(payload) {
     : buildArchiveBasename(payload);
 
   let normalizedReferral = "";
-  if (referralValue && !fieldErrors.referralReplacementCode) {
+  const referralPrefixOptions = fieldErrors.referralPrefix
+    ? null
+    : prepareReferralPrefixOptions(payload.identityOptions);
+  if (referralValue && !fieldErrors.referralReplacementCode && !fieldErrors.referralPrefix) {
     normalizedReferral = validateReferralNumberStart(
       referralValue,
-      payload.identityOptions?.referralPrefix
+      resolveReferralPrefix(referralPrefixOptions, 1)
     );
   }
 
@@ -398,11 +405,18 @@ function collectFieldErrors(payload) {
     }
   }
 
-  if ((payload.referralReplacementCode || "").trim()) {
+  let referralPrefixOptions;
+  try {
+    referralPrefixOptions = prepareReferralPrefixOptions(payload.identityOptions);
+  } catch (error) {
+    fieldErrors.referralPrefix = error.message;
+  }
+
+  if ((payload.referralReplacementCode || "").trim() && referralPrefixOptions) {
     try {
       validateReferralNumberStart(
         payload.referralReplacementCode,
-        payload.identityOptions?.referralPrefix
+        resolveReferralPrefix(referralPrefixOptions, 1)
       );
     } catch (error) {
       fieldErrors.referralReplacementCode = error.message;
@@ -529,7 +543,8 @@ function prepareBackgroundPayload(command, payload = {}) {
 }
 
 function buildCommonArgs(payload, progressCallback) {
-  const referralPrefix = normalizeReferralPrefix(payload.identityOptions?.referralPrefix);
+  const referralPrefixOptions = prepareReferralPrefixOptions(payload.identityOptions);
+  const referralPrefix = resolveReferralPrefix(referralPrefixOptions, 1);
   const selectedStationIds = [...new Set(
     (Array.isArray(payload.identityOptions?.selectedStationIds)
       ? payload.identityOptions.selectedStationIds
@@ -544,6 +559,8 @@ function buildCommonArgs(payload, progressCallback) {
     randomizeStationId: Boolean(payload.identityOptions?.randomizeStationId),
     selectedStationIds,
     referralPrefix,
+    referralPrefixMode: referralPrefixOptions.referralPrefixMode,
+    customReferralPrefix: referralPrefixOptions.customReferralPrefix,
     matchSuffixLength: [3, 4, 5].includes(Number(payload.identityOptions?.matchSuffixLength))
       ? Number(payload.identityOptions.matchSuffixLength)
       : 5,
@@ -574,6 +591,21 @@ function buildCommonArgs(payload, progressCallback) {
     progressCallback,
     uploadOptions: buildUploadOptions(payload),
     archiveBasename,
+  };
+}
+
+function prepareReferralPrefixOptions(rawOptions = {}) {
+  const referralPrefixMode = normalizeReferralPrefixMode(
+    rawOptions?.referralPrefixMode,
+    rawOptions?.referralPrefix
+  );
+  const customReferralPrefix = referralPrefixMode === REFERRAL_PREFIX_MODES.CUSTOM
+    ? validateCustomReferralPrefix(rawOptions?.customReferralPrefix)
+    : "";
+  return {
+    referralPrefixMode,
+    customReferralPrefix,
+    referralPrefix: normalizeReferralPrefix(rawOptions?.referralPrefix),
   };
 }
 

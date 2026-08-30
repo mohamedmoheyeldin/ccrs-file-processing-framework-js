@@ -554,6 +554,53 @@ test("Referral numbers can use iFAMS and map directly to matching TEST ICNs", ()
   assert.equal(generateReferralNumber("26S600001", 2, "iFAMS"), "iFAMS26S600002");
   assert.equal(generateIcnFromReferralNumber("VA26S600001"), "TEST26S600001");
   assert.equal(generateIcnFromReferralNumber("iFAMS26S600001"), "TEST26S600001");
+  assert.equal(generateReferralNumber("26S600001", 1, "CCRS"), "CCRS26S600001");
+  assert.equal(generateIcnFromReferralNumber("CCRS26S600001", ["CCRS"]), "TEST26S600001");
+});
+
+test("Referral generation supports VA, iFAMS, mixed, and custom prefix modes", async () => {
+  const invalidCustomPreview = await backend.handleCommand("preview", {
+    referralReplacementCode: "26S600001",
+    identityOptions: { referralPrefixMode: "custom", customReferralPrefix: "" },
+  });
+  assert.match(invalidCustomPreview.fieldErrors.referralPrefix, /Enter a custom Referral Number prefix/);
+
+  const scenarios = [
+    { mode: "va", customReferralPrefix: "", expected: [/^VA/, /^VA/, /^VA/, /^VA/] },
+    { mode: "ifams", customReferralPrefix: "", expected: [/^iFAMS/, /^iFAMS/, /^iFAMS/, /^iFAMS/] },
+    { mode: "mixed", customReferralPrefix: "", expected: [/^VA/, /^iFAMS/, /^VA/, /^iFAMS/] },
+    { mode: "custom", customReferralPrefix: "CCRS", expected: [/^CCRS/, /^CCRS/, /^CCRS/, /^CCRS/] },
+  ];
+
+  for (const scenario of scenarios) {
+    const outputDir = path.join(tempRoot, `prefix-mode-${scenario.mode}`);
+    fs.mkdirSync(outputDir, { recursive: true });
+    await backend.handleCommand("generate", {
+      outputDir,
+      fileCount: 1,
+      referralsPerFile: 4,
+      referralReplacementCode: "26S600001",
+      clearOutput: false,
+      keepProcessedJson: true,
+      archiveBasename: `prefix_${scenario.mode}`,
+      icnSettings: { mode: ICN_MODES.REFERRAL_MATCH },
+      identityOptions: {
+        referralPrefixMode: scenario.mode,
+        customReferralPrefix: scenario.customReferralPrefix,
+      },
+      upload: { enabled: false },
+    });
+    const jsonName = fs.readdirSync(outputDir).find((name) => name.endsWith(".json") && !name.endsWith(".manifest.json"));
+    const referrals = JSON.parse(fs.readFileSync(path.join(outputDir, jsonName), "utf8")).Referrals;
+    assert.equal(new Set(referrals.map((referral) => referral.ReferralNumber)).size, 4);
+    referrals.forEach((referral, index) => {
+      assert.match(referral.ReferralNumber, scenario.expected[index]);
+      assert.equal(
+        referral.Patient.ICN,
+        generateIcnFromReferralNumber(referral.ReferralNumber, [scenario.customReferralPrefix].filter(Boolean))
+      );
+    });
+  }
 });
 
 test("modifyContent derives ICNs from unique referral numbers and mixes only selected stations", () => {
@@ -1002,6 +1049,12 @@ test("UI settings normalize legacy theme values and persist user choices", () =>
     assert.equal(normalized.archiveAppendReferralDateTime, true);
     assert.equal(normalized.uploadTargets.DEV.userName, "devuser");
     assert.equal(normalized.acknowledgedReleaseKey, "");
+    assert.equal(normalizeUiSettings({ useIfamsReferralPrefix: true }).referralPrefixMode, "ifams");
+    assert.equal(normalizeUiSettings({ referralPrefixMode: "mixed" }).referralPrefixMode, "mixed");
+    assert.equal(
+      normalizeUiSettings({ referralPrefixMode: "custom", customReferralPrefix: "CCRS-TEST" }).customReferralPrefix,
+      "CCRSTEST"
+    );
 
     saveUiSettings({
       ...DEFAULT_UI_SETTINGS,
