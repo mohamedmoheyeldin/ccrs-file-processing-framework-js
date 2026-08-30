@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Version 1.3.9`, including the safer batch, audit, recovery, and preset workflows.
+This guide covers `Version 1.3.10`, including the simplified referral workflow, expanded Referral Number prefixes, safer output choices, batch auditing, and recovery controls.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download `CCRS.File.Processing.Framework.Setup.Version.1.3.9.exe` from the GitHub Releases page and run the installer.
+Download `CCRS.File.Processing.Framework.Setup.Version.1.3.10.exe` from the GitHub Releases page and run the installer.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 
@@ -241,7 +241,7 @@ Choose the output folder and optionally enter:
 
 The app adds `.json` and `.gz` extensions automatically. Referral archives always end with the current local date and time in `YYYYMMDD_HHMMSS` format. Enable **Start JSON and .gz names with iFAMS** when both output types must share the `iFAMS` prefix.
 
-The source and output folders must be separate and cannot be nested. `Keep existing files` preserves unrelated files and stops if a new result would reuse an existing name. `Delete everything first` clears the output folder only after the new batch has processed and packaged successfully in isolation.
+The source and output folders must be separate and cannot be nested. Under **If the save folder already has files**, choose **Keep existing files** to preserve unrelated files and stop safely if a new result would reuse an existing name. Choose **Replace folder contents after success** only when the existing contents should be removed after the new batch has processed and packaged successfully in isolation. The selected card is highlighted, and the pre-run review repeats the choice before processing begins.
 
 Examples:
 
@@ -272,15 +272,18 @@ Choose:
 
 This mode does not require a source folder. It can optionally upload the completed archive to the selected Referral environments. Select `Generate Files` to review and run it.
 
-### Generation Presets
-
-Enter a `Preset name` and select `Save Preset` to keep reusable generation settings such as file/referral counts, naming, ICN mode, selected Stations, and optional referral overrides. Presets intentionally exclude source/output folders, upload selections, and credentials. Choose a saved preset to apply it while preserving the current folders and upload configuration, or select `Delete` to remove it.
-
 ## Referral Number and ICN
 
 ### Referral Number
 
-Enter the user-controlled portion only. The app adds `VA` automatically. Enable **Start generated Referral Numbers with iFAMS instead of VA** to use the `iFAMS` prefix for that batch. Numeric bodies are zero-padded; alphanumeric bodies keep the characters the user entered.
+Choose how generated Referral Numbers should start, then enter the starting number or body once:
+
+- **VA** uses `VA` for every referral.
+- **iFAMS** uses `iFAMS` for every referral.
+- **VA + iFAMS** alternates the two prefixes across the batch while incrementing one shared sequence.
+- **Custom** uses a user-entered prefix containing up to 12 letters or numbers.
+
+Numeric bodies are zero-padded; alphanumeric bodies keep the characters the user entered. The live preview shows the first result, and the pre-run review confirms the selected prefix behavior.
 
 Rules:
 
@@ -292,7 +295,9 @@ Examples:
 
 - `1` becomes `VA0000000001`
 - `26S600001` becomes `VA26S600001`
-- with the iFAMS option, `26S600001` becomes `iFAMS26S600001`
+- with iFAMS, `26S600001` becomes `iFAMS26S600001`
+- with VA + iFAMS, the same sequence alternates `VA26S600001`, `iFAMS26S600002`, and so on
+- with the custom prefix `CCRS`, `26S600001` becomes `CCRS26S600001`
 
 ### ICN
 
@@ -303,7 +308,7 @@ Available modes are:
 - keep `TEST` and generate the remaining characters
 - keep `TEST` and enter a custom alphanumeric suffix
 - enter a custom full ICN base and generate the remaining characters
-- build each ICN directly from its Referral Number by removing the `VA` or `iFAMS` prefix and adding `TEST`; for example, `VA26S600001` becomes `TEST26S600001`
+- build each ICN directly from its Referral Number by removing the selected `VA`, `iFAMS`, or custom prefix and adding `TEST`; for example, `VA26S600001` becomes `TEST26S600001`
 
 Generated ICNs remain unique. Choose `3`, `4`, or `5` to make the ending of each ICN match the ending of its Referral Number.
 
@@ -403,9 +408,9 @@ Target toggles remain disabled until the main upload option is enabled.
 
 If one destination fails after the local artifact is complete, the app records the failed target and continues recording the completed ones. Select `Retry Failed Uploads` to resend the existing artifact only to the failed destinations. Do not rerun generation or processing unless the underlying data must change.
 
-## Recent Runs and Result Actions
+## Current Run Result Actions
 
-The `Recent runs` area stores the latest 20 sanitized run summaries in the current user's AppData. It does not store credentials or source-file contents. Select a run to make these actions available:
+After the current run completes, the app shows the actions that apply to that result:
 
 - `Open Output Folder`
 - `View Batch Manifest` for referral runs

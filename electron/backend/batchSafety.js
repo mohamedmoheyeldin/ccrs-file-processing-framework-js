@@ -87,7 +87,7 @@ function assertNoOutputCollisions(stagingDir, outputDir, names) {
   if (collisions.length > 0) {
     throw new Error(
       `Keep existing files is enabled, but ${collisions.length} output name${collisions.length === 1 ? "" : "s"} already exist: ` +
-      `${collisions.slice(0, 5).join(", ")}${collisions.length > 5 ? ", ..." : ""}. Change the names or choose Delete everything first.`
+      `${collisions.slice(0, 5).join(", ")}${collisions.length > 5 ? ", ..." : ""}. Change the names or choose Replace folder contents after success.`
     );
   }
   for (const name of names) {

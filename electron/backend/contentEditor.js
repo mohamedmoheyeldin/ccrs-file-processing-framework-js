@@ -30,6 +30,13 @@ const PAYMENT_AUTHORITY_CODE_ERROR_MESSAGE =
   `Payment Authority Code must be a whole number between 0 and ${PAYMENT_AUTHORITY_CODE_MAX}.`;
 const REFERRAL_NUMBER_PREFIX = "VA";
 const IFAMS_PREFIX = "iFAMS";
+const REFERRAL_PREFIX_MODES = {
+  VA: "va",
+  IFAMS: "ifams",
+  MIXED: "mixed",
+  CUSTOM: "custom",
+};
+const CUSTOM_REFERRAL_PREFIX_MAX_LENGTH = 12;
 const REFERRAL_NUMBER_TOTAL_LENGTH = 12;
 const REFERRAL_NUMBER_DIGIT_COUNT = REFERRAL_NUMBER_TOTAL_LENGTH - REFERRAL_NUMBER_PREFIX.length;
 const ICN_TEST_PREFIX = "TEST";
@@ -376,14 +383,56 @@ function generateOptionalFieldOverrides(rawOverrides) {
 }
 
 function normalizeReferralPrefix(value) {
-  return String(value || "").trim().toLowerCase() === IFAMS_PREFIX.toLowerCase()
-    ? IFAMS_PREFIX
-    : REFERRAL_NUMBER_PREFIX;
+  const normalized = String(value || "").trim();
+  if (!normalized || normalized.toLowerCase() === REFERRAL_NUMBER_PREFIX.toLowerCase()) {
+    return REFERRAL_NUMBER_PREFIX;
+  }
+  if (normalized.toLowerCase() === IFAMS_PREFIX.toLowerCase()) {
+    return IFAMS_PREFIX;
+  }
+  const customPrefix = (normalized.match(/[A-Za-z0-9]/g) || []).join("");
+  return customPrefix.slice(0, CUSTOM_REFERRAL_PREFIX_MAX_LENGTH) || REFERRAL_NUMBER_PREFIX;
 }
 
-function stripReferralPrefix(value) {
+function validateCustomReferralPrefix(value) {
+  const rawValue = String(value || "").trim();
+  const normalized = (rawValue.match(/[A-Za-z0-9]/g) || []).join("");
+  if (!normalized) {
+    throw new Error("Enter a custom Referral Number prefix using letters or numbers.");
+  }
+  if (normalized !== rawValue || normalized.length > CUSTOM_REFERRAL_PREFIX_MAX_LENGTH) {
+    throw new Error(`Custom Referral Number prefix must use up to ${CUSTOM_REFERRAL_PREFIX_MAX_LENGTH} letters or numbers.`);
+  }
+  return normalized;
+}
+
+function normalizeReferralPrefixMode(value, legacyPrefix = REFERRAL_NUMBER_PREFIX) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (Object.values(REFERRAL_PREFIX_MODES).includes(normalized)) return normalized;
+  return String(legacyPrefix || "").trim().toLowerCase() === IFAMS_PREFIX.toLowerCase()
+    ? REFERRAL_PREFIX_MODES.IFAMS
+    : REFERRAL_PREFIX_MODES.VA;
+}
+
+function resolveReferralPrefix(options = {}, sequenceIndex = 1) {
+  if (typeof options === "string") return normalizeReferralPrefix(options);
+  const mode = normalizeReferralPrefixMode(options.referralPrefixMode, options.referralPrefix);
+  if (mode === REFERRAL_PREFIX_MODES.IFAMS) return IFAMS_PREFIX;
+  if (mode === REFERRAL_PREFIX_MODES.MIXED) {
+    return Math.max(Number(sequenceIndex) || 1, 1) % 2 === 0 ? IFAMS_PREFIX : REFERRAL_NUMBER_PREFIX;
+  }
+  if (mode === REFERRAL_PREFIX_MODES.CUSTOM) return validateCustomReferralPrefix(options.customReferralPrefix);
+  return REFERRAL_NUMBER_PREFIX;
+}
+
+function stripReferralPrefix(value, additionalPrefixes = []) {
   const normalized = String(value || "").trim();
-  for (const prefix of [IFAMS_PREFIX, REFERRAL_NUMBER_PREFIX]) {
+  const prefixes = [...new Set([
+    ...additionalPrefixes.map((prefix) => normalizeReferralPrefix(prefix)),
+    IFAMS_PREFIX,
+    REFERRAL_NUMBER_PREFIX,
+  ])].sort((left, right) => right.length - left.length);
+  for (const prefix of prefixes) {
     if (normalized.toLowerCase().startsWith(prefix.toLowerCase())) {
       return normalized.slice(prefix.length);
     }
@@ -391,8 +440,8 @@ function stripReferralPrefix(value) {
   return normalized;
 }
 
-function generateIcnFromReferralNumber(referralNumber) {
-  const body = (stripReferralPrefix(referralNumber).match(/[A-Za-z0-9]/g) || []).join("").toUpperCase();
+function generateIcnFromReferralNumber(referralNumber, referralPrefixes = []) {
+  const body = (stripReferralPrefix(referralNumber, referralPrefixes).match(/[A-Za-z0-9]/g) || []).join("").toUpperCase();
   if (!body) {
     throw new Error("Referral Number is required to generate its matching ICN.");
   }
@@ -406,7 +455,7 @@ function normalizeReferralNumberStart(value, requestedPrefix = REFERRAL_NUMBER_P
     return "";
   }
 
-  normalized = stripReferralPrefix(normalized);
+  normalized = stripReferralPrefix(normalized, [prefix]);
 
   normalized = ((normalized || "").match(/[A-Za-z0-9]/g) || []).join("");
   if (!normalized) {
@@ -428,7 +477,7 @@ function validateReferralNumberStart(value, requestedPrefix = REFERRAL_NUMBER_PR
   }
 
   let bodyOnly = (value || "").trim();
-  bodyOnly = stripReferralPrefix(bodyOnly);
+  bodyOnly = stripReferralPrefix(bodyOnly, [prefix]);
   bodyOnly = (bodyOnly.match(/[A-Za-z0-9]/g) || []).join("");
   if (bodyOnly.length > REFERRAL_NUMBER_DIGIT_COUNT) {
     throw new Error(`Enter up to ${REFERRAL_NUMBER_DIGIT_COUNT} letters or numbers for Referral Number.`);
@@ -695,7 +744,7 @@ function applyRandomValidStationIds(data, identityOptions = {}) {
   apply(data);
 }
 
-function alignIcnsWithReferralNumbers(data) {
+function alignIcnsWithReferralNumbers(data, referralPrefixes = []) {
   function replaceNestedIcns(currentData, matchingIcn) {
     if (Array.isArray(currentData)) {
       currentData.forEach((item) => replaceNestedIcns(item, matchingIcn));
@@ -715,7 +764,7 @@ function alignIcnsWithReferralNumbers(data) {
     if (Array.isArray(currentData)) return currentData.forEach(visit);
     if (!currentData || typeof currentData !== "object") return;
     if (typeof currentData.ReferralNumber === "string") {
-      replaceNestedIcns(currentData, generateIcnFromReferralNumber(currentData.ReferralNumber));
+      replaceNestedIcns(currentData, generateIcnFromReferralNumber(currentData.ReferralNumber, referralPrefixes));
       return;
     }
     Object.values(currentData).forEach(visit);
@@ -824,12 +873,12 @@ function ensureSourceVariableFieldsAreUnique(data, overrides = {}) {
   apply(data);
 }
 
-function applyReferralNumberOverride(data, startValue, sequenceStart = 1, referralPrefix = REFERRAL_NUMBER_PREFIX) {
+function applyReferralNumberOverride(data, startValue, sequenceStart = 1, referralPrefixOptions = REFERRAL_NUMBER_PREFIX) {
   let replacementsUsed = 0;
 
   if (Array.isArray(data)) {
     for (const item of data) {
-      replacementsUsed += applyReferralNumberOverride(item, startValue, sequenceStart + replacementsUsed, referralPrefix);
+      replacementsUsed += applyReferralNumberOverride(item, startValue, sequenceStart + replacementsUsed, referralPrefixOptions);
     }
     return replacementsUsed;
   }
@@ -840,10 +889,15 @@ function applyReferralNumberOverride(data, startValue, sequenceStart = 1, referr
 
   for (const [key, value] of Object.entries(data)) {
     if (key === "ReferralNumber" && (typeof value !== "object" || value === null)) {
-      data[key] = generateReferralNumber(startValue, sequenceStart + replacementsUsed, referralPrefix);
+      const currentSequence = sequenceStart + replacementsUsed;
+      data[key] = generateReferralNumber(
+        startValue,
+        currentSequence,
+        resolveReferralPrefix(referralPrefixOptions, currentSequence)
+      );
       replacementsUsed += 1;
     } else {
-      replacementsUsed += applyReferralNumberOverride(value, startValue, sequenceStart + replacementsUsed, referralPrefix);
+      replacementsUsed += applyReferralNumberOverride(value, startValue, sequenceStart + replacementsUsed, referralPrefixOptions);
     }
   }
 
@@ -923,7 +977,7 @@ function modifyContent(
       data,
       referralReplacementCode,
       referralSequenceStart,
-      identityOptions.referralPrefix
+      identityOptions
     );
   }
   const patientIdentitiesUsed = updatePatientIdentity(data, ssnValue.trim(), icnSettings, icnSequenceStart, identityOptions);
@@ -934,7 +988,11 @@ function modifyContent(
     applyRandomValidStationIds(data, identityOptions);
   }
   if (icnSettings.mode === ICN_MODES.REFERRAL_MATCH) {
-    alignIcnsWithReferralNumbers(data);
+    const referralPrefixes = [
+      resolveReferralPrefix(identityOptions, 1),
+      resolveReferralPrefix(identityOptions, 2),
+    ];
+    alignIcnsWithReferralNumbers(data, referralPrefixes);
   } else {
     alignReferralAndIcnSuffixes(data, identityOptions.matchSuffixLength);
   }
@@ -958,6 +1016,7 @@ module.exports = {
   PAYMENT_AUTHORITY_CODE_MAX,
   REFERRAL_NUMBER_DIGIT_COUNT,
   REFERRAL_NUMBER_PREFIX,
+  REFERRAL_PREFIX_MODES,
   STATION_ID_MAX_LENGTH,
   completeWithRandomSuffix,
   describeIcnPreview,
@@ -972,7 +1031,9 @@ module.exports = {
   modifyContent,
   normalizePaymentAuthorityCode,
   normalizeReferralPrefix,
+  normalizeReferralPrefixMode,
   normalizeReferralNumberStart,
+  resolveReferralPrefix,
   normalizeStationId,
   prepareIcnSettings,
   validateIsoDate,
@@ -980,6 +1041,7 @@ module.exports = {
   validateIsoDateTime,
   validatePaymentAuthorityCode,
   validateReferralNumberStart,
+  validateCustomReferralPrefix,
   validateSsn,
   validateStationId,
 };

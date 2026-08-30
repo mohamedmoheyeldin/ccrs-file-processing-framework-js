@@ -56,7 +56,6 @@ const state = {
   lastSavedUiSettingsSignature: "",
   previewCacheSignature: "",
   previewCacheResult: null,
-  generationPresets: [],
   currentPhase: "idle",
   lastRun: null,
 };
@@ -568,9 +567,15 @@ function sanitizeIcnInput(value, mode = getSelectedIcnMode()) {
 function sanitizeReferralNumberInput(value) {
   const limit = getReferralNumberBodyLimit();
   let normalized = String(value || "").trim();
-
-  if (/^VA/i.test(normalized)) {
-    normalized = normalized.slice(2);
+  const prefixOptions = getReferralPrefixOptions();
+  const prefixes = [prefixOptions.customReferralPrefix, "iFAMS", "VA"]
+    .filter(Boolean)
+    .sort((left, right) => right.length - left.length);
+  for (const prefix of prefixes) {
+    if (normalized.toLowerCase().startsWith(prefix.toLowerCase())) {
+      normalized = normalized.slice(prefix.length);
+      break;
+    }
   }
 
   return ((normalized.match(/[A-Za-z0-9]/g) || []).join("")).slice(0, limit);
@@ -766,17 +771,40 @@ function collectArchiveNamingOptions() {
 }
 
 function syncReferralPrefixState() {
-  const prefix = getReferralPrefix();
+  const { referralPrefixMode, customReferralPrefix } = getReferralPrefixOptions();
+  const isCustom = referralPrefixMode === "custom";
+  elements.customReferralPrefixRow?.classList.toggle("hidden", !isCustom);
+  const prefix = referralPrefixMode === "ifams"
+    ? "iFAMS"
+    : isCustom
+      ? customReferralPrefix || "your custom prefix"
+      : referralPrefixMode === "mixed"
+        ? "VA or iFAMS"
+        : "VA";
   if (elements.referralCode) {
-    elements.referralCode.placeholder = `Enter only the part after ${prefix}`;
+    elements.referralCode.placeholder = referralPrefixMode === "mixed"
+      ? "Enter one starting number or body for both prefixes"
+      : `Enter the part after ${prefix}`;
   }
   if (elements.referralPrefixHelp) {
-    elements.referralPrefixHelp.textContent = `\`${prefix}\` will be generated automatically. Enter only the rest of the Referral Number.`;
+    elements.referralPrefixHelp.textContent = referralPrefixMode === "mixed"
+      ? "The batch alternates VA and iFAMS while incrementing one shared sequence."
+      : `${prefix} will be added automatically. Enter the starting number or body once.`;
   }
 }
 
-function getReferralPrefix() {
-  return readChecked("use-ifams-referral-prefix") ? "iFAMS" : "VA";
+function getReferralPrefixMode() {
+  return document.querySelector('input[name="referral-prefix-mode"]:checked')?.value || "va";
+}
+
+function getReferralPrefixOptions() {
+  const referralPrefixMode = getReferralPrefixMode();
+  const customReferralPrefix = readValue("custom-referral-prefix");
+  return {
+    referralPrefixMode,
+    customReferralPrefix,
+    referralPrefix: referralPrefixMode === "ifams" ? "iFAMS" : "VA",
+  };
 }
 
 function sharedPayload() {
@@ -793,7 +821,7 @@ function sharedPayload() {
       randomizeDob: readChecked("randomize-dob"),
       randomizeStationId: readChecked("randomize-station-id"),
       selectedStationIds: readChecked("randomize-station-id") ? [] : [...state.selectedStationIds],
-      referralPrefix: getReferralPrefix(),
+      ...getReferralPrefixOptions(),
       matchSuffixLength: Number(readValue("match-suffix-length")),
     },
     listDateOverride: getListDateOverride(),
@@ -837,7 +865,8 @@ function collectUiSettings() {
     archiveAppendNetwork: readChecked("archive-append-network"),
     archiveAppendReferralDateTime: readChecked("archive-append-referral-date-time"),
     useIfamsFilenamePrefix: readChecked("use-ifams-filename-prefix"),
-    useIfamsReferralPrefix: readChecked("use-ifams-referral-prefix"),
+    referralPrefixMode: getReferralPrefixMode(),
+    customReferralPrefix: readValue("custom-referral-prefix"),
     referralCode: readValue("referral-code"),
     ssnValue: readValue("ssn-value"),
     randomizeSsn: readChecked("randomize-ssn"),
@@ -869,61 +898,7 @@ function collectUiSettings() {
     leieDuplicateHandling: state.leieDuplicateHandling,
     leieOutputFileName: state.mainTab === "leie" ? readValue("replacement-code") : state.leieOutputFileName,
     leieValidationBatchId: readValue("leie-validation-batch-id"),
-    generationPresets: state.generationPresets,
   };
-}
-
-function renderGenerationPresets() {
-  if (!elements.generationPreset) return;
-  const selected = elements.generationPreset.value;
-  elements.generationPreset.innerHTML = '<option value="">Choose a saved preset</option>';
-  state.generationPresets.forEach((preset, index) => {
-    const option = document.createElement("option");
-    option.value = String(index);
-    option.textContent = preset.name;
-    elements.generationPreset.appendChild(option);
-  });
-  if ([...elements.generationPreset.options].some((option) => option.value === selected)) elements.generationPreset.value = selected;
-}
-
-function safePresetSettings() {
-  const settings = collectUiSettings();
-  for (const key of ["inputDir", "outputDir", "uploadEnabled", "uploadTargets", "generationPresets", "acknowledgedReleaseKey", "leieValidationBatchId", "leieOutputFileName"]) delete settings[key];
-  settings.mainTab = "referral";
-  return settings;
-}
-
-function saveGenerationPreset() {
-  const name = readValue("generation-preset-name").slice(0, 60);
-  if (!name) {
-    setStatus("Preset Name Needed", "Enter a name before saving this generation preset.");
-    return;
-  }
-  const preset = { name, settings: safePresetSettings() };
-  state.generationPresets = [preset, ...state.generationPresets.filter((item) => item.name.toLowerCase() !== name.toLowerCase())].slice(0, 20);
-  renderGenerationPresets();
-  elements.generationPreset.value = "0";
-  scheduleUiSettingsSave();
-  setStatus("Preset Saved", `${name} was saved without folders or upload credentials.`);
-}
-
-async function applyGenerationPreset() {
-  const preset = state.generationPresets[Number(elements.generationPreset.value)];
-  if (!preset) return;
-  const current = collectUiSettings();
-  await applyUiSettings({ ...current, ...preset.settings, inputDir: current.inputDir, outputDir: current.outputDir, uploadEnabled: current.uploadEnabled, uploadTargets: current.uploadTargets, generationPresets: state.generationPresets });
-  elements.generationPresetName.value = preset.name;
-  setStatus("Preset Applied", `${preset.name} was applied. Folder and upload selections were preserved.`);
-}
-
-function deleteGenerationPreset() {
-  const index = Number(elements.generationPreset.value);
-  if (!Number.isInteger(index) || !state.generationPresets[index]) return;
-  const [removed] = state.generationPresets.splice(index, 1);
-  renderGenerationPresets();
-  elements.generationPresetName.value = "";
-  scheduleUiSettingsSave();
-  setStatus("Preset Deleted", `${removed.name} was removed.`);
 }
 
 function scheduleUiSettingsSave() {
@@ -985,8 +960,6 @@ function syncWorkflowUploadDirectories() {
 }
 
 async function applyUiSettings(settings = {}) {
-  state.generationPresets = Array.isArray(settings.generationPresets) ? settings.generationPresets : state.generationPresets;
-  renderGenerationPresets();
   setTheme(settings.theme || "light");
   state.mainTab = ["referral", "leie", "other"].includes(settings.mainTab) ? settings.mainTab : "referral";
   state.subTab = settings.subTab === "generate" ? "generate" : "edit";
@@ -1046,7 +1019,14 @@ async function applyUiSettings(settings = {}) {
   $("archive-append-network").checked = Boolean(settings.archiveAppendNetwork);
   $("archive-append-referral-date-time").checked = Boolean(settings.archiveAppendReferralDateTime);
   $("use-ifams-filename-prefix").checked = Boolean(settings.useIfamsFilenamePrefix);
-  $("use-ifams-referral-prefix").checked = Boolean(settings.useIfamsReferralPrefix);
+  const referralPrefixMode = ["va", "ifams", "mixed", "custom"].includes(settings.referralPrefixMode)
+    ? settings.referralPrefixMode
+    : settings.useIfamsReferralPrefix
+      ? "ifams"
+      : "va";
+  const referralPrefixInput = document.querySelector(`input[name="referral-prefix-mode"][value="${referralPrefixMode}"]`);
+  if (referralPrefixInput) referralPrefixInput.checked = true;
+  $("custom-referral-prefix").value = settings.customReferralPrefix || "";
   $("clear-output").checked = Boolean(settings.clearOutput);
   $("keep-existing-files").checked = !Boolean(settings.clearOutput);
   $("keep-processed-json").checked = settings.keepProcessedJson !== false;
@@ -1331,7 +1311,6 @@ function applyInfo(info) {
   setUploadReadyState("idle");
   state.leieOutputFileName = String(info.uiSettings?.leieOutputFileName || state.leieOutputFileName || "").trim();
   renderUploadTargets(info.uploadTargets || []);
-  renderRecentRuns(info.recentRuns || []);
   const limits = info.constants?.processingLimits || {};
   if (limits.maxGeneratedFiles) elements.fileCount.max = String(limits.maxGeneratedFiles);
   if (limits.maxReferralsPerFile) elements.referralsPerFile.max = String(limits.maxReferralsPerFile);
@@ -1608,7 +1587,14 @@ function applyFieldErrors(fieldErrors = {}) {
     $("override-referral-last-update-date"),
     fieldErrors.ReferralLastUpdateDate
   );
-  setPreviewHelperState(elements.referralPreview, $("referral-code"), fieldErrors.referralReplacementCode);
+  const referralError = fieldErrors.referralPrefix || fieldErrors.referralReplacementCode;
+  setPreviewHelperState(
+    elements.referralPreview,
+    fieldErrors.referralPrefix ? $("custom-referral-prefix") : $("referral-code"),
+    referralError
+  );
+  setInputValidity($("referral-code"), Boolean(fieldErrors.referralReplacementCode));
+  setInputValidity($("custom-referral-prefix"), Boolean(fieldErrors.referralPrefix));
   setPreviewHelperState(elements.icnPreview, $("icn-custom-value"), fieldErrors.icnValue);
   setPreviewHelperState(elements.stationIdPreview, $("override-station-id"), fieldErrors.StationID);
   setPreviewHelperState(
@@ -1696,7 +1682,7 @@ async function updatePreviews() {
       randomizeDob: readChecked("randomize-dob"),
       randomizeStationId: readChecked("randomize-station-id"),
       selectedStationIds: readChecked("randomize-station-id") ? [] : [...state.selectedStationIds],
-      referralPrefix: getReferralPrefix(),
+      ...getReferralPrefixOptions(),
       matchSuffixLength: Number(readValue("match-suffix-length")),
     },
     optionalOverrides: collectOptionalOverrides(),
@@ -1724,7 +1710,9 @@ async function updatePreviews() {
     );
     elements.archivePreview.textContent = `Preview: ${preview.archiveBasename}.gz`;
     elements.referralPreview.textContent = preview.referralNumber
-      ? `Preview: ${preview.referralNumber}`
+      ? getReferralPrefixMode() === "mixed"
+        ? `Preview: ${preview.referralNumber}; the next referral uses iFAMS and continues the shared sequence.`
+        : `Preview: ${preview.referralNumber}`
       : "Preview: default referral numbers from source files";
     elements.icnPreview.textContent = preview.icnPreview || "Preview: TEST + 13 generated digits";
     elements.stationIdPreview.textContent = readChecked("randomize-station-id")
@@ -1750,40 +1738,6 @@ async function updatePreviews() {
 function schedulePreviewUpdate() {
   window.clearTimeout(state.previewTimer);
   state.previewTimer = window.setTimeout(() => updatePreviews(), 110);
-}
-
-function renderRecentRuns(runs = []) {
-  if (!elements.recentRunsList) return;
-  const normalizedRuns = (Array.isArray(runs) ? runs : []).slice(0, 20);
-  elements.recentRunsList.innerHTML = "";
-  if (normalizedRuns.length === 0) {
-    elements.recentRunsList.textContent = "No completed runs yet.";
-    return;
-  }
-  for (const run of normalizedRuns) {
-    const item = document.createElement("div");
-    item.className = "recent-run-item";
-    item.setAttribute("role", "button");
-    item.tabIndex = 0;
-    const name = run.archivePath ? run.archivePath.split(/[\\/]/).at(-1) : "No archive";
-    const status = document.createElement("strong");
-    status.textContent = `${run.status === "completed" ? "Completed" : "Needs attention"} · ${name}`;
-    const count = document.createElement("span");
-    count.textContent = `${Number(run.referralCount || 0).toLocaleString()} referrals`;
-    const detail = document.createElement("small");
-    detail.textContent = `${new Date(run.createdAt).toLocaleString()} · ${run.outputDir || "Output folder unavailable"}`;
-    item.append(status, count, detail);
-    item.addEventListener("click", () => {
-      state.lastRun = run;
-      showResultActions(run);
-    });
-    item.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter" && event.key !== " ") return;
-      event.preventDefault();
-      item.click();
-    });
-    elements.recentRunsList.appendChild(item);
-  }
 }
 
 function showResultActions(run) {
@@ -2190,9 +2144,6 @@ async function runJob(command, payload, label) {
     setStatus(result.retryable ? "Upload Warning" : "Completed", result.message || `${label} completed.`);
     const run = { ...(result.run || {}), archivePath: result.archivePath, manifestPath: result.manifestPath, outputDir: result.outputDir, retryable: result.retryable };
     showResultActions(run);
-    const existingRuns = state.info?.recentRuns || [];
-    state.info.recentRuns = [run, ...existingRuns.filter((item) => item.runId !== run.runId)].slice(0, 20);
-    renderRecentRuns(state.info.recentRuns);
   } catch (error) {
     setStatus("Failed", error.message);
   } finally {
@@ -2210,8 +2161,6 @@ async function retryFailedUploads() {
     const result = await window.ccrs.runJob("retry-upload", { runId: state.lastRun.runId });
     const run = { ...(result.run || state.lastRun), archivePath: result.archivePath, manifestPath: result.manifestPath, outputDir: result.outputDir, retryable: result.retryable };
     showResultActions(run);
-    state.info.recentRuns = [run, ...(state.info?.recentRuns || []).filter((item) => item.runId !== run.runId)].slice(0, 20);
-    renderRecentRuns(state.info.recentRuns);
     setStatus(result.retryable ? "Upload Warning" : "Upload Complete", result.message);
   } catch (error) {
     setStatus("Failed", error.message);
@@ -2239,10 +2188,6 @@ function setupEventHandlers() {
     setStatus("Copied", "The archive path was copied to the clipboard.");
   });
   elements.retryFailedUploads?.addEventListener("click", retryFailedUploads);
-  elements.saveGenerationPreset?.addEventListener("click", saveGenerationPreset);
-  elements.deleteGenerationPreset?.addEventListener("click", deleteGenerationPreset);
-  elements.generationPreset?.addEventListener("change", applyGenerationPreset);
-
   for (const button of document.querySelectorAll("[data-theme]")) {
     button.addEventListener("click", () => {
       setTheme(button.dataset.theme);
@@ -2262,7 +2207,11 @@ function setupEventHandlers() {
     "archive-append-referral-date-time",
     "use-ifams-filename-prefix",
     "referral-code",
-    "use-ifams-referral-prefix",
+    "referral-prefix-va",
+    "referral-prefix-ifams",
+    "referral-prefix-mixed",
+    "referral-prefix-custom",
+    "custom-referral-prefix",
     "icn-custom-value",
     "ssn-value",
     "match-suffix-length",
@@ -2289,7 +2238,10 @@ function setupEventHandlers() {
       if (id === "referral-code") {
         $(id).value = sanitizeReferralNumberInput($(id).value);
       }
-      if (id === "use-ifams-referral-prefix") {
+      if (id.startsWith("referral-prefix-") || id === "custom-referral-prefix") {
+        if (id === "custom-referral-prefix") {
+          $(id).value = ((String($(id).value || "").match(/[A-Za-z0-9]/g) || []).join("")).slice(0, 12);
+        }
         syncReferralPrefixState();
       }
       if (id === "icn-custom-value") {
@@ -2623,6 +2575,8 @@ function cacheElements() {
     referralLastUpdateDateHelp: $("referral-last-update-date-help"),
     paymentAuthorityCodePreview: $("payment-authority-code-preview"),
     referralCode: $("referral-code"),
+    customReferralPrefix: $("custom-referral-prefix"),
+    customReferralPrefixRow: $("custom-referral-prefix-row"),
     referralPrefixHelp: $("referral-prefix-help"),
     referralPreview: $("referral-preview"),
     referralDetailsCard: $("referral-details-card"),
@@ -2640,11 +2594,6 @@ function cacheElements() {
     openBatchManifest: $("open-batch-manifest"),
     copyArchivePath: $("copy-archive-path"),
     retryFailedUploads: $("retry-failed-uploads"),
-    recentRunsList: $("recent-runs-list"),
-    generationPreset: $("generation-preset"),
-    generationPresetName: $("generation-preset-name"),
-    saveGenerationPreset: $("save-generation-preset"),
-    deleteGenerationPreset: $("delete-generation-preset"),
     sourceCard: $("source-card"),
     sourceFileCount: $("source-file-count"),
     sourceSubtitle: $("source-subtitle"),

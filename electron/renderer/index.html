@@ -211,13 +211,37 @@
               </div>
 
               <div class="form-grid two-col">
-                <label class="field-block">
+                <div class="field-block referral-number-field">
                   <span>Referral Number</span>
-                  <input id="referral-code" type="text" placeholder="Enter only the part after VA" />
-                  <label class="checkbox-chip"><input id="use-ifams-referral-prefix" type="checkbox" /><span>Start generated Referral Numbers with iFAMS instead of VA</span></label>
-                  <small id="referral-prefix-help" class="helper-text">`VA` will be generated automatically. Enter only the rest of the Referral Number.</small>
+                  <div class="choice-card-grid referral-prefix-choices" role="radiogroup" aria-label="Referral Number prefix">
+                    <label class="choice-card">
+                      <input id="referral-prefix-va" name="referral-prefix-mode" type="radio" value="va" checked />
+                      <span><strong>VA</strong><small>Use VA for every referral.</small></span>
+                    </label>
+                    <label class="choice-card">
+                      <input id="referral-prefix-ifams" name="referral-prefix-mode" type="radio" value="ifams" />
+                      <span><strong>iFAMS</strong><small>Use iFAMS for every referral.</small></span>
+                    </label>
+                    <label class="choice-card">
+                      <input id="referral-prefix-mixed" name="referral-prefix-mode" type="radio" value="mixed" />
+                      <span><strong>VA + iFAMS</strong><small>Alternate both prefixes across the batch.</small></span>
+                    </label>
+                    <label class="choice-card">
+                      <input id="referral-prefix-custom" name="referral-prefix-mode" type="radio" value="custom" />
+                      <span><strong>Custom</strong><small>Enter your own letters or numbers.</small></span>
+                    </label>
+                  </div>
+                  <label id="custom-referral-prefix-row" class="field-block compact-field hidden">
+                    <span>Custom prefix</span>
+                    <input id="custom-referral-prefix" type="text" maxlength="12" placeholder="Example: TESTSITE" />
+                  </label>
+                  <label class="field-block compact-field">
+                    <span>Starting number or body</span>
+                    <input id="referral-code" type="text" placeholder="Enter the part after VA" />
+                  </label>
+                  <small id="referral-prefix-help" class="helper-text">VA will be added automatically. Enter the starting number or body once.</small>
                   <small id="referral-preview" class="helper-text">Preview: default referral numbers from source files</small>
-                </label>
+                </div>
                 <label class="field-block">
                   <span>SSN</span>
                   <input id="ssn-value" type="text" value="999-99-0001" />
@@ -486,22 +510,34 @@
                   <small id="archive-preview" class="helper-text">Preview: referrals_YYYYMMDD_HHMMSS.gz</small>
                 </div>
                 <div id="output-retention-card" class="field-block field-span-2 output-retention-card">
-                  <span>If save folder already has files</span>
-                  <div class="toggle-row">
-                    <label class="radio-chip">
+                  <div class="output-behavior-heading">
+                    <span>If the save folder already has files</span>
+                    <small>Choose how the app protects or replaces files already in that folder.</small>
+                  </div>
+                  <div class="choice-card-grid output-mode-choices" role="radiogroup" aria-label="Existing save folder files">
+                    <label class="choice-card recommended-choice">
                       <input id="keep-existing-files" name="output-mode" type="radio" checked />
-                      <span>Keep existing files</span>
+                      <span>
+                        <strong>Keep existing files <em>Recommended</em></strong>
+                        <small>Preserves everything already there. The run stops safely if a new file would have the same name.</small>
+                      </span>
                     </label>
-                    <label class="radio-chip">
+                    <label class="choice-card danger-choice">
                       <input id="clear-output" name="output-mode" type="radio" />
-                      <span>Delete everything first</span>
+                      <span>
+                        <strong>Replace folder contents after success</strong>
+                        <small>Builds the new batch safely first, then removes the folder's existing contents before saving the new results.</small>
+                      </span>
                     </label>
                   </div>
-                  <div class="toggle-row retention-follow-up">
-                    <span class="retention-label">After creating the .gz file</span>
-                    <label class="checkbox-chip">
+                  <div class="retention-follow-up">
+                    <div>
+                      <strong>Files to keep after creating the .gz archive</strong>
+                      <small class="retention-label">The archive is always kept.</small>
+                    </div>
+                    <label class="choice-card compact-choice">
                       <input id="keep-processed-json" type="checkbox" checked />
-                      <span>Keep formatted JSON files</span>
+                      <span><strong>Keep formatted JSON files too</strong><small>Uncheck to keep only the final .gz archive and manifest.</small></span>
                     </label>
                   </div>
                 </div>
@@ -577,18 +613,6 @@
 
             <article id="run-card" class="content-card glass-card">
               <div class="run-panel">
-                <div id="preset-toolbar" class="preset-toolbar">
-                  <label class="field-block">
-                    <span>Generation preset</span>
-                    <select id="generation-preset"><option value="">Choose a saved preset</option></select>
-                  </label>
-                  <label class="field-block">
-                    <span>Preset name</span>
-                    <input id="generation-preset-name" type="text" maxlength="60" placeholder="Example: SQA 10-station batch" />
-                  </label>
-                  <button id="save-generation-preset" class="toolbar-button">Save Preset</button>
-                  <button id="delete-generation-preset" class="toolbar-button danger">Delete</button>
-                </div>
                 <div class="status-panel inline-status" role="status" aria-live="polite" aria-atomic="true">
                   <span id="status-badge" class="status-badge idle">Ready</span>
                   <p id="status-message">Choose a Referral Files workflow, then select the required files and folders.</p>
@@ -611,10 +635,6 @@
                   <button id="copy-archive-path" class="toolbar-button">Copy Output Path</button>
                   <button id="retry-failed-uploads" class="toolbar-button primary hidden">Retry Failed Uploads</button>
                 </div>
-                <details id="recent-runs" class="recent-runs">
-                  <summary>Recent runs</summary>
-                  <div id="recent-runs-list" class="recent-runs-list">No completed runs yet.</div>
-                </details>
               </div>
             </article>
           </section>

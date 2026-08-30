@@ -17,6 +17,8 @@ const DEFAULT_UI_SETTINGS = {
   archiveAppendReferralDateTime: false,
   useIfamsFilenamePrefix: false,
   useIfamsReferralPrefix: false,
+  referralPrefixMode: "va",
+  customReferralPrefix: "",
   referralCode: "",
   ssnValue: "999-99-0001",
   randomizeSsn: true,
@@ -49,15 +51,7 @@ const DEFAULT_UI_SETTINGS = {
   leieDuplicateHandling: "manual",
   leieOutputFileName: "",
   leieValidationBatchId: "",
-  generationPresets: [],
 };
-
-function normalizeGenerationPresets(rawValue) {
-  return (Array.isArray(rawValue) ? rawValue : []).slice(0, 20).map((preset) => ({
-    name: String(preset?.name || "").trim().slice(0, 60),
-    settings: preset?.settings && typeof preset.settings === "object" ? preset.settings : {},
-  })).filter((preset) => preset.name);
-}
 
 function toBoolean(value, fallbackValue = false) {
   if (value === undefined || value === null || value === "") {
@@ -109,6 +103,13 @@ function normalizeUiSettings(rawValue = {}) {
     ),
     useIfamsFilenamePrefix: toBoolean(rawValue.useIfamsFilenamePrefix, DEFAULT_UI_SETTINGS.useIfamsFilenamePrefix),
     useIfamsReferralPrefix: toBoolean(rawValue.useIfamsReferralPrefix, DEFAULT_UI_SETTINGS.useIfamsReferralPrefix),
+    referralPrefixMode: ["va", "ifams", "mixed", "custom"].includes(String(rawValue.referralPrefixMode || "").trim().toLowerCase())
+      ? String(rawValue.referralPrefixMode).trim().toLowerCase()
+      : toBoolean(rawValue.useIfamsReferralPrefix, DEFAULT_UI_SETTINGS.useIfamsReferralPrefix)
+        ? "ifams"
+        : DEFAULT_UI_SETTINGS.referralPrefixMode,
+    customReferralPrefix: ((String(rawValue.customReferralPrefix || "").match(/[A-Za-z0-9]/g) || []).join(""))
+      .slice(0, 12),
     referralCode: String(rawValue.referralCode || "").trim(),
     ssnValue: String(rawValue.ssnValue || DEFAULT_UI_SETTINGS.ssnValue).trim() || DEFAULT_UI_SETTINGS.ssnValue,
     randomizeSsn: toBoolean(rawValue.randomizeSsn, DEFAULT_UI_SETTINGS.randomizeSsn),
@@ -153,7 +154,6 @@ function normalizeUiSettings(rawValue = {}) {
       DEFAULT_UI_SETTINGS.leieDuplicateHandling,
     leieOutputFileName: String(rawValue.leieOutputFileName || "").trim(),
     leieValidationBatchId: String(rawValue.leieValidationBatchId || "").trim(),
-    generationPresets: normalizeGenerationPresets(rawValue.generationPresets),
   };
 
   if (!["referral", "leie", "other"].includes(normalized.mainTab)) {
