@@ -14,9 +14,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.3.9",
-  "releaseTag": "v1.3.9",
-  "label": "Version 1.3.9",
+  "version": "1.3.10",
+  "releaseTag": "v1.3.10",
+  "label": "Version 1.3.10",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -29,7 +29,7 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- The current user release is `Version 1.3.9` (`v1.3.9`). Version 1.3.7 remains documented as an internal release included in Version 1.3.8 and later releases.
+- The current user release is `Version 1.3.10` (`v1.3.10`). Version 1.3.7 remains documented as an internal release included in Version 1.3.8 and later releases.
 - `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
@@ -61,7 +61,7 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.9`.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.10`.
 
 The workflow requires the tag to match `releaseTag` and refuses to overwrite an existing release.
 It also refuses to build a release when `releaseNotes` is empty.
@@ -132,17 +132,18 @@ pnpm data:stations -- /path/to/stations.xlsx
 pnpm verify
 ```
 
-## Version 1.3.9 Highlights
-- Source and output folders must be separate, and the app stages each run before changing the selected output folder.
-- Any invalid referral file stops the batch before an incomplete archive can be created or uploaded.
-- A pre-run safety review makes output behavior, station choices, and upload destinations explicit; LEIE PROD requires typed confirmation.
-- Every referral archive receives an auditable manifest with SHA-256 hashes and business-result summaries.
-- Current-run actions support opening results, viewing the manifest, copying the output path, and retrying only failed uploads.
-- Structured phases keep progress and cancellation messages aligned with the actual backend state.
+## Version 1.3.10 Highlights
+- Generation preset, Preset name, and Recent Runs are removed so the main workflow stays focused.
+- The final run panel stays in normal page flow and shows only current status, progress, actions, results, and retry controls.
+- Generated Referral Numbers support VA, iFAMS, alternating VA + iFAMS, and validated custom prefixes.
+- Existing-file behavior uses explanatory cards, recommends preserving existing files, and clearly identifies the replace-after-success option.
+- The safety review repeats the selected prefix, output behavior, station choices, and upload destinations before processing.
+- Referral Number uniqueness, matching TEST ICNs, manifests, isolated staging, progress, cancellation, and upload safeguards remain active.
 - Full current and historical notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
 
 Previous release notes:
 
+- [Version 1.3.9](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.9)
 - [Version 1.3.8](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.8)
 - [Version 1.3.7](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.7) — internal release included in Version 1.3.8
 - [Version 1.3.6](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.6)

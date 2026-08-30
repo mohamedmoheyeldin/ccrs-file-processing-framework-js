@@ -1,13 +1,42 @@
-# CCRS File Processing Framework Version 1.3.9
+# CCRS File Processing Framework Version 1.3.10
 
-## Unreleased UI Simplification
+## [Version 1.3.10](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.10) Release Notes
 
-- Replaced the Referral Number prefix checkbox with clear VA, iFAMS, alternating VA + iFAMS, and custom-prefix choices.
-- Redesigned existing-file handling as explanatory selection cards, with Keep existing files recommended and the destructive option renamed Replace folder contents after success.
+### Release Summary
+
+Version 1.3.10 makes referral processing simpler without removing the safety and audit controls added in Version 1.3.9. It removes optional interface areas that complicated the main workflow, expands Referral Number prefix behavior, and makes existing-file handling easier to understand before a run begins.
+
+The GitHub Release contains:
+
+- `CCRS.File.Processing.Framework.Setup.Version.1.3.10.exe`
+- `SHA256SUMS.txt`
+
+### Simpler Workflow
+
 - Removed Generation preset, Preset name, and their saved-settings controls.
 - Removed the Recent Runs section from the interface.
 - Kept the current run's status, progress, primary action, manifest, output-folder, copy-path, and failed-upload retry controls.
 - Changed the run panel from a floating overlay to a normal final workflow section so it does not cover other fields.
+
+### Referral Number Options
+
+- Replaced the Referral Number prefix checkbox with clear VA, iFAMS, alternating VA + iFAMS, and custom-prefix choices.
+- VA + iFAMS alternates both prefixes while continuing one shared batch-wide sequence.
+- Custom prefixes accept up to 12 letters or numbers.
+- Matching TEST ICNs remove the selected VA, iFAMS, or custom prefix correctly.
+- Referral Numbers remain unique across the complete batch.
+
+### Existing-File Safety
+
+- Redesigned existing-file handling as explanatory selection cards.
+- Keep existing files is visibly recommended and stops safely when a generated name would collide.
+- The destructive choice is named Replace folder contents after success and explains that the new batch is completed safely before old folder contents are removed.
+- The pre-run review repeats the selected prefix and output behavior before processing begins.
+
+### Validation and Documentation
+
+- Added regression coverage for all four prefix modes, custom-prefix validation, matching ICNs, legacy setting migration, and the redesigned Electron controls.
+- Updated the README, architecture, testing guide, User Guide, generated PDF, and release notes for Version 1.3.10.
 
 ## [Version 1.3.9](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.9) Release Notes
 

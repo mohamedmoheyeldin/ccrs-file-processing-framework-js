@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Version 1.3.9`, including the safer batch, audit, recovery, and preset workflows.
+This guide covers `Version 1.3.10`, including the simplified referral workflow, expanded Referral Number prefixes, safer output choices, batch auditing, and recovery controls.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download `CCRS.File.Processing.Framework.Setup.Version.1.3.9.exe` from the GitHub Releases page and run the installer.
+Download `CCRS.File.Processing.Framework.Setup.Version.1.3.10.exe` from the GitHub Releases page and run the installer.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 

@@ -1,16 +1,14 @@
 {
-  "version": "1.3.9",
-  "releaseTag": "v1.3.9",
-  "label": "Version 1.3.9",
-  "announcementId": "v1.3.9|Version 1.3.9|2026-08-28-safe-batch-operations",
+  "version": "1.3.10",
+  "releaseTag": "v1.3.10",
+  "label": "Version 1.3.10",
+  "announcementId": "v1.3.10|Version 1.3.10|2026-08-29-simplified-referral-workflow",
   "releaseNotes": [
-    "Protects source and existing output files with separate-folder validation, isolated staging, and collision-safe publishing.",
-    "Stops the full batch before packaging or upload when any referral source fails schema or processing validation.",
-    "Adds a safety review showing the workflow, source, output behavior, archive, station plan, and upload destinations before every run.",
-    "Creates a versioned batch manifest with counts, Referral Number uniqueness, station distribution, source and archive SHA-256 hashes, and upload outcomes.",
-    "Adds recent-run history, Open Output Folder, View Batch Manifest, Copy Output Path, and retry-only-failed-upload actions.",
-    "Adds named generation presets that preserve reusable business settings without saving folders or upload credentials.",
-    "Uses backend-authoritative environment policy and requires typed PROD confirmation for LEIE production uploads.",
-    "Uses structured progress phases, safe cancellation messaging, stronger Windows E2E coverage, and modular safety, policy, validation, history, and review components."
+    "Simplifies the workflow by removing Generation preset, Preset name, and Recent Runs from the interface.",
+    "Keeps the run panel in the normal page layout with focused current status, progress, action, manifest, output, and retry controls.",
+    "Adds clear VA, iFAMS, alternating VA + iFAMS, and validated custom-prefix choices for generated Referral Numbers.",
+    "Keeps Referral Numbers unique across the batch and removes the selected prefix correctly when building matching TEST ICNs.",
+    "Redesigns existing-file handling with explanatory cards, recommends preserving existing files, and identifies when folder contents will be replaced.",
+    "Expands business-logic, settings-migration, smoke, and Windows Electron coverage for the simplified workflow."
   ]
 }
