@@ -1,4 +1,47 @@
-# CCRS File Processing Framework Version 1.3.10
+# CCRS File Processing Framework Version 1.3.11
+
+## [Version 1.3.11](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.11) Release Notes
+
+### Release Summary
+
+Version 1.3.11 expands source-backed Station and SEOC handling while making the main naming controls visually consistent. Station IDs are no longer rejected by an outdated length ceiling, `SEOC.xlsx` is converted into a deterministic bundled catalog, and regular and Situational SEOC values can be searched, selected, mixed, cleared, restored, or used as a complete set. Referral, ICN, and Archive choices now share the same option-card design.
+
+The GitHub Release contains:
+
+- `CCRS.File.Processing.Framework.Setup.Version.1.3.11.exe`
+- `SHA256SUMS.txt`
+
+### Station and SEOC Data
+
+- Preserves exact source-backed Station IDs, including `675GB01` and `595GF01`, through application state, generated JSON, and final gzip output.
+- Removes length-only Station ID rejection while retaining authoritative catalog matching.
+- Converts 3,299 `SEOC.xlsx` rows into 761 deterministic logical records by keeping the latest version for each SEOC Number and normalized SEOC name.
+- Adds `pnpm data:seoc -- <SEOC.xlsx>` so later workbooks can regenerate `config/seoc_options.json` without adding Excel parsing to normal runtime.
+- Keeps each SEOC Number and SEOC ID paired during selection and referral generation.
+
+### Searchable SEOC Controls
+
+- Replaces the separate SEOC Number and SEOC ID dropdowns with one searchable multi-select `SEOC Number - SEOC ID` control.
+- Adds the matching `Situational SEOC Number - SEOC ID` control with the requested red Situational label.
+- Both selectors support automatic/default behavior, search, subset and multi-selection, chip removal, use-all behavior, reopening without state loss, saved selection restoration, and graceful fallback when a stored record no longer exists.
+- Removes `(Optional)` from the affected visible field labels without changing default behavior.
+
+### Naming and Filename Controls
+
+- Keeps VA, iFAMS, VA + iFAMS, and Custom Referral Number choices in the established option-card layout.
+- Custom Referral prefixes now support letters, numbers, and underscores, including values such as `VA_TEST` and `PROJECT1_`.
+- Restyles ICN modes with the same option cards while preserving all existing generation modes.
+- Adds Referral Number, Network Name, Referral DateTime, Prefix, and Custom archive naming cards.
+- Shows live `.json` and `.gz` filename previews and keeps the correct extension after settings change.
+- Custom patterns support friendly tokens for Referral Number, prefix, ICN, Network, date, date-time, and custom text.
+- Removes illegal Windows filename characters, empty/trailing filename artifacts, and repeated `.json` or `.gz` extensions.
+
+### Persistence, Validation, and Testing
+
+- Adds versioned UI settings for SEOC selections and use-all choices, Referral and ICN choices, Archive mode, and custom filename configuration.
+- Validates saved SEOC values against the installed catalog and falls back to automatic mode when records no longer exist.
+- Adds workbook-conversion, Station JSON/gzip, SEOC pairing, use-all, missing-selection, Referral prefix, Archive mode, filename safety, persistence, keyboard/focus, and real Electron UI regression coverage.
+- Updates the README, architecture, development, testing, User Guide, generated PDF, and release metadata for Version 1.3.11.
 
 ## [Version 1.3.10](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.10) Release Notes
 

@@ -26,8 +26,9 @@ pnpm verify
 - Do not use real credentials or production upload targets during development.
 - Keep release output outside the repository; the build script enforces this boundary.
 - Treat `config/stations.json` as generated data. Refresh it with `pnpm data:stations -- /path/to/stations.xlsx`, preserve every source row and column, and run `pnpm verify` after any station-source change.
+- Treat `config/seoc_options.json` as generated data. Refresh it with `pnpm data:seoc -- /path/to/SEOC.xlsx`; keep SEOC Number and SEOC ID paired, preserve the selected exact versioned ID, and run `pnpm verify` after a refresh.
 - Keep automatic SSNs in the `999-00-0000` through `999-99-9999` test range and preserve uniqueness across the supported generated batch.
-- Add exceptional SEOCs to `config/seoc_options.json` with `selectionOnly: true`; do not add them to referral templates unless business rules explicitly permit automatic assignment.
+- Keep regular and Situational SEOC assignment in the shared catalog-resolution path so UI selections cannot create mismatched pairs.
 - Use the renderer control tokens in `styles.css` for form sizing. Standard text inputs, selects, compact dropdown shells, and date composites must use `--control-height`; interactive buttons and options must meet `--control-touch-target`.
 - Keep form rows responsive with flexible grid columns. Preserve the upload-target row's 2:3 Upload User-to-Remote Directory proportion and its narrow-screen stacking behavior. Do not introduce one-off field heights or fixed control widths that diverge from the shared control system.
 - Preserve native labels, accessible names, visible focus, disabled state, invalid state, and keyboard operation when enhancing a form control.

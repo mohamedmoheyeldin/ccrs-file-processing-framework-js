@@ -207,7 +207,7 @@
                   <h2>Referral Details</h2>
                   <p>Set the first referral number and ListDate behavior for this run.</p>
                 </div>
-                <button id="toggle-optional-fields" class="toolbar-button invert-active">Show Optional Fields</button>
+                <button id="toggle-optional-fields" class="toolbar-button invert-active">Show Additional Fields</button>
               </div>
 
               <div class="form-grid two-col">
@@ -233,7 +233,7 @@
                   </div>
                   <label id="custom-referral-prefix-row" class="field-block compact-field hidden">
                     <span>Custom prefix</span>
-                    <input id="custom-referral-prefix" type="text" maxlength="12" placeholder="Example: TESTSITE" />
+                    <input id="custom-referral-prefix" type="text" maxlength="24" placeholder="Example: VA_TEST" />
                   </label>
                   <label class="field-block compact-field">
                     <span>Starting number or body</span>
@@ -309,32 +309,33 @@
 
               <div id="optional-fields" class="optional-fields hidden">
                 <div class="form-grid two-col">
-                  <label class="field-block">
-                    <span>ICN Format</span>
-                    <div class="toggle-row">
-                      <label class="radio-chip">
+                  <div class="field-block field-span-2">
+                    <span>ICN</span>
+                    <div class="choice-card-grid" role="radiogroup" aria-label="ICN naming mode">
+                      <label class="choice-card">
                         <input id="icn-mode-test-dynamic" name="icn-mode" type="radio" value="test-dynamic" checked />
-                        <span>Keep TEST and generate the rest</span>
+                        <span><strong>Default</strong><small>Keep TEST and generate the rest.</small></span>
                       </label>
-                      <label class="radio-chip">
+                      <label class="choice-card">
                         <input
                           id="icn-mode-test-custom-suffix"
                           name="icn-mode"
                           type="radio"
                           value="test-custom-suffix"
                         />
-                        <span>Keep TEST and enter the rest</span>
+                        <span><strong>TEST Prefix</strong><small>Keep TEST and enter the remaining prefix.</small></span>
                       </label>
-                      <label class="radio-chip">
+                      <label class="choice-card">
                         <input id="icn-mode-custom-full" name="icn-mode" type="radio" value="custom-full" />
-                        <span>Custom full ICN</span>
+                        <span><strong>Custom</strong><small>Enter a custom full ICN base.</small></span>
                       </label>
-                      <label class="radio-chip">
+                      <label class="choice-card">
                         <input id="icn-mode-referral-match" name="icn-mode" type="radio" value="referral-match" />
-                        <span>Build ICN from Referral Number</span>
+                        <span><strong>Referral Number</strong><small>Build each ICN from its Referral Number.</small></span>
                       </label>
                     </div>
-                  </label>
+                    <small class="helper-text">Choose how generated ICNs are named.</small>
+                  </div>
                   <label class="field-block">
                     <span>ICN Custom Value</span>
                     <input id="icn-custom-value" type="text" placeholder="Using TEST + generated digits" />
@@ -350,7 +351,7 @@
                     <small class="helper-text">The selected ending of each Referral Number is copied to its ICN.</small>
                   </label>
                   <label class="field-block">
-                    <span>Stations (Optional)</span>
+                    <span>Stations</span>
                     <div id="station-id-combobox" class="combo-shell">
                       <input
                         id="override-station-id"
@@ -405,15 +406,28 @@
                     <label class="radio-chip"><input id="randomize-dob" type="checkbox" checked /><span>Generate a random DOB for every patient</span></label>
                     <small id="dob-help" class="helper-text">Uncheck random generation to use an optional fixed date in YYYY-MM-DD format.</small>
                   </label>
-                  <label class="field-block">
-                    <span>SEOC Number (Optional)</span>
-                    <select id="override-seoc-key"><option value="">No SEOC Number override (optional)</option></select>
-                  </label>
-                  <label class="field-block">
-                    <span>SEOC ID (Optional)</span>
-                    <select id="override-seoc-id"><option value="">No SEOC ID override (optional)</option></select>
-                    <small class="helper-text">Leave both blank to keep source SEOC values. Selecting either value synchronizes the valid SEOC pair.</small>
-                  </label>
+                  <div class="field-block">
+                    <span title="Controls the paired SEOC Number and SEOC ID values used for referral generation.">SEOC Number - SEOC ID</span>
+                    <div id="seoc-combobox" class="combo-shell">
+                      <input id="seoc-search" type="text" placeholder="Search SEOC Number or SEOC ID" autocomplete="off" role="combobox" aria-label="Search SEOC Number and SEOC ID" aria-autocomplete="list" aria-controls="seoc-menu" aria-expanded="false" />
+                      <button id="seoc-toggle" type="button" class="combo-toggle" aria-label="Show SEOC options"><span class="combo-chevron" aria-hidden="true"></span></button>
+                      <div id="seoc-menu" class="combo-menu hidden" role="listbox" aria-label="SEOC Number and SEOC ID"></div>
+                    </div>
+                    <small id="seoc-match" class="helper-text">Automatic mode keeps source SEOC values.</small>
+                    <div id="selected-seocs" class="selected-stations" aria-live="polite"></div>
+                    <label class="radio-chip"><input id="use-all-seocs" type="checkbox" /><span>Use all available SEOC values instead of a selected subset</span></label>
+                  </div>
+                  <div class="field-block">
+                    <span title="Controls the paired Situational SEOC Number and SEOC ID values used for referral generation."><span class="situational-label">Situational</span> SEOC Number - SEOC ID</span>
+                    <div id="situational-seoc-combobox" class="combo-shell">
+                      <input id="situational-seoc-search" type="text" placeholder="Search Situational SEOC Number or SEOC ID" autocomplete="off" role="combobox" aria-label="Search Situational SEOC Number and SEOC ID" aria-autocomplete="list" aria-controls="situational-seoc-menu" aria-expanded="false" />
+                      <button id="situational-seoc-toggle" type="button" class="combo-toggle" aria-label="Show Situational SEOC options"><span class="combo-chevron" aria-hidden="true"></span></button>
+                      <div id="situational-seoc-menu" class="combo-menu hidden" role="listbox" aria-label="Situational SEOC Number and SEOC ID"></div>
+                    </div>
+                    <small id="situational-seoc-match" class="helper-text">Automatic mode leaves Situational SEOC values unchanged.</small>
+                    <div id="selected-situational-seocs" class="selected-stations" aria-live="polite"></div>
+                    <label class="radio-chip"><input id="use-all-situational-seocs" type="checkbox" /><span>Use all available Situational SEOC values instead of a selected subset</span></label>
+                  </div>
                   <label class="field-block">
                     <span>Referral Category</span>
                     <input id="override-referral-category" type="text" />
@@ -478,36 +492,22 @@
                       Set the final `.gz` base name here, then choose whether related referral details should be appended automatically.
                     </small>
                   </div>
-                  <div class="archive-naming-grid">
-                    <label class="field-block">
-                      <span>Name for the final .gz file</span>
-                      <input id="archive-basename" type="text" value="referrals" />
-                      <small id="archive-name-help" class="helper-text">
-                        Enter a custom base name. The app adds `.gz` automatically.
-                      </small>
-                    </label>
-                    <div class="archive-options-panel">
-                      <span>Archive naming options</span>
-                      <div class="toggle-row">
-                        <label class="checkbox-chip">
-                          <input id="archive-append-network" type="checkbox" />
-                          <span>Append Network</span>
-                        </label>
-                        <label class="checkbox-chip">
-                          <input id="archive-append-referral-date-time" type="checkbox" />
-                          <span>Append Referral DateTime</span>
-                        </label>
-                        <label class="checkbox-chip">
-                          <input id="use-ifams-filename-prefix" type="checkbox" />
-                          <span>Start JSON and .gz names with iFAMS</span>
-                        </label>
-                      </div>
-                      <div class="retention-label">
-                        Example: `iFAMS_referrals_20260401_134500.gz`
-                      </div>
-                    </div>
+                  <input id="archive-basename" type="hidden" value="referrals" />
+                  <input id="archive-append-network" type="hidden" />
+                  <input id="archive-append-referral-date-time" type="hidden" />
+                  <input id="use-ifams-filename-prefix" type="hidden" />
+                  <div class="choice-card-grid archive-mode-choices" role="radiogroup" aria-label="Archive naming mode">
+                    <label class="choice-card"><input name="archive-naming-mode" type="radio" value="referral-number" checked /><span><strong>Referral Number</strong><small>Example: VA12345_Final</small></span></label>
+                    <label class="choice-card"><input name="archive-naming-mode" type="radio" value="network" /><span><strong>Network Name</strong><small>Add Network before the Referral Number.</small></span></label>
+                    <label class="choice-card"><input name="archive-naming-mode" type="radio" value="referral-date-time" /><span><strong>Referral DateTime</strong><small>Add a filesystem-safe date and time.</small></span></label>
+                    <label class="choice-card"><input name="archive-naming-mode" type="radio" value="prefix" /><span><strong>Prefix</strong><small>Add the selected Referral prefix.</small></span></label>
+                    <label class="choice-card"><input name="archive-naming-mode" type="radio" value="custom" /><span><strong>Custom</strong><small>Build a reusable filename convention.</small></span></label>
                   </div>
-                  <small id="archive-preview" class="helper-text">Preview: referrals_YYYYMMDD_HHMMSS.gz</small>
+                  <div id="archive-custom-fields" class="archive-custom-fields hidden">
+                    <label class="field-block"><span>Custom text</span><input id="archive-custom-text" type="text" maxlength="48" placeholder="Example: CCRS" /></label>
+                    <label class="field-block"><span>Custom naming pattern</span><input id="archive-custom-pattern" type="text" maxlength="160" placeholder="{customText}_{referralNumber}_Final" /><small id="archive-name-help" class="helper-text">Available values: {referralNumber}, {referralPrefix}, {networkName}, {date}, {dateTime}, {customText}.</small></label>
+                  </div>
+                  <div class="filename-preview"><span>Archive filename preview</span><strong id="archive-preview">VA12345_Final.json · VA12345_Final.gz</strong></div>
                 </div>
                 <div id="output-retention-card" class="field-block field-span-2 output-retention-card">
                   <div class="output-behavior-heading">

@@ -1,32 +1,4568 @@
 [
   {
-    "seocKey": "67",
-    "seocId": "INF_FERTILITY-1332 EXISTING OVARY_1.1.17",
-    "selectionOnly": true
+    "seocNumber": "11",
+    "seocId": "AUD_AUDIOLOGY_1.0.1",
+    "name": "AUD_AUDIOLOGY",
+    "displayName": "AUD_AUDIOLOGY - 11"
   },
   {
-    "seocKey": "158",
+    "seocNumber": "12",
+    "seocId": "AUD_AUDIOLOGY COCHLEAR IMPLANT ANNUAL FOLLOW UP_1.3.10",
+    "name": "AUD_AUDIOLOGY COCHLEAR IMPLANT ANNUAL FOLLOW UP",
+    "displayName": "AUD_AUDIOLOGY COCHLEAR IMPLANT ANNUAL FOLLOW UP - 12"
+  },
+  {
+    "seocNumber": "31",
+    "seocId": "AUD_AUDIOLOGY COCHLEAR IMPLANT SURGERY AND FOLLOW UP_1.2.14",
+    "name": "AUD_AUDIOLOGY COCHLEAR IMPLANT SURGERY AND FOLLOW UP",
+    "displayName": "AUD_AUDIOLOGY COCHLEAR IMPLANT SURGERY AND FOLLOW UP - 31"
+  },
+  {
+    "seocNumber": "31",
+    "seocId": "AUD_AUDIOLOGY COCHLEAR IMPLANT SURGERY AND FOLLOW UP PRCT_1.2.2_PRCT",
+    "name": "AUD_AUDIOLOGY COCHLEAR IMPLANT SURGERY AND FOLLOW UP PRCT",
+    "displayName": "AUD_AUDIOLOGY COCHLEAR IMPLANT SURGERY AND FOLLOW UP PRCT - 31"
+  },
+  {
+    "seocNumber": "13",
+    "seocId": "AUD_AUDIOLOGY COMPREHENSIVE_1.1.16",
+    "name": "AUD_AUDIOLOGY COMPREHENSIVE",
+    "displayName": "AUD_AUDIOLOGY COMPREHENSIVE - 13"
+  },
+  {
+    "seocNumber": "11",
+    "seocId": "AUD_AUDIOLOGY DS ROUTINE_1.0.14",
+    "name": "AUD_AUDIOLOGY DS ROUTINE",
+    "displayName": "AUD_AUDIOLOGY DS ROUTINE - 11"
+  },
+  {
+    "seocNumber": "1303",
+    "seocId": "AUD_IMPORTED003_1.5.1",
+    "name": "AUD_IMPORTED003",
+    "displayName": "AUD_IMPORTED003 - 1303"
+  },
+  {
+    "seocNumber": "1302",
+    "seocId": "AUD_TESTUAT_1.4.1_REV",
+    "name": "AUD_TESTUAT",
+    "displayName": "AUD_TESTUAT - 1302"
+  },
+  {
+    "seocNumber": "262",
+    "seocId": "DEN_DENTAL ADVANCED ORAL SURGERY_1.18.2",
+    "name": "DEN_DENTAL ADVANCED ORAL SURGERY",
+    "displayName": "DEN_DENTAL ADVANCED ORAL SURGERY - 262"
+  },
+  {
+    "seocNumber": "263",
+    "seocId": "DEN_DENTAL ADVANCED PROSTHODONTICS_1.17.2",
+    "name": "DEN_DENTAL ADVANCED PROSTHODONTICS",
+    "displayName": "DEN_DENTAL ADVANCED PROSTHODONTICS - 263"
+  },
+  {
+    "seocNumber": "888",
+    "seocId": "DEN_DENTAL ADVANCED PROSTHODONTICS_1.17.3",
+    "name": "DEN_DENTAL ADVANCED PROSTHODONTICS",
+    "displayName": "DEN_DENTAL ADVANCED PROSTHODONTICS - 888"
+  },
+  {
+    "seocNumber": "249",
+    "seocId": "DEN_DENTAL ADVANCED SPECIALTY CARE ENDODONTIC_1.10.3",
+    "name": "DEN_DENTAL ADVANCED SPECIALTY CARE ENDODONTIC",
+    "displayName": "DEN_DENTAL ADVANCED SPECIALTY CARE ENDODONTIC - 249"
+  },
+  {
+    "seocNumber": "999",
+    "seocId": "DEN_DENTAL ADVANCED SPECIALTY CARE ENDODONTIC_1.10.4",
+    "name": "DEN_DENTAL ADVANCED SPECIALTY CARE ENDODONTIC",
+    "displayName": "DEN_DENTAL ADVANCED SPECIALTY CARE ENDODONTIC - 999"
+  },
+  {
+    "seocNumber": "249",
+    "seocId": "DEN_DENTAL ADVANCED SPECIALTY CARE ENDODONTICS_1.10.14",
+    "name": "DEN_DENTAL ADVANCED SPECIALTY CARE ENDODONTICS",
+    "displayName": "DEN_DENTAL ADVANCED SPECIALTY CARE ENDODONTICS - 249"
+  },
+  {
+    "seocNumber": "262",
+    "seocId": "DEN_DENTAL ADVANCED SPECIALTY CARE ORAL SURGERY_1.18.11",
+    "name": "DEN_DENTAL ADVANCED SPECIALTY CARE ORAL SURGERY",
+    "displayName": "DEN_DENTAL ADVANCED SPECIALTY CARE ORAL SURGERY - 262"
+  },
+  {
+    "seocNumber": "250",
+    "seocId": "DEN_DENTAL ADVANCED SPECIALTY CARE PERIODONTICS_1.11.12",
+    "name": "DEN_DENTAL ADVANCED SPECIALTY CARE PERIODONTICS",
+    "displayName": "DEN_DENTAL ADVANCED SPECIALTY CARE PERIODONTICS - 250"
+  },
+  {
+    "seocNumber": "263",
+    "seocId": "DEN_DENTAL ADVANCED SPECIALTY CARE PROSTHODONTICS_1.17.13",
+    "name": "DEN_DENTAL ADVANCED SPECIALTY CARE PROSTHODONTICS",
+    "displayName": "DEN_DENTAL ADVANCED SPECIALTY CARE PROSTHODONTICS - 263"
+  },
+  {
+    "seocNumber": "250",
+    "seocId": "DEN_DENTAL ADVANCED SPECIALTY PERIODONTIC_1.11.3",
+    "name": "DEN_DENTAL ADVANCED SPECIALTY PERIODONTIC",
+    "displayName": "DEN_DENTAL ADVANCED SPECIALTY PERIODONTIC - 250"
+  },
+  {
+    "seocNumber": "162",
+    "seocId": "DEN_DENTAL COMPREHENSIVE_1.9.5",
+    "name": "DEN_DENTAL COMPREHENSIVE",
+    "displayName": "DEN_DENTAL COMPREHENSIVE - 162"
+  },
+  {
+    "seocNumber": "269",
+    "seocId": "DEN_DENTAL DEFINITIVE PHASE_1.15.13",
+    "name": "DEN_DENTAL DEFINITIVE PHASE",
+    "displayName": "DEN_DENTAL DEFINITIVE PHASE - 269"
+  },
+  {
+    "seocNumber": "36",
+    "seocId": "DEN_DENTAL DENTURE SERVICES_1.3.6",
+    "name": "DEN_DENTAL DENTURE SERVICES",
+    "displayName": "DEN_DENTAL DENTURE SERVICES - 36"
+  },
+  {
+    "seocNumber": "247",
+    "seocId": "DEN_DENTAL DISEASE MANAGEMENT_1.12.3",
+    "name": "DEN_DENTAL DISEASE MANAGEMENT",
+    "displayName": "DEN_DENTAL DISEASE MANAGEMENT - 247"
+  },
+  {
+    "seocNumber": "777",
+    "seocId": "DEN_DENTAL DISEASE MANAGEMENT_1.12.4",
+    "name": "DEN_DENTAL DISEASE MANAGEMENT",
+    "displayName": "DEN_DENTAL DISEASE MANAGEMENT - 777"
+  },
+  {
+    "seocNumber": "247",
+    "seocId": "DEN_DENTAL DISEASE MANAGEMENT PHASE_1.12.14",
+    "name": "DEN_DENTAL DISEASE MANAGEMENT PHASE",
+    "displayName": "DEN_DENTAL DISEASE MANAGEMENT PHASE - 247"
+  },
+  {
+    "seocNumber": "37",
+    "seocId": "DEN_DENTAL EMERGENCY_1.6.3",
+    "name": "DEN_DENTAL EMERGENCY",
+    "displayName": "DEN_DENTAL EMERGENCY - 37"
+  },
+  {
+    "seocNumber": "264",
+    "seocId": "DEN_DENTAL IMPLANT PLACEMENT_1.18.2",
+    "name": "DEN_DENTAL IMPLANT PLACEMENT",
+    "displayName": "DEN_DENTAL IMPLANT PLACEMENT - 264"
+  },
+  {
+    "seocNumber": "264",
+    "seocId": "DEN_DENTAL IMPLANT PLACEMENT PHASE_1.18.13",
+    "name": "DEN_DENTAL IMPLANT PLACEMENT PHASE",
+    "displayName": "DEN_DENTAL IMPLANT PLACEMENT PHASE - 264"
+  },
+  {
+    "seocNumber": "265",
+    "seocId": "DEN_DENTAL IMPLANT SUPPORTED PROSTHODONTICS_1.17.2",
+    "name": "DEN_DENTAL IMPLANT SUPPORTED PROSTHODONTICS",
+    "displayName": "DEN_DENTAL IMPLANT SUPPORTED PROSTHODONTICS - 265"
+  },
+  {
+    "seocNumber": "265",
+    "seocId": "DEN_DENTAL IMPLANT SUPPORTED PROSTHODONTICS PHASE_1.17.12",
+    "name": "DEN_DENTAL IMPLANT SUPPORTED PROSTHODONTICS PHASE",
+    "displayName": "DEN_DENTAL IMPLANT SUPPORTED PROSTHODONTICS PHASE - 265"
+  },
+  {
+    "seocNumber": "38",
+    "seocId": "DEN_DENTAL INITIAL EVALUATION_1.0.3",
+    "name": "DEN_DENTAL INITIAL EVALUATION",
+    "displayName": "DEN_DENTAL INITIAL EVALUATION - 38"
+  },
+  {
+    "seocNumber": "38",
+    "seocId": "DEN_DENTAL INITIAL EVALUATION AND LIMITED TREATMENT_1.0.8",
+    "name": "DEN_DENTAL INITIAL EVALUATION AND LIMITED TREATMENT",
+    "displayName": "DEN_DENTAL INITIAL EVALUATION AND LIMITED TREATMENT - 38"
+  },
+  {
+    "seocNumber": "38",
+    "seocId": "DEN_DENTAL INITIAL EVALUATION AND LIMITED TREATMENT PHASE_1.0.10",
+    "name": "DEN_DENTAL INITIAL EVALUATION AND LIMITED TREATMENT PHASE",
+    "displayName": "DEN_DENTAL INITIAL EVALUATION AND LIMITED TREATMENT PHASE - 38"
+  },
+  {
+    "seocNumber": "271",
+    "seocId": "DEN_DENTAL MAINTENANCE PHASE_1.18.11",
+    "name": "DEN_DENTAL MAINTENANCE PHASE",
+    "displayName": "DEN_DENTAL MAINTENANCE PHASE - 271"
+  },
+  {
+    "seocNumber": "39",
+    "seocId": "DEN_DENTAL ORAL LESION_1.5.5",
+    "name": "DEN_DENTAL ORAL LESION",
+    "displayName": "DEN_DENTAL ORAL LESION - 39"
+  },
+  {
+    "seocNumber": "1096",
+    "seocId": "DEN_DENTAL ORTHODONTICS PHASE_1.22.4",
+    "name": "DEN_DENTAL ORTHODONTICS PHASE",
+    "displayName": "DEN_DENTAL ORTHODONTICS PHASE - 1096"
+  },
+  {
+    "seocNumber": "40",
+    "seocId": "DEN_DENTAL PERIO PREVENTATIVE CARE_1.2.6",
+    "name": "DEN_DENTAL PERIO PREVENTATIVE CARE",
+    "displayName": "DEN_DENTAL PERIO PREVENTATIVE CARE - 40"
+  },
+  {
+    "seocNumber": "41",
+    "seocId": "DEN_DENTAL REGULAR PREVENTATIVE CARE_1.1.5",
+    "name": "DEN_DENTAL REGULAR PREVENTATIVE CARE",
+    "displayName": "DEN_DENTAL REGULAR PREVENTATIVE CARE - 41"
+  },
+  {
+    "seocNumber": "42",
+    "seocId": "DEN_DENTAL ROUTINE CLEANING_1.4.5",
+    "name": "DEN_DENTAL ROUTINE CLEANING",
+    "displayName": "DEN_DENTAL ROUTINE CLEANING - 42"
+  },
+  {
+    "seocNumber": "43",
+    "seocId": "DEN_DENTAL SPECIALTY ENDODONTICS_1.7.7",
+    "name": "DEN_DENTAL SPECIALTY ENDODONTICS",
+    "displayName": "DEN_DENTAL SPECIALTY ENDODONTICS - 43"
+  },
+  {
+    "seocNumber": "44",
+    "seocId": "DEN_DENTAL SPECIALTY EXTRACTIONS_1.8.6",
+    "name": "DEN_DENTAL SPECIALTY EXTRACTIONS",
+    "displayName": "DEN_DENTAL SPECIALTY EXTRACTIONS - 44"
+  },
+  {
+    "seocNumber": "38",
+    "seocId": "DEN_DENTAL URGENT TREATMENT_1.0.17",
+    "name": "DEN_DENTAL URGENT TREATMENT",
+    "displayName": "DEN_DENTAL URGENT TREATMENT - 38"
+  },
+  {
+    "seocNumber": "36",
+    "seocId": "DEN_DENTURE SERVICES_1.3.1",
+    "name": "DEN_DENTURE SERVICES",
+    "displayName": "DEN_DENTURE SERVICES - 36"
+  },
+  {
+    "seocNumber": "37",
+    "seocId": "DEN_EMERGENCY DENTAL_1.0.1",
+    "name": "DEN_EMERGENCY DENTAL",
+    "displayName": "DEN_EMERGENCY DENTAL - 37"
+  },
+  {
+    "seocNumber": "38",
+    "seocId": "DEN_INITIAL EVALUATION_1.0.1",
+    "name": "DEN_INITIAL EVALUATION",
+    "displayName": "DEN_INITIAL EVALUATION - 38"
+  },
+  {
+    "seocNumber": "43",
+    "seocId": "DEN_SPECIALTY ENDODONTICS_1.1.1",
+    "name": "DEN_SPECIALTY ENDODONTICS",
+    "displayName": "DEN_SPECIALTY ENDODONTICS - 43"
+  },
+  {
+    "seocNumber": "44",
+    "seocId": "DEN_SPECIALTY EXTRACTIONS_1.2.1",
+    "name": "DEN_SPECIALTY EXTRACTIONS",
+    "displayName": "DEN_SPECIALTY EXTRACTIONS - 44"
+  },
+  {
+    "seocNumber": "1305",
+    "seocId": "DEN_TEST333_1.23.1_REV",
+    "name": "DEN_TEST333",
+    "displayName": "DEN_TEST333 - 1305"
+  },
+  {
+    "seocNumber": "1286",
+    "seocId": "DIA_ACUTE KIDNEY INJURY (AKI) DIALYSIS PHYSICIAN OVERSIGHT_1.6.2",
+    "name": "DIA_ACUTE KIDNEY INJURY (AKI) DIALYSIS PHYSICIAN OVERSIGHT",
+    "displayName": "DIA_ACUTE KIDNEY INJURY (AKI) DIALYSIS PHYSICIAN OVERSIGHT - 1286"
+  },
+  {
+    "seocNumber": "6",
+    "seocId": "DIA_ACUTE KIDNEY INJURY (AKI) HEMODIALYSIS_1.0.14_REV",
+    "name": "DIA_ACUTE KIDNEY INJURY (AKI) HEMODIALYSIS",
+    "displayName": "DIA_ACUTE KIDNEY INJURY (AKI) HEMODIALYSIS - 6"
+  },
+  {
+    "seocNumber": "6",
+    "seocId": "DIA_ACUTE OUTPATIENT CENTER BASED ASSISTED HEMODIALYSIS_1.0.12_REV_PRCT",
+    "name": "DIA_ACUTE OUTPATIENT CENTER BASED ASSISTED HEMODIALYSIS",
+    "displayName": "DIA_ACUTE OUTPATIENT CENTER BASED ASSISTED HEMODIALYSIS - 6"
+  },
+  {
+    "seocNumber": "76",
+    "seocId": "DIA_DIALYSIS PHYSICIAN OVERSIGHT SERVICES_1.4.12_REV",
+    "name": "DIA_DIALYSIS PHYSICIAN OVERSIGHT SERVICES",
+    "displayName": "DIA_DIALYSIS PHYSICIAN OVERSIGHT SERVICES - 76"
+  },
+  {
+    "seocNumber": "59",
+    "seocId": "DIA_HOME BASED DIALYSIS_1.1.10_REV",
+    "name": "DIA_HOME BASED DIALYSIS",
+    "displayName": "DIA_HOME BASED DIALYSIS - 59"
+  },
+  {
+    "seocNumber": "76",
+    "seocId": "DIA_NEPHROLOGY MEDICAL DIALYSIS OVERSIGHT SERVICES_1.4.6_PRCT",
+    "name": "DIA_NEPHROLOGY MEDICAL DIALYSIS OVERSIGHT SERVICES",
+    "displayName": "DIA_NEPHROLOGY MEDICAL DIALYSIS OVERSIGHT SERVICES - 76"
+  },
+  {
+    "seocNumber": "103",
+    "seocId": "DIA_OUTPATIENT MAINTENANCE HEMODIALYSIS SERVICES_1.6.12_REV",
+    "name": "DIA_OUTPATIENT MAINTENANCE HEMODIALYSIS SERVICES",
+    "displayName": "DIA_OUTPATIENT MAINTENANCE HEMODIALYSIS SERVICES - 103"
+  },
+  {
+    "seocNumber": "128",
+    "seocId": "DIA_TRANSIENT CENTER-BASED ASSISTED HEMODIALYSIS_1.5.10_REV",
+    "name": "DIA_TRANSIENT CENTER-BASED ASSISTED HEMODIALYSIS",
+    "displayName": "DIA_TRANSIENT CENTER-BASED ASSISTED HEMODIALYSIS - 128"
+  },
+  {
+    "seocNumber": "276",
+    "seocId": "DIA_TRANSIENT DIALYSIS PHYSICIAN OVERSIGHT SERVICES_1.5.6_REV",
+    "name": "DIA_TRANSIENT DIALYSIS PHYSICIAN OVERSIGHT SERVICES",
+    "displayName": "DIA_TRANSIENT DIALYSIS PHYSICIAN OVERSIGHT SERVICES - 276"
+  },
+  {
+    "seocNumber": "1088",
+    "seocId": "EUC_COMPACT EMERGENCY CARE_1.4.6",
+    "name": "EUC_COMPACT EMERGENCY CARE",
+    "displayName": "EUC_COMPACT EMERGENCY CARE - 1088"
+  },
+  {
+    "seocNumber": "284",
+    "seocId": "EUC_DOD ONLY UC_1.3.3",
+    "name": "EUC_DOD ONLY UC",
+    "displayName": "EUC_DOD ONLY UC - 284"
+  },
+  {
+    "seocNumber": "158",
     "seocId": "EUC_EMERGENCY CARE_1.2.8",
-    "selectionOnly": true
+    "name": "EUC_EMERGENCY CARE",
+    "displayName": "EUC_EMERGENCY CARE - 158"
   },
   {
-    "seocKey": "191",
-    "seocId": "EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE_1.1.7",
-    "selectionOnly": true
+    "seocNumber": "49",
+    "seocId": "EUC_EMERGENCY/URGENT CARE_1.0.2_PRCT",
+    "name": "EUC_EMERGENCY/URGENT CARE",
+    "displayName": "EUC_EMERGENCY/URGENT CARE - 49"
   },
   {
-    "seocKey": "233",
-    "seocId": "SSC_TRANSPLANT BONE MARROW COMP EVAL_1.5.14_REV",
-    "selectionOnly": true
+    "seocNumber": "191",
+    "seocId": "EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE_1.4.2_PRCT",
+    "name": "EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE",
+    "displayName": "EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE - 191"
   },
   {
-    "seocKey": "268",
+    "seocNumber": "190",
+    "seocId": "EUC_POM USE ONLY UNAUTHORIZED EMERGENT INPATIENT_1.3.2_PRCT",
+    "name": "EUC_POM USE ONLY UNAUTHORIZED EMERGENT INPATIENT",
+    "displayName": "EUC_POM USE ONLY UNAUTHORIZED EMERGENT INPATIENT - 190"
+  },
+  {
+    "seocNumber": "1307",
+    "seocId": "EUC_TESTUAT1_1.5.2_REV",
+    "name": "EUC_TESTUAT1",
+    "displayName": "EUC_TESTUAT1 - 1307"
+  },
+  {
+    "seocNumber": "165",
+    "seocId": "EUC_URGENT-WALK IN CARE_1.2.2",
+    "name": "EUC_URGENT-WALK IN CARE",
+    "displayName": "EUC_URGENT-WALK IN CARE - 165"
+  },
+  {
+    "seocNumber": "10",
+    "seocId": "INF_ART-IVF FEMALE_1.0.2_PRCT",
+    "name": "INF_ART-IVF FEMALE",
+    "displayName": "INF_ART-IVF FEMALE - 10"
+  },
+  {
+    "seocNumber": "245",
+    "seocId": "INF_CRYOPRESERVATION STORAGE FOR INFERTILITY_1.0.3_PRCT",
+    "name": "INF_CRYOPRESERVATION STORAGE FOR INFERTILITY",
+    "displayName": "INF_CRYOPRESERVATION STORAGE FOR INFERTILITY - 245"
+  },
+  {
+    "seocNumber": "246",
+    "seocId": "INF_CRYOPRESERVATION STORAGE FOR IVF-ART_1.6.3_PRCT",
+    "name": "INF_CRYOPRESERVATION STORAGE FOR IVF-ART",
+    "displayName": "INF_CRYOPRESERVATION STORAGE FOR IVF-ART - 246"
+  },
+  {
+    "seocNumber": "67",
+    "seocId": "INF_FERTILITY-1332 EXISTING OVARY_1.1.17",
+    "name": "INF_FERTILITY-1332 EXISTING OVARY",
+    "displayName": "INF_FERTILITY-1332 EXISTING OVARY - 67"
+  },
+  {
+    "seocNumber": "68",
+    "seocId": "INF_FERTILITY-1332 EXISTING TESTICLE_1.2.17",
+    "name": "INF_FERTILITY-1332 EXISTING TESTICLE",
+    "displayName": "INF_FERTILITY-1332 EXISTING TESTICLE - 68"
+  },
+  {
+    "seocNumber": "1139",
+    "seocId": "INF_FERTILITY-1334 BIRTH SEX FEMALE SPOUSE_1.7.3",
+    "name": "INF_FERTILITY-1334 BIRTH SEX FEMALE SPOUSE",
+    "displayName": "INF_FERTILITY-1334 BIRTH SEX FEMALE SPOUSE - 1139"
+  },
+  {
+    "seocNumber": "203",
+    "seocId": "INF_FERTILITY-1334 BIRTH SEX FEMALE VETERAN_1.4.14",
+    "name": "INF_FERTILITY-1334 BIRTH SEX FEMALE VETERAN",
+    "displayName": "INF_FERTILITY-1334 BIRTH SEX FEMALE VETERAN - 203"
+  },
+  {
+    "seocNumber": "1140",
+    "seocId": "INF_FERTILITY-1334 BIRTH SEX MALE SPOUSE_1.8.3",
+    "name": "INF_FERTILITY-1334 BIRTH SEX MALE SPOUSE",
+    "displayName": "INF_FERTILITY-1334 BIRTH SEX MALE SPOUSE - 1140"
+  },
+  {
+    "seocNumber": "207",
+    "seocId": "INF_FERTILITY-1334 BIRTH SEX MALE VETERAN_1.5.14",
+    "name": "INF_FERTILITY-1334 BIRTH SEX MALE VETERAN",
+    "displayName": "INF_FERTILITY-1334 BIRTH SEX MALE VETERAN - 207"
+  },
+  {
+    "seocNumber": "203",
+    "seocId": "INF_FERTILITY-1334 EXISTING OOCYTE_1.4.11_PRCT",
+    "name": "INF_FERTILITY-1334 EXISTING OOCYTE",
+    "displayName": "INF_FERTILITY-1334 EXISTING OOCYTE - 203"
+  },
+  {
+    "seocNumber": "207",
+    "seocId": "INF_FERTILITY-1334 EXISTING SPERM_1.5.11_PRCT",
+    "name": "INF_FERTILITY-1334 EXISTING SPERM",
+    "displayName": "INF_FERTILITY-1334 EXISTING SPERM - 207"
+  },
+  {
+    "seocNumber": "279",
+    "seocId": "INF_GAMETE HARVEST - MEDICAL INDICATION_1.3.8_REV",
+    "name": "INF_GAMETE HARVEST - MEDICAL INDICATION",
+    "displayName": "INF_GAMETE HARVEST - MEDICAL INDICATION - 279"
+  },
+  {
+    "seocNumber": "67",
+    "seocId": "INF_INFERTILITY-FEMALE_1.1.12_PRCT",
+    "name": "INF_INFERTILITY-FEMALE",
+    "displayName": "INF_INFERTILITY-FEMALE - 67"
+  },
+  {
+    "seocNumber": "68",
+    "seocId": "INF_INFERTILITY-IUI MALE_1.4.2_PRCT",
+    "name": "INF_INFERTILITY-IUI MALE",
+    "displayName": "INF_INFERTILITY-IUI MALE - 68"
+  },
+  {
+    "seocNumber": "68",
+    "seocId": "INF_INFERTILITY-MALE_1.2.12_PRCT",
+    "name": "INF_INFERTILITY-MALE",
+    "displayName": "INF_INFERTILITY-MALE - 68"
+  },
+  {
+    "seocNumber": "203",
+    "seocId": "INF_IVF ART FEMALE_1.4.9_PRCT",
+    "name": "INF_IVF ART FEMALE",
+    "displayName": "INF_IVF ART FEMALE - 203"
+  },
+  {
+    "seocNumber": "207",
+    "seocId": "INF_IVF ART MALE_1.5.9_PRCT",
+    "name": "INF_IVF ART MALE",
+    "displayName": "INF_IVF ART MALE - 207"
+  },
+  {
+    "seocNumber": "70",
+    "seocId": "INF_IVF MALE_1.1.2_PRCT",
+    "name": "INF_IVF MALE",
+    "displayName": "INF_IVF MALE - 70"
+  },
+  {
+    "seocNumber": "9",
+    "seocId": "LAB_ANTI-COAG LAB_1.1.2",
+    "name": "LAB_ANTI-COAG LAB",
+    "displayName": "LAB_ANTI-COAG LAB - 9"
+  },
+  {
+    "seocNumber": "71",
+    "seocId": "LAB_LAB & PATHOLOGY_1.0.1_PRCT",
+    "name": "LAB_LAB & PATHOLOGY",
+    "displayName": "LAB_LAB & PATHOLOGY - 71"
+  },
+  {
+    "seocNumber": "71",
+    "seocId": "LAB_LAB AND PATHOLOGY_1.0.10_PRCT",
+    "name": "LAB_LAB AND PATHOLOGY",
+    "displayName": "LAB_LAB AND PATHOLOGY - 71"
+  },
+  {
+    "seocNumber": "71",
+    "seocId": "LAB_LABORATORY TESTING_1.0.13",
+    "name": "LAB_LABORATORY TESTING",
+    "displayName": "LAB_LABORATORY TESTING - 71"
+  },
+  {
+    "seocNumber": "4",
+    "seocId": "MHC_ACUTE INPATIENT PSYCHIATRIC INVOLUNTARY_1.0.12",
+    "name": "MHC_ACUTE INPATIENT PSYCHIATRIC INVOLUNTARY",
+    "displayName": "MHC_ACUTE INPATIENT PSYCHIATRIC INVOLUNTARY - 4"
+  },
+  {
+    "seocNumber": "4",
+    "seocId": "MHC_ACUTE INPATIENT PSYCHIATRIC SERVICES - INVOLUNTARY ADMISSION_1.0.5_REV_PRCT",
+    "name": "MHC_ACUTE INPATIENT PSYCHIATRIC SERVICES - INVOLUNTARY ADMISSION",
+    "displayName": "MHC_ACUTE INPATIENT PSYCHIATRIC SERVICES - INVOLUNTARY ADMISSION - 4"
+  },
+  {
+    "seocNumber": "5",
+    "seocId": "MHC_ACUTE INPATIENT PSYCHIATRIC SERVICES - VOLUNTARY ADMISSION_1.1.3",
+    "name": "MHC_ACUTE INPATIENT PSYCHIATRIC SERVICES - VOLUNTARY ADMISSION",
+    "displayName": "MHC_ACUTE INPATIENT PSYCHIATRIC SERVICES - VOLUNTARY ADMISSION - 5"
+  },
+  {
+    "seocNumber": "5",
+    "seocId": "MHC_ACUTE INPATIENT PSYCHIATRIC VOLUNTARY_1.1.11",
+    "name": "MHC_ACUTE INPATIENT PSYCHIATRIC VOLUNTARY",
+    "displayName": "MHC_ACUTE INPATIENT PSYCHIATRIC VOLUNTARY - 5"
+  },
+  {
+    "seocNumber": "99",
+    "seocId": "MHC_ADDICTION PSYCHIATRY OUTPATIENT_1.5.18",
+    "name": "MHC_ADDICTION PSYCHIATRY OUTPATIENT",
+    "displayName": "MHC_ADDICTION PSYCHIATRY OUTPATIENT - 99"
+  },
+  {
+    "seocNumber": "80",
+    "seocId": "MHC_COGNITIVE REHABILITATION_1.15.10_REV",
+    "name": "MHC_COGNITIVE REHABILITATION",
+    "displayName": "MHC_COGNITIVE REHABILITATION - 80"
+  },
+  {
+    "seocNumber": "1085",
+    "seocId": "MHC_COMPACT ACUTE MH INPT INVOL_1.16.4",
+    "name": "MHC_COMPACT ACUTE MH INPT INVOL",
+    "displayName": "MHC_COMPACT ACUTE MH INPT INVOL - 1085"
+  },
+  {
+    "seocNumber": "1086",
+    "seocId": "MHC_COMPACT ACUTE MH INPT VOL_1.17.4_REV",
+    "name": "MHC_COMPACT ACUTE MH INPT VOL",
+    "displayName": "MHC_COMPACT ACUTE MH INPT VOL - 1086"
+  },
+  {
+    "seocNumber": "1100",
+    "seocId": "MHC_COMPACT ADDICTION PSYCHIATRY OUTPATIENT_1.21.6",
+    "name": "MHC_COMPACT ADDICTION PSYCHIATRY OUTPATIENT",
+    "displayName": "MHC_COMPACT ADDICTION PSYCHIATRY OUTPATIENT - 1100"
+  },
+  {
+    "seocNumber": "1092",
+    "seocId": "MHC_COMPACT MH  RESIDENTIAL TX_1.18.2_PRCT",
+    "name": "MHC_COMPACT MH  RESIDENTIAL TX",
+    "displayName": "MHC_COMPACT MH  RESIDENTIAL TX - 1092"
+  },
+  {
+    "seocNumber": "1277",
+    "seocId": "MHC_COMPACT MH ASSERTIVE COMMUNITY TREATMENT_1.23.2",
+    "name": "MHC_COMPACT MH ASSERTIVE COMMUNITY TREATMENT",
+    "displayName": "MHC_COMPACT MH ASSERTIVE COMMUNITY TREATMENT - 1277"
+  },
+  {
+    "seocNumber": "1090",
+    "seocId": "MHC_COMPACT MH INTENSIVE OUTPT_1.19.4_PRCT",
+    "name": "MHC_COMPACT MH INTENSIVE OUTPT",
+    "displayName": "MHC_COMPACT MH INTENSIVE OUTPT - 1090"
+  },
+  {
+    "seocNumber": "1091",
+    "seocId": "MHC_COMPACT MH OUTPATIENT_1.20.6",
+    "name": "MHC_COMPACT MH OUTPATIENT",
+    "displayName": "MHC_COMPACT MH OUTPATIENT - 1091"
+  },
+  {
+    "seocNumber": "1278",
+    "seocId": "MHC_COMPACT MH PARTIAL HOSPITALIZATION INTENSIVE OUTPT_1.24.2",
+    "name": "MHC_COMPACT MH PARTIAL HOSPITALIZATION INTENSIVE OUTPT",
+    "displayName": "MHC_COMPACT MH PARTIAL HOSPITALIZATION INTENSIVE OUTPT - 1278"
+  },
+  {
+    "seocNumber": "1092",
+    "seocId": "MHC_COMPACT MH RESIDENTIAL TX_1.18.4",
+    "name": "MHC_COMPACT MH RESIDENTIAL TX",
+    "displayName": "MHC_COMPACT MH RESIDENTIAL TX - 1092"
+  },
+  {
+    "seocNumber": "1279",
+    "seocId": "MHC_COMPACT MH SPECIALTY INTENSIVE OUTPT IOP_1.25.2",
+    "name": "MHC_COMPACT MH SPECIALTY INTENSIVE OUTPT IOP",
+    "displayName": "MHC_COMPACT MH SPECIALTY INTENSIVE OUTPT IOP - 1279"
+  },
+  {
+    "seocNumber": "1282",
+    "seocId": "MHC_COMPACT MH SUBSTANCE USE DISORDER IOP_1.26.2",
+    "name": "MHC_COMPACT MH SUBSTANCE USE DISORDER IOP",
+    "displayName": "MHC_COMPACT MH SUBSTANCE USE DISORDER IOP - 1282"
+  },
+  {
+    "seocNumber": "1098",
+    "seocId": "MHC_COMPACT OFFICE BASED BUPRENORPHINE 3M_1.5.5",
+    "name": "MHC_COMPACT OFFICE BASED BUPRENORPHINE 3M",
+    "displayName": "MHC_COMPACT OFFICE BASED BUPRENORPHINE 3M - 1098"
+  },
+  {
+    "seocNumber": "1094",
+    "seocId": "MHC_COMPACT OPIOID TX PROG (OTP) BUPREN 3M_1.6.6",
+    "name": "MHC_COMPACT OPIOID TX PROG (OTP) BUPREN 3M",
+    "displayName": "MHC_COMPACT OPIOID TX PROG (OTP) BUPREN 3M - 1094"
+  },
+  {
+    "seocNumber": "1099",
+    "seocId": "MHC_COMPACT OPIOID TX PROG (OTP) CONT TX 3M_1.7.6",
+    "name": "MHC_COMPACT OPIOID TX PROG (OTP) CONT TX 3M",
+    "displayName": "MHC_COMPACT OPIOID TX PROG (OTP) CONT TX 3M - 1099"
+  },
+  {
+    "seocNumber": "1103",
+    "seocId": "MHC_COMPACT OPIOID TX PROG (OTP) METH 3M_1.8.5",
+    "name": "MHC_COMPACT OPIOID TX PROG (OTP) METH 3M",
+    "displayName": "MHC_COMPACT OPIOID TX PROG (OTP) METH 3M - 1103"
+  },
+  {
+    "seocNumber": "1100",
+    "seocId": "MHC_COMPACT OUTPATIENT ADDICTION PSYCHIATRY_1.21.1_PRCT",
+    "name": "MHC_COMPACT OUTPATIENT ADDICTION PSYCHIATRY",
+    "displayName": "MHC_COMPACT OUTPATIENT ADDICTION PSYCHIATRY - 1100"
+  },
+  {
+    "seocNumber": "216",
+    "seocId": "MHC_ECT CONTINUATION AND MAINTENANCE_1.9.7_REV",
+    "name": "MHC_ECT CONTINUATION AND MAINTENANCE",
+    "displayName": "MHC_ECT CONTINUATION AND MAINTENANCE - 216"
+  },
+  {
+    "seocNumber": "48",
+    "seocId": "MHC_ECT INITIAL_1.6.11_REV",
+    "name": "MHC_ECT INITIAL",
+    "displayName": "MHC_ECT INITIAL - 48"
+  },
+  {
+    "seocNumber": "48",
+    "seocId": "MHC_ELECTROCONVULSIVE THERAPY SERVICES-INITIAL_1.6.3_PRCT",
+    "name": "MHC_ELECTROCONVULSIVE THERAPY SERVICES-INITIAL",
+    "displayName": "MHC_ELECTROCONVULSIVE THERAPY SERVICES-INITIAL - 48"
+  },
+  {
+    "seocNumber": "100",
+    "seocId": "MHC_FAMILY AND COUPLES PSYCHOTHERAPY OUTPATIENT_1.14.15",
+    "name": "MHC_FAMILY AND COUPLES PSYCHOTHERAPY OUTPATIENT",
+    "displayName": "MHC_FAMILY AND COUPLES PSYCHOTHERAPY OUTPATIENT - 100"
+  },
+  {
+    "seocNumber": "100",
+    "seocId": "MHC_FAMILY AND COUPLES PSYCHOTHERAPY OUTPATIENT 6M_1.14.13_PRCT",
+    "name": "MHC_FAMILY AND COUPLES PSYCHOTHERAPY OUTPATIENT 6M",
+    "displayName": "MHC_FAMILY AND COUPLES PSYCHOTHERAPY OUTPATIENT 6M - 100"
+  },
+  {
+    "seocNumber": "257",
+    "seocId": "MHC_MENTAL HEALTH INTENSIVE OUTPATIENT_1.12.8_PRCT",
+    "name": "MHC_MENTAL HEALTH INTENSIVE OUTPATIENT",
+    "displayName": "MHC_MENTAL HEALTH INTENSIVE OUTPATIENT - 257"
+  },
+  {
+    "seocNumber": "256",
+    "seocId": "MHC_MENTAL HEALTH OUTPATIENT_1.12.8_PRCT",
+    "name": "MHC_MENTAL HEALTH OUTPATIENT",
+    "displayName": "MHC_MENTAL HEALTH OUTPATIENT - 256"
+  },
+  {
+    "seocNumber": "1288",
+    "seocId": "MHC_MENTAL HEALTH OUTPATIENT 3M_1.27.2",
+    "name": "MHC_MENTAL HEALTH OUTPATIENT 3M",
+    "displayName": "MHC_MENTAL HEALTH OUTPATIENT 3M - 1288"
+  },
+  {
+    "seocNumber": "256",
+    "seocId": "MHC_MENTAL HEALTH OUTPATIENT 6M_1.12.9_PRCT",
+    "name": "MHC_MENTAL HEALTH OUTPATIENT 6M",
+    "displayName": "MHC_MENTAL HEALTH OUTPATIENT 6M - 256"
+  },
+  {
+    "seocNumber": "256",
+    "seocId": "MHC_MENTAL HEALTH OUTPATIENT 12M_1.12.11",
+    "name": "MHC_MENTAL HEALTH OUTPATIENT 12M",
+    "displayName": "MHC_MENTAL HEALTH OUTPATIENT 12M - 256"
+  },
+  {
+    "seocNumber": "268",
     "seocId": "MHC_MENTAL HEALTH RESIDENTIAL TREATMENT_1.15.7",
-    "selectionOnly": true
+    "name": "MHC_MENTAL HEALTH RESIDENTIAL TREATMENT",
+    "displayName": "MHC_MENTAL HEALTH RESIDENTIAL TREATMENT - 268"
   },
   {
-    "seocKey": "1160",
+    "seocNumber": "1281",
+    "seocId": "MHC_MH ASSERTIVE COMMUNITY TREATMENT_1.28.2",
+    "name": "MHC_MH ASSERTIVE COMMUNITY TREATMENT",
+    "displayName": "MHC_MH ASSERTIVE COMMUNITY TREATMENT - 1281"
+  },
+  {
+    "seocNumber": "1285",
+    "seocId": "MHC_MH PARTIAL HOSPITALIZATION INTENSIVE OUTPT_1.29.2",
+    "name": "MHC_MH PARTIAL HOSPITALIZATION INTENSIVE OUTPT",
+    "displayName": "MHC_MH PARTIAL HOSPITALIZATION INTENSIVE OUTPT - 1285"
+  },
+  {
+    "seocNumber": "1284",
+    "seocId": "MHC_MH SPECIALTY INTENSIVE OUTPT IOP_1.30.2",
+    "name": "MHC_MH SPECIALTY INTENSIVE OUTPT IOP",
+    "displayName": "MHC_MH SPECIALTY INTENSIVE OUTPT IOP - 1284"
+  },
+  {
+    "seocNumber": "1283",
+    "seocId": "MHC_MH SUBSTANCE USE DISORDER IOP_1.31.2",
+    "name": "MHC_MH SUBSTANCE USE DISORDER IOP",
+    "displayName": "MHC_MH SUBSTANCE USE DISORDER IOP - 1283"
+  },
+  {
+    "seocNumber": "79",
+    "seocId": "MHC_NEUROPSYCH EVALUATION_1.14.9_REV",
+    "name": "MHC_NEUROPSYCH EVALUATION",
+    "displayName": "MHC_NEUROPSYCH EVALUATION - 79"
+  },
+  {
+    "seocNumber": "80",
+    "seocId": "MHC_NEUROPSYCH REHABILITATION_1.15.6_REV_PRCT",
+    "name": "MHC_NEUROPSYCH REHABILITATION",
+    "displayName": "MHC_NEUROPSYCH REHABILITATION - 80"
+  },
+  {
+    "seocNumber": "197",
+    "seocId": "MHC_OFFICE BASED BUPRENORPHINE 6M_1.1.10",
+    "name": "MHC_OFFICE BASED BUPRENORPHINE 6M",
+    "displayName": "MHC_OFFICE BASED BUPRENORPHINE 6M - 197"
+  },
+  {
+    "seocNumber": "199",
+    "seocId": "MHC_OFFICE BASED BUPRENORPHINE 12M_1.2.2_PRCT",
+    "name": "MHC_OFFICE BASED BUPRENORPHINE 12M",
+    "displayName": "MHC_OFFICE BASED BUPRENORPHINE 12M - 199"
+  },
+  {
+    "seocNumber": "94",
+    "seocId": "MHC_OPIOID TREATMENT PROGRAM (OTP) BUPRENORPHINE 6M_1.2.13",
+    "name": "MHC_OPIOID TREATMENT PROGRAM (OTP) BUPRENORPHINE 6M",
+    "displayName": "MHC_OPIOID TREATMENT PROGRAM (OTP) BUPRENORPHINE 6M - 94"
+  },
+  {
+    "seocNumber": "94",
+    "seocId": "MHC_OPIOID TREATMENT PROGRAM (OTP) BUPRENORPHINE- 6 MONTHS_1.2.5_PRCT",
+    "name": "MHC_OPIOID TREATMENT PROGRAM (OTP) BUPRENORPHINE- 6 MONTHS",
+    "displayName": "MHC_OPIOID TREATMENT PROGRAM (OTP) BUPRENORPHINE- 6 MONTHS - 94"
+  },
+  {
+    "seocNumber": "94",
+    "seocId": "MHC_OPIOID TREATMENT PROGRAM (OTP) BUPRENORPHINE- 6 MONTHS PRCT_1.1.3_PRCT",
+    "name": "MHC_OPIOID TREATMENT PROGRAM (OTP) BUPRENORPHINE- 6 MONTHS PRCT",
+    "displayName": "MHC_OPIOID TREATMENT PROGRAM (OTP) BUPRENORPHINE- 6 MONTHS PRCT - 94"
+  },
+  {
+    "seocNumber": "94",
+    "seocId": "MHC_OPIOID TREATMENT PROGRAM (OTP) BUPRENORPHINE- 6M_1.2.7_PRCT",
+    "name": "MHC_OPIOID TREATMENT PROGRAM (OTP) BUPRENORPHINE- 6M",
+    "displayName": "MHC_OPIOID TREATMENT PROGRAM (OTP) BUPRENORPHINE- 6M - 94"
+  },
+  {
+    "seocNumber": "95",
+    "seocId": "MHC_OPIOID TREATMENT PROGRAM (OTP) CONTINUING TREATMENT 12M_1.3.14",
+    "name": "MHC_OPIOID TREATMENT PROGRAM (OTP) CONTINUING TREATMENT 12M",
+    "displayName": "MHC_OPIOID TREATMENT PROGRAM (OTP) CONTINUING TREATMENT 12M - 95"
+  },
+  {
+    "seocNumber": "95",
+    "seocId": "MHC_OPIOID TREATMENT PROGRAM (OTP) CONTINUING TREATMENT- 12 MONTHS_1.3.6_REV_PRCT",
+    "name": "MHC_OPIOID TREATMENT PROGRAM (OTP) CONTINUING TREATMENT- 12 MONTHS",
+    "displayName": "MHC_OPIOID TREATMENT PROGRAM (OTP) CONTINUING TREATMENT- 12 MONTHS - 95"
+  },
+  {
+    "seocNumber": "95",
+    "seocId": "MHC_OPIOID TREATMENT PROGRAM (OTP) CONTINUING TREATMENT- 12 MONTHS PRCT_1.2.3_PRCT",
+    "name": "MHC_OPIOID TREATMENT PROGRAM (OTP) CONTINUING TREATMENT- 12 MONTHS PRCT",
+    "displayName": "MHC_OPIOID TREATMENT PROGRAM (OTP) CONTINUING TREATMENT- 12 MONTHS PRCT - 95"
+  },
+  {
+    "seocNumber": "95",
+    "seocId": "MHC_OPIOID TREATMENT PROGRAM (OTP) CONTINUING TREATMENT- 12M_1.3.8_REV_PRCT",
+    "name": "MHC_OPIOID TREATMENT PROGRAM (OTP) CONTINUING TREATMENT- 12M",
+    "displayName": "MHC_OPIOID TREATMENT PROGRAM (OTP) CONTINUING TREATMENT- 12M - 95"
+  },
+  {
+    "seocNumber": "96",
+    "seocId": "MHC_OPIOID TREATMENT PROGRAM (OTP) METHADONE 6M_1.4.12",
+    "name": "MHC_OPIOID TREATMENT PROGRAM (OTP) METHADONE 6M",
+    "displayName": "MHC_OPIOID TREATMENT PROGRAM (OTP) METHADONE 6M - 96"
+  },
+  {
+    "seocNumber": "96",
+    "seocId": "MHC_OPIOID TREATMENT PROGRAM (OTP) METHADONE- 6 MONTHS_1.4.5_PRCT",
+    "name": "MHC_OPIOID TREATMENT PROGRAM (OTP) METHADONE- 6 MONTHS",
+    "displayName": "MHC_OPIOID TREATMENT PROGRAM (OTP) METHADONE- 6 MONTHS - 96"
+  },
+  {
+    "seocNumber": "96",
+    "seocId": "MHC_OPIOID TREATMENT PROGRAM (OTP) METHADONE- 6 MONTHS PRCT_1.0.3_PRCT",
+    "name": "MHC_OPIOID TREATMENT PROGRAM (OTP) METHADONE- 6 MONTHS PRCT",
+    "displayName": "MHC_OPIOID TREATMENT PROGRAM (OTP) METHADONE- 6 MONTHS PRCT - 96"
+  },
+  {
+    "seocNumber": "96",
+    "seocId": "MHC_OPIOID TREATMENT PROGRAM (OTP) METHADONE- 6M_1.4.7_PRCT",
+    "name": "MHC_OPIOID TREATMENT PROGRAM (OTP) METHADONE- 6M",
+    "displayName": "MHC_OPIOID TREATMENT PROGRAM (OTP) METHADONE- 6M - 96"
+  },
+  {
+    "seocNumber": "99",
+    "seocId": "MHC_OUTPATIENT ADDICTION PSYCHIATRY_1.5.12_PRCT",
+    "name": "MHC_OUTPATIENT ADDICTION PSYCHIATRY",
+    "displayName": "MHC_OUTPATIENT ADDICTION PSYCHIATRY - 99"
+  },
+  {
+    "seocNumber": "99",
+    "seocId": "MHC_OUTPATIENT ADDICTION PSYCHIATRY MEDICINE_1.5.6_PRCT",
+    "name": "MHC_OUTPATIENT ADDICTION PSYCHIATRY MEDICINE",
+    "displayName": "MHC_OUTPATIENT ADDICTION PSYCHIATRY MEDICINE - 99"
+  },
+  {
+    "seocNumber": "99",
+    "seocId": "MHC_OUTPATIENT ADDICTION PSYCHIATRY/MEDICINE_1.5.4_PRCT",
+    "name": "MHC_OUTPATIENT ADDICTION PSYCHIATRY/MEDICINE",
+    "displayName": "MHC_OUTPATIENT ADDICTION PSYCHIATRY/MEDICINE - 99"
+  },
+  {
+    "seocNumber": "100",
+    "seocId": "MHC_OUTPATIENT FAMILY AND COUPLES PSYCHOTHERAPY - 6 MONTH_1.14.4_REV_PRCT",
+    "name": "MHC_OUTPATIENT FAMILY AND COUPLES PSYCHOTHERAPY - 6 MONTH",
+    "displayName": "MHC_OUTPATIENT FAMILY AND COUPLES PSYCHOTHERAPY - 6 MONTH - 100"
+  },
+  {
+    "seocNumber": "100",
+    "seocId": "MHC_OUTPATIENT FAMILY AND COUPLES PSYCHOTHERAPY - 6M_1.14.7_REV_PRCT",
+    "name": "MHC_OUTPATIENT FAMILY AND COUPLES PSYCHOTHERAPY - 6M",
+    "displayName": "MHC_OUTPATIENT FAMILY AND COUPLES PSYCHOTHERAPY - 6M - 100"
+  },
+  {
+    "seocNumber": "100",
+    "seocId": "MHC_OUTPATIENT FAMILY AND COUPLES PSYCHOTHERAPY 6M_1.14.8_REV_PRCT",
+    "name": "MHC_OUTPATIENT FAMILY AND COUPLES PSYCHOTHERAPY 6M",
+    "displayName": "MHC_OUTPATIENT FAMILY AND COUPLES PSYCHOTHERAPY 6M - 100"
+  },
+  {
+    "seocNumber": "100",
+    "seocId": "MHC_OUTPATIENT FAMILY/COUPLES PSYCHOTHERAPY - 6 MONTH_1.14.3_PRCT",
+    "name": "MHC_OUTPATIENT FAMILY/COUPLES PSYCHOTHERAPY - 6 MONTH",
+    "displayName": "MHC_OUTPATIENT FAMILY/COUPLES PSYCHOTHERAPY - 6 MONTH - 100"
+  },
+  {
+    "seocNumber": "100",
+    "seocId": "MHC_OUTPATIENT FAMILY/COUPLES PSYCHOTHERAPY - 6 MONTH PRCT_1.14.2_PRCT",
+    "name": "MHC_OUTPATIENT FAMILY/COUPLES PSYCHOTHERAPY - 6 MONTH PRCT",
+    "displayName": "MHC_OUTPATIENT FAMILY/COUPLES PSYCHOTHERAPY - 6 MONTH PRCT - 100"
+  },
+  {
+    "seocNumber": "102",
+    "seocId": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 6 MONTH_1.15.5_PRCT",
+    "name": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 6 MONTH",
+    "displayName": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 6 MONTH - 102"
+  },
+  {
+    "seocNumber": "102",
+    "seocId": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 6 MONTH PRCT_1.15.3_PRCT",
+    "name": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 6 MONTH PRCT",
+    "displayName": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 6 MONTH PRCT - 102"
+  },
+  {
+    "seocNumber": "102",
+    "seocId": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 6M_1.15.7_PRCT",
+    "name": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 6M",
+    "displayName": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 6M - 102"
+  },
+  {
+    "seocNumber": "101",
+    "seocId": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 12 MONTH_1.13.4_REV_PRCT",
+    "name": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 12 MONTH",
+    "displayName": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 12 MONTH - 101"
+  },
+  {
+    "seocNumber": "101",
+    "seocId": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 12 MONTH PRCT_1.13.2_PRCT",
+    "name": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 12 MONTH PRCT",
+    "displayName": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 12 MONTH PRCT - 101"
+  },
+  {
+    "seocNumber": "101",
+    "seocId": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 12M_1.13.6_REV_PRCT",
+    "name": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 12M",
+    "displayName": "MHC_OUTPATIENT INDIVIDUAL PSYCHOTHERAPY - 12M - 101"
+  },
+  {
+    "seocNumber": "105",
+    "seocId": "MHC_OUTPATIENT PSYCHIATRY - 6 MONTH_1.10.4_REV_PRCT",
+    "name": "MHC_OUTPATIENT PSYCHIATRY - 6 MONTH",
+    "displayName": "MHC_OUTPATIENT PSYCHIATRY - 6 MONTH - 105"
+  },
+  {
+    "seocNumber": "105",
+    "seocId": "MHC_OUTPATIENT PSYCHIATRY - 6 MONTH PRCT_1.10.2_PRCT",
+    "name": "MHC_OUTPATIENT PSYCHIATRY - 6 MONTH PRCT",
+    "displayName": "MHC_OUTPATIENT PSYCHIATRY - 6 MONTH PRCT - 105"
+  },
+  {
+    "seocNumber": "105",
+    "seocId": "MHC_OUTPATIENT PSYCHIATRY - 6M_1.10.6_REV_PRCT",
+    "name": "MHC_OUTPATIENT PSYCHIATRY - 6M",
+    "displayName": "MHC_OUTPATIENT PSYCHIATRY - 6M - 105"
+  },
+  {
+    "seocNumber": "104",
+    "seocId": "MHC_OUTPATIENT PSYCHIATRY - 12 MONTH_1.11.4_REV_PRCT",
+    "name": "MHC_OUTPATIENT PSYCHIATRY - 12 MONTH",
+    "displayName": "MHC_OUTPATIENT PSYCHIATRY - 12 MONTH - 104"
+  },
+  {
+    "seocNumber": "104",
+    "seocId": "MHC_OUTPATIENT PSYCHIATRY - 12 MONTH PRCT_1.11.2_PRCT",
+    "name": "MHC_OUTPATIENT PSYCHIATRY - 12 MONTH PRCT",
+    "displayName": "MHC_OUTPATIENT PSYCHIATRY - 12 MONTH PRCT - 104"
+  },
+  {
+    "seocNumber": "104",
+    "seocId": "MHC_OUTPATIENT PSYCHIATRY - 12M_1.11.5_REV_PRCT",
+    "name": "MHC_OUTPATIENT PSYCHIATRY - 12M",
+    "displayName": "MHC_OUTPATIENT PSYCHIATRY - 12M - 104"
+  },
+  {
+    "seocNumber": "105",
+    "seocId": "MHC_OUTPATIENT PSYCHIATRY 6M_1.10.8_REV_PRCT",
+    "name": "MHC_OUTPATIENT PSYCHIATRY 6M",
+    "displayName": "MHC_OUTPATIENT PSYCHIATRY 6M - 105"
+  },
+  {
+    "seocNumber": "104",
+    "seocId": "MHC_OUTPATIENT PSYCHIATRY 12M_1.11.7_REV_PRCT",
+    "name": "MHC_OUTPATIENT PSYCHIATRY 12M",
+    "displayName": "MHC_OUTPATIENT PSYCHIATRY 12M - 104"
+  },
+  {
+    "seocNumber": "102",
+    "seocId": "MHC_OUTPATIENT PSYCHOTHERAPY 6M_1.15.9_REV_PRCT",
+    "name": "MHC_OUTPATIENT PSYCHOTHERAPY 6M",
+    "displayName": "MHC_OUTPATIENT PSYCHOTHERAPY 6M - 102"
+  },
+  {
+    "seocNumber": "101",
+    "seocId": "MHC_OUTPATIENT PSYCHOTHERAPY 12M_1.13.8_REV_PRCT",
+    "name": "MHC_OUTPATIENT PSYCHOTHERAPY 12M",
+    "displayName": "MHC_OUTPATIENT PSYCHOTHERAPY 12M - 101"
+  },
+  {
+    "seocNumber": "105",
+    "seocId": "MHC_PSYCHIATRY OUTPATIENT 6M_1.10.13",
+    "name": "MHC_PSYCHIATRY OUTPATIENT 6M",
+    "displayName": "MHC_PSYCHIATRY OUTPATIENT 6M - 105"
+  },
+  {
+    "seocNumber": "104",
+    "seocId": "MHC_PSYCHIATRY OUTPATIENT 12M_1.11.12",
+    "name": "MHC_PSYCHIATRY OUTPATIENT 12M",
+    "displayName": "MHC_PSYCHIATRY OUTPATIENT 12M - 104"
+  },
+  {
+    "seocNumber": "102",
+    "seocId": "MHC_PSYCHOTHERAPY OUTPATIENT 6M_1.15.13",
+    "name": "MHC_PSYCHOTHERAPY OUTPATIENT 6M",
+    "displayName": "MHC_PSYCHOTHERAPY OUTPATIENT 6M - 102"
+  },
+  {
+    "seocNumber": "101",
+    "seocId": "MHC_PSYCHOTHERAPY OUTPATIENT 12M_1.13.12",
+    "name": "MHC_PSYCHOTHERAPY OUTPATIENT 12M",
+    "displayName": "MHC_PSYCHOTHERAPY OUTPATIENT 12M - 101"
+  },
+  {
+    "seocNumber": "1160",
     "seocId": "MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT_1.22.2",
-    "selectionOnly": true
+    "name": "MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT",
+    "displayName": "MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT - 1160"
+  },
+  {
+    "seocNumber": "220",
+    "seocId": "MHC_TREATMENT RESISTANT DEPRESSION_1.10.12",
+    "name": "MHC_TREATMENT RESISTANT DEPRESSION",
+    "displayName": "MHC_TREATMENT RESISTANT DEPRESSION - 220"
+  },
+  {
+    "seocNumber": "6",
+    "seocId": "MSC_ACUTE OUTPATIENT CENTER BASED ASSISTED HEMODIALYSIS_1.0.2_PRCT",
+    "name": "MSC_ACUTE OUTPATIENT CENTER BASED ASSISTED HEMODIALYSIS",
+    "displayName": "MSC_ACUTE OUTPATIENT CENTER BASED ASSISTED HEMODIALYSIS - 6"
+  },
+  {
+    "seocNumber": "273",
+    "seocId": "MSC_ALASKA USE ONLY IHS THP_1.13.3",
+    "name": "MSC_ALASKA USE ONLY IHS THP",
+    "displayName": "MSC_ALASKA USE ONLY IHS THP - 273"
+  },
+  {
+    "seocNumber": "8",
+    "seocId": "MSC_ALLERGY AND IMMUNOLOGY_1.0.13",
+    "name": "MSC_ALLERGY AND IMMUNOLOGY",
+    "displayName": "MSC_ALLERGY AND IMMUNOLOGY - 8"
+  },
+  {
+    "seocNumber": "8",
+    "seocId": "MSC_ALLERGY-IMMUNOLOGY_1.0.2_PRCT",
+    "name": "MSC_ALLERGY-IMMUNOLOGY",
+    "displayName": "MSC_ALLERGY-IMMUNOLOGY - 8"
+  },
+  {
+    "seocNumber": "281",
+    "seocId": "MSC_AMYOTROPHIC LATERAL SCLEROSIS_1.2.7",
+    "name": "MSC_AMYOTROPHIC LATERAL SCLEROSIS",
+    "displayName": "MSC_AMYOTROPHIC LATERAL SCLEROSIS - 281"
+  },
+  {
+    "seocNumber": "58",
+    "seocId": "MSC_BENIGN HEMATOLOGY_1.0.3_PRCT",
+    "name": "MSC_BENIGN HEMATOLOGY",
+    "displayName": "MSC_BENIGN HEMATOLOGY - 58"
+  },
+  {
+    "seocNumber": "15",
+    "seocId": "MSC_BLOOD TRANSFUSION (OUTPATIENT)_1.0.8",
+    "name": "MSC_BLOOD TRANSFUSION (OUTPATIENT)",
+    "displayName": "MSC_BLOOD TRANSFUSION (OUTPATIENT) - 15"
+  },
+  {
+    "seocNumber": "15",
+    "seocId": "MSC_BLOOD TRANSFUSION (OUTPATIENT) PRCT_1.0.2",
+    "name": "MSC_BLOOD TRANSFUSION (OUTPATIENT) PRCT",
+    "displayName": "MSC_BLOOD TRANSFUSION (OUTPATIENT) PRCT - 15"
+  },
+  {
+    "seocNumber": "253",
+    "seocId": "MSC_BRONCHIAL CHALLENGE TESTING_1.3.4",
+    "name": "MSC_BRONCHIAL CHALLENGE TESTING",
+    "displayName": "MSC_BRONCHIAL CHALLENGE TESTING - 253"
+  },
+  {
+    "seocNumber": "23",
+    "seocId": "MSC_CARDIOLOGY_1.4.20_REV",
+    "name": "MSC_CARDIOLOGY",
+    "displayName": "MSC_CARDIOLOGY - 23"
+  },
+  {
+    "seocNumber": "152",
+    "seocId": "MSC_CARDIOLOGY  ELECTROPHYSIOLOGY_1.4.3_PRCT",
+    "name": "MSC_CARDIOLOGY  ELECTROPHYSIOLOGY",
+    "displayName": "MSC_CARDIOLOGY  ELECTROPHYSIOLOGY - 152"
+  },
+  {
+    "seocNumber": "18",
+    "seocId": "MSC_CARDIOLOGY - CATH/PCI_1.0.5",
+    "name": "MSC_CARDIOLOGY - CATH/PCI",
+    "displayName": "MSC_CARDIOLOGY - CATH/PCI - 18"
+  },
+  {
+    "seocNumber": "152",
+    "seocId": "MSC_CARDIOLOGY - ELECTROPHYSIOLOGY_1.4.2_PRCT",
+    "name": "MSC_CARDIOLOGY - ELECTROPHYSIOLOGY",
+    "displayName": "MSC_CARDIOLOGY - ELECTROPHYSIOLOGY - 152"
+  },
+  {
+    "seocNumber": "21",
+    "seocId": "MSC_CARDIOLOGY - TAVR_1.2.5_PRCT",
+    "name": "MSC_CARDIOLOGY - TAVR",
+    "displayName": "MSC_CARDIOLOGY - TAVR - 21"
+  },
+  {
+    "seocNumber": "21",
+    "seocId": "MSC_CARDIOLOGY - TAVR PRCT_1.2.4_PRCT",
+    "name": "MSC_CARDIOLOGY - TAVR PRCT",
+    "displayName": "MSC_CARDIOLOGY - TAVR PRCT - 21"
+  },
+  {
+    "seocNumber": "18",
+    "seocId": "MSC_CARDIOLOGY CATH - PCI_1.1.14_REV_PRCT",
+    "name": "MSC_CARDIOLOGY CATH - PCI",
+    "displayName": "MSC_CARDIOLOGY CATH - PCI - 18"
+  },
+  {
+    "seocNumber": "18",
+    "seocId": "MSC_CARDIOLOGY CATH-PCI_1.1.16_REV",
+    "name": "MSC_CARDIOLOGY CATH-PCI",
+    "displayName": "MSC_CARDIOLOGY CATH-PCI - 18"
+  },
+  {
+    "seocNumber": "23",
+    "seocId": "MSC_CARDIOLOGY COMPREHENSIVE_1.4.16_REV_PRCT",
+    "name": "MSC_CARDIOLOGY COMPREHENSIVE",
+    "displayName": "MSC_CARDIOLOGY COMPREHENSIVE - 23"
+  },
+  {
+    "seocNumber": "152",
+    "seocId": "MSC_CARDIOLOGY ELECTROPHYSIOLOGY_1.0.12",
+    "name": "MSC_CARDIOLOGY ELECTROPHYSIOLOGY",
+    "displayName": "MSC_CARDIOLOGY ELECTROPHYSIOLOGY - 152"
+  },
+  {
+    "seocNumber": "198",
+    "seocId": "MSC_CARDIOLOGY INTERVENTIONAL_1.5.3_REV_PRCT",
+    "name": "MSC_CARDIOLOGY INTERVENTIONAL",
+    "displayName": "MSC_CARDIOLOGY INTERVENTIONAL - 198"
+  },
+  {
+    "seocNumber": "1126",
+    "seocId": "MSC_CARDIOLOGY INTERVENTIONAL-STRUCTURAL HEART_1.7.5_REV",
+    "name": "MSC_CARDIOLOGY INTERVENTIONAL-STRUCTURAL HEART",
+    "displayName": "MSC_CARDIOLOGY INTERVENTIONAL-STRUCTURAL HEART - 1126"
+  },
+  {
+    "seocNumber": "240",
+    "seocId": "MSC_CARDIOLOGY LVAD_1.6.5_REV_PRCT",
+    "name": "MSC_CARDIOLOGY LVAD",
+    "displayName": "MSC_CARDIOLOGY LVAD - 240"
+  },
+  {
+    "seocNumber": "21",
+    "seocId": "MSC_CARDIOLOGY TAVR_1.5.13_REV_PRCT",
+    "name": "MSC_CARDIOLOGY TAVR",
+    "displayName": "MSC_CARDIOLOGY TAVR - 21"
+  },
+  {
+    "seocNumber": "137",
+    "seocId": "MSC_CARDIOLOGY TESTING_1.6.12_REV",
+    "name": "MSC_CARDIOLOGY TESTING",
+    "displayName": "MSC_CARDIOLOGY TESTING - 137"
+  },
+  {
+    "seocNumber": "254",
+    "seocId": "MSC_CARDIOPULMONARY EXERCISE TESTING_1.3.3",
+    "name": "MSC_CARDIOPULMONARY EXERCISE TESTING",
+    "displayName": "MSC_CARDIOPULMONARY EXERCISE TESTING - 254"
+  },
+  {
+    "seocNumber": "24",
+    "seocId": "MSC_CHEMOTHERAPY-OUTPATIENT_1.0.2_PRCT",
+    "name": "MSC_CHEMOTHERAPY-OUTPATIENT",
+    "displayName": "MSC_CHEMOTHERAPY-OUTPATIENT - 24"
+  },
+  {
+    "seocNumber": "28",
+    "seocId": "MSC_CHRONIC KIDNEY DISEASE - OUTPATIENT EDUCATION_1.1.1",
+    "name": "MSC_CHRONIC KIDNEY DISEASE - OUTPATIENT EDUCATION",
+    "displayName": "MSC_CHRONIC KIDNEY DISEASE - OUTPATIENT EDUCATION - 28"
+  },
+  {
+    "seocNumber": "29",
+    "seocId": "MSC_CHRONIC PAIN MANAGEMENT; IR-INJECTIONS_1.0.3_PRCT",
+    "name": "MSC_CHRONIC PAIN MANAGEMENT; IR-INJECTIONS",
+    "displayName": "MSC_CHRONIC PAIN MANAGEMENT; IR-INJECTIONS - 29"
+  },
+  {
+    "seocNumber": "30",
+    "seocId": "MSC_CHRONIC PAIN MANAGEMENT; SPINAL CORD STIMULATOR_1.1.2",
+    "name": "MSC_CHRONIC PAIN MANAGEMENT; SPINAL CORD STIMULATOR",
+    "displayName": "MSC_CHRONIC PAIN MANAGEMENT; SPINAL CORD STIMULATOR - 30"
+  },
+  {
+    "seocNumber": "23",
+    "seocId": "MSC_COMPREHENSIVE CARDIOLOGY_1.0.1",
+    "name": "MSC_COMPREHENSIVE CARDIOLOGY",
+    "displayName": "MSC_COMPREHENSIVE CARDIOLOGY - 23"
+  },
+  {
+    "seocNumber": "33",
+    "seocId": "MSC_COMPREHENSIVE HEMATOLOGY/RADIATION ONCOLOGY_1.0.1",
+    "name": "MSC_COMPREHENSIVE HEMATOLOGY/RADIATION ONCOLOGY",
+    "displayName": "MSC_COMPREHENSIVE HEMATOLOGY/RADIATION ONCOLOGY - 33"
+  },
+  {
+    "seocNumber": "245",
+    "seocId": "MSC_CRYOPRESERVATION STORAGE FOR INFERTILITY_1.7.1_PRCT",
+    "name": "MSC_CRYOPRESERVATION STORAGE FOR INFERTILITY",
+    "displayName": "MSC_CRYOPRESERVATION STORAGE FOR INFERTILITY - 245"
+  },
+  {
+    "seocNumber": "246",
+    "seocId": "MSC_CRYOPRESERVATION STORAGE FOR IVF-ART_1.8.1_PRCT",
+    "name": "MSC_CRYOPRESERVATION STORAGE FOR IVF-ART",
+    "displayName": "MSC_CRYOPRESERVATION STORAGE FOR IVF-ART - 246"
+  },
+  {
+    "seocNumber": "45",
+    "seocId": "MSC_DERMATOLOGY_1.0.14",
+    "name": "MSC_DERMATOLOGY",
+    "displayName": "MSC_DERMATOLOGY - 45"
+  },
+  {
+    "seocNumber": "45",
+    "seocId": "MSC_DERMATOLOGY COMPREHENSIVE_1.0.11_PRCT",
+    "name": "MSC_DERMATOLOGY COMPREHENSIVE",
+    "displayName": "MSC_DERMATOLOGY COMPREHENSIVE - 45"
+  },
+  {
+    "seocNumber": "153",
+    "seocId": "MSC_DERMATOLOGY MOHS_1.1.12_REV",
+    "name": "MSC_DERMATOLOGY MOHS",
+    "displayName": "MSC_DERMATOLOGY MOHS - 153"
+  },
+  {
+    "seocNumber": "45",
+    "seocId": "MSC_DERMATOLOGY-SKIN ILLNESSES/DISORDERS/BIOPSY_1.0.1",
+    "name": "MSC_DERMATOLOGY-SKIN ILLNESSES/DISORDERS/BIOPSY",
+    "displayName": "MSC_DERMATOLOGY-SKIN ILLNESSES/DISORDERS/BIOPSY - 45"
+  },
+  {
+    "seocNumber": "49",
+    "seocId": "MSC_EMERGENCY/URGENT CARE_1.0.1_PRCT",
+    "name": "MSC_EMERGENCY/URGENT CARE",
+    "displayName": "MSC_EMERGENCY/URGENT CARE - 49"
+  },
+  {
+    "seocNumber": "50",
+    "seocId": "MSC_ENDOCRINE DIABETES MANAGEMENT_1.0.2_PRCT",
+    "name": "MSC_ENDOCRINE DIABETES MANAGEMENT",
+    "displayName": "MSC_ENDOCRINE DIABETES MANAGEMENT - 50"
+  },
+  {
+    "seocNumber": "140",
+    "seocId": "MSC_ENDOCRINOLOGY_1.0.14_REV",
+    "name": "MSC_ENDOCRINOLOGY",
+    "displayName": "MSC_ENDOCRINOLOGY - 140"
+  },
+  {
+    "seocNumber": "140",
+    "seocId": "MSC_ENDOCRINOLOGY COMPREHENSIVE_1.0.10_REV_PRCT",
+    "name": "MSC_ENDOCRINOLOGY COMPREHENSIVE",
+    "displayName": "MSC_ENDOCRINOLOGY COMPREHENSIVE - 140"
+  },
+  {
+    "seocNumber": "1191",
+    "seocId": "MSC_ENHANCED EXTERNAL COUNTER PULSATION (EECP)_1.8.2",
+    "name": "MSC_ENHANCED EXTERNAL COUNTER PULSATION (EECP)",
+    "displayName": "MSC_ENHANCED EXTERNAL COUNTER PULSATION (EECP) - 1191"
+  },
+  {
+    "seocNumber": "54",
+    "seocId": "MSC_EYE CARE EXAMINATION_1.3.17",
+    "name": "MSC_EYE CARE EXAMINATION",
+    "displayName": "MSC_EYE CARE EXAMINATION - 54"
+  },
+  {
+    "seocNumber": "141",
+    "seocId": "MSC_GASTROENTEROLOGY_1.1.14_REV",
+    "name": "MSC_GASTROENTEROLOGY",
+    "displayName": "MSC_GASTROENTEROLOGY - 141"
+  },
+  {
+    "seocNumber": "141",
+    "seocId": "MSC_GASTROENTEROLOGY COMPREHENSIVE_1.1.10_REV_PRCT",
+    "name": "MSC_GASTROENTEROLOGY COMPREHENSIVE",
+    "displayName": "MSC_GASTROENTEROLOGY COMPREHENSIVE - 141"
+  },
+  {
+    "seocNumber": "1084",
+    "seocId": "MSC_GASTROENTEROLOGY OR HEPATOLOGY TESTING_1.4.4",
+    "name": "MSC_GASTROENTEROLOGY OR HEPATOLOGY TESTING",
+    "displayName": "MSC_GASTROENTEROLOGY OR HEPATOLOGY TESTING - 1084"
+  },
+  {
+    "seocNumber": "1084",
+    "seocId": "MSC_GASTROENTEROLOGY TESTING_1.4.2_PRCT",
+    "name": "MSC_GASTROENTEROLOGY TESTING",
+    "displayName": "MSC_GASTROENTEROLOGY TESTING - 1084"
+  },
+  {
+    "seocNumber": "194",
+    "seocId": "MSC_GENETIC COUNSELING_1.1.4",
+    "name": "MSC_GENETIC COUNSELING",
+    "displayName": "MSC_GENETIC COUNSELING - 194"
+  },
+  {
+    "seocNumber": "193",
+    "seocId": "MSC_GENETIC TESTING_1.0.4_REV_PRCT",
+    "name": "MSC_GENETIC TESTING",
+    "displayName": "MSC_GENETIC TESTING - 193"
+  },
+  {
+    "seocNumber": "194",
+    "seocId": "MSC_GENETICS_1.1.11_REV",
+    "name": "MSC_GENETICS",
+    "displayName": "MSC_GENETICS - 194"
+  },
+  {
+    "seocNumber": "1000",
+    "seocId": "MSC_GENETICS COUNSELING_1.2.4",
+    "name": "MSC_GENETICS COUNSELING",
+    "displayName": "MSC_GENETICS COUNSELING - 1000"
+  },
+  {
+    "seocNumber": "1001",
+    "seocId": "MSC_GENETICS TESTING_1.3.7_REV",
+    "name": "MSC_GENETICS TESTING",
+    "displayName": "MSC_GENETICS TESTING - 1001"
+  },
+  {
+    "seocNumber": "200",
+    "seocId": "MSC_GI ADVANCED ENDOSCOPIC EUS, ERCP, ENTEROSCOPY_1.3.12_REV",
+    "name": "MSC_GI ADVANCED ENDOSCOPIC EUS, ERCP, ENTEROSCOPY",
+    "displayName": "MSC_GI ADVANCED ENDOSCOPIC EUS, ERCP, ENTEROSCOPY - 200"
+  },
+  {
+    "seocNumber": "200",
+    "seocId": "MSC_GI ADVANCED ENDOSCOPIC PROCEDURES: EUS, ERCP, ENTEROSCOPY_1.3.2_PRCT",
+    "name": "MSC_GI ADVANCED ENDOSCOPIC PROCEDURES: EUS, ERCP, ENTEROSCOPY",
+    "displayName": "MSC_GI ADVANCED ENDOSCOPIC PROCEDURES: EUS, ERCP, ENTEROSCOPY - 200"
+  },
+  {
+    "seocNumber": "56",
+    "seocId": "MSC_GI UPPER ENDOSCOPY (EGD) AND - OR COLONOSCOPY_1.4.10_REV_PRCT",
+    "name": "MSC_GI UPPER ENDOSCOPY (EGD) AND - OR COLONOSCOPY",
+    "displayName": "MSC_GI UPPER ENDOSCOPY (EGD) AND - OR COLONOSCOPY - 56"
+  },
+  {
+    "seocNumber": "56",
+    "seocId": "MSC_GI UPPER ENDOSCOPY (EGD) AND/OR COLONOSCOPY_1.0.4_PRCT",
+    "name": "MSC_GI UPPER ENDOSCOPY (EGD) AND/OR COLONOSCOPY",
+    "displayName": "MSC_GI UPPER ENDOSCOPY (EGD) AND/OR COLONOSCOPY - 56"
+  },
+  {
+    "seocNumber": "56",
+    "seocId": "MSC_GI UPPER ENDOSCOPY (EGD) OR COLONOSCOPY_1.4.13_REV",
+    "name": "MSC_GI UPPER ENDOSCOPY (EGD) OR COLONOSCOPY",
+    "displayName": "MSC_GI UPPER ENDOSCOPY (EGD) OR COLONOSCOPY - 56"
+  },
+  {
+    "seocNumber": "219",
+    "seocId": "MSC_HBOT DEMONSTRATION PROJECT_1.1.3",
+    "name": "MSC_HBOT DEMONSTRATION PROJECT",
+    "displayName": "MSC_HBOT DEMONSTRATION PROJECT - 219"
+  },
+  {
+    "seocNumber": "58",
+    "seocId": "MSC_HEMATOLOGY_1.0.14_REV_PRCT",
+    "name": "MSC_HEMATOLOGY",
+    "displayName": "MSC_HEMATOLOGY - 58"
+  },
+  {
+    "seocNumber": "142",
+    "seocId": "MSC_HEPATOLOGY_1.2.3_PRCT",
+    "name": "MSC_HEPATOLOGY",
+    "displayName": "MSC_HEPATOLOGY - 142"
+  },
+  {
+    "seocNumber": "59",
+    "seocId": "MSC_HOME BASED DIALYSIS_1.1.1_PRCT",
+    "name": "MSC_HOME BASED DIALYSIS",
+    "displayName": "MSC_HOME BASED DIALYSIS - 59"
+  },
+  {
+    "seocNumber": "64",
+    "seocId": "MSC_HORMONAL THERAPY - FEMINIZING TRANSGENDER_1.9.11",
+    "name": "MSC_HORMONAL THERAPY - FEMINIZING TRANSGENDER",
+    "displayName": "MSC_HORMONAL THERAPY - FEMINIZING TRANSGENDER - 64"
+  },
+  {
+    "seocNumber": "65",
+    "seocId": "MSC_HORMONAL THERAPY - MASCULINIZING TRANSGENDER_1.10.11",
+    "name": "MSC_HORMONAL THERAPY - MASCULINIZING TRANSGENDER",
+    "displayName": "MSC_HORMONAL THERAPY - MASCULINIZING TRANSGENDER - 65"
+  },
+  {
+    "seocNumber": "160",
+    "seocId": "MSC_HYPERBARIC THERAPY_1.0.9",
+    "name": "MSC_HYPERBARIC THERAPY",
+    "displayName": "MSC_HYPERBARIC THERAPY - 160"
+  },
+  {
+    "seocNumber": "66",
+    "seocId": "MSC_INFECTIOUS DISEASE_1.0.18_REV",
+    "name": "MSC_INFECTIOUS DISEASE",
+    "displayName": "MSC_INFECTIOUS DISEASE - 66"
+  },
+  {
+    "seocNumber": "67",
+    "seocId": "MSC_INFERTILITY-FEMALE_1.3.6_PRCT",
+    "name": "MSC_INFERTILITY-FEMALE",
+    "displayName": "MSC_INFERTILITY-FEMALE - 67"
+  },
+  {
+    "seocNumber": "67",
+    "seocId": "MSC_INFERTILITY-IUI FEMALE_1.3.3_PRCT",
+    "name": "MSC_INFERTILITY-IUI FEMALE",
+    "displayName": "MSC_INFERTILITY-IUI FEMALE - 67"
+  },
+  {
+    "seocNumber": "68",
+    "seocId": "MSC_INFERTILITY-IUI MALE_1.4.3_PRCT",
+    "name": "MSC_INFERTILITY-IUI MALE",
+    "displayName": "MSC_INFERTILITY-IUI MALE - 68"
+  },
+  {
+    "seocNumber": "68",
+    "seocId": "MSC_INFERTILITY-MALE_1.4.6_PRCT",
+    "name": "MSC_INFERTILITY-MALE",
+    "displayName": "MSC_INFERTILITY-MALE - 68"
+  },
+  {
+    "seocNumber": "144",
+    "seocId": "MSC_INPATIENT MED-SURG_1.5.8",
+    "name": "MSC_INPATIENT MED-SURG",
+    "displayName": "MSC_INPATIENT MED-SURG - 144"
+  },
+  {
+    "seocNumber": "144",
+    "seocId": "MSC_INPATIENT OR OBSERVATION MED-SURG_1.5.10",
+    "name": "MSC_INPATIENT OR OBSERVATION MED-SURG",
+    "displayName": "MSC_INPATIENT OR OBSERVATION MED-SURG - 144"
+  },
+  {
+    "seocNumber": "252",
+    "seocId": "MSC_INTRATHECAL DRUG DELIVERY MANAGEMENT_1.3.9",
+    "name": "MSC_INTRATHECAL DRUG DELIVERY MANAGEMENT",
+    "displayName": "MSC_INTRATHECAL DRUG DELIVERY MANAGEMENT - 252"
+  },
+  {
+    "seocNumber": "196",
+    "seocId": "MSC_IV THERAPY OUTPATIENT INFUSION_1.0.10_REV",
+    "name": "MSC_IV THERAPY OUTPATIENT INFUSION",
+    "displayName": "MSC_IV THERAPY OUTPATIENT INFUSION - 196"
+  },
+  {
+    "seocNumber": "196",
+    "seocId": "MSC_IV THERAPY OUTPATIENT INFUSION OR INJECTION_1.0.11_REV",
+    "name": "MSC_IV THERAPY OUTPATIENT INFUSION OR INJECTION",
+    "displayName": "MSC_IV THERAPY OUTPATIENT INFUSION OR INJECTION - 196"
+  },
+  {
+    "seocNumber": "70",
+    "seocId": "MSC_IVF MALE_1.1.1_PRCT",
+    "name": "MSC_IVF MALE",
+    "displayName": "MSC_IVF MALE - 70"
+  },
+  {
+    "seocNumber": "1105",
+    "seocId": "MSC_KETOGENIC DIABETES TELEHEALTH SERVICES_1.3.3",
+    "name": "MSC_KETOGENIC DIABETES TELEHEALTH SERVICES",
+    "displayName": "MSC_KETOGENIC DIABETES TELEHEALTH SERVICES - 1105"
+  },
+  {
+    "seocNumber": "136",
+    "seocId": "MSC_KIDNEY DIALYSIS ACCESS CREATION, REVISION, OR OPTIMIZATION_1.3.5_REV_PRCT",
+    "name": "MSC_KIDNEY DIALYSIS ACCESS CREATION, REVISION, OR OPTIMIZATION",
+    "displayName": "MSC_KIDNEY DIALYSIS ACCESS CREATION, REVISION, OR OPTIMIZATION - 136"
+  },
+  {
+    "seocNumber": "136",
+    "seocId": "MSC_KIDNEY DIALYSIS ACCESS MANAGEMENT_1.3.6_REV_PRCT",
+    "name": "MSC_KIDNEY DIALYSIS ACCESS MANAGEMENT",
+    "displayName": "MSC_KIDNEY DIALYSIS ACCESS MANAGEMENT - 136"
+  },
+  {
+    "seocNumber": "244",
+    "seocId": "MSC_LONG TERM ACUTE CARE_1.10.1_PRCT",
+    "name": "MSC_LONG TERM ACUTE CARE",
+    "displayName": "MSC_LONG TERM ACUTE CARE - 244"
+  },
+  {
+    "seocNumber": "244",
+    "seocId": "MSC_LONG TERM ACUTE CARE HOSPITAL_1.0.7",
+    "name": "MSC_LONG TERM ACUTE CARE HOSPITAL",
+    "displayName": "MSC_LONG TERM ACUTE CARE HOSPITAL - 244"
+  },
+  {
+    "seocNumber": "287",
+    "seocId": "MSC_LOW VISION EYECARE SERVICES_1.4.7",
+    "name": "MSC_LOW VISION EYECARE SERVICES",
+    "displayName": "MSC_LOW VISION EYECARE SERVICES - 287"
+  },
+  {
+    "seocNumber": "72",
+    "seocId": "MSC_LUNG CANCER SCREENING_1.2.2_PRCT",
+    "name": "MSC_LUNG CANCER SCREENING",
+    "displayName": "MSC_LUNG CANCER SCREENING - 72"
+  },
+  {
+    "seocNumber": "74",
+    "seocId": "MSC_MATERNITY_1.0.2_PRCT",
+    "name": "MSC_MATERNITY",
+    "displayName": "MSC_MATERNITY - 74"
+  },
+  {
+    "seocNumber": "260",
+    "seocId": "MSC_MAYO DESTINATION VCA_1.11.7_REV",
+    "name": "MSC_MAYO DESTINATION VCA",
+    "displayName": "MSC_MAYO DESTINATION VCA - 260"
+  },
+  {
+    "seocNumber": "283",
+    "seocId": "MSC_MD ANDERSON DESTINATION ONCOLOGY VCA_1.2.5_REV",
+    "name": "MSC_MD ANDERSON DESTINATION ONCOLOGY VCA",
+    "displayName": "MSC_MD ANDERSON DESTINATION ONCOLOGY VCA - 283"
+  },
+  {
+    "seocNumber": "92",
+    "seocId": "MSC_MEDICAL ONCOLOGY_1.0.16_REV_PRCT",
+    "name": "MSC_MEDICAL ONCOLOGY",
+    "displayName": "MSC_MEDICAL ONCOLOGY - 92"
+  },
+  {
+    "seocNumber": "77",
+    "seocId": "MSC_NEPHROLOGY_1.4.16_REV",
+    "name": "MSC_NEPHROLOGY",
+    "displayName": "MSC_NEPHROLOGY - 77"
+  },
+  {
+    "seocNumber": "77",
+    "seocId": "MSC_NEPHROLOGY COMPREHENSIVE_1.4.12_REV_PRCT",
+    "name": "MSC_NEPHROLOGY COMPREHENSIVE",
+    "displayName": "MSC_NEPHROLOGY COMPREHENSIVE - 77"
+  },
+  {
+    "seocNumber": "76",
+    "seocId": "MSC_NEPHROLOGY MEDICAL DIALYSIS OVERSIGHT SERVICES_1.2.5_PRCT",
+    "name": "MSC_NEPHROLOGY MEDICAL DIALYSIS OVERSIGHT SERVICES",
+    "displayName": "MSC_NEPHROLOGY MEDICAL DIALYSIS OVERSIGHT SERVICES - 76"
+  },
+  {
+    "seocNumber": "77",
+    "seocId": "MSC_NEPHROLOGY REFERRAL AND EVAL OF KIDNEY DISEASE 6M_1.4.5_PRCT",
+    "name": "MSC_NEPHROLOGY REFERRAL AND EVAL OF KIDNEY DISEASE 6M",
+    "displayName": "MSC_NEPHROLOGY REFERRAL AND EVAL OF KIDNEY DISEASE 6M - 77"
+  },
+  {
+    "seocNumber": "77",
+    "seocId": "MSC_NEPHROLOGY REFERRAL AND EVALUATION OF KIDNEY DISEASE_1.4.1",
+    "name": "MSC_NEPHROLOGY REFERRAL AND EVALUATION OF KIDNEY DISEASE",
+    "displayName": "MSC_NEPHROLOGY REFERRAL AND EVALUATION OF KIDNEY DISEASE - 77"
+  },
+  {
+    "seocNumber": "77",
+    "seocId": "MSC_NEPHROLOGY REFERRAL AND EVALUATION OF KIDNEY DISEASE 6M_1.4.4_PRCT",
+    "name": "MSC_NEPHROLOGY REFERRAL AND EVALUATION OF KIDNEY DISEASE 6M",
+    "displayName": "MSC_NEPHROLOGY REFERRAL AND EVALUATION OF KIDNEY DISEASE 6M - 77"
+  },
+  {
+    "seocNumber": "276",
+    "seocId": "MSC_NEPHROLOGY TRANSIENT DIALYSIS OVERSIGHT_1.4.1_PRCT",
+    "name": "MSC_NEPHROLOGY TRANSIENT DIALYSIS OVERSIGHT",
+    "displayName": "MSC_NEPHROLOGY TRANSIENT DIALYSIS OVERSIGHT - 276"
+  },
+  {
+    "seocNumber": "78",
+    "seocId": "MSC_NEUROLOGY_1.0.16_REV",
+    "name": "MSC_NEUROLOGY",
+    "displayName": "MSC_NEUROLOGY - 78"
+  },
+  {
+    "seocNumber": "166",
+    "seocId": "MSC_NEUROLOGY EEG EMG NCS_1.1.12",
+    "name": "MSC_NEUROLOGY EEG EMG NCS",
+    "displayName": "MSC_NEUROLOGY EEG EMG NCS - 166"
+  },
+  {
+    "seocNumber": "166",
+    "seocId": "MSC_NEUROLOGY EEG EMG NCV_1.2.4",
+    "name": "MSC_NEUROLOGY EEG EMG NCV",
+    "displayName": "MSC_NEUROLOGY EEG EMG NCV - 166"
+  },
+  {
+    "seocNumber": "166",
+    "seocId": "MSC_NEUROLOGY EEG/EMG_1.2.2",
+    "name": "MSC_NEUROLOGY EEG/EMG",
+    "displayName": "MSC_NEUROLOGY EEG/EMG - 166"
+  },
+  {
+    "seocNumber": "79",
+    "seocId": "MSC_NEUROPSYCH EVALUATION_1.0.1_PRCT",
+    "name": "MSC_NEUROPSYCH EVALUATION",
+    "displayName": "MSC_NEUROPSYCH EVALUATION - 79"
+  },
+  {
+    "seocNumber": "80",
+    "seocId": "MSC_NEUROPSYCH REHABILITATION_1.1.1",
+    "name": "MSC_NEUROPSYCH REHABILITATION",
+    "displayName": "MSC_NEUROPSYCH REHABILITATION - 80"
+  },
+  {
+    "seocNumber": "81",
+    "seocId": "MSC_NEUROPSYCH WEEKLY REHABILITATION_1.2.1",
+    "name": "MSC_NEUROPSYCH WEEKLY REHABILITATION",
+    "displayName": "MSC_NEUROPSYCH WEEKLY REHABILITATION - 81"
+  },
+  {
+    "seocNumber": "84",
+    "seocId": "MSC_NEWBORN CARE_1.0.1_PRCT",
+    "name": "MSC_NEWBORN CARE",
+    "displayName": "MSC_NEWBORN CARE - 84"
+  },
+  {
+    "seocNumber": "87",
+    "seocId": "MSC_NUTRITION DS ROUTINE_1.0.2",
+    "name": "MSC_NUTRITION DS ROUTINE",
+    "displayName": "MSC_NUTRITION DS ROUTINE - 87"
+  },
+  {
+    "seocNumber": "88",
+    "seocId": "MSC_NUTRITION INTERVENTION_1.0.2",
+    "name": "MSC_NUTRITION INTERVENTION",
+    "displayName": "MSC_NUTRITION INTERVENTION - 88"
+  },
+  {
+    "seocNumber": "89",
+    "seocId": "MSC_NUTRITION INTERVENTION - WEIGHT MANAGEMENT_1.1.2",
+    "name": "MSC_NUTRITION INTERVENTION - WEIGHT MANAGEMENT",
+    "displayName": "MSC_NUTRITION INTERVENTION - WEIGHT MANAGEMENT - 89"
+  },
+  {
+    "seocNumber": "88",
+    "seocId": "MSC_NUTRITION INTERVENTION SERVICES DS ROUTINE_1.0.10",
+    "name": "MSC_NUTRITION INTERVENTION SERVICES DS ROUTINE",
+    "displayName": "MSC_NUTRITION INTERVENTION SERVICES DS ROUTINE - 88"
+  },
+  {
+    "seocNumber": "1134",
+    "seocId": "MSC_ONCOLOGY AND HEMATOLOGY_1.3.5_REV",
+    "name": "MSC_ONCOLOGY AND HEMATOLOGY",
+    "displayName": "MSC_ONCOLOGY AND HEMATOLOGY - 1134"
+  },
+  {
+    "seocNumber": "280",
+    "seocId": "MSC_ONCOLOGY CLINICAL TRIAL EVAL_1.1.4",
+    "name": "MSC_ONCOLOGY CLINICAL TRIAL EVAL",
+    "displayName": "MSC_ONCOLOGY CLINICAL TRIAL EVAL - 280"
+  },
+  {
+    "seocNumber": "92",
+    "seocId": "MSC_ONCOLOGY COMPREHENSIVE_1.1.7_PRCT",
+    "name": "MSC_ONCOLOGY COMPREHENSIVE",
+    "displayName": "MSC_ONCOLOGY COMPREHENSIVE - 92"
+  },
+  {
+    "seocNumber": "92",
+    "seocId": "MSC_ONCOLOGY COMPREHENSIVE PRCT_1.1.3_PRCT",
+    "name": "MSC_ONCOLOGY COMPREHENSIVE PRCT",
+    "displayName": "MSC_ONCOLOGY COMPREHENSIVE PRCT - 92"
+  },
+  {
+    "seocNumber": "54",
+    "seocId": "MSC_OPTOMETRY_1.0.2_PRCT",
+    "name": "MSC_OPTOMETRY",
+    "displayName": "MSC_OPTOMETRY - 54"
+  },
+  {
+    "seocNumber": "97",
+    "seocId": "MSC_OPTOMETRY DS ROUTINE_1.3.12",
+    "name": "MSC_OPTOMETRY DS ROUTINE",
+    "displayName": "MSC_OPTOMETRY DS ROUTINE - 97"
+  },
+  {
+    "seocNumber": "251",
+    "seocId": "MSC_ORAL APPLIANCE OR MANDIBULAR REPOSITIONING DEVICE_1.12.3_PRCT",
+    "name": "MSC_ORAL APPLIANCE OR MANDIBULAR REPOSITIONING DEVICE",
+    "displayName": "MSC_ORAL APPLIANCE OR MANDIBULAR REPOSITIONING DEVICE - 251"
+  },
+  {
+    "seocNumber": "251",
+    "seocId": "MSC_ORAL APPLIANCE THERAPY (OAT) DEVICE_1.3.6",
+    "name": "MSC_ORAL APPLIANCE THERAPY (OAT) DEVICE",
+    "displayName": "MSC_ORAL APPLIANCE THERAPY (OAT) DEVICE - 251"
+  },
+  {
+    "seocNumber": "103",
+    "seocId": "MSC_OUTPATIENT MAINTENANCE HEMODIALYSIS SERVICES_1.6.1_PRCT",
+    "name": "MSC_OUTPATIENT MAINTENANCE HEMODIALYSIS SERVICES",
+    "displayName": "MSC_OUTPATIENT MAINTENANCE HEMODIALYSIS SERVICES - 103"
+  },
+  {
+    "seocNumber": "208",
+    "seocId": "MSC_PAIN MANAGEMENT_1.2.18",
+    "name": "MSC_PAIN MANAGEMENT",
+    "displayName": "MSC_PAIN MANAGEMENT - 208"
+  },
+  {
+    "seocNumber": "208",
+    "seocId": "MSC_PAIN MANAGEMENT COMPREHENSIVE_1.2.13_PRCT",
+    "name": "MSC_PAIN MANAGEMENT COMPREHENSIVE",
+    "displayName": "MSC_PAIN MANAGEMENT COMPREHENSIVE - 208"
+  },
+  {
+    "seocNumber": "258",
+    "seocId": "MSC_PAIN NEUROMODULATION DEVICES_1.4.10",
+    "name": "MSC_PAIN NEUROMODULATION DEVICES",
+    "displayName": "MSC_PAIN NEUROMODULATION DEVICES - 258"
+  },
+  {
+    "seocNumber": "1263",
+    "seocId": "MSC_PILOT SITE ONLY CARDIOLOGY (EXCLUDES CATH-PCI, INTERVENTIONAL AND EP)_1.9.2_REV",
+    "name": "MSC_PILOT SITE ONLY CARDIOLOGY (EXCLUDES CATH-PCI, INTERVENTIONAL AND EP)",
+    "displayName": "MSC_PILOT SITE ONLY CARDIOLOGY (EXCLUDES CATH-PCI, INTERVENTIONAL AND EP) - 1263"
+  },
+  {
+    "seocNumber": "150",
+    "seocId": "MSC_PODIATRY COMPREHENSIVE_1.1.4_PRCT",
+    "name": "MSC_PODIATRY COMPREHENSIVE",
+    "displayName": "MSC_PODIATRY COMPREHENSIVE - 150"
+  },
+  {
+    "seocNumber": "108",
+    "seocId": "MSC_PODIATRY DS_1.0.5_PRCT",
+    "name": "MSC_PODIATRY DS",
+    "displayName": "MSC_PODIATRY DS - 108"
+  },
+  {
+    "seocNumber": "259",
+    "seocId": "MSC_POM USE ONLY IHS THP_1.10.4",
+    "name": "MSC_POM USE ONLY IHS THP",
+    "displayName": "MSC_POM USE ONLY IHS THP - 259"
+  },
+  {
+    "seocNumber": "286",
+    "seocId": "MSC_POM USE ONLY VETERAN REIMBURSE_1.14.3",
+    "name": "MSC_POM USE ONLY VETERAN REIMBURSE",
+    "displayName": "MSC_POM USE ONLY VETERAN REIMBURSE - 286"
+  },
+  {
+    "seocNumber": "112",
+    "seocId": "MSC_PULMONARY_1.0.15",
+    "name": "MSC_PULMONARY",
+    "displayName": "MSC_PULMONARY - 112"
+  },
+  {
+    "seocNumber": "113",
+    "seocId": "MSC_PULMONARY BRONCHOSCOPY_1.1.11_REV",
+    "name": "MSC_PULMONARY BRONCHOSCOPY",
+    "displayName": "MSC_PULMONARY BRONCHOSCOPY - 113"
+  },
+  {
+    "seocNumber": "255",
+    "seocId": "MSC_PULMONARY FUNCTION TESTING_1.4.5",
+    "name": "MSC_PULMONARY FUNCTION TESTING",
+    "displayName": "MSC_PULMONARY FUNCTION TESTING - 255"
+  },
+  {
+    "seocNumber": "114",
+    "seocId": "MSC_PULMONARY REHAB_1.5.6_PRCT",
+    "name": "MSC_PULMONARY REHAB",
+    "displayName": "MSC_PULMONARY REHAB - 114"
+  },
+  {
+    "seocNumber": "232",
+    "seocId": "MSC_RADIATION PROTON BEAM_1.1.9_REV",
+    "name": "MSC_RADIATION PROTON BEAM",
+    "displayName": "MSC_RADIATION PROTON BEAM - 232"
+  },
+  {
+    "seocNumber": "115",
+    "seocId": "MSC_RADIATION THERAPY_1.0.17_REV",
+    "name": "MSC_RADIATION THERAPY",
+    "displayName": "MSC_RADIATION THERAPY - 115"
+  },
+  {
+    "seocNumber": "116",
+    "seocId": "MSC_RHEUMATOLOGY_1.0.17_REV",
+    "name": "MSC_RHEUMATOLOGY",
+    "displayName": "MSC_RHEUMATOLOGY - 116"
+  },
+  {
+    "seocNumber": "116",
+    "seocId": "MSC_RHEUMATOLOGY COMPREHENSIVE_1.0.13_REV_PRCT",
+    "name": "MSC_RHEUMATOLOGY COMPREHENSIVE",
+    "displayName": "MSC_RHEUMATOLOGY COMPREHENSIVE - 116"
+  },
+  {
+    "seocNumber": "210",
+    "seocId": "MSC_SCHEDULER ONLY COMMUNICATION_1.0.3",
+    "name": "MSC_SCHEDULER ONLY COMMUNICATION",
+    "displayName": "MSC_SCHEDULER ONLY COMMUNICATION - 210"
+  },
+  {
+    "seocNumber": "210",
+    "seocId": "MSC_SCHEDULER ONLY COMMUNICATION SEOC_1.0.2",
+    "name": "MSC_SCHEDULER ONLY COMMUNICATION SEOC",
+    "displayName": "MSC_SCHEDULER ONLY COMMUNICATION SEOC - 210"
+  },
+  {
+    "seocNumber": "119",
+    "seocId": "MSC_SLEEP COMPREHENSIVE_1.1.10_REV_PRCT",
+    "name": "MSC_SLEEP COMPREHENSIVE",
+    "displayName": "MSC_SLEEP COMPREHENSIVE - 119"
+  },
+  {
+    "seocNumber": "119",
+    "seocId": "MSC_SLEEP COMPREHENSIVE PRCT_1.0.3_PRCT",
+    "name": "MSC_SLEEP COMPREHENSIVE PRCT",
+    "displayName": "MSC_SLEEP COMPREHENSIVE PRCT - 119"
+  },
+  {
+    "seocNumber": "119",
+    "seocId": "MSC_SLEEP MEDICINE_1.1.15_REV",
+    "name": "MSC_SLEEP MEDICINE",
+    "displayName": "MSC_SLEEP MEDICINE - 119"
+  },
+  {
+    "seocNumber": "119",
+    "seocId": "MSC_SLEEP STUDY_1.0.1_PRCT",
+    "name": "MSC_SLEEP STUDY",
+    "displayName": "MSC_SLEEP STUDY - 119"
+  },
+  {
+    "seocNumber": "226",
+    "seocId": "MSC_SLEEP STUDY IN CLINICAL SETTING_1.2.2_REV_PRCT",
+    "name": "MSC_SLEEP STUDY IN CLINICAL SETTING",
+    "displayName": "MSC_SLEEP STUDY IN CLINICAL SETTING - 226"
+  },
+  {
+    "seocNumber": "227",
+    "seocId": "MSC_SLEEP STUDY IN HOME_1.2.5",
+    "name": "MSC_SLEEP STUDY IN HOME",
+    "displayName": "MSC_SLEEP STUDY IN HOME - 227"
+  },
+  {
+    "seocNumber": "120",
+    "seocId": "MSC_SPECIALTY CONTACT LENS FITTING_1.1.11",
+    "name": "MSC_SPECIALTY CONTACT LENS FITTING",
+    "displayName": "MSC_SPECIALTY CONTACT LENS FITTING - 120"
+  },
+  {
+    "seocNumber": "1304",
+    "seocId": "MSC_TESTREGRESSION_1.1.2_REV",
+    "name": "MSC_TESTREGRESSION",
+    "displayName": "MSC_TESTREGRESSION - 1304"
+  },
+  {
+    "seocNumber": "228",
+    "seocId": "MSC_TOXICOLOGY_1.6.9_REV",
+    "name": "MSC_TOXICOLOGY",
+    "displayName": "MSC_TOXICOLOGY - 228"
+  },
+  {
+    "seocNumber": "128",
+    "seocId": "MSC_TRANSIENT CENTER-BASED ASSISTED HEMODIALYSIS_1.5.2_PRCT",
+    "name": "MSC_TRANSIENT CENTER-BASED ASSISTED HEMODIALYSIS",
+    "displayName": "MSC_TRANSIENT CENTER-BASED ASSISTED HEMODIALYSIS - 128"
+  },
+  {
+    "seocNumber": "56",
+    "seocId": "MSC_UPPER AND LOWER GI ROUTINE PROCEDURE_1.0.1_PRCT",
+    "name": "MSC_UPPER AND LOWER GI ROUTINE PROCEDURE",
+    "displayName": "MSC_UPPER AND LOWER GI ROUTINE PROCEDURE - 56"
+  },
+  {
+    "seocNumber": "134",
+    "seocId": "MSC_VISION REHABILITATION_1.2.12",
+    "name": "MSC_VISION REHABILITATION",
+    "displayName": "MSC_VISION REHABILITATION - 134"
+  },
+  {
+    "seocNumber": "84",
+    "seocId": "NBC_NEWBORN CARE_1.0.2_PRCT",
+    "name": "NBC_NEWBORN CARE",
+    "displayName": "NBC_NEWBORN CARE - 84"
+  },
+  {
+    "seocNumber": "7",
+    "seocId": "NIC_ADULT DAY HEALTH CARE_1.0.2_PRCT",
+    "name": "NIC_ADULT DAY HEALTH CARE",
+    "displayName": "NIC_ADULT DAY HEALTH CARE - 7"
+  },
+  {
+    "seocNumber": "248",
+    "seocId": "NIC_AMBULATORY INFUSION SUITE_1.4.1",
+    "name": "NIC_AMBULATORY INFUSION SUITE",
+    "displayName": "NIC_AMBULATORY INFUSION SUITE - 248"
+  },
+  {
+    "seocNumber": "1074",
+    "seocId": "NIC_AMBULATORY INFUSION SUITE 30 DAYS_1.18.3",
+    "name": "NIC_AMBULATORY INFUSION SUITE 30 DAYS",
+    "displayName": "NIC_AMBULATORY INFUSION SUITE 30 DAYS - 1074"
+  },
+  {
+    "seocNumber": "1075",
+    "seocId": "NIC_AMBULATORY INFUSION SUITE 60 DAYS_1.19.3",
+    "name": "NIC_AMBULATORY INFUSION SUITE 60 DAYS",
+    "displayName": "NIC_AMBULATORY INFUSION SUITE 60 DAYS - 1075"
+  },
+  {
+    "seocNumber": "1076",
+    "seocId": "NIC_AMBULATORY INFUSION SUITE 90 DAYS_1.20.3",
+    "name": "NIC_AMBULATORY INFUSION SUITE 90 DAYS",
+    "displayName": "NIC_AMBULATORY INFUSION SUITE 90 DAYS - 1076"
+  },
+  {
+    "seocNumber": "1077",
+    "seocId": "NIC_AMBULATORY INFUSION SUITE 180 DAYS_1.17.3",
+    "name": "NIC_AMBULATORY INFUSION SUITE 180 DAYS",
+    "displayName": "NIC_AMBULATORY INFUSION SUITE 180 DAYS - 1077"
+  },
+  {
+    "seocNumber": "16",
+    "seocId": "NIC_BOWEL AND BLADDER_1.0.4_PRCT",
+    "name": "NIC_BOWEL AND BLADDER",
+    "displayName": "NIC_BOWEL AND BLADDER - 16"
+  },
+  {
+    "seocNumber": "16",
+    "seocId": "NIC_BOWEL AND BLADDER AGENCY_1.1.10",
+    "name": "NIC_BOWEL AND BLADDER AGENCY",
+    "displayName": "NIC_BOWEL AND BLADDER AGENCY - 16"
+  },
+  {
+    "seocNumber": "211",
+    "seocId": "NIC_BOWEL AND BLADDER CAREGIVER_1.1.5",
+    "name": "NIC_BOWEL AND BLADDER CAREGIVER",
+    "displayName": "NIC_BOWEL AND BLADDER CAREGIVER - 211"
+  },
+  {
+    "seocNumber": "211",
+    "seocId": "NIC_BOWEL AND BLADDER CAREGIVER VCA_1.1.7",
+    "name": "NIC_BOWEL AND BLADDER CAREGIVER VCA",
+    "displayName": "NIC_BOWEL AND BLADDER CAREGIVER VCA - 211"
+  },
+  {
+    "seocNumber": "267",
+    "seocId": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA_1.0.3",
+    "name": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA",
+    "displayName": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA - 267"
+  },
+  {
+    "seocNumber": "1187",
+    "seocId": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA-INTERMEDIATE LIVING_1.1.2",
+    "name": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA-INTERMEDIATE LIVING",
+    "displayName": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA-INTERMEDIATE LIVING - 1187"
+  },
+  {
+    "seocNumber": "1188",
+    "seocId": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA-NEURO REHAB_1.2.2",
+    "name": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA-NEURO REHAB",
+    "displayName": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA-NEURO REHAB - 1188"
+  },
+  {
+    "seocNumber": "1189",
+    "seocId": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA-NEUROBEHAVIORAL REHAB_1.3.2",
+    "name": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA-NEUROBEHAVIORAL REHAB",
+    "displayName": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA-NEUROBEHAVIORAL REHAB - 1189"
+  },
+  {
+    "seocNumber": "1190",
+    "seocId": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA-SUPPORTED LIVING_1.4.2",
+    "name": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA-SUPPORTED LIVING",
+    "displayName": "NIC_BRAIN INJURY RESIDENTIAL REHAB VCA-SUPPORTED LIVING - 1190"
+  },
+  {
+    "seocNumber": "1004",
+    "seocId": "NIC_CADHC 1 DAY PER WEEK, 30 DAYS_1.8.2_PRCT",
+    "name": "NIC_CADHC 1 DAY PER WEEK, 30 DAYS",
+    "displayName": "NIC_CADHC 1 DAY PER WEEK, 30 DAYS - 1004"
+  },
+  {
+    "seocNumber": "1144",
+    "seocId": "NIC_CADHC 1 DAY PER WEEK, 60 DAYS_1.25.2",
+    "name": "NIC_CADHC 1 DAY PER WEEK, 60 DAYS",
+    "displayName": "NIC_CADHC 1 DAY PER WEEK, 60 DAYS - 1144"
+  },
+  {
+    "seocNumber": "1006",
+    "seocId": "NIC_CADHC 1 DAY PER WEEK, 90 DAYS_1.7.2_PRCT",
+    "name": "NIC_CADHC 1 DAY PER WEEK, 90 DAYS",
+    "displayName": "NIC_CADHC 1 DAY PER WEEK, 90 DAYS - 1006"
+  },
+  {
+    "seocNumber": "1002",
+    "seocId": "NIC_CADHC 1 DAY PER WEEK, 180 DAYS_1.6.4",
+    "name": "NIC_CADHC 1 DAY PER WEEK, 180 DAYS",
+    "displayName": "NIC_CADHC 1 DAY PER WEEK, 180 DAYS - 1002"
+  },
+  {
+    "seocNumber": "1005",
+    "seocId": "NIC_CADHC 1 DAY PER WEEK, 365 DAYS_1.5.2_PRCT",
+    "name": "NIC_CADHC 1 DAY PER WEEK, 365 DAYS",
+    "displayName": "NIC_CADHC 1 DAY PER WEEK, 365 DAYS - 1005"
+  },
+  {
+    "seocNumber": "1009",
+    "seocId": "NIC_CADHC 2 DAYS PER WEEK, 30 DAYS_1.12.2_PRCT",
+    "name": "NIC_CADHC 2 DAYS PER WEEK, 30 DAYS",
+    "displayName": "NIC_CADHC 2 DAYS PER WEEK, 30 DAYS - 1009"
+  },
+  {
+    "seocNumber": "1146",
+    "seocId": "NIC_CADHC 2 DAYS PER WEEK, 60 DAYS_1.26.2",
+    "name": "NIC_CADHC 2 DAYS PER WEEK, 60 DAYS",
+    "displayName": "NIC_CADHC 2 DAYS PER WEEK, 60 DAYS - 1146"
+  },
+  {
+    "seocNumber": "1015",
+    "seocId": "NIC_CADHC 2 DAYS PER WEEK, 90 DAYS_1.11.2_PRCT",
+    "name": "NIC_CADHC 2 DAYS PER WEEK, 90 DAYS",
+    "displayName": "NIC_CADHC 2 DAYS PER WEEK, 90 DAYS - 1015"
+  },
+  {
+    "seocNumber": "1008",
+    "seocId": "NIC_CADHC 2 DAYS PER WEEK, 180 DAYS_1.10.4",
+    "name": "NIC_CADHC 2 DAYS PER WEEK, 180 DAYS",
+    "displayName": "NIC_CADHC 2 DAYS PER WEEK, 180 DAYS - 1008"
+  },
+  {
+    "seocNumber": "1014",
+    "seocId": "NIC_CADHC 2 DAYS PER WEEK, 365 DAYS_1.9.2_PRCT",
+    "name": "NIC_CADHC 2 DAYS PER WEEK, 365 DAYS",
+    "displayName": "NIC_CADHC 2 DAYS PER WEEK, 365 DAYS - 1014"
+  },
+  {
+    "seocNumber": "1016",
+    "seocId": "NIC_CADHC 3 DAYS PER WEEK, 30 DAYS_1.16.2_PRCT",
+    "name": "NIC_CADHC 3 DAYS PER WEEK, 30 DAYS",
+    "displayName": "NIC_CADHC 3 DAYS PER WEEK, 30 DAYS - 1016"
+  },
+  {
+    "seocNumber": "1147",
+    "seocId": "NIC_CADHC 3 DAYS PER WEEK, 60 DAYS_1.27.2",
+    "name": "NIC_CADHC 3 DAYS PER WEEK, 60 DAYS",
+    "displayName": "NIC_CADHC 3 DAYS PER WEEK, 60 DAYS - 1147"
+  },
+  {
+    "seocNumber": "1017",
+    "seocId": "NIC_CADHC 3 DAYS PER WEEK, 90 DAYS_1.15.2_PRCT",
+    "name": "NIC_CADHC 3 DAYS PER WEEK, 90 DAYS",
+    "displayName": "NIC_CADHC 3 DAYS PER WEEK, 90 DAYS - 1017"
+  },
+  {
+    "seocNumber": "1003",
+    "seocId": "NIC_CADHC 3 DAYS PER WEEK, 180 DAYS_1.14.4",
+    "name": "NIC_CADHC 3 DAYS PER WEEK, 180 DAYS",
+    "displayName": "NIC_CADHC 3 DAYS PER WEEK, 180 DAYS - 1003"
+  },
+  {
+    "seocNumber": "1018",
+    "seocId": "NIC_CADHC 3 DAYS PER WEEK, 365 DAYS_1.13.2_PRCT",
+    "name": "NIC_CADHC 3 DAYS PER WEEK, 365 DAYS",
+    "displayName": "NIC_CADHC 3 DAYS PER WEEK, 365 DAYS - 1018"
+  },
+  {
+    "seocNumber": "1021",
+    "seocId": "NIC_CADHC 4 DAYS PER WEEK, 30 DAYS_1.20.2_PRCT",
+    "name": "NIC_CADHC 4 DAYS PER WEEK, 30 DAYS",
+    "displayName": "NIC_CADHC 4 DAYS PER WEEK, 30 DAYS - 1021"
+  },
+  {
+    "seocNumber": "1148",
+    "seocId": "NIC_CADHC 4 DAYS PER WEEK, 60 DAYS_1.28.2",
+    "name": "NIC_CADHC 4 DAYS PER WEEK, 60 DAYS",
+    "displayName": "NIC_CADHC 4 DAYS PER WEEK, 60 DAYS - 1148"
+  },
+  {
+    "seocNumber": "1022",
+    "seocId": "NIC_CADHC 4 DAYS PER WEEK, 90 DAYS_1.19.2_PRCT",
+    "name": "NIC_CADHC 4 DAYS PER WEEK, 90 DAYS",
+    "displayName": "NIC_CADHC 4 DAYS PER WEEK, 90 DAYS - 1022"
+  },
+  {
+    "seocNumber": "1024",
+    "seocId": "NIC_CADHC 4 DAYS PER WEEK, 180 DAYS_1.18.4",
+    "name": "NIC_CADHC 4 DAYS PER WEEK, 180 DAYS",
+    "displayName": "NIC_CADHC 4 DAYS PER WEEK, 180 DAYS - 1024"
+  },
+  {
+    "seocNumber": "1025",
+    "seocId": "NIC_CADHC 4 DAYS PER WEEK, 365 DAYS_1.17.2_PRCT",
+    "name": "NIC_CADHC 4 DAYS PER WEEK, 365 DAYS",
+    "displayName": "NIC_CADHC 4 DAYS PER WEEK, 365 DAYS - 1025"
+  },
+  {
+    "seocNumber": "1149",
+    "seocId": "NIC_CADHC 5 DAYS PER WEEK, 60 DAYS_1.30.2",
+    "name": "NIC_CADHC 5 DAYS PER WEEK, 60 DAYS",
+    "displayName": "NIC_CADHC 5 DAYS PER WEEK, 60 DAYS - 1149"
+  },
+  {
+    "seocNumber": "1141",
+    "seocId": "NIC_CADHC 5 DAYS PER WEEK, 180 DAYS_1.29.2",
+    "name": "NIC_CADHC 5 DAYS PER WEEK, 180 DAYS",
+    "displayName": "NIC_CADHC 5 DAYS PER WEEK, 180 DAYS - 1141"
+  },
+  {
+    "seocNumber": "1033",
+    "seocId": "NIC_CADHC 5 TO 7 DAYS PER WEEK, 30 DAYS_1.24.2_PRCT",
+    "name": "NIC_CADHC 5 TO 7 DAYS PER WEEK, 30 DAYS",
+    "displayName": "NIC_CADHC 5 TO 7 DAYS PER WEEK, 30 DAYS - 1033"
+  },
+  {
+    "seocNumber": "1031",
+    "seocId": "NIC_CADHC 5 TO 7 DAYS PER WEEK, 90 DAYS_1.23.2_PRCT",
+    "name": "NIC_CADHC 5 TO 7 DAYS PER WEEK, 90 DAYS",
+    "displayName": "NIC_CADHC 5 TO 7 DAYS PER WEEK, 90 DAYS - 1031"
+  },
+  {
+    "seocNumber": "1030",
+    "seocId": "NIC_CADHC 5 TO 7 DAYS PER WEEK, 180 DAYS_1.22.2_PRCT",
+    "name": "NIC_CADHC 5 TO 7 DAYS PER WEEK, 180 DAYS",
+    "displayName": "NIC_CADHC 5 TO 7 DAYS PER WEEK, 180 DAYS - 1030"
+  },
+  {
+    "seocNumber": "1029",
+    "seocId": "NIC_CADHC 5 TO 7 DAYS PER WEEK, 365 DAYS_1.21.2_PRCT",
+    "name": "NIC_CADHC 5 TO 7 DAYS PER WEEK, 365 DAYS",
+    "displayName": "NIC_CADHC 5 TO 7 DAYS PER WEEK, 365 DAYS - 1029"
+  },
+  {
+    "seocNumber": "1150",
+    "seocId": "NIC_CADHC 6 DAYS PER WEEK, 60 DAYS_1.32.2",
+    "name": "NIC_CADHC 6 DAYS PER WEEK, 60 DAYS",
+    "displayName": "NIC_CADHC 6 DAYS PER WEEK, 60 DAYS - 1150"
+  },
+  {
+    "seocNumber": "1142",
+    "seocId": "NIC_CADHC 6 DAYS PER WEEK, 180 DAYS_1.31.2",
+    "name": "NIC_CADHC 6 DAYS PER WEEK, 180 DAYS",
+    "displayName": "NIC_CADHC 6 DAYS PER WEEK, 180 DAYS - 1142"
+  },
+  {
+    "seocNumber": "1151",
+    "seocId": "NIC_CADHC 7 DAYS PER WEEK, 60 DAYS_1.34.2",
+    "name": "NIC_CADHC 7 DAYS PER WEEK, 60 DAYS",
+    "displayName": "NIC_CADHC 7 DAYS PER WEEK, 60 DAYS - 1151"
+  },
+  {
+    "seocNumber": "1143",
+    "seocId": "NIC_CADHC 7 DAYS PER WEEK, 180 DAYS_1.33.2",
+    "name": "NIC_CADHC 7 DAYS PER WEEK, 180 DAYS",
+    "displayName": "NIC_CADHC 7 DAYS PER WEEK, 180 DAYS - 1143"
+  },
+  {
+    "seocNumber": "277",
+    "seocId": "NIC_CAREGIVER SUPPORT RESPITE_1.6.5_PRCT",
+    "name": "NIC_CAREGIVER SUPPORT RESPITE",
+    "displayName": "NIC_CAREGIVER SUPPORT RESPITE - 277"
+  },
+  {
+    "seocNumber": "1249",
+    "seocId": "NIC_CNH IDIQ FOR CONTINUATION CNH CARE_1.5.2",
+    "name": "NIC_CNH IDIQ FOR CONTINUATION CNH CARE",
+    "displayName": "NIC_CNH IDIQ FOR CONTINUATION CNH CARE - 1249"
+  },
+  {
+    "seocNumber": "1250",
+    "seocId": "NIC_CNH IDIQ FOR INITIAL CNH CARE_1.6.2",
+    "name": "NIC_CNH IDIQ FOR INITIAL CNH CARE",
+    "displayName": "NIC_CNH IDIQ FOR INITIAL CNH CARE - 1250"
+  },
+  {
+    "seocNumber": "1251",
+    "seocId": "NIC_CNH VCA FOR CONTINUATION CNH CARE_1.7.2",
+    "name": "NIC_CNH VCA FOR CONTINUATION CNH CARE",
+    "displayName": "NIC_CNH VCA FOR CONTINUATION CNH CARE - 1251"
+  },
+  {
+    "seocNumber": "1248",
+    "seocId": "NIC_CNH VCA FOR INITIAL CNH CARE_1.8.2",
+    "name": "NIC_CNH VCA FOR INITIAL CNH CARE",
+    "displayName": "NIC_CNH VCA FOR INITIAL CNH CARE - 1248"
+  },
+  {
+    "seocNumber": "173",
+    "seocId": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX A, B, OR C_1.1.3_PRCT",
+    "name": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX A, B, OR C",
+    "displayName": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX A, B, OR C - 173"
+  },
+  {
+    "seocNumber": "173",
+    "seocId": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX ABC_1.0.6_PRCT",
+    "name": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX ABC",
+    "displayName": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX ABC - 173"
+  },
+  {
+    "seocNumber": "174",
+    "seocId": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX D, E, F, G, H, I_1.2.3_PRCT",
+    "name": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX D, E, F, G, H, I",
+    "displayName": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX D, E, F, G, H, I - 174"
+  },
+  {
+    "seocNumber": "174",
+    "seocId": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX DEFGHI_1.1.6_PRCT",
+    "name": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX DEFGHI",
+    "displayName": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX DEFGHI - 174"
+  },
+  {
+    "seocNumber": "175",
+    "seocId": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX J OR K_1.3.3_PRCT",
+    "name": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX J OR K",
+    "displayName": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX J OR K - 175"
+  },
+  {
+    "seocNumber": "175",
+    "seocId": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX JK_1.2.6_PRCT",
+    "name": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX JK",
+    "displayName": "NIC_COMMUNITY ADULT DAY HEALTH CARE CASE MIX JK - 175"
+  },
+  {
+    "seocNumber": "177",
+    "seocId": "NIC_COMMUNITY ADULT DAY HEALTH CARE EXCEPTION_1.4.3_PRCT",
+    "name": "NIC_COMMUNITY ADULT DAY HEALTH CARE EXCEPTION",
+    "displayName": "NIC_COMMUNITY ADULT DAY HEALTH CARE EXCEPTION - 177"
+  },
+  {
+    "seocNumber": "176",
+    "seocId": "NIC_COMMUNITY ADULT DAY HEALTH CARE MIX L_1.5.3_PRCT",
+    "name": "NIC_COMMUNITY ADULT DAY HEALTH CARE MIX L",
+    "displayName": "NIC_COMMUNITY ADULT DAY HEALTH CARE MIX L - 176"
+  },
+  {
+    "seocNumber": "32",
+    "seocId": "NIC_COMMUNITY NURSING HOME_1.2.3_PRCT",
+    "name": "NIC_COMMUNITY NURSING HOME",
+    "displayName": "NIC_COMMUNITY NURSING HOME - 32"
+  },
+  {
+    "seocNumber": "231",
+    "seocId": "NIC_COMMUNITY NURSING HOME CCN_1.3.2_PRCT",
+    "name": "NIC_COMMUNITY NURSING HOME CCN",
+    "displayName": "NIC_COMMUNITY NURSING HOME CCN - 231"
+  },
+  {
+    "seocNumber": "32",
+    "seocId": "NIC_COMMUNITY NURSING HOME CONTRACT - VCA_1.2.6_PRCT",
+    "name": "NIC_COMMUNITY NURSING HOME CONTRACT - VCA",
+    "displayName": "NIC_COMMUNITY NURSING HOME CONTRACT - VCA - 32"
+  },
+  {
+    "seocNumber": "231",
+    "seocId": "NIC_COMMUNITY NURSING HOME REHAB CCN_1.0.4_PRCT",
+    "name": "NIC_COMMUNITY NURSING HOME REHAB CCN",
+    "displayName": "NIC_COMMUNITY NURSING HOME REHAB CCN - 231"
+  },
+  {
+    "seocNumber": "1078",
+    "seocId": "NIC_COMMUNITY NURSING HOME REHAB CCN 30 DAYS_1.4.2_PRCT",
+    "name": "NIC_COMMUNITY NURSING HOME REHAB CCN 30 DAYS",
+    "displayName": "NIC_COMMUNITY NURSING HOME REHAB CCN 30 DAYS - 1078"
+  },
+  {
+    "seocNumber": "1080",
+    "seocId": "NIC_COMMUNITY NURSING HOME REHAB CCN 60 DAYS_1.2.2_PRCT",
+    "name": "NIC_COMMUNITY NURSING HOME REHAB CCN 60 DAYS",
+    "displayName": "NIC_COMMUNITY NURSING HOME REHAB CCN 60 DAYS - 1080"
+  },
+  {
+    "seocNumber": "1079",
+    "seocId": "NIC_COMMUNITY NURSING HOME REHAB CCN 100 DAYS_1.3.2_PRCT",
+    "name": "NIC_COMMUNITY NURSING HOME REHAB CCN 100 DAYS",
+    "displayName": "NIC_COMMUNITY NURSING HOME REHAB CCN 100 DAYS - 1079"
+  },
+  {
+    "seocNumber": "32",
+    "seocId": "NIC_COMMUNITY NURSING HOME VCA_1.2.4_PRCT",
+    "name": "NIC_COMMUNITY NURSING HOME VCA",
+    "displayName": "NIC_COMMUNITY NURSING HOME VCA - 32"
+  },
+  {
+    "seocNumber": "1153",
+    "seocId": "NIC_HHHA 7 TO 11 HRS PER WEEK, 60 DAYS_1.51.2",
+    "name": "NIC_HHHA 7 TO 11 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 7 TO 11 HRS PER WEEK, 60 DAYS - 1153"
+  },
+  {
+    "seocNumber": "1171",
+    "seocId": "NIC_HHHA 7 TO 11 HRS PER WEEK, 180 DAYS_1.50.2",
+    "name": "NIC_HHHA 7 TO 11 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 7 TO 11 HRS PER WEEK, 180 DAYS - 1171"
+  },
+  {
+    "seocNumber": "1154",
+    "seocId": "NIC_HHHA 12 TO 16 HRS PER WEEK, 60 DAYS_1.29.2",
+    "name": "NIC_HHHA 12 TO 16 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 12 TO 16 HRS PER WEEK, 60 DAYS - 1154"
+  },
+  {
+    "seocNumber": "1172",
+    "seocId": "NIC_HHHA 12 TO 16 HRS PER WEEK, 180 DAYS_1.28.2",
+    "name": "NIC_HHHA 12 TO 16 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 12 TO 16 HRS PER WEEK, 180 DAYS - 1172"
+  },
+  {
+    "seocNumber": "1155",
+    "seocId": "NIC_HHHA 17 TO 20 HRS PER WEEK, 60 DAYS_1.37.2",
+    "name": "NIC_HHHA 17 TO 20 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 17 TO 20 HRS PER WEEK, 60 DAYS - 1155"
+  },
+  {
+    "seocNumber": "1173",
+    "seocId": "NIC_HHHA 17 TO 20 HRS PER WEEK, 180 DAYS_1.36.2",
+    "name": "NIC_HHHA 17 TO 20 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 17 TO 20 HRS PER WEEK, 180 DAYS - 1173"
+  },
+  {
+    "seocNumber": "1156",
+    "seocId": "NIC_HHHA 21 TO 25 HRS PER WEEK, 60 DAYS_1.39.2",
+    "name": "NIC_HHHA 21 TO 25 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 21 TO 25 HRS PER WEEK, 60 DAYS - 1156"
+  },
+  {
+    "seocNumber": "1174",
+    "seocId": "NIC_HHHA 21 TO 25 HRS PER WEEK, 180 DAYS_1.38.2",
+    "name": "NIC_HHHA 21 TO 25 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 21 TO 25 HRS PER WEEK, 180 DAYS - 1174"
+  },
+  {
+    "seocNumber": "1038",
+    "seocId": "NIC_HHHA 21 TO 36 HRS PER WEEK, 30 DAYS_1.13.2",
+    "name": "NIC_HHHA 21 TO 36 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_HHHA 21 TO 36 HRS PER WEEK, 30 DAYS - 1038"
+  },
+  {
+    "seocNumber": "1039",
+    "seocId": "NIC_HHHA 21 TO 36 HRS PER WEEK, 90 DAYS_1.12.2",
+    "name": "NIC_HHHA 21 TO 36 HRS PER WEEK, 90 DAYS",
+    "displayName": "NIC_HHHA 21 TO 36 HRS PER WEEK, 90 DAYS - 1039"
+  },
+  {
+    "seocNumber": "1040",
+    "seocId": "NIC_HHHA 21 TO 36 HRS PER WEEK, 180 DAYS_1.11.2",
+    "name": "NIC_HHHA 21 TO 36 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 21 TO 36 HRS PER WEEK, 180 DAYS - 1040"
+  },
+  {
+    "seocNumber": "1041",
+    "seocId": "NIC_HHHA 21 TO 36 HRS PER WEEK, 365 DAYS_1.10.2",
+    "name": "NIC_HHHA 21 TO 36 HRS PER WEEK, 365 DAYS",
+    "displayName": "NIC_HHHA 21 TO 36 HRS PER WEEK, 365 DAYS - 1041"
+  },
+  {
+    "seocNumber": "1157",
+    "seocId": "NIC_HHHA 26 TO 30 HRS PER WEEK, 60 DAYS_1.41.2",
+    "name": "NIC_HHHA 26 TO 30 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 26 TO 30 HRS PER WEEK, 60 DAYS - 1157"
+  },
+  {
+    "seocNumber": "1175",
+    "seocId": "NIC_HHHA 26 TO 30 HRS PER WEEK, 180 DAYS_1.40.2",
+    "name": "NIC_HHHA 26 TO 30 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 26 TO 30 HRS PER WEEK, 180 DAYS - 1175"
+  },
+  {
+    "seocNumber": "1158",
+    "seocId": "NIC_HHHA 31 TO 40 HRS PER WEEK, 60 DAYS_1.43.2",
+    "name": "NIC_HHHA 31 TO 40 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 31 TO 40 HRS PER WEEK, 60 DAYS - 1158"
+  },
+  {
+    "seocNumber": "1176",
+    "seocId": "NIC_HHHA 31 TO 40 HRS PER WEEK, 180 DAYS_1.42.2",
+    "name": "NIC_HHHA 31 TO 40 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 31 TO 40 HRS PER WEEK, 180 DAYS - 1176"
+  },
+  {
+    "seocNumber": "1042",
+    "seocId": "NIC_HHHA 37 TO 58 HRS PER WEEK, 30 DAYS_1.17.2",
+    "name": "NIC_HHHA 37 TO 58 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_HHHA 37 TO 58 HRS PER WEEK, 30 DAYS - 1042"
+  },
+  {
+    "seocNumber": "1043",
+    "seocId": "NIC_HHHA 37 TO 58 HRS PER WEEK, 90 DAYS_1.16.2",
+    "name": "NIC_HHHA 37 TO 58 HRS PER WEEK, 90 DAYS",
+    "displayName": "NIC_HHHA 37 TO 58 HRS PER WEEK, 90 DAYS - 1043"
+  },
+  {
+    "seocNumber": "1044",
+    "seocId": "NIC_HHHA 37 TO 58 HRS PER WEEK, 180 DAYS_1.15.2",
+    "name": "NIC_HHHA 37 TO 58 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 37 TO 58 HRS PER WEEK, 180 DAYS - 1044"
+  },
+  {
+    "seocNumber": "1045",
+    "seocId": "NIC_HHHA 37 TO 58 HRS PER WEEK, 365 DAYS_1.14.2",
+    "name": "NIC_HHHA 37 TO 58 HRS PER WEEK, 365 DAYS",
+    "displayName": "NIC_HHHA 37 TO 58 HRS PER WEEK, 365 DAYS - 1045"
+  },
+  {
+    "seocNumber": "1159",
+    "seocId": "NIC_HHHA 41 TO 50 HRS PER WEEK, 60 DAYS_1.45.2",
+    "name": "NIC_HHHA 41 TO 50 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 41 TO 50 HRS PER WEEK, 60 DAYS - 1159"
+  },
+  {
+    "seocNumber": "1177",
+    "seocId": "NIC_HHHA 41 TO 50 HRS PER WEEK, 180 DAYS_1.44.2",
+    "name": "NIC_HHHA 41 TO 50 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 41 TO 50 HRS PER WEEK, 180 DAYS - 1177"
+  },
+  {
+    "seocNumber": "1161",
+    "seocId": "NIC_HHHA 51 TO 60 HRS PER WEEK, 60 DAYS_1.47.2",
+    "name": "NIC_HHHA 51 TO 60 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 51 TO 60 HRS PER WEEK, 60 DAYS - 1161"
+  },
+  {
+    "seocNumber": "1178",
+    "seocId": "NIC_HHHA 51 TO 60 HRS PER WEEK, 180 DAYS_1.46.2",
+    "name": "NIC_HHHA 51 TO 60 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 51 TO 60 HRS PER WEEK, 180 DAYS - 1178"
+  },
+  {
+    "seocNumber": "1046",
+    "seocId": "NIC_HHHA 59 TO 105 HRS PER WEEK, 30 DAYS_1.21.2",
+    "name": "NIC_HHHA 59 TO 105 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_HHHA 59 TO 105 HRS PER WEEK, 30 DAYS - 1046"
+  },
+  {
+    "seocNumber": "1047",
+    "seocId": "NIC_HHHA 59 TO 105 HRS PER WEEK, 90 DAYS_1.20.2",
+    "name": "NIC_HHHA 59 TO 105 HRS PER WEEK, 90 DAYS",
+    "displayName": "NIC_HHHA 59 TO 105 HRS PER WEEK, 90 DAYS - 1047"
+  },
+  {
+    "seocNumber": "1048",
+    "seocId": "NIC_HHHA 59 TO 105 HRS PER WEEK, 180 DAYS_1.19.2",
+    "name": "NIC_HHHA 59 TO 105 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 59 TO 105 HRS PER WEEK, 180 DAYS - 1048"
+  },
+  {
+    "seocNumber": "1049",
+    "seocId": "NIC_HHHA 59 TO 105 HRS PER WEEK, 365 DAYS_1.18.2",
+    "name": "NIC_HHHA 59 TO 105 HRS PER WEEK, 365 DAYS",
+    "displayName": "NIC_HHHA 59 TO 105 HRS PER WEEK, 365 DAYS - 1049"
+  },
+  {
+    "seocNumber": "1162",
+    "seocId": "NIC_HHHA 61 TO 70 HRS PER WEEK, 60 DAYS_1.49.2",
+    "name": "NIC_HHHA 61 TO 70 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 61 TO 70 HRS PER WEEK, 60 DAYS - 1162"
+  },
+  {
+    "seocNumber": "1179",
+    "seocId": "NIC_HHHA 61 TO 70 HRS PER WEEK, 180 DAYS_1.48.2",
+    "name": "NIC_HHHA 61 TO 70 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 61 TO 70 HRS PER WEEK, 180 DAYS - 1179"
+  },
+  {
+    "seocNumber": "1163",
+    "seocId": "NIC_HHHA 71 TO 80 HRS PER WEEK, 60 DAYS_1.53.2",
+    "name": "NIC_HHHA 71 TO 80 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 71 TO 80 HRS PER WEEK, 60 DAYS - 1163"
+  },
+  {
+    "seocNumber": "1180",
+    "seocId": "NIC_HHHA 71 TO 80 HRS PER WEEK, 180 DAYS_1.52.2",
+    "name": "NIC_HHHA 71 TO 80 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 71 TO 80 HRS PER WEEK, 180 DAYS - 1180"
+  },
+  {
+    "seocNumber": "1164",
+    "seocId": "NIC_HHHA 81 TO 95 HRS PER WEEK, 60 DAYS_1.55.2",
+    "name": "NIC_HHHA 81 TO 95 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 81 TO 95 HRS PER WEEK, 60 DAYS - 1164"
+  },
+  {
+    "seocNumber": "1181",
+    "seocId": "NIC_HHHA 81 TO 95 HRS PER WEEK, 180 DAYS_1.54.2",
+    "name": "NIC_HHHA 81 TO 95 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 81 TO 95 HRS PER WEEK, 180 DAYS - 1181"
+  },
+  {
+    "seocNumber": "1165",
+    "seocId": "NIC_HHHA 96 TO 110 HRS PER WEEK, 60 DAYS_1.57.2",
+    "name": "NIC_HHHA 96 TO 110 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 96 TO 110 HRS PER WEEK, 60 DAYS - 1165"
+  },
+  {
+    "seocNumber": "1182",
+    "seocId": "NIC_HHHA 96 TO 110 HRS PER WEEK, 180 DAYS_1.56.2",
+    "name": "NIC_HHHA 96 TO 110 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 96 TO 110 HRS PER WEEK, 180 DAYS - 1182"
+  },
+  {
+    "seocNumber": "1010",
+    "seocId": "NIC_HHHA 106 TO 168 HRS PER WEEK, 30 DAYS_1.9.2",
+    "name": "NIC_HHHA 106 TO 168 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_HHHA 106 TO 168 HRS PER WEEK, 30 DAYS - 1010"
+  },
+  {
+    "seocNumber": "1037",
+    "seocId": "NIC_HHHA 106 TO 168 HRS PER WEEK, 90 DAYS_1.8.2",
+    "name": "NIC_HHHA 106 TO 168 HRS PER WEEK, 90 DAYS",
+    "displayName": "NIC_HHHA 106 TO 168 HRS PER WEEK, 90 DAYS - 1037"
+  },
+  {
+    "seocNumber": "1007",
+    "seocId": "NIC_HHHA 106 TO 168 HRS PER WEEK, 180 DAYS_1.7.2",
+    "name": "NIC_HHHA 106 TO 168 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 106 TO 168 HRS PER WEEK, 180 DAYS - 1007"
+  },
+  {
+    "seocNumber": "1011",
+    "seocId": "NIC_HHHA 106 TO 168 HRS PER WEEK, 365 DAYS_1.6.2",
+    "name": "NIC_HHHA 106 TO 168 HRS PER WEEK, 365 DAYS",
+    "displayName": "NIC_HHHA 106 TO 168 HRS PER WEEK, 365 DAYS - 1011"
+  },
+  {
+    "seocNumber": "1166",
+    "seocId": "NIC_HHHA 111 TO 125 HRS PER WEEK, 60 DAYS_1.27.2",
+    "name": "NIC_HHHA 111 TO 125 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 111 TO 125 HRS PER WEEK, 60 DAYS - 1166"
+  },
+  {
+    "seocNumber": "1183",
+    "seocId": "NIC_HHHA 111 TO 125 HRS PER WEEK, 180 DAYS_1.26.2",
+    "name": "NIC_HHHA 111 TO 125 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 111 TO 125 HRS PER WEEK, 180 DAYS - 1183"
+  },
+  {
+    "seocNumber": "1167",
+    "seocId": "NIC_HHHA 126 TO 140 HRS PER WEEK, 60 DAYS_1.31.2",
+    "name": "NIC_HHHA 126 TO 140 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 126 TO 140 HRS PER WEEK, 60 DAYS - 1167"
+  },
+  {
+    "seocNumber": "1184",
+    "seocId": "NIC_HHHA 126 TO 140 HRS PER WEEK, 180 DAYS_1.30.2",
+    "name": "NIC_HHHA 126 TO 140 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 126 TO 140 HRS PER WEEK, 180 DAYS - 1184"
+  },
+  {
+    "seocNumber": "1168",
+    "seocId": "NIC_HHHA 141 TO 155 HRS PER WEEK, 60 DAYS_1.33.2",
+    "name": "NIC_HHHA 141 TO 155 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 141 TO 155 HRS PER WEEK, 60 DAYS - 1168"
+  },
+  {
+    "seocNumber": "1185",
+    "seocId": "NIC_HHHA 141 TO 155 HRS PER WEEK, 180 DAYS_1.32.2",
+    "name": "NIC_HHHA 141 TO 155 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 141 TO 155 HRS PER WEEK, 180 DAYS - 1185"
+  },
+  {
+    "seocNumber": "1169",
+    "seocId": "NIC_HHHA 156 TO 168 HRS PER WEEK, 60 DAYS_1.35.2",
+    "name": "NIC_HHHA 156 TO 168 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA 156 TO 168 HRS PER WEEK, 60 DAYS - 1169"
+  },
+  {
+    "seocNumber": "1186",
+    "seocId": "NIC_HHHA 156 TO 168 HRS PER WEEK, 180 DAYS_1.34.2",
+    "name": "NIC_HHHA 156 TO 168 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA 156 TO 168 HRS PER WEEK, 180 DAYS - 1186"
+  },
+  {
+    "seocNumber": "1152",
+    "seocId": "NIC_HHHA UP TO 6 HRS PER WEEK, 60 DAYS_1.59.2",
+    "name": "NIC_HHHA UP TO 6 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_HHHA UP TO 6 HRS PER WEEK, 60 DAYS - 1152"
+  },
+  {
+    "seocNumber": "1170",
+    "seocId": "NIC_HHHA UP TO 6 HRS PER WEEK, 180 DAYS_1.58.2",
+    "name": "NIC_HHHA UP TO 6 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA UP TO 6 HRS PER WEEK, 180 DAYS - 1170"
+  },
+  {
+    "seocNumber": "1050",
+    "seocId": "NIC_HHHA UP TO 20 HRS PER WEEK, 30 DAYS_1.25.2",
+    "name": "NIC_HHHA UP TO 20 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_HHHA UP TO 20 HRS PER WEEK, 30 DAYS - 1050"
+  },
+  {
+    "seocNumber": "1051",
+    "seocId": "NIC_HHHA UP TO 20 HRS PER WEEK, 90 DAYS_1.24.2",
+    "name": "NIC_HHHA UP TO 20 HRS PER WEEK, 90 DAYS",
+    "displayName": "NIC_HHHA UP TO 20 HRS PER WEEK, 90 DAYS - 1051"
+  },
+  {
+    "seocNumber": "1052",
+    "seocId": "NIC_HHHA UP TO 20 HRS PER WEEK, 180 DAYS_1.23.2",
+    "name": "NIC_HHHA UP TO 20 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_HHHA UP TO 20 HRS PER WEEK, 180 DAYS - 1052"
+  },
+  {
+    "seocNumber": "1053",
+    "seocId": "NIC_HHHA UP TO 20 HRS PER WEEK, 365 DAYS_1.22.2",
+    "name": "NIC_HHHA UP TO 20 HRS PER WEEK, 365 DAYS",
+    "displayName": "NIC_HHHA UP TO 20 HRS PER WEEK, 365 DAYS - 1053"
+  },
+  {
+    "seocNumber": "60",
+    "seocId": "NIC_HOME HOSPICE_1.0.2_PRCT",
+    "name": "NIC_HOME HOSPICE",
+    "displayName": "NIC_HOME HOSPICE - 60"
+  },
+  {
+    "seocNumber": "118",
+    "seocId": "NIC_HOME INFUSION_1.2.11_REV_PRCT",
+    "name": "NIC_HOME INFUSION",
+    "displayName": "NIC_HOME INFUSION - 118"
+  },
+  {
+    "seocNumber": "1097",
+    "seocId": "NIC_HOME INFUSION 30 DAYS_1.22.3_REV",
+    "name": "NIC_HOME INFUSION 30 DAYS",
+    "displayName": "NIC_HOME INFUSION 30 DAYS - 1097"
+  },
+  {
+    "seocNumber": "1102",
+    "seocId": "NIC_HOME INFUSION 60 DAYS_1.23.3_REV",
+    "name": "NIC_HOME INFUSION 60 DAYS",
+    "displayName": "NIC_HOME INFUSION 60 DAYS - 1102"
+  },
+  {
+    "seocNumber": "1104",
+    "seocId": "NIC_HOME INFUSION 90 DAYS_1.24.3_REV",
+    "name": "NIC_HOME INFUSION 90 DAYS",
+    "displayName": "NIC_HOME INFUSION 90 DAYS - 1104"
+  },
+  {
+    "seocNumber": "1101",
+    "seocId": "NIC_HOME INFUSION 180 DAYS_1.21.3_REV",
+    "name": "NIC_HOME INFUSION 180 DAYS",
+    "displayName": "NIC_HOME INFUSION 180 DAYS - 1101"
+  },
+  {
+    "seocNumber": "61",
+    "seocId": "NIC_HOME RESPITE_1.0.2",
+    "name": "NIC_HOME RESPITE",
+    "displayName": "NIC_HOME RESPITE - 61"
+  },
+  {
+    "seocNumber": "63",
+    "seocId": "NIC_HOMEMAKER - HOME HEALTH AIDE 6 MONTH_1.0.2_PRCT",
+    "name": "NIC_HOMEMAKER - HOME HEALTH AIDE 6 MONTH",
+    "displayName": "NIC_HOMEMAKER - HOME HEALTH AIDE 6 MONTH - 63"
+  },
+  {
+    "seocNumber": "62",
+    "seocId": "NIC_HOMEMAKER - HOME HEALTH AIDE 12 MONTH_1.1.2_PRCT",
+    "name": "NIC_HOMEMAKER - HOME HEALTH AIDE 12 MONTH",
+    "displayName": "NIC_HOMEMAKER - HOME HEALTH AIDE 12 MONTH - 62"
+  },
+  {
+    "seocNumber": "178",
+    "seocId": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX A, B, OR  C_1.2.2",
+    "name": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX A, B, OR  C",
+    "displayName": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX A, B, OR  C - 178"
+  },
+  {
+    "seocNumber": "178",
+    "seocId": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX A, B, OR C_1.2.4",
+    "name": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX A, B, OR C",
+    "displayName": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX A, B, OR C - 178"
+  },
+  {
+    "seocNumber": "179",
+    "seocId": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX D, E, OR F_1.4.7",
+    "name": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX D, E, OR F",
+    "displayName": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX D, E, OR F - 179"
+  },
+  {
+    "seocNumber": "180",
+    "seocId": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX G H OR I_1.4.4",
+    "name": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX G H OR I",
+    "displayName": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX G H OR I - 180"
+  },
+  {
+    "seocNumber": "180",
+    "seocId": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX G, H, OR I_1.2.7",
+    "name": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX G, H, OR I",
+    "displayName": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX G, H, OR I - 180"
+  },
+  {
+    "seocNumber": "181",
+    "seocId": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX J OR K_1.5.6",
+    "name": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX J OR K",
+    "displayName": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX J OR K - 181"
+  },
+  {
+    "seocNumber": "181",
+    "seocId": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX J, OR K_1.5.7",
+    "name": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX J, OR K",
+    "displayName": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX J, OR K - 181"
+  },
+  {
+    "seocNumber": "182",
+    "seocId": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX L_1.6.4",
+    "name": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX L",
+    "displayName": "NIC_HOMEMAKER-HOME HEALTH AIDE CASE MIX L - 182"
+  },
+  {
+    "seocNumber": "183",
+    "seocId": "NIC_HOMEMAKER-HOME HEALTH AIDE EXCEPTION_1.7.4",
+    "name": "NIC_HOMEMAKER-HOME HEALTH AIDE EXCEPTION",
+    "displayName": "NIC_HOMEMAKER-HOME HEALTH AIDE EXCEPTION - 183"
+  },
+  {
+    "seocNumber": "60",
+    "seocId": "NIC_HOSPICE HOME_1.0.8_PRCT",
+    "name": "NIC_HOSPICE HOME",
+    "displayName": "NIC_HOSPICE HOME - 60"
+  },
+  {
+    "seocNumber": "1081",
+    "seocId": "NIC_HOSPICE HOME 30 DAYS_1.3.2_PRCT",
+    "name": "NIC_HOSPICE HOME 30 DAYS",
+    "displayName": "NIC_HOSPICE HOME 30 DAYS - 1081"
+  },
+  {
+    "seocNumber": "1082",
+    "seocId": "NIC_HOSPICE HOME 60 DAYS_1.4.4",
+    "name": "NIC_HOSPICE HOME 60 DAYS",
+    "displayName": "NIC_HOSPICE HOME 60 DAYS - 1082"
+  },
+  {
+    "seocNumber": "1083",
+    "seocId": "NIC_HOSPICE HOME 90 DAYS_1.5.4",
+    "name": "NIC_HOSPICE HOME 90 DAYS",
+    "displayName": "NIC_HOSPICE HOME 90 DAYS - 1083"
+  },
+  {
+    "seocNumber": "202",
+    "seocId": "NIC_HOSPICE INPATIENT_1.1.6",
+    "name": "NIC_HOSPICE INPATIENT",
+    "displayName": "NIC_HOSPICE INPATIENT - 202"
+  },
+  {
+    "seocNumber": "1195",
+    "seocId": "NIC_IN HOME RESPITE 7 TO 11 HRS PER WEEK, 60 DAYS_1.52.2",
+    "name": "NIC_IN HOME RESPITE 7 TO 11 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 7 TO 11 HRS PER WEEK, 60 DAYS - 1195"
+  },
+  {
+    "seocNumber": "1221",
+    "seocId": "NIC_IN HOME RESPITE 7 TO 11 HRS PER WEEK, 180 DAYS_1.51.2",
+    "name": "NIC_IN HOME RESPITE 7 TO 11 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 7 TO 11 HRS PER WEEK, 180 DAYS - 1221"
+  },
+  {
+    "seocNumber": "1207",
+    "seocId": "NIC_IN HOME RESPITE 12 TO 16 HRS PER WEEK, 60 DAYS_1.30.2",
+    "name": "NIC_IN HOME RESPITE 12 TO 16 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 12 TO 16 HRS PER WEEK, 60 DAYS - 1207"
+  },
+  {
+    "seocNumber": "1210",
+    "seocId": "NIC_IN HOME RESPITE 12 TO 16 HRS PER WEEK, 180 DAYS_1.29.2",
+    "name": "NIC_IN HOME RESPITE 12 TO 16 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 12 TO 16 HRS PER WEEK, 180 DAYS - 1210"
+  },
+  {
+    "seocNumber": "1203",
+    "seocId": "NIC_IN HOME RESPITE 17 TO 20 HRS PER WEEK, 60 DAYS_1.38.2",
+    "name": "NIC_IN HOME RESPITE 17 TO 20 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 17 TO 20 HRS PER WEEK, 60 DAYS - 1203"
+  },
+  {
+    "seocNumber": "1214",
+    "seocId": "NIC_IN HOME RESPITE 17 TO 20 HRS PER WEEK, 180 DAYS_1.37.2",
+    "name": "NIC_IN HOME RESPITE 17 TO 20 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 17 TO 20 HRS PER WEEK, 180 DAYS - 1214"
+  },
+  {
+    "seocNumber": "1202",
+    "seocId": "NIC_IN HOME RESPITE 21 TO 25 HRS PER WEEK, 60 DAYS_1.40.2",
+    "name": "NIC_IN HOME RESPITE 21 TO 25 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 21 TO 25 HRS PER WEEK, 60 DAYS - 1202"
+  },
+  {
+    "seocNumber": "1215",
+    "seocId": "NIC_IN HOME RESPITE 21 TO 25 HRS PER WEEK, 180 DAYS_1.39.2",
+    "name": "NIC_IN HOME RESPITE 21 TO 25 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 21 TO 25 HRS PER WEEK, 180 DAYS - 1215"
+  },
+  {
+    "seocNumber": "1026",
+    "seocId": "NIC_IN HOME RESPITE 21 TO 36 HRS PER WEEK, 30 DAYS_1.14.2",
+    "name": "NIC_IN HOME RESPITE 21 TO 36 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 21 TO 36 HRS PER WEEK, 30 DAYS - 1026"
+  },
+  {
+    "seocNumber": "1028",
+    "seocId": "NIC_IN HOME RESPITE 21 TO 36 HRS PER WEEK, 90 DAYS_1.13.2",
+    "name": "NIC_IN HOME RESPITE 21 TO 36 HRS PER WEEK, 90 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 21 TO 36 HRS PER WEEK, 90 DAYS - 1028"
+  },
+  {
+    "seocNumber": "1023",
+    "seocId": "NIC_IN HOME RESPITE 21 TO 36 HRS PER WEEK, 180 DAYS_1.12.2",
+    "name": "NIC_IN HOME RESPITE 21 TO 36 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 21 TO 36 HRS PER WEEK, 180 DAYS - 1023"
+  },
+  {
+    "seocNumber": "1027",
+    "seocId": "NIC_IN HOME RESPITE 21 TO 36 HRS PER WEEK, 365 DAYS_1.11.2",
+    "name": "NIC_IN HOME RESPITE 21 TO 36 HRS PER WEEK, 365 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 21 TO 36 HRS PER WEEK, 365 DAYS - 1027"
+  },
+  {
+    "seocNumber": "1201",
+    "seocId": "NIC_IN HOME RESPITE 26 TO 30 HRS PER WEEK, 60 DAYS_1.42.2",
+    "name": "NIC_IN HOME RESPITE 26 TO 30 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 26 TO 30 HRS PER WEEK, 60 DAYS - 1201"
+  },
+  {
+    "seocNumber": "1216",
+    "seocId": "NIC_IN HOME RESPITE 26 TO 30 HRS PER WEEK, 180 DAYS_1.41.2",
+    "name": "NIC_IN HOME RESPITE 26 TO 30 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 26 TO 30 HRS PER WEEK, 180 DAYS - 1216"
+  },
+  {
+    "seocNumber": "1200",
+    "seocId": "NIC_IN HOME RESPITE 31 TO 40 HRS PER WEEK, 60 DAYS_1.44.2",
+    "name": "NIC_IN HOME RESPITE 31 TO 40 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 31 TO 40 HRS PER WEEK, 60 DAYS - 1200"
+  },
+  {
+    "seocNumber": "1217",
+    "seocId": "NIC_IN HOME RESPITE 31 TO 40 HRS PER WEEK, 180 DAYS_1.43.2",
+    "name": "NIC_IN HOME RESPITE 31 TO 40 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 31 TO 40 HRS PER WEEK, 180 DAYS - 1217"
+  },
+  {
+    "seocNumber": "1034",
+    "seocId": "NIC_IN HOME RESPITE 37 TO 58 HRS PER WEEK, 30 DAYS_1.18.2",
+    "name": "NIC_IN HOME RESPITE 37 TO 58 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 37 TO 58 HRS PER WEEK, 30 DAYS - 1034"
+  },
+  {
+    "seocNumber": "1036",
+    "seocId": "NIC_IN HOME RESPITE 37 TO 58 HRS PER WEEK, 90 DAYS_1.17.2",
+    "name": "NIC_IN HOME RESPITE 37 TO 58 HRS PER WEEK, 90 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 37 TO 58 HRS PER WEEK, 90 DAYS - 1036"
+  },
+  {
+    "seocNumber": "1032",
+    "seocId": "NIC_IN HOME RESPITE 37 TO 58 HRS PER WEEK, 180 DAYS_1.16.2",
+    "name": "NIC_IN HOME RESPITE 37 TO 58 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 37 TO 58 HRS PER WEEK, 180 DAYS - 1032"
+  },
+  {
+    "seocNumber": "1035",
+    "seocId": "NIC_IN HOME RESPITE 37 TO 58 HRS PER WEEK, 365 DAYS_1.15.2",
+    "name": "NIC_IN HOME RESPITE 37 TO 58 HRS PER WEEK, 365 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 37 TO 58 HRS PER WEEK, 365 DAYS - 1035"
+  },
+  {
+    "seocNumber": "1199",
+    "seocId": "NIC_IN HOME RESPITE 41 TO 50 HRS PER WEEK, 60 DAYS_1.46.2",
+    "name": "NIC_IN HOME RESPITE 41 TO 50 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 41 TO 50 HRS PER WEEK, 60 DAYS - 1199"
+  },
+  {
+    "seocNumber": "1218",
+    "seocId": "NIC_IN HOME RESPITE 41 TO 50 HRS PER WEEK, 180 DAYS_1.45.2",
+    "name": "NIC_IN HOME RESPITE 41 TO 50 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 41 TO 50 HRS PER WEEK, 180 DAYS - 1218"
+  },
+  {
+    "seocNumber": "1198",
+    "seocId": "NIC_IN HOME RESPITE 51 TO 60 HRS PER WEEK, 60 DAYS_1.48.2",
+    "name": "NIC_IN HOME RESPITE 51 TO 60 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 51 TO 60 HRS PER WEEK, 60 DAYS - 1198"
+  },
+  {
+    "seocNumber": "1219",
+    "seocId": "NIC_IN HOME RESPITE 51 TO 60 HRS PER WEEK, 180 DAYS_1.47.2",
+    "name": "NIC_IN HOME RESPITE 51 TO 60 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 51 TO 60 HRS PER WEEK, 180 DAYS - 1219"
+  },
+  {
+    "seocNumber": "1058",
+    "seocId": "NIC_IN HOME RESPITE 59 TO 105 HRS PER WEEK, 30 DAYS_1.22.2",
+    "name": "NIC_IN HOME RESPITE 59 TO 105 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 59 TO 105 HRS PER WEEK, 30 DAYS - 1058"
+  },
+  {
+    "seocNumber": "1061",
+    "seocId": "NIC_IN HOME RESPITE 59 TO 105 HRS PER WEEK, 90 DAYS_1.21.2",
+    "name": "NIC_IN HOME RESPITE 59 TO 105 HRS PER WEEK, 90 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 59 TO 105 HRS PER WEEK, 90 DAYS - 1061"
+  },
+  {
+    "seocNumber": "1055",
+    "seocId": "NIC_IN HOME RESPITE 59 TO 105 HRS PER WEEK, 180 DAYS_1.20.2",
+    "name": "NIC_IN HOME RESPITE 59 TO 105 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 59 TO 105 HRS PER WEEK, 180 DAYS - 1055"
+  },
+  {
+    "seocNumber": "1060",
+    "seocId": "NIC_IN HOME RESPITE 59 TO 105 HRS PER WEEK, 365 DAY_1.19.2",
+    "name": "NIC_IN HOME RESPITE 59 TO 105 HRS PER WEEK, 365 DAY",
+    "displayName": "NIC_IN HOME RESPITE 59 TO 105 HRS PER WEEK, 365 DAY - 1060"
+  },
+  {
+    "seocNumber": "1196",
+    "seocId": "NIC_IN HOME RESPITE 61 TO 70 HRS PER WEEK, 60 DAYS_1.50.2",
+    "name": "NIC_IN HOME RESPITE 61 TO 70 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 61 TO 70 HRS PER WEEK, 60 DAYS - 1196"
+  },
+  {
+    "seocNumber": "1220",
+    "seocId": "NIC_IN HOME RESPITE 61 TO 70 HRS PER WEEK, 180 DAYS_1.49.2",
+    "name": "NIC_IN HOME RESPITE 61 TO 70 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 61 TO 70 HRS PER WEEK, 180 DAYS - 1220"
+  },
+  {
+    "seocNumber": "1197",
+    "seocId": "NIC_IN HOME RESPITE 71 TO 80 HRS PER WEEK, 60 DAYS_1.54.2",
+    "name": "NIC_IN HOME RESPITE 71 TO 80 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 71 TO 80 HRS PER WEEK, 60 DAYS - 1197"
+  },
+  {
+    "seocNumber": "1222",
+    "seocId": "NIC_IN HOME RESPITE 71 TO 80 HRS PER WEEK, 180 DAYS_1.53.2",
+    "name": "NIC_IN HOME RESPITE 71 TO 80 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 71 TO 80 HRS PER WEEK, 180 DAYS - 1222"
+  },
+  {
+    "seocNumber": "1194",
+    "seocId": "NIC_IN HOME RESPITE 81 TO 95 HRS PER WEEK, 60 DAYS_1.56.2",
+    "name": "NIC_IN HOME RESPITE 81 TO 95 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 81 TO 95 HRS PER WEEK, 60 DAYS - 1194"
+  },
+  {
+    "seocNumber": "1223",
+    "seocId": "NIC_IN HOME RESPITE 81 TO 95 HRS PER WEEK, 180 DAYS_1.55.2",
+    "name": "NIC_IN HOME RESPITE 81 TO 95 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 81 TO 95 HRS PER WEEK, 180 DAYS - 1223"
+  },
+  {
+    "seocNumber": "1193",
+    "seocId": "NIC_IN HOME RESPITE 96 TO 110 HRS PER WEEK, 60 DAYS_1.58.2",
+    "name": "NIC_IN HOME RESPITE 96 TO 110 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 96 TO 110 HRS PER WEEK, 60 DAYS - 1193"
+  },
+  {
+    "seocNumber": "1224",
+    "seocId": "NIC_IN HOME RESPITE 96 TO 110 HRS PER WEEK, 180 DAYS_1.57.2",
+    "name": "NIC_IN HOME RESPITE 96 TO 110 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 96 TO 110 HRS PER WEEK, 180 DAYS - 1224"
+  },
+  {
+    "seocNumber": "1013",
+    "seocId": "NIC_IN HOME RESPITE 106 TO 168 HRS PER WEEK, 30 DAYS_1.10.2",
+    "name": "NIC_IN HOME RESPITE 106 TO 168 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 106 TO 168 HRS PER WEEK, 30 DAYS - 1013"
+  },
+  {
+    "seocNumber": "1020",
+    "seocId": "NIC_IN HOME RESPITE 106 TO 168 HRS PER WEEK, 90 DAYS_1.9.2",
+    "name": "NIC_IN HOME RESPITE 106 TO 168 HRS PER WEEK, 90 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 106 TO 168 HRS PER WEEK, 90 DAYS - 1020"
+  },
+  {
+    "seocNumber": "1012",
+    "seocId": "NIC_IN HOME RESPITE 106 TO 168 HRS PER WEEK, 180 DAYS_1.8.2",
+    "name": "NIC_IN HOME RESPITE 106 TO 168 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 106 TO 168 HRS PER WEEK, 180 DAYS - 1012"
+  },
+  {
+    "seocNumber": "1019",
+    "seocId": "NIC_IN HOME RESPITE 106 TO 168 HRS PER WEEK, 365 DAYS_1.7.2",
+    "name": "NIC_IN HOME RESPITE 106 TO 168 HRS PER WEEK, 365 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 106 TO 168 HRS PER WEEK, 365 DAYS - 1019"
+  },
+  {
+    "seocNumber": "1208",
+    "seocId": "NIC_IN HOME RESPITE 111 TO 125 HRS PER WEEK, 60 DAYS_1.28.2",
+    "name": "NIC_IN HOME RESPITE 111 TO 125 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 111 TO 125 HRS PER WEEK, 60 DAYS - 1208"
+  },
+  {
+    "seocNumber": "1209",
+    "seocId": "NIC_IN HOME RESPITE 111 TO 125 HRS PER WEEK, 180 DAYS_1.27.2",
+    "name": "NIC_IN HOME RESPITE 111 TO 125 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 111 TO 125 HRS PER WEEK, 180 DAYS - 1209"
+  },
+  {
+    "seocNumber": "1206",
+    "seocId": "NIC_IN HOME RESPITE 126 TO 140 HRS PER WEEK, 60 DAYS_1.32.2",
+    "name": "NIC_IN HOME RESPITE 126 TO 140 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 126 TO 140 HRS PER WEEK, 60 DAYS - 1206"
+  },
+  {
+    "seocNumber": "1211",
+    "seocId": "NIC_IN HOME RESPITE 126 TO 140 HRS PER WEEK, 180 DAYS_1.31.2",
+    "name": "NIC_IN HOME RESPITE 126 TO 140 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 126 TO 140 HRS PER WEEK, 180 DAYS - 1211"
+  },
+  {
+    "seocNumber": "1205",
+    "seocId": "NIC_IN HOME RESPITE 141 TO 155 HRS PER WEEK, 60 DAYS_1.34.2",
+    "name": "NIC_IN HOME RESPITE 141 TO 155 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 141 TO 155 HRS PER WEEK, 60 DAYS - 1205"
+  },
+  {
+    "seocNumber": "1212",
+    "seocId": "NIC_IN HOME RESPITE 141 TO 155 HRS PER WEEK, 180 DAYS_1.33.2",
+    "name": "NIC_IN HOME RESPITE 141 TO 155 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 141 TO 155 HRS PER WEEK, 180 DAYS - 1212"
+  },
+  {
+    "seocNumber": "1204",
+    "seocId": "NIC_IN HOME RESPITE 156 TO 168 HRS PER WEEK, 60 DAYS_1.36.2",
+    "name": "NIC_IN HOME RESPITE 156 TO 168 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 156 TO 168 HRS PER WEEK, 60 DAYS - 1204"
+  },
+  {
+    "seocNumber": "1213",
+    "seocId": "NIC_IN HOME RESPITE 156 TO 168 HRS PER WEEK, 180 DAYS_1.35.2",
+    "name": "NIC_IN HOME RESPITE 156 TO 168 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE 156 TO 168 HRS PER WEEK, 180 DAYS - 1213"
+  },
+  {
+    "seocNumber": "184",
+    "seocId": "NIC_IN HOME RESPITE CASE MIX A, B, OR C_1.1.3",
+    "name": "NIC_IN HOME RESPITE CASE MIX A, B, OR C",
+    "displayName": "NIC_IN HOME RESPITE CASE MIX A, B, OR C - 184"
+  },
+  {
+    "seocNumber": "185",
+    "seocId": "NIC_IN HOME RESPITE CASE MIX D, E, OR F_1.5.5",
+    "name": "NIC_IN HOME RESPITE CASE MIX D, E, OR F",
+    "displayName": "NIC_IN HOME RESPITE CASE MIX D, E, OR F - 185"
+  },
+  {
+    "seocNumber": "186",
+    "seocId": "NIC_IN HOME RESPITE CASE MIX G, H, OR I_1.3.3",
+    "name": "NIC_IN HOME RESPITE CASE MIX G, H, OR I",
+    "displayName": "NIC_IN HOME RESPITE CASE MIX G, H, OR I - 186"
+  },
+  {
+    "seocNumber": "187",
+    "seocId": "NIC_IN HOME RESPITE CASE MIX J OR K_1.4.3",
+    "name": "NIC_IN HOME RESPITE CASE MIX J OR K",
+    "displayName": "NIC_IN HOME RESPITE CASE MIX J OR K - 187"
+  },
+  {
+    "seocNumber": "188",
+    "seocId": "NIC_IN HOME RESPITE CASE MIX L_1.5.3",
+    "name": "NIC_IN HOME RESPITE CASE MIX L",
+    "displayName": "NIC_IN HOME RESPITE CASE MIX L - 188"
+  },
+  {
+    "seocNumber": "189",
+    "seocId": "NIC_IN HOME RESPITE EXCEPTION_1.6.3",
+    "name": "NIC_IN HOME RESPITE EXCEPTION",
+    "displayName": "NIC_IN HOME RESPITE EXCEPTION - 189"
+  },
+  {
+    "seocNumber": "1192",
+    "seocId": "NIC_IN HOME RESPITE UP TO 6 HRS PER WEEK, 60 DAYS_1.60.2",
+    "name": "NIC_IN HOME RESPITE UP TO 6 HRS PER WEEK, 60 DAYS",
+    "displayName": "NIC_IN HOME RESPITE UP TO 6 HRS PER WEEK, 60 DAYS - 1192"
+  },
+  {
+    "seocNumber": "1225",
+    "seocId": "NIC_IN HOME RESPITE UP TO 6 HRS PER WEEK, 180 DAYS_1.59.2",
+    "name": "NIC_IN HOME RESPITE UP TO 6 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE UP TO 6 HRS PER WEEK, 180 DAYS - 1225"
+  },
+  {
+    "seocNumber": "1063",
+    "seocId": "NIC_IN HOME RESPITE UP TO 20 HRS PER WEEK, 30 DAYS_1.26.2",
+    "name": "NIC_IN HOME RESPITE UP TO 20 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_IN HOME RESPITE UP TO 20 HRS PER WEEK, 30 DAYS - 1063"
+  },
+  {
+    "seocNumber": "1065",
+    "seocId": "NIC_IN HOME RESPITE UP TO 20 HRS PER WEEK, 90 DAYS_1.25.2",
+    "name": "NIC_IN HOME RESPITE UP TO 20 HRS PER WEEK, 90 DAYS",
+    "displayName": "NIC_IN HOME RESPITE UP TO 20 HRS PER WEEK, 90 DAYS - 1065"
+  },
+  {
+    "seocNumber": "1062",
+    "seocId": "NIC_IN HOME RESPITE UP TO 20 HRS PER WEEK, 180 DAYS_1.24.2",
+    "name": "NIC_IN HOME RESPITE UP TO 20 HRS PER WEEK, 180 DAYS",
+    "displayName": "NIC_IN HOME RESPITE UP TO 20 HRS PER WEEK, 180 DAYS - 1062"
+  },
+  {
+    "seocNumber": "1064",
+    "seocId": "NIC_IN HOME RESPITE UP TO 20 HRS PER WEEK, 365 DAYS_1.23.2",
+    "name": "NIC_IN HOME RESPITE UP TO 20 HRS PER WEEK, 365 DAYS",
+    "displayName": "NIC_IN HOME RESPITE UP TO 20 HRS PER WEEK, 365 DAYS - 1064"
+  },
+  {
+    "seocNumber": "111",
+    "seocId": "NIC_PACE 180 DAYS_1.0.7",
+    "name": "NIC_PACE 180 DAYS",
+    "displayName": "NIC_PACE 180 DAYS - 111"
+  },
+  {
+    "seocNumber": "1123",
+    "seocId": "NIC_PACE 365 DAYS_1.1.2",
+    "name": "NIC_PACE 365 DAYS",
+    "displayName": "NIC_PACE 365 DAYS - 1123"
+  },
+  {
+    "seocNumber": "1123",
+    "seocId": "NIC_PACE 365 DAYS VCA_1.1.4",
+    "name": "NIC_PACE 365 DAYS VCA",
+    "displayName": "NIC_PACE 365 DAYS VCA - 1123"
+  },
+  {
+    "seocNumber": "229",
+    "seocId": "NIC_PALLIATIVE CARE_1.2.10_PRCT",
+    "name": "NIC_PALLIATIVE CARE",
+    "displayName": "NIC_PALLIATIVE CARE - 229"
+  },
+  {
+    "seocNumber": "229",
+    "seocId": "NIC_PALLIATIVE CARE-OUTPATIENT CLINIC_1.2.12",
+    "name": "NIC_PALLIATIVE CARE-OUTPATIENT CLINIC",
+    "displayName": "NIC_PALLIATIVE CARE-OUTPATIENT CLINIC - 229"
+  },
+  {
+    "seocNumber": "1226",
+    "seocId": "NIC_PCAFC CADHC RESPITE 1 DAY PER WEEK, 120 DAYS_1.61.2",
+    "name": "NIC_PCAFC CADHC RESPITE 1 DAY PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC CADHC RESPITE 1 DAY PER WEEK, 120 DAYS - 1226"
+  },
+  {
+    "seocNumber": "1227",
+    "seocId": "NIC_PCAFC CADHC RESPITE 2 DAYS PER WEEK, 120 DAYS_1.62.2",
+    "name": "NIC_PCAFC CADHC RESPITE 2 DAYS PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC CADHC RESPITE 2 DAYS PER WEEK, 120 DAYS - 1227"
+  },
+  {
+    "seocNumber": "1228",
+    "seocId": "NIC_PCAFC CADHC RESPITE 3 DAYS PER WEEK, 120 DAYS_1.63.2",
+    "name": "NIC_PCAFC CADHC RESPITE 3 DAYS PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC CADHC RESPITE 3 DAYS PER WEEK, 120 DAYS - 1228"
+  },
+  {
+    "seocNumber": "1229",
+    "seocId": "NIC_PCAFC CADHC RESPITE 4 DAYS PER WEEK, 120 DAYS_1.64.2",
+    "name": "NIC_PCAFC CADHC RESPITE 4 DAYS PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC CADHC RESPITE 4 DAYS PER WEEK, 120 DAYS - 1229"
+  },
+  {
+    "seocNumber": "1230",
+    "seocId": "NIC_PCAFC CADHC RESPITE 5 DAYS PER WEEK, 120 DAYS_1.65.2",
+    "name": "NIC_PCAFC CADHC RESPITE 5 DAYS PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC CADHC RESPITE 5 DAYS PER WEEK, 120 DAYS - 1230"
+  },
+  {
+    "seocNumber": "1245",
+    "seocId": "NIC_PCAFC CADHC RESPITE 6 DAYS PER WEEK, 120 DAYS_1.66.2",
+    "name": "NIC_PCAFC CADHC RESPITE 6 DAYS PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC CADHC RESPITE 6 DAYS PER WEEK, 120 DAYS - 1245"
+  },
+  {
+    "seocNumber": "1246",
+    "seocId": "NIC_PCAFC CADHC RESPITE 7 DAYS PER WEEK, 120 DAYS_1.67.2",
+    "name": "NIC_PCAFC CADHC RESPITE 7 DAYS PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC CADHC RESPITE 7 DAYS PER WEEK, 120 DAYS - 1246"
+  },
+  {
+    "seocNumber": "1253",
+    "seocId": "NIC_PCAFC CNH IDIQ OR VCA RESPITE 30 DAYS_1.68.2",
+    "name": "NIC_PCAFC CNH IDIQ OR VCA RESPITE 30 DAYS",
+    "displayName": "NIC_PCAFC CNH IDIQ OR VCA RESPITE 30 DAYS - 1253"
+  },
+  {
+    "seocNumber": "1232",
+    "seocId": "NIC_PCAFC HOME RESPITE 9 TO 16 HRS PER WEEK, 120 DAYS_1.79.3",
+    "name": "NIC_PCAFC HOME RESPITE 9 TO 16 HRS PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC HOME RESPITE 9 TO 16 HRS PER WEEK, 120 DAYS - 1232"
+  },
+  {
+    "seocNumber": "1233",
+    "seocId": "NIC_PCAFC HOME RESPITE 17 TO 24 HRS PER WEEK, 120 DAYS_1.72.3",
+    "name": "NIC_PCAFC HOME RESPITE 17 TO 24 HRS PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC HOME RESPITE 17 TO 24 HRS PER WEEK, 120 DAYS - 1233"
+  },
+  {
+    "seocNumber": "1234",
+    "seocId": "NIC_PCAFC HOME RESPITE 25 TO 32 HRS PER WEEK, 120 DAYS_1.73.3",
+    "name": "NIC_PCAFC HOME RESPITE 25 TO 32 HRS PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC HOME RESPITE 25 TO 32 HRS PER WEEK, 120 DAYS - 1234"
+  },
+  {
+    "seocNumber": "1235",
+    "seocId": "NIC_PCAFC HOME RESPITE 33 TO 40 HRS PER WEEK, 120 DAYS_1.74.3",
+    "name": "NIC_PCAFC HOME RESPITE 33 TO 40 HRS PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC HOME RESPITE 33 TO 40 HRS PER WEEK, 120 DAYS - 1235"
+  },
+  {
+    "seocNumber": "1236",
+    "seocId": "NIC_PCAFC HOME RESPITE 41 TO 48 HRS PER WEEK, 120 DAYS_1.75.3",
+    "name": "NIC_PCAFC HOME RESPITE 41 TO 48 HRS PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC HOME RESPITE 41 TO 48 HRS PER WEEK, 120 DAYS - 1236"
+  },
+  {
+    "seocNumber": "1239",
+    "seocId": "NIC_PCAFC HOME RESPITE 49 TO 56 HRS PER WEEK, 120 DAYS_1.76.3",
+    "name": "NIC_PCAFC HOME RESPITE 49 TO 56 HRS PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC HOME RESPITE 49 TO 56 HRS PER WEEK, 120 DAYS - 1239"
+  },
+  {
+    "seocNumber": "1240",
+    "seocId": "NIC_PCAFC HOME RESPITE 57 TO 72 HRS PER WEEK, 120 DAYS_1.77.3",
+    "name": "NIC_PCAFC HOME RESPITE 57 TO 72 HRS PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC HOME RESPITE 57 TO 72 HRS PER WEEK, 120 DAYS - 1240"
+  },
+  {
+    "seocNumber": "1241",
+    "seocId": "NIC_PCAFC HOME RESPITE 73 TO 90 HRS PER WEEK, 30 DAYS_1.78.3",
+    "name": "NIC_PCAFC HOME RESPITE 73 TO 90 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_PCAFC HOME RESPITE 73 TO 90 HRS PER WEEK, 30 DAYS - 1241"
+  },
+  {
+    "seocNumber": "1242",
+    "seocId": "NIC_PCAFC HOME RESPITE 91 TO 110 HRS PER WEEK, 30 DAYS_1.80.3",
+    "name": "NIC_PCAFC HOME RESPITE 91 TO 110 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_PCAFC HOME RESPITE 91 TO 110 HRS PER WEEK, 30 DAYS - 1242"
+  },
+  {
+    "seocNumber": "1243",
+    "seocId": "NIC_PCAFC HOME RESPITE 111 TO 130 HRS PER WEEK, 30 DAYS_1.69.3",
+    "name": "NIC_PCAFC HOME RESPITE 111 TO 130 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_PCAFC HOME RESPITE 111 TO 130 HRS PER WEEK, 30 DAYS - 1243"
+  },
+  {
+    "seocNumber": "1244",
+    "seocId": "NIC_PCAFC HOME RESPITE 131 TO 145 HRS PER WEEK, 30 DAYS_1.70.3",
+    "name": "NIC_PCAFC HOME RESPITE 131 TO 145 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_PCAFC HOME RESPITE 131 TO 145 HRS PER WEEK, 30 DAYS - 1244"
+  },
+  {
+    "seocNumber": "1247",
+    "seocId": "NIC_PCAFC HOME RESPITE 146 TO 168 HRS PER WEEK, 30 DAYS_1.71.3",
+    "name": "NIC_PCAFC HOME RESPITE 146 TO 168 HRS PER WEEK, 30 DAYS",
+    "displayName": "NIC_PCAFC HOME RESPITE 146 TO 168 HRS PER WEEK, 30 DAYS - 1247"
+  },
+  {
+    "seocNumber": "1231",
+    "seocId": "NIC_PCAFC HOME RESPITE UP TO 8 HRS PER WEEK, 120 DAYS_1.81.3",
+    "name": "NIC_PCAFC HOME RESPITE UP TO 8 HRS PER WEEK, 120 DAYS",
+    "displayName": "NIC_PCAFC HOME RESPITE UP TO 8 HRS PER WEEK, 120 DAYS - 1231"
+  },
+  {
+    "seocNumber": "111",
+    "seocId": "NIC_PROGRAM OF ALL-INCLUSIVE CARE FOR THE ELDERLY (PACE)_1.1.4_PRCT",
+    "name": "NIC_PROGRAM OF ALL-INCLUSIVE CARE FOR THE ELDERLY (PACE)",
+    "displayName": "NIC_PROGRAM OF ALL-INCLUSIVE CARE FOR THE ELDERLY (PACE) - 111"
+  },
+  {
+    "seocNumber": "1078",
+    "seocId": "NIC_REHABILITATION ONLY IN SKILLED NURSING FACILITY CCN 30 DAYS_1.4.5",
+    "name": "NIC_REHABILITATION ONLY IN SKILLED NURSING FACILITY CCN 30 DAYS",
+    "displayName": "NIC_REHABILITATION ONLY IN SKILLED NURSING FACILITY CCN 30 DAYS - 1078"
+  },
+  {
+    "seocNumber": "1080",
+    "seocId": "NIC_REHABILITATION ONLY IN SKILLED NURSING FACILITY CCN 60 DAYS_1.2.5",
+    "name": "NIC_REHABILITATION ONLY IN SKILLED NURSING FACILITY CCN 60 DAYS",
+    "displayName": "NIC_REHABILITATION ONLY IN SKILLED NURSING FACILITY CCN 60 DAYS - 1080"
+  },
+  {
+    "seocNumber": "1079",
+    "seocId": "NIC_REHABILITATION ONLY IN SKILLED NURSING FACILITY CCN 100 DAYS_1.3.5",
+    "name": "NIC_REHABILITATION ONLY IN SKILLED NURSING FACILITY CCN 100 DAYS",
+    "displayName": "NIC_REHABILITATION ONLY IN SKILLED NURSING FACILITY CCN 100 DAYS - 1079"
+  },
+  {
+    "seocNumber": "206",
+    "seocId": "NIC_SKILLED HOME HEALTH - BATH AIDE NON BUNDLED_1.8.2",
+    "name": "NIC_SKILLED HOME HEALTH - BATH AIDE NON BUNDLED",
+    "displayName": "NIC_SKILLED HOME HEALTH - BATH AIDE NON BUNDLED - 206"
+  },
+  {
+    "seocNumber": "205",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE - NON BUNDLED_1.1.3_REV_PRCT",
+    "name": "NIC_SKILLED HOME HEALTH CARE - NON BUNDLED",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE - NON BUNDLED - 205"
+  },
+  {
+    "seocNumber": "209",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE BUNDLED_1.3.6_REV_PRCT",
+    "name": "NIC_SKILLED HOME HEALTH CARE BUNDLED",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE BUNDLED - 209"
+  },
+  {
+    "seocNumber": "1054",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE BUNDLED, 30 DAYS_1.8.2_REV_PRCT",
+    "name": "NIC_SKILLED HOME HEALTH CARE BUNDLED, 30 DAYS",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE BUNDLED, 30 DAYS - 1054"
+  },
+  {
+    "seocNumber": "1056",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE BUNDLED, 60 DAYS_1.7.4_REV",
+    "name": "NIC_SKILLED HOME HEALTH CARE BUNDLED, 60 DAYS",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE BUNDLED, 60 DAYS - 1056"
+  },
+  {
+    "seocNumber": "1057",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE BUNDLED, 120 DAYS_1.6.4_REV",
+    "name": "NIC_SKILLED HOME HEALTH CARE BUNDLED, 120 DAYS",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE BUNDLED, 120 DAYS - 1057"
+  },
+  {
+    "seocNumber": "1059",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE BUNDLED, 180 DAYS_1.5.2_REV_PRCT",
+    "name": "NIC_SKILLED HOME HEALTH CARE BUNDLED, 180 DAYS",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE BUNDLED, 180 DAYS - 1059"
+  },
+  {
+    "seocNumber": "204",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE EXPANDED_1.4.6_REV_PRCT",
+    "name": "NIC_SKILLED HOME HEALTH CARE EXPANDED",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE EXPANDED - 204"
+  },
+  {
+    "seocNumber": "1068",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE EXPANDED, 30 DAYS_1.12.2_REV_PRCT",
+    "name": "NIC_SKILLED HOME HEALTH CARE EXPANDED, 30 DAYS",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE EXPANDED, 30 DAYS - 1068"
+  },
+  {
+    "seocNumber": "1069",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE EXPANDED, 60 DAYS_1.11.4_REV",
+    "name": "NIC_SKILLED HOME HEALTH CARE EXPANDED, 60 DAYS",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE EXPANDED, 60 DAYS - 1069"
+  },
+  {
+    "seocNumber": "1066",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE EXPANDED, 120 DAYS_1.10.4_REV",
+    "name": "NIC_SKILLED HOME HEALTH CARE EXPANDED, 120 DAYS",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE EXPANDED, 120 DAYS - 1066"
+  },
+  {
+    "seocNumber": "1067",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE EXPANDED, 180 DAYS_1.9.2_REV_PRCT",
+    "name": "NIC_SKILLED HOME HEALTH CARE EXPANDED, 180 DAYS",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE EXPANDED, 180 DAYS - 1067"
+  },
+  {
+    "seocNumber": "205",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED_1.1.6_REV_PRCT",
+    "name": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED - 205"
+  },
+  {
+    "seocNumber": "1072",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED, 30 DAYS_1.16.2_REV_PRCT",
+    "name": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED, 30 DAYS",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED, 30 DAYS - 1072"
+  },
+  {
+    "seocNumber": "1073",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED, 60 DAYS_1.15.4_REV",
+    "name": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED, 60 DAYS",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED, 60 DAYS - 1073"
+  },
+  {
+    "seocNumber": "1070",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED, 120 DAYS_1.14.4_REV",
+    "name": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED, 120 DAYS",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED, 120 DAYS - 1070"
+  },
+  {
+    "seocNumber": "1071",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED, 180 DAYS_1.13.2_REV_PRCT",
+    "name": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED, 180 DAYS",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE NON BUNDLED, 180 DAYS - 1071"
+  },
+  {
+    "seocNumber": "204",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE-EXPANDED_1.2.3_REV_PRCT",
+    "name": "NIC_SKILLED HOME HEALTH CARE-EXPANDED",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE-EXPANDED - 204"
+  },
+  {
+    "seocNumber": "117",
+    "seocId": "NIC_SKILLED HOME HEALTH CARE-THERAPY_1.0.2_PRCT",
+    "name": "NIC_SKILLED HOME HEALTH CARE-THERAPY",
+    "displayName": "NIC_SKILLED HOME HEALTH CARE-THERAPY - 117"
+  },
+  {
+    "seocNumber": "1078",
+    "seocId": "NIC_SKILLED NURSING FACILITY REHAB CCN 30 DAYS_1.4.3_PRCT",
+    "name": "NIC_SKILLED NURSING FACILITY REHAB CCN 30 DAYS",
+    "displayName": "NIC_SKILLED NURSING FACILITY REHAB CCN 30 DAYS - 1078"
+  },
+  {
+    "seocNumber": "1080",
+    "seocId": "NIC_SKILLED NURSING FACILITY REHAB CCN 60 DAYS_1.2.3_PRCT",
+    "name": "NIC_SKILLED NURSING FACILITY REHAB CCN 60 DAYS",
+    "displayName": "NIC_SKILLED NURSING FACILITY REHAB CCN 60 DAYS - 1080"
+  },
+  {
+    "seocNumber": "1079",
+    "seocId": "NIC_SKILLED NURSING FACILITY REHAB CCN 100 DAYS_1.3.3_PRCT",
+    "name": "NIC_SKILLED NURSING FACILITY REHAB CCN 100 DAYS",
+    "displayName": "NIC_SKILLED NURSING FACILITY REHAB CCN 100 DAYS - 1079"
+  },
+  {
+    "seocNumber": "118",
+    "seocId": "NIC_SKILLED RN + INFUSION THERAPY_1.2.8_REV_PRCT",
+    "name": "NIC_SKILLED RN + INFUSION THERAPY",
+    "displayName": "NIC_SKILLED RN + INFUSION THERAPY - 118"
+  },
+  {
+    "seocNumber": "126",
+    "seocId": "NIC_SPINAL CORD CARE_1.0.2_PRCT",
+    "name": "NIC_SPINAL CORD CARE",
+    "displayName": "NIC_SPINAL CORD CARE - 126"
+  },
+  {
+    "seocNumber": "267",
+    "seocId": "NIC_TBI RESIDENTIAL REHAB VCA_1.0.1",
+    "name": "NIC_TBI RESIDENTIAL REHAB VCA",
+    "displayName": "NIC_TBI RESIDENTIAL REHAB VCA - 267"
+  },
+  {
+    "seocNumber": "1306",
+    "seocId": "NIC_VERSION NUM TEST1_1.1.1",
+    "name": "NIC_VERSION NUM TEST1",
+    "displayName": "NIC_VERSION NUM TEST1 - 1306"
+  },
+  {
+    "seocNumber": "1306",
+    "seocId": "NIC_VERSION NUM TEST2_1.1.2",
+    "name": "NIC_VERSION NUM TEST2",
+    "displayName": "NIC_VERSION NUM TEST2 - 1306"
+  },
+  {
+    "seocNumber": "133",
+    "seocId": "NIC_VETERAN DIRECTED CARE_1.9.3",
+    "name": "NIC_VETERAN DIRECTED CARE",
+    "displayName": "NIC_VETERAN DIRECTED CARE - 133"
+  },
+  {
+    "seocNumber": "133",
+    "seocId": "NIC_VETERAN DIRECTED CARE VCA_1.0.10",
+    "name": "NIC_VETERAN DIRECTED CARE VCA",
+    "displayName": "NIC_VETERAN DIRECTED CARE VCA - 133"
+  },
+  {
+    "seocNumber": "218",
+    "seocId": "PCP_ADDICTION MEDICINE OUTPATIENT_1.3.14_REV",
+    "name": "PCP_ADDICTION MEDICINE OUTPATIENT",
+    "displayName": "PCP_ADDICTION MEDICINE OUTPATIENT - 218"
+  },
+  {
+    "seocNumber": "1087",
+    "seocId": "PCP_COMPACT ADDICTION MEDICINE OUTPATIENT_1.4.6_REV",
+    "name": "PCP_COMPACT ADDICTION MEDICINE OUTPATIENT",
+    "displayName": "PCP_COMPACT ADDICTION MEDICINE OUTPATIENT - 1087"
+  },
+  {
+    "seocNumber": "110",
+    "seocId": "PCP_PRIMARY CARE 6M_1.1.16",
+    "name": "PCP_PRIMARY CARE 6M",
+    "displayName": "PCP_PRIMARY CARE 6M - 110"
+  },
+  {
+    "seocNumber": "109",
+    "seocId": "PCP_PRIMARY CARE 12M_1.0.16",
+    "name": "PCP_PRIMARY CARE 12M",
+    "displayName": "PCP_PRIMARY CARE 12M - 109"
+  },
+  {
+    "seocNumber": "217",
+    "seocId": "PCP_PRIMARY CARE 90 DAY_1.2.13",
+    "name": "PCP_PRIMARY CARE 90 DAY",
+    "displayName": "PCP_PRIMARY CARE 90 DAY - 217"
+  },
+  {
+    "seocNumber": "109",
+    "seocId": "PCP_PRIMARY CARE ONE YEAR_1.0.5_PRCT",
+    "name": "PCP_PRIMARY CARE ONE YEAR",
+    "displayName": "PCP_PRIMARY CARE ONE YEAR - 109"
+  },
+  {
+    "seocNumber": "110",
+    "seocId": "PCP_PRIMARY CARE SIX MONTH_1.1.5_PRCT",
+    "name": "PCP_PRIMARY CARE SIX MONTH",
+    "displayName": "PCP_PRIMARY CARE SIX MONTH - 110"
+  },
+  {
+    "seocNumber": "1",
+    "seocId": "PMR_ACUPUNCTURE_1.0.2",
+    "name": "PMR_ACUPUNCTURE",
+    "displayName": "PMR_ACUPUNCTURE - 1"
+  },
+  {
+    "seocNumber": "2",
+    "seocId": "PMR_ACUPUNCTURE CHRONIC CARE MANAGEMENT_1.1.13",
+    "name": "PMR_ACUPUNCTURE CHRONIC CARE MANAGEMENT",
+    "displayName": "PMR_ACUPUNCTURE CHRONIC CARE MANAGEMENT - 2"
+  },
+  {
+    "seocNumber": "3",
+    "seocId": "PMR_ACUPUNCTURE CONTINUATION OF INITIAL CARE_1.11.14",
+    "name": "PMR_ACUPUNCTURE CONTINUATION OF INITIAL CARE",
+    "displayName": "PMR_ACUPUNCTURE CONTINUATION OF INITIAL CARE - 3"
+  },
+  {
+    "seocNumber": "1",
+    "seocId": "PMR_ACUPUNCTURE INITIAL_1.0.17",
+    "name": "PMR_ACUPUNCTURE INITIAL",
+    "displayName": "PMR_ACUPUNCTURE INITIAL - 1"
+  },
+  {
+    "seocNumber": "2",
+    "seocId": "PMR_ACUPUNCTURE-CHRONIC CARE MANAGEMENT_1.2.5",
+    "name": "PMR_ACUPUNCTURE-CHRONIC CARE MANAGEMENT",
+    "displayName": "PMR_ACUPUNCTURE-CHRONIC CARE MANAGEMENT - 2"
+  },
+  {
+    "seocNumber": "3",
+    "seocId": "PMR_ACUPUNCTURE-CONTINUATION OF INITIAL CARE_1.11.8",
+    "name": "PMR_ACUPUNCTURE-CONTINUATION OF INITIAL CARE",
+    "displayName": "PMR_ACUPUNCTURE-CONTINUATION OF INITIAL CARE - 3"
+  },
+  {
+    "seocNumber": "212",
+    "seocId": "PMR_ACUTE INPATIENT REHABILITATION_1.7.9",
+    "name": "PMR_ACUTE INPATIENT REHABILITATION",
+    "displayName": "PMR_ACUTE INPATIENT REHABILITATION - 212"
+  },
+  {
+    "seocNumber": "159",
+    "seocId": "PMR_BIOFEEDBACK_1.6.4_PRCT",
+    "name": "PMR_BIOFEEDBACK",
+    "displayName": "PMR_BIOFEEDBACK - 159"
+  },
+  {
+    "seocNumber": "14",
+    "seocId": "PMR_BLIND REHABILITATION_1.1.10",
+    "name": "PMR_BLIND REHABILITATION",
+    "displayName": "PMR_BLIND REHABILITATION - 14"
+  },
+  {
+    "seocNumber": "14",
+    "seocId": "PMR_BLIND REHABILITATION PRCT_1.1.2_PRCT",
+    "name": "PMR_BLIND REHABILITATION PRCT",
+    "displayName": "PMR_BLIND REHABILITATION PRCT - 14"
+  },
+  {
+    "seocNumber": "17",
+    "seocId": "PMR_CARDIAC AND VASCULAR REHAB_1.0.10",
+    "name": "PMR_CARDIAC AND VASCULAR REHAB",
+    "displayName": "PMR_CARDIAC AND VASCULAR REHAB - 17"
+  },
+  {
+    "seocNumber": "17",
+    "seocId": "PMR_CARDIAC REHAB_1.0.7_PRCT",
+    "name": "PMR_CARDIAC REHAB",
+    "displayName": "PMR_CARDIAC REHAB - 17"
+  },
+  {
+    "seocNumber": "25",
+    "seocId": "PMR_CHIROPRACTIC CARE_1.0.1",
+    "name": "PMR_CHIROPRACTIC CARE",
+    "displayName": "PMR_CHIROPRACTIC CARE - 25"
+  },
+  {
+    "seocNumber": "26",
+    "seocId": "PMR_CHIROPRACTIC CONTINUATION OF INITIAL_1.1.17",
+    "name": "PMR_CHIROPRACTIC CONTINUATION OF INITIAL",
+    "displayName": "PMR_CHIROPRACTIC CONTINUATION OF INITIAL - 26"
+  },
+  {
+    "seocNumber": "25",
+    "seocId": "PMR_CHIROPRACTIC INITIAL_1.0.17",
+    "name": "PMR_CHIROPRACTIC INITIAL",
+    "displayName": "PMR_CHIROPRACTIC INITIAL - 25"
+  },
+  {
+    "seocNumber": "27",
+    "seocId": "PMR_CHIROPRACTIC PAIN MANAGEMENT_1.2.16",
+    "name": "PMR_CHIROPRACTIC PAIN MANAGEMENT",
+    "displayName": "PMR_CHIROPRACTIC PAIN MANAGEMENT - 27"
+  },
+  {
+    "seocNumber": "1130",
+    "seocId": "PMR_DRIVER EVAL AND REHAB_1.9.3",
+    "name": "PMR_DRIVER EVAL AND REHAB",
+    "displayName": "PMR_DRIVER EVAL AND REHAB - 1130"
+  },
+  {
+    "seocNumber": "1131",
+    "seocId": "PMR_FUNCTIONAL ASSESSMENT_1.10.2",
+    "name": "PMR_FUNCTIONAL ASSESSMENT",
+    "displayName": "PMR_FUNCTIONAL ASSESSMENT - 1131"
+  },
+  {
+    "seocNumber": "219",
+    "seocId": "PMR_HBOT DEMONSTRATION PROJECT_1.1.1",
+    "name": "PMR_HBOT DEMONSTRATION PROJECT",
+    "displayName": "PMR_HBOT DEMONSTRATION PROJECT - 219"
+  },
+  {
+    "seocNumber": "160",
+    "seocId": "PMR_HYPERBARIC THERAPY_1.0.3",
+    "name": "PMR_HYPERBARIC THERAPY",
+    "displayName": "PMR_HYPERBARIC THERAPY - 160"
+  },
+  {
+    "seocNumber": "163",
+    "seocId": "PMR_HYPNOSIS - MEDICAL HYPNOTHERAPY_1.4.3_PRCT",
+    "name": "PMR_HYPNOSIS - MEDICAL HYPNOTHERAPY",
+    "displayName": "PMR_HYPNOSIS - MEDICAL HYPNOTHERAPY - 163"
+  },
+  {
+    "seocNumber": "161",
+    "seocId": "PMR_HYPNOSIS- MENTAL HEALTH HYPNOTHERAPY_1.5.3_PRCT",
+    "name": "PMR_HYPNOSIS- MENTAL HEALTH HYPNOTHERAPY",
+    "displayName": "PMR_HYPNOSIS- MENTAL HEALTH HYPNOTHERAPY - 161"
+  },
+  {
+    "seocNumber": "163",
+    "seocId": "PMR_HYPNOSIS-MEDICAL HYPNOTHERAPY_1.4.10",
+    "name": "PMR_HYPNOSIS-MEDICAL HYPNOTHERAPY",
+    "displayName": "PMR_HYPNOSIS-MEDICAL HYPNOTHERAPY - 163"
+  },
+  {
+    "seocNumber": "161",
+    "seocId": "PMR_HYPNOSIS-MENTAL HEALTH HYPNOTHERAPY_1.5.10",
+    "name": "PMR_HYPNOSIS-MENTAL HEALTH HYPNOTHERAPY",
+    "displayName": "PMR_HYPNOSIS-MENTAL HEALTH HYPNOTHERAPY - 161"
+  },
+  {
+    "seocNumber": "1125",
+    "seocId": "PMR_INTENSIVE CARDIAC REHAB (ICR)_1.1.2",
+    "name": "PMR_INTENSIVE CARDIAC REHAB (ICR)",
+    "displayName": "PMR_INTENSIVE CARDIAC REHAB (ICR) - 1125"
+  },
+  {
+    "seocNumber": "168",
+    "seocId": "PMR_MASSAGE THERAPY - ACUTE  PAIN CONDITION_1.9.3",
+    "name": "PMR_MASSAGE THERAPY - ACUTE  PAIN CONDITION",
+    "displayName": "PMR_MASSAGE THERAPY - ACUTE  PAIN CONDITION - 168"
+  },
+  {
+    "seocNumber": "168",
+    "seocId": "PMR_MASSAGE THERAPY - ACUTE PAIN CONDITION_1.6.7",
+    "name": "PMR_MASSAGE THERAPY - ACUTE PAIN CONDITION",
+    "displayName": "PMR_MASSAGE THERAPY - ACUTE PAIN CONDITION - 168"
+  },
+  {
+    "seocNumber": "169",
+    "seocId": "PMR_MASSAGE THERAPY - CHRONIC PAIN CONDITION_1.10.3",
+    "name": "PMR_MASSAGE THERAPY - CHRONIC PAIN CONDITION",
+    "displayName": "PMR_MASSAGE THERAPY - CHRONIC PAIN CONDITION - 169"
+  },
+  {
+    "seocNumber": "168",
+    "seocId": "PMR_MASSAGE THERAPY (MEDICAL) - ACUTE PAIN_1.6.8_PRCT",
+    "name": "PMR_MASSAGE THERAPY (MEDICAL) - ACUTE PAIN",
+    "displayName": "PMR_MASSAGE THERAPY (MEDICAL) - ACUTE PAIN - 168"
+  },
+  {
+    "seocNumber": "169",
+    "seocId": "PMR_MASSAGE THERAPY (MEDICAL) - CHRONIC PAIN_1.7.8_PRCT",
+    "name": "PMR_MASSAGE THERAPY (MEDICAL) - CHRONIC PAIN",
+    "displayName": "PMR_MASSAGE THERAPY (MEDICAL) - CHRONIC PAIN - 169"
+  },
+  {
+    "seocNumber": "1133",
+    "seocId": "PMR_MASSAGE THERAPY (MEDICAL) CONTINUATION_1.13.2",
+    "name": "PMR_MASSAGE THERAPY (MEDICAL) CONTINUATION",
+    "displayName": "PMR_MASSAGE THERAPY (MEDICAL) CONTINUATION - 1133"
+  },
+  {
+    "seocNumber": "1132",
+    "seocId": "PMR_MASSAGE THERAPY (MEDICAL) INITIAL_1.12.2",
+    "name": "PMR_MASSAGE THERAPY (MEDICAL) INITIAL",
+    "displayName": "PMR_MASSAGE THERAPY (MEDICAL) INITIAL - 1132"
+  },
+  {
+    "seocNumber": "1133",
+    "seocId": "PMR_MEDICAL MASSAGE THERAPY CONTINUATION_1.13.4",
+    "name": "PMR_MEDICAL MASSAGE THERAPY CONTINUATION",
+    "displayName": "PMR_MEDICAL MASSAGE THERAPY CONTINUATION - 1133"
+  },
+  {
+    "seocNumber": "1132",
+    "seocId": "PMR_MEDICAL MASSAGE THERAPY INITIAL_1.12.4",
+    "name": "PMR_MEDICAL MASSAGE THERAPY INITIAL",
+    "displayName": "PMR_MEDICAL MASSAGE THERAPY INITIAL - 1132"
+  },
+  {
+    "seocNumber": "192",
+    "seocId": "PMR_MEDITATION MINDFULNESS-BASED STRESS REDUCTION (MBSR)_1.11.2",
+    "name": "PMR_MEDITATION MINDFULNESS-BASED STRESS REDUCTION (MBSR)",
+    "displayName": "PMR_MEDITATION MINDFULNESS-BASED STRESS REDUCTION (MBSR) - 192"
+  },
+  {
+    "seocNumber": "164",
+    "seocId": "PMR_NEUROFEEDBACK_1.9.11",
+    "name": "PMR_NEUROFEEDBACK",
+    "displayName": "PMR_NEUROFEEDBACK - 164"
+  },
+  {
+    "seocNumber": "90",
+    "seocId": "PMR_OCCUPATIONAL THERAPY_1.1.12_REV",
+    "name": "PMR_OCCUPATIONAL THERAPY",
+    "displayName": "PMR_OCCUPATIONAL THERAPY - 90"
+  },
+  {
+    "seocNumber": "1095",
+    "seocId": "PMR_OCCUPATIONAL THERAPY FOCUSED INTERVENTION_1.2.6_REV",
+    "name": "PMR_OCCUPATIONAL THERAPY FOCUSED INTERVENTION",
+    "displayName": "PMR_OCCUPATIONAL THERAPY FOCUSED INTERVENTION - 1095"
+  },
+  {
+    "seocNumber": "91",
+    "seocId": "PMR_OCCUPATIONAL THERAPY-FUNCTIONAL CAPACITY-DRIVER EVAL_1.0.7",
+    "name": "PMR_OCCUPATIONAL THERAPY-FUNCTIONAL CAPACITY-DRIVER EVAL",
+    "displayName": "PMR_OCCUPATIONAL THERAPY-FUNCTIONAL CAPACITY-DRIVER EVAL - 91"
+  },
+  {
+    "seocNumber": "91",
+    "seocId": "PMR_OCCUPATIONAL THERAPY-FUNCTIONAL CAPACITY-DRIVER EVALUATION_1.0.5",
+    "name": "PMR_OCCUPATIONAL THERAPY-FUNCTIONAL CAPACITY-DRIVER EVALUATION",
+    "displayName": "PMR_OCCUPATIONAL THERAPY-FUNCTIONAL CAPACITY-DRIVER EVALUATION - 91"
+  },
+  {
+    "seocNumber": "91",
+    "seocId": "PMR_OCCUPATIONAL THERAPY-FUNCTIONAL CAPACITY-DRIVER EVALUATION PRCT_1.0.3",
+    "name": "PMR_OCCUPATIONAL THERAPY-FUNCTIONAL CAPACITY-DRIVER EVALUATION PRCT",
+    "displayName": "PMR_OCCUPATIONAL THERAPY-FUNCTIONAL CAPACITY-DRIVER EVALUATION PRCT - 91"
+  },
+  {
+    "seocNumber": "229",
+    "seocId": "PMR_PALLIATIVE CARE_1.8.2_REV_PRCT",
+    "name": "PMR_PALLIATIVE CARE",
+    "displayName": "PMR_PALLIATIVE CARE - 229"
+  },
+  {
+    "seocNumber": "154",
+    "seocId": "PMR_PHYSICAL MEDICINE AND REHABILITATION (PHYSIATRY)_1.6.13_REV",
+    "name": "PMR_PHYSICAL MEDICINE AND REHABILITATION (PHYSIATRY)",
+    "displayName": "PMR_PHYSICAL MEDICINE AND REHABILITATION (PHYSIATRY) - 154"
+  },
+  {
+    "seocNumber": "107",
+    "seocId": "PMR_PHYSICAL THERAPY_1.0.14",
+    "name": "PMR_PHYSICAL THERAPY",
+    "displayName": "PMR_PHYSICAL THERAPY - 107"
+  },
+  {
+    "seocNumber": "278",
+    "seocId": "PMR_PHYSICAL THERAPY FOCUSED INTERVENTION_1.6.7",
+    "name": "PMR_PHYSICAL THERAPY FOCUSED INTERVENTION",
+    "displayName": "PMR_PHYSICAL THERAPY FOCUSED INTERVENTION - 278"
+  },
+  {
+    "seocNumber": "114",
+    "seocId": "PMR_PULMONARY REHAB_1.1.13",
+    "name": "PMR_PULMONARY REHAB",
+    "displayName": "PMR_PULMONARY REHAB - 114"
+  },
+  {
+    "seocNumber": "1109",
+    "seocId": "PMR_RECREATION THERAPY ANIMAL ASSISTED SVC VCA_1.5.1",
+    "name": "PMR_RECREATION THERAPY ANIMAL ASSISTED SVC VCA",
+    "displayName": "PMR_RECREATION THERAPY ANIMAL ASSISTED SVC VCA - 1109"
+  },
+  {
+    "seocNumber": "1109",
+    "seocId": "PMR_RECREATION THERAPY ANIMAL-ASSISTED SVC VCA_1.5.3",
+    "name": "PMR_RECREATION THERAPY ANIMAL-ASSISTED SVC VCA",
+    "displayName": "PMR_RECREATION THERAPY ANIMAL-ASSISTED SVC VCA - 1109"
+  },
+  {
+    "seocNumber": "221",
+    "seocId": "PMR_RECREATION THERAPY SERVICES_1.3.10",
+    "name": "PMR_RECREATION THERAPY SERVICES",
+    "displayName": "PMR_RECREATION THERAPY SERVICES - 221"
+  },
+  {
+    "seocNumber": "222",
+    "seocId": "PMR_RECREATION THERAPY SVC, ART THERAPY_1.2.9",
+    "name": "PMR_RECREATION THERAPY SVC, ART THERAPY",
+    "displayName": "PMR_RECREATION THERAPY SVC, ART THERAPY - 222"
+  },
+  {
+    "seocNumber": "223",
+    "seocId": "PMR_RECREATION THERAPY SVC, DANCE, MOVEMENT THERAPY_1.3.2",
+    "name": "PMR_RECREATION THERAPY SVC, DANCE, MOVEMENT THERAPY",
+    "displayName": "PMR_RECREATION THERAPY SVC, DANCE, MOVEMENT THERAPY - 223"
+  },
+  {
+    "seocNumber": "224",
+    "seocId": "PMR_RECREATION THERAPY SVC, DRAMA THERAPY_1.4.10",
+    "name": "PMR_RECREATION THERAPY SVC, DRAMA THERAPY",
+    "displayName": "PMR_RECREATION THERAPY SVC, DRAMA THERAPY - 224"
+  },
+  {
+    "seocNumber": "225",
+    "seocId": "PMR_RECREATION THERAPY SVC, MUSIC THERAPY_1.5.2",
+    "name": "PMR_RECREATION THERAPY SVC, MUSIC THERAPY",
+    "displayName": "PMR_RECREATION THERAPY SVC, MUSIC THERAPY - 225"
+  },
+  {
+    "seocNumber": "121",
+    "seocId": "PMR_SPEECH LANGUAGE PATHOLOGY - COGNITIVE COMMUNICATION_1.9.2_PRCT",
+    "name": "PMR_SPEECH LANGUAGE PATHOLOGY - COGNITIVE COMMUNICATION",
+    "displayName": "PMR_SPEECH LANGUAGE PATHOLOGY - COGNITIVE COMMUNICATION - 121"
+  },
+  {
+    "seocNumber": "122",
+    "seocId": "PMR_SPEECH LANGUAGE PATHOLOGY - DYSPHAGIA, APRAXIA, OR STUTTERING_1.7.2_PRCT",
+    "name": "PMR_SPEECH LANGUAGE PATHOLOGY - DYSPHAGIA, APRAXIA, OR STUTTERING",
+    "displayName": "PMR_SPEECH LANGUAGE PATHOLOGY - DYSPHAGIA, APRAXIA, OR STUTTERING - 122"
+  },
+  {
+    "seocNumber": "123",
+    "seocId": "PMR_SPEECH LANGUAGE PATHOLOGY - TOTAL LARYNGECTOMY_1.8.2_PRCT",
+    "name": "PMR_SPEECH LANGUAGE PATHOLOGY - TOTAL LARYNGECTOMY",
+    "displayName": "PMR_SPEECH LANGUAGE PATHOLOGY - TOTAL LARYNGECTOMY - 123"
+  },
+  {
+    "seocNumber": "124",
+    "seocId": "PMR_SPEECH LANGUAGE PATHOLOGY - VOICE_1.6.2_PRCT",
+    "name": "PMR_SPEECH LANGUAGE PATHOLOGY - VOICE",
+    "displayName": "PMR_SPEECH LANGUAGE PATHOLOGY - VOICE - 124"
+  },
+  {
+    "seocNumber": "121",
+    "seocId": "PMR_SPEECH THERAPY-SPEECH LANGUAGE PATH COMP_1.0.12_REV_PRCT",
+    "name": "PMR_SPEECH THERAPY-SPEECH LANGUAGE PATH COMP",
+    "displayName": "PMR_SPEECH THERAPY-SPEECH LANGUAGE PATH COMP - 121"
+  },
+  {
+    "seocNumber": "121",
+    "seocId": "PMR_SPEECH THERAPY-SPEECH LANGUAGE PATHOLOGY_1.0.14_REV",
+    "name": "PMR_SPEECH THERAPY-SPEECH LANGUAGE PATHOLOGY",
+    "displayName": "PMR_SPEECH THERAPY-SPEECH LANGUAGE PATHOLOGY - 121"
+  },
+  {
+    "seocNumber": "121",
+    "seocId": "PMR_SPEECH THERAPY-SPEECH LANGUAGE PATHOLOGY COMPREHENSIVE_1.9.5_REV_PRCT",
+    "name": "PMR_SPEECH THERAPY-SPEECH LANGUAGE PATHOLOGY COMPREHENSIVE",
+    "displayName": "PMR_SPEECH THERAPY-SPEECH LANGUAGE PATHOLOGY COMPREHENSIVE - 121"
+  },
+  {
+    "seocNumber": "125",
+    "seocId": "PMR_SPEECH-LANGUAGE PATHOLOGY-APHASIA PRCT_1.0.2_PRCT",
+    "name": "PMR_SPEECH-LANGUAGE PATHOLOGY-APHASIA PRCT",
+    "displayName": "PMR_SPEECH-LANGUAGE PATHOLOGY-APHASIA PRCT - 125"
+  },
+  {
+    "seocNumber": "170",
+    "seocId": "PMR_TAI CHI_1.11.2",
+    "name": "PMR_TAI CHI",
+    "displayName": "PMR_TAI CHI - 170"
+  },
+  {
+    "seocNumber": "171",
+    "seocId": "PMR_YOGA (GROUP WELL-BEING CLASS)_1.11.5",
+    "name": "PMR_YOGA (GROUP WELL-BEING CLASS)",
+    "displayName": "PMR_YOGA (GROUP WELL-BEING CLASS) - 171"
+  },
+  {
+    "seocNumber": "171",
+    "seocId": "PMR_YOGA (GROUP WELL-BEING CLASS) VCA_1.11.8",
+    "name": "PMR_YOGA (GROUP WELL-BEING CLASS) VCA",
+    "displayName": "PMR_YOGA (GROUP WELL-BEING CLASS) VCA - 171"
+  },
+  {
+    "seocNumber": "34",
+    "seocId": "RAD_CT MYELOGRAM_1.1.5_REV_PRCT",
+    "name": "RAD_CT MYELOGRAM",
+    "displayName": "RAD_CT MYELOGRAM - 34"
+  },
+  {
+    "seocNumber": "35",
+    "seocId": "RAD_CT SCAN_1.0.6_REV_PRCT",
+    "name": "RAD_CT SCAN",
+    "displayName": "RAD_CT SCAN - 35"
+  },
+  {
+    "seocNumber": "46",
+    "seocId": "RAD_DEXA SCAN_1.0.5_PRCT",
+    "name": "RAD_DEXA SCAN",
+    "displayName": "RAD_DEXA SCAN - 46"
+  },
+  {
+    "seocNumber": "47",
+    "seocId": "RAD_EBUS_1.2.2",
+    "name": "RAD_EBUS",
+    "displayName": "RAD_EBUS - 47"
+  },
+  {
+    "seocNumber": "69",
+    "seocId": "RAD_INTERVENTIONAL RADIOLOGY_1.0.14_REV",
+    "name": "RAD_INTERVENTIONAL RADIOLOGY",
+    "displayName": "RAD_INTERVENTIONAL RADIOLOGY - 69"
+  },
+  {
+    "seocNumber": "69",
+    "seocId": "RAD_INTERVENTIONAL RADIOLOGY PRCT_1.0.2_PRCT",
+    "name": "RAD_INTERVENTIONAL RADIOLOGY PRCT",
+    "displayName": "RAD_INTERVENTIONAL RADIOLOGY PRCT - 69"
+  },
+  {
+    "seocNumber": "72",
+    "seocId": "RAD_LUNG CANCER SCREENING_1.2.13_REV",
+    "name": "RAD_LUNG CANCER SCREENING",
+    "displayName": "RAD_LUNG CANCER SCREENING - 72"
+  },
+  {
+    "seocNumber": "73",
+    "seocId": "RAD_MAMMOGRAPHY_1.0.5_PRCT",
+    "name": "RAD_MAMMOGRAPHY",
+    "displayName": "RAD_MAMMOGRAPHY - 73"
+  },
+  {
+    "seocNumber": "73",
+    "seocId": "RAD_MAMMOGRAPHY - BREAST TESTING_1.0.11",
+    "name": "RAD_MAMMOGRAPHY - BREAST TESTING",
+    "displayName": "RAD_MAMMOGRAPHY - BREAST TESTING - 73"
+  },
+  {
+    "seocNumber": "75",
+    "seocId": "RAD_MRI/MRA_1.0.1",
+    "name": "RAD_MRI/MRA",
+    "displayName": "RAD_MRI/MRA - 75"
+  },
+  {
+    "seocNumber": "275",
+    "seocId": "RAD_NUCLEAR CARDIAC TESTING_1.2.7_REV",
+    "name": "RAD_NUCLEAR CARDIAC TESTING",
+    "displayName": "RAD_NUCLEAR CARDIAC TESTING - 275"
+  },
+  {
+    "seocNumber": "86",
+    "seocId": "RAD_NUCLEAR MEDICINE_1.0.6_REV_PRCT",
+    "name": "RAD_NUCLEAR MEDICINE",
+    "displayName": "RAD_NUCLEAR MEDICINE - 86"
+  },
+  {
+    "seocNumber": "86",
+    "seocId": "RAD_NUCLEAR MEDICINE TESTING_1.0.14_REV",
+    "name": "RAD_NUCLEAR MEDICINE TESTING",
+    "displayName": "RAD_NUCLEAR MEDICINE TESTING - 86"
+  },
+  {
+    "seocNumber": "270",
+    "seocId": "RAD_NUCLEAR MEDICINE THERAPY_1.1.6_REV",
+    "name": "RAD_NUCLEAR MEDICINE THERAPY",
+    "displayName": "RAD_NUCLEAR MEDICINE THERAPY - 270"
+  },
+  {
+    "seocNumber": "106",
+    "seocId": "RAD_PET SCAN_1.0.1",
+    "name": "RAD_PET SCAN",
+    "displayName": "RAD_PET SCAN - 106"
+  },
+  {
+    "seocNumber": "34",
+    "seocId": "RAD_RADIOLOGY CT MYELOGRAM_1.1.11_REV",
+    "name": "RAD_RADIOLOGY CT MYELOGRAM",
+    "displayName": "RAD_RADIOLOGY CT MYELOGRAM - 34"
+  },
+  {
+    "seocNumber": "35",
+    "seocId": "RAD_RADIOLOGY CT SCAN_1.0.11_REV",
+    "name": "RAD_RADIOLOGY CT SCAN",
+    "displayName": "RAD_RADIOLOGY CT SCAN - 35"
+  },
+  {
+    "seocNumber": "46",
+    "seocId": "RAD_RADIOLOGY DEXA SCAN_1.0.10",
+    "name": "RAD_RADIOLOGY DEXA SCAN",
+    "displayName": "RAD_RADIOLOGY DEXA SCAN - 46"
+  },
+  {
+    "seocNumber": "75",
+    "seocId": "RAD_RADIOLOGY MRI - MRA_1.0.14_REV",
+    "name": "RAD_RADIOLOGY MRI - MRA",
+    "displayName": "RAD_RADIOLOGY MRI - MRA - 75"
+  },
+  {
+    "seocNumber": "75",
+    "seocId": "RAD_RADIOLOGY MRI/MRA_1.0.5_PRCT",
+    "name": "RAD_RADIOLOGY MRI/MRA",
+    "displayName": "RAD_RADIOLOGY MRI/MRA - 75"
+  },
+  {
+    "seocNumber": "106",
+    "seocId": "RAD_RADIOLOGY PET SCAN_1.0.12",
+    "name": "RAD_RADIOLOGY PET SCAN",
+    "displayName": "RAD_RADIOLOGY PET SCAN - 106"
+  },
+  {
+    "seocNumber": "129",
+    "seocId": "RAD_RADIOLOGY ULTRASOUND_1.2.11",
+    "name": "RAD_RADIOLOGY ULTRASOUND",
+    "displayName": "RAD_RADIOLOGY ULTRASOUND - 129"
+  },
+  {
+    "seocNumber": "132",
+    "seocId": "RAD_RADIOLOGY VENOGRAM_1.0.8",
+    "name": "RAD_RADIOLOGY VENOGRAM",
+    "displayName": "RAD_RADIOLOGY VENOGRAM - 132"
+  },
+  {
+    "seocNumber": "151",
+    "seocId": "RAD_RADIOLOGY X-RAY NOS_1.1.10",
+    "name": "RAD_RADIOLOGY X-RAY NOS",
+    "displayName": "RAD_RADIOLOGY X-RAY NOS - 151"
+  },
+  {
+    "seocNumber": "1124",
+    "seocId": "RAD_SERVICE ACT MAMMOGRAPHY_1.1.4",
+    "name": "RAD_SERVICE ACT MAMMOGRAPHY",
+    "displayName": "RAD_SERVICE ACT MAMMOGRAPHY - 1124"
+  },
+  {
+    "seocNumber": "129",
+    "seocId": "RAD_ULTRASOUND_1.2.6_PRCT",
+    "name": "RAD_ULTRASOUND",
+    "displayName": "RAD_ULTRASOUND - 129"
+  },
+  {
+    "seocNumber": "132",
+    "seocId": "RAD_VENOGRAM_1.0.4",
+    "name": "RAD_VENOGRAM",
+    "displayName": "RAD_VENOGRAM - 132"
+  },
+  {
+    "seocNumber": "215",
+    "seocId": "SSC_BARIATRIC SURGERY_1.5.2_REV_PRCT",
+    "name": "SSC_BARIATRIC SURGERY",
+    "displayName": "SSC_BARIATRIC SURGERY - 215"
+  },
+  {
+    "seocNumber": "236",
+    "seocId": "SSC_BONE MARROW TRANSPLANTATION_1.6.15_REV",
+    "name": "SSC_BONE MARROW TRANSPLANTATION",
+    "displayName": "SSC_BONE MARROW TRANSPLANTATION - 236"
+  },
+  {
+    "seocNumber": "235",
+    "seocId": "SSC_CAR-T CELL THERAPY EVAL_1.2.14_REV",
+    "name": "SSC_CAR-T CELL THERAPY EVAL",
+    "displayName": "SSC_CAR-T CELL THERAPY EVAL - 235"
+  },
+  {
+    "seocNumber": "241",
+    "seocId": "SSC_CAR-T CELL THERAPY PRE-INFUSION_1.3.13_REV",
+    "name": "SSC_CAR-T CELL THERAPY PRE-INFUSION",
+    "displayName": "SSC_CAR-T CELL THERAPY PRE-INFUSION - 241"
+  },
+  {
+    "seocNumber": "242",
+    "seocId": "SSC_CAR-T CELL THERAPY TREATMENT_1.4.14_REV",
+    "name": "SSC_CAR-T CELL THERAPY TREATMENT",
+    "displayName": "SSC_CAR-T CELL THERAPY TREATMENT - 242"
+  },
+  {
+    "seocNumber": "18",
+    "seocId": "SSC_CARDIOLOGY - CATH/PCI_1.1.1",
+    "name": "SSC_CARDIOLOGY - CATH/PCI",
+    "displayName": "SSC_CARDIOLOGY - CATH/PCI - 18"
+  },
+  {
+    "seocNumber": "240",
+    "seocId": "SSC_CARDIOLOGY LVAD_1.9.6_REV_PRCT",
+    "name": "SSC_CARDIOLOGY LVAD",
+    "displayName": "SSC_CARDIOLOGY LVAD - 240"
+  },
+  {
+    "seocNumber": "138",
+    "seocId": "SSC_CARDIOTHORACIC SURGERY_1.0.15_REV",
+    "name": "SSC_CARDIOTHORACIC SURGERY",
+    "displayName": "SSC_CARDIOTHORACIC SURGERY - 138"
+  },
+  {
+    "seocNumber": "235",
+    "seocId": "SSC_CHIMERIC ANTIGEN RECEPTOR T-CELL THERAPY EVAL_1.7.2_REV_PRCT",
+    "name": "SSC_CHIMERIC ANTIGEN RECEPTOR T-CELL THERAPY EVAL",
+    "displayName": "SSC_CHIMERIC ANTIGEN RECEPTOR T-CELL THERAPY EVAL - 235"
+  },
+  {
+    "seocNumber": "241",
+    "seocId": "SSC_CHIMERIC ANTIGEN RECEPTOR T-CELL THERAPY PRE-INFUSION_1.8.2_REV_PRCT",
+    "name": "SSC_CHIMERIC ANTIGEN RECEPTOR T-CELL THERAPY PRE-INFUSION",
+    "displayName": "SSC_CHIMERIC ANTIGEN RECEPTOR T-CELL THERAPY PRE-INFUSION - 241"
+  },
+  {
+    "seocNumber": "242",
+    "seocId": "SSC_CHIMERIC ANTIGENT RECEPTOR T-CELL THERAPY TREATMENT_1.9.2_REV_PRCT",
+    "name": "SSC_CHIMERIC ANTIGENT RECEPTOR T-CELL THERAPY TREATMENT",
+    "displayName": "SSC_CHIMERIC ANTIGENT RECEPTOR T-CELL THERAPY TREATMENT - 242"
+  },
+  {
+    "seocNumber": "139",
+    "seocId": "SSC_COLORECTAL SURGERY_1.1.12_REV",
+    "name": "SSC_COLORECTAL SURGERY",
+    "displayName": "SSC_COLORECTAL SURGERY - 139"
+  },
+  {
+    "seocNumber": "1089",
+    "seocId": "SSC_COMPACT FOLLOW UP MED-SURG CARE_1.5.3",
+    "name": "SSC_COMPACT FOLLOW UP MED-SURG CARE",
+    "displayName": "SSC_COMPACT FOLLOW UP MED-SURG CARE - 1089"
+  },
+  {
+    "seocNumber": "1089",
+    "seocId": "SSC_COMPACT FOLLOW-UP MED-SURG CARE_1.15.5",
+    "name": "SSC_COMPACT FOLLOW-UP MED-SURG CARE",
+    "displayName": "SSC_COMPACT FOLLOW-UP MED-SURG CARE - 1089"
+  },
+  {
+    "seocNumber": "153",
+    "seocId": "SSC_DERMATOLOGY MOHS_1.4.2_PRCT",
+    "name": "SSC_DERMATOLOGY MOHS",
+    "displayName": "SSC_DERMATOLOGY MOHS - 153"
+  },
+  {
+    "seocNumber": "136",
+    "seocId": "SSC_DIALYSIS ACCESS MANAGEMENT_1.2.12_REV",
+    "name": "SSC_DIALYSIS ACCESS MANAGEMENT",
+    "displayName": "SSC_DIALYSIS ACCESS MANAGEMENT - 136"
+  },
+  {
+    "seocNumber": "51",
+    "seocId": "SSC_ENT_1.0.13_PRCT",
+    "name": "SSC_ENT",
+    "displayName": "SSC_ENT - 51"
+  },
+  {
+    "seocNumber": "195",
+    "seocId": "SSC_EYE CARE ADVANCED EYE TREATMENT_1.2.14_PRCT",
+    "name": "SSC_EYE CARE ADVANCED EYE TREATMENT",
+    "displayName": "SSC_EYE CARE ADVANCED EYE TREATMENT - 195"
+  },
+  {
+    "seocNumber": "52",
+    "seocId": "SSC_EYE CARE COMPREHENSIVE 1 YEAR_1.0.5_PRCT",
+    "name": "SSC_EYE CARE COMPREHENSIVE 1 YEAR",
+    "displayName": "SSC_EYE CARE COMPREHENSIVE 1 YEAR - 52"
+  },
+  {
+    "seocNumber": "53",
+    "seocId": "SSC_EYE CARE COMPREHENSIVE 6 MONTHS_1.1.5_PRCT",
+    "name": "SSC_EYE CARE COMPREHENSIVE 6 MONTHS",
+    "displayName": "SSC_EYE CARE COMPREHENSIVE 6 MONTHS - 53"
+  },
+  {
+    "seocNumber": "53",
+    "seocId": "SSC_EYE CARE COMPREHENSIVE 6M_1.1.14_PRCT",
+    "name": "SSC_EYE CARE COMPREHENSIVE 6M",
+    "displayName": "SSC_EYE CARE COMPREHENSIVE 6M - 53"
+  },
+  {
+    "seocNumber": "52",
+    "seocId": "SSC_EYE CARE COMPREHENSIVE 12M_1.0.14_PRCT",
+    "name": "SSC_EYE CARE COMPREHENSIVE 12M",
+    "displayName": "SSC_EYE CARE COMPREHENSIVE 12M - 52"
+  },
+  {
+    "seocNumber": "195",
+    "seocId": "SSC_EYE CARE CONTINUATION OF ADVANCED EYE TREATMENT_1.2.4_PRCT",
+    "name": "SSC_EYE CARE CONTINUATION OF ADVANCED EYE TREATMENT",
+    "displayName": "SSC_EYE CARE CONTINUATION OF ADVANCED EYE TREATMENT - 195"
+  },
+  {
+    "seocNumber": "195",
+    "seocId": "SSC_EYE CARE OPHTHALMOLOGY ONLY_1.2.17",
+    "name": "SSC_EYE CARE OPHTHALMOLOGY ONLY",
+    "displayName": "SSC_EYE CARE OPHTHALMOLOGY ONLY - 195"
+  },
+  {
+    "seocNumber": "52",
+    "seocId": "SSC_EYE CARE OPTOMETRY AND OPHTHALMOLOGY_1.0.17",
+    "name": "SSC_EYE CARE OPTOMETRY AND OPHTHALMOLOGY",
+    "displayName": "SSC_EYE CARE OPTOMETRY AND OPHTHALMOLOGY - 52"
+  },
+  {
+    "seocNumber": "53",
+    "seocId": "SSC_EYE CARE OPTOMETRY AND OPHTHALMOLOGY 6M_1.1.16_PRCT",
+    "name": "SSC_EYE CARE OPTOMETRY AND OPHTHALMOLOGY 6M",
+    "displayName": "SSC_EYE CARE OPTOMETRY AND OPHTHALMOLOGY 6M - 53"
+  },
+  {
+    "seocNumber": "52",
+    "seocId": "SSC_EYE CARE OPTOMETRY AND OPHTHALMOLOGY 12M_1.0.16",
+    "name": "SSC_EYE CARE OPTOMETRY AND OPHTHALMOLOGY 12M",
+    "displayName": "SSC_EYE CARE OPTOMETRY AND OPHTHALMOLOGY 12M - 52"
+  },
+  {
+    "seocNumber": "55",
+    "seocId": "SSC_GENERAL SURGERY_1.4.16_REV",
+    "name": "SSC_GENERAL SURGERY",
+    "displayName": "SSC_GENERAL SURGERY - 55"
+  },
+  {
+    "seocNumber": "55",
+    "seocId": "SSC_GENERAL SURGERY PRCT_1.0.2_PRCT",
+    "name": "SSC_GENERAL SURGERY PRCT",
+    "displayName": "SSC_GENERAL SURGERY PRCT - 55"
+  },
+  {
+    "seocNumber": "143",
+    "seocId": "SSC_HEPATOPANCREATOBILIARY SURGERY_1.4.12_REV",
+    "name": "SSC_HEPATOPANCREATOBILIARY SURGERY",
+    "displayName": "SSC_HEPATOPANCREATOBILIARY SURGERY - 143"
+  },
+  {
+    "seocNumber": "136",
+    "seocId": "SSC_KIDNEY DIALYSIS ACCESS MANAGEMENT_1.2.10_REV_PRCT",
+    "name": "SSC_KIDNEY DIALYSIS ACCESS MANAGEMENT",
+    "displayName": "SSC_KIDNEY DIALYSIS ACCESS MANAGEMENT - 136"
+  },
+  {
+    "seocNumber": "145",
+    "seocId": "SSC_MAXILLOFACIAL SURGERY_1.4.10_REV",
+    "name": "SSC_MAXILLOFACIAL SURGERY",
+    "displayName": "SSC_MAXILLOFACIAL SURGERY - 145"
+  },
+  {
+    "seocNumber": "266",
+    "seocId": "SSC_NEURO-OPHTHALMOLOGY_1.3.10_REV",
+    "name": "SSC_NEURO-OPHTHALMOLOGY",
+    "displayName": "SSC_NEURO-OPHTHALMOLOGY - 266"
+  },
+  {
+    "seocNumber": "82",
+    "seocId": "SSC_NEUROSURGERY_1.0.15_REV",
+    "name": "SSC_NEUROSURGERY",
+    "displayName": "SSC_NEUROSURGERY - 82"
+  },
+  {
+    "seocNumber": "82",
+    "seocId": "SSC_NEUROSURGERY PRCT_1.0.3_PRCT",
+    "name": "SSC_NEUROSURGERY PRCT",
+    "displayName": "SSC_NEUROSURGERY PRCT - 82"
+  },
+  {
+    "seocNumber": "83",
+    "seocId": "SSC_NEUROSURGERY+HOME INFUSION_1.1.1",
+    "name": "SSC_NEUROSURGERY+HOME INFUSION",
+    "displayName": "SSC_NEUROSURGERY+HOME INFUSION - 83"
+  },
+  {
+    "seocNumber": "1135",
+    "seocId": "SSC_NEUROTOLOGY AND OTOLOGY_1.1.4_REV",
+    "name": "SSC_NEUROTOLOGY AND OTOLOGY",
+    "displayName": "SSC_NEUROTOLOGY AND OTOLOGY - 1135"
+  },
+  {
+    "seocNumber": "272",
+    "seocId": "SSC_OCULOPLASTICS_1.4.11",
+    "name": "SSC_OCULOPLASTICS",
+    "displayName": "SSC_OCULOPLASTICS - 272"
+  },
+  {
+    "seocNumber": "93",
+    "seocId": "SSC_OPHTHALMOLOGY_1.0.2",
+    "name": "SSC_OPHTHALMOLOGY",
+    "displayName": "SSC_OPHTHALMOLOGY - 93"
+  },
+  {
+    "seocNumber": "146",
+    "seocId": "SSC_ORTHOPEDIC HAND_1.1.13_REV",
+    "name": "SSC_ORTHOPEDIC HAND",
+    "displayName": "SSC_ORTHOPEDIC HAND - 146"
+  },
+  {
+    "seocNumber": "147",
+    "seocId": "SSC_ORTHOPEDIC SPINE_1.2.14_REV",
+    "name": "SSC_ORTHOPEDIC SPINE",
+    "displayName": "SSC_ORTHOPEDIC SPINE - 147"
+  },
+  {
+    "seocNumber": "98",
+    "seocId": "SSC_ORTHOPEDICS -JOINT OSTEOARTHRITIS OR REPLACEMENT PRCT_1.0.4_PRCT",
+    "name": "SSC_ORTHOPEDICS -JOINT OSTEOARTHRITIS OR REPLACEMENT PRCT",
+    "displayName": "SSC_ORTHOPEDICS -JOINT OSTEOARTHRITIS OR REPLACEMENT PRCT - 98"
+  },
+  {
+    "seocNumber": "98",
+    "seocId": "SSC_ORTHOPEDICS GENERAL_1.0.19_REV",
+    "name": "SSC_ORTHOPEDICS GENERAL",
+    "displayName": "SSC_ORTHOPEDICS GENERAL - 98"
+  },
+  {
+    "seocNumber": "98",
+    "seocId": "SSC_ORTHOPEDICS; PROCEDURE: JOINT OSTEOARTHRITIS OR REPLACEMENT_1.0.2",
+    "name": "SSC_ORTHOPEDICS; PROCEDURE: JOINT OSTEOARTHRITIS OR REPLACEMENT",
+    "displayName": "SSC_ORTHOPEDICS; PROCEDURE: JOINT OSTEOARTHRITIS OR REPLACEMENT - 98"
+  },
+  {
+    "seocNumber": "51",
+    "seocId": "SSC_OTOLARYNGOLOGY OR ENT_1.0.21_REV",
+    "name": "SSC_OTOLARYNGOLOGY OR ENT",
+    "displayName": "SSC_OTOLARYNGOLOGY OR ENT - 51"
+  },
+  {
+    "seocNumber": "1265",
+    "seocId": "SSC_PILOT SITES ONLY ORTHO GENERAL-EXCLUDES HIP AND KNEE ARTHROPLASTY AND REVISION_1.3.1_REV_PRCT",
+    "name": "SSC_PILOT SITES ONLY ORTHO GENERAL-EXCLUDES HIP AND KNEE ARTHROPLASTY AND REVISION",
+    "displayName": "SSC_PILOT SITES ONLY ORTHO GENERAL-EXCLUDES HIP AND KNEE ARTHROPLASTY AND REVISION - 1265"
+  },
+  {
+    "seocNumber": "1265",
+    "seocId": "SSC_PILOT SITES ONLY ORTHO GENERAL-EXCLUDES HIP AND KNEE ARTHROPLASTY AND REVISIONS_1.3.3_REV",
+    "name": "SSC_PILOT SITES ONLY ORTHO GENERAL-EXCLUDES HIP AND KNEE ARTHROPLASTY AND REVISIONS",
+    "displayName": "SSC_PILOT SITES ONLY ORTHO GENERAL-EXCLUDES HIP AND KNEE ARTHROPLASTY AND REVISIONS - 1265"
+  },
+  {
+    "seocNumber": "1262",
+    "seocId": "SSC_PILOT SITES ONLY ORTHOPEDICS-HIP AND KNEE ARTHROPLASTY AND REVISIONS_1.4.3_REV",
+    "name": "SSC_PILOT SITES ONLY ORTHOPEDICS-HIP AND KNEE ARTHROPLASTY AND REVISIONS",
+    "displayName": "SSC_PILOT SITES ONLY ORTHOPEDICS-HIP AND KNEE ARTHROPLASTY AND REVISIONS - 1262"
+  },
+  {
+    "seocNumber": "148",
+    "seocId": "SSC_PLASTIC SURGERY (NOT HAND)_1.0.11_REV",
+    "name": "SSC_PLASTIC SURGERY (NOT HAND)",
+    "displayName": "SSC_PLASTIC SURGERY (NOT HAND) - 148"
+  },
+  {
+    "seocNumber": "149",
+    "seocId": "SSC_PLASTIC SURGERY HAND_1.1.11_REV",
+    "name": "SSC_PLASTIC SURGERY HAND",
+    "displayName": "SSC_PLASTIC SURGERY HAND - 149"
+  },
+  {
+    "seocNumber": "149",
+    "seocId": "SSC_PLASTICS HAND_1.1.8_REV_PRCT",
+    "name": "SSC_PLASTICS HAND",
+    "displayName": "SSC_PLASTICS HAND - 149"
+  },
+  {
+    "seocNumber": "150",
+    "seocId": "SSC_PODIATRY_1.1.14_REV",
+    "name": "SSC_PODIATRY",
+    "displayName": "SSC_PODIATRY - 150"
+  },
+  {
+    "seocNumber": "150",
+    "seocId": "SSC_PODIATRY COMPREHENSIVE_1.1.10_REV_PRCT",
+    "name": "SSC_PODIATRY COMPREHENSIVE",
+    "displayName": "SSC_PODIATRY COMPREHENSIVE - 150"
+  },
+  {
+    "seocNumber": "108",
+    "seocId": "SSC_PODIATRY DS_1.0.12",
+    "name": "SSC_PODIATRY DS",
+    "displayName": "SSC_PODIATRY DS - 108"
+  },
+  {
+    "seocNumber": "237",
+    "seocId": "SSC_SOLID ORGAN TRANSPLANT AND WAIT LIST MGMT_1.7.16_REV",
+    "name": "SSC_SOLID ORGAN TRANSPLANT AND WAIT LIST MGMT",
+    "displayName": "SSC_SOLID ORGAN TRANSPLANT AND WAIT LIST MGMT - 237"
+  },
+  {
+    "seocNumber": "138",
+    "seocId": "SSC_THORACIC  SURGERY_1.0.3_PRCT",
+    "name": "SSC_THORACIC  SURGERY",
+    "displayName": "SSC_THORACIC  SURGERY - 138"
+  },
+  {
+    "seocNumber": "127",
+    "seocId": "SSC_THORACIC SURGERY_1.0.13_REV",
+    "name": "SSC_THORACIC SURGERY",
+    "displayName": "SSC_THORACIC SURGERY - 127"
+  },
+  {
+    "seocNumber": "233",
+    "seocId": "SSC_TRANSPLANT BONE MARROW COMP EVAL_1.11.2_PRCT",
+    "name": "SSC_TRANSPLANT BONE MARROW COMP EVAL",
+    "displayName": "SSC_TRANSPLANT BONE MARROW COMP EVAL - 233"
+  },
+  {
+    "seocNumber": "236",
+    "seocId": "SSC_TRANSPLANT BONE MARROW TRANSPLANTATION_1.13.2_REV_PRCT",
+    "name": "SSC_TRANSPLANT BONE MARROW TRANSPLANTATION",
+    "displayName": "SSC_TRANSPLANT BONE MARROW TRANSPLANTATION - 236"
+  },
+  {
+    "seocNumber": "234",
+    "seocId": "SSC_TRANSPLANT BONE MARROW,  POST TRANSPLANT FOLLOW_1.14.2_PRCT",
+    "name": "SSC_TRANSPLANT BONE MARROW,  POST TRANSPLANT FOLLOW",
+    "displayName": "SSC_TRANSPLANT BONE MARROW,  POST TRANSPLANT FOLLOW - 234"
+  },
+  {
+    "seocNumber": "234",
+    "seocId": "SSC_TRANSPLANT BONE MARROW, POST TRANSPLANT FOLLOW_1.7.14_REV",
+    "name": "SSC_TRANSPLANT BONE MARROW, POST TRANSPLANT FOLLOW",
+    "displayName": "SSC_TRANSPLANT BONE MARROW, POST TRANSPLANT FOLLOW - 234"
+  },
+  {
+    "seocNumber": "238",
+    "seocId": "SSC_TRANSPLANT SOLID ORGAN COMP EVAL_1.12.2_REV_PRCT",
+    "name": "SSC_TRANSPLANT SOLID ORGAN COMP EVAL",
+    "displayName": "SSC_TRANSPLANT SOLID ORGAN COMP EVAL - 238"
+  },
+  {
+    "seocNumber": "239",
+    "seocId": "SSC_TRANSPLANT SOLID ORGAN,  POST TRANSPLANT FOLLOW_1.14.2_PRCT",
+    "name": "SSC_TRANSPLANT SOLID ORGAN,  POST TRANSPLANT FOLLOW",
+    "displayName": "SSC_TRANSPLANT SOLID ORGAN,  POST TRANSPLANT FOLLOW - 239"
+  },
+  {
+    "seocNumber": "239",
+    "seocId": "SSC_TRANSPLANT SOLID ORGAN, POST TRANSPLANT FOLLOW_1.5.13_REV",
+    "name": "SSC_TRANSPLANT SOLID ORGAN, POST TRANSPLANT FOLLOW",
+    "displayName": "SSC_TRANSPLANT SOLID ORGAN, POST TRANSPLANT FOLLOW - 239"
+  },
+  {
+    "seocNumber": "237",
+    "seocId": "SSC_TRANSPLANT SOLID ORGAN, WAIT LIST MANAGEMENT, TRANSPLANTATION_1.10.2_REV_PRCT",
+    "name": "SSC_TRANSPLANT SOLID ORGAN, WAIT LIST MANAGEMENT, TRANSPLANTATION",
+    "displayName": "SSC_TRANSPLANT SOLID ORGAN, WAIT LIST MANAGEMENT, TRANSPLANTATION - 237"
+  },
+  {
+    "seocNumber": "237",
+    "seocId": "SSC_TRANSPLANT SOLID ORGAN, WAIT LIST MGMT, TRANSPLANT_1.7.9_REV_PRCT",
+    "name": "SSC_TRANSPLANT SOLID ORGAN, WAIT LIST MGMT, TRANSPLANT",
+    "displayName": "SSC_TRANSPLANT SOLID ORGAN, WAIT LIST MGMT, TRANSPLANT - 237"
+  },
+  {
+    "seocNumber": "130",
+    "seocId": "SSC_UROLOGY_1.0.19_REV",
+    "name": "SSC_UROLOGY",
+    "displayName": "SSC_UROLOGY - 130"
+  },
+  {
+    "seocNumber": "130",
+    "seocId": "SSC_UROLOGY COMPREHENSIVE_1.0.15_REV_PRCT",
+    "name": "SSC_UROLOGY COMPREHENSIVE",
+    "displayName": "SSC_UROLOGY COMPREHENSIVE - 130"
+  },
+  {
+    "seocNumber": "1110",
+    "seocId": "SSC_UROLOGY TESTING_1.1.4",
+    "name": "SSC_UROLOGY TESTING",
+    "displayName": "SSC_UROLOGY TESTING - 1110"
+  },
+  {
+    "seocNumber": "131",
+    "seocId": "SSC_VASCULAR SURGERY_1.0.12_REV",
+    "name": "SSC_VASCULAR SURGERY",
+    "displayName": "SSC_VASCULAR SURGERY - 131"
+  },
+  {
+    "seocNumber": "261",
+    "seocId": "SSC_VASCULAR TESTING_1.1.8",
+    "name": "SSC_VASCULAR TESTING",
+    "displayName": "SSC_VASCULAR TESTING - 261"
+  },
+  {
+    "seocNumber": "240",
+    "seocId": "SSC_VENTRICULAR ASSIST DEVICE (VAD)_1.1.11_REV",
+    "name": "SSC_VENTRICULAR ASSIST DEVICE (VAD)",
+    "displayName": "SSC_VENTRICULAR ASSIST DEVICE (VAD) - 240"
+  },
+  {
+    "seocNumber": "135",
+    "seocId": "SSC_WOUND CARE_1.0.12",
+    "name": "SSC_WOUND CARE",
+    "displayName": "SSC_WOUND CARE - 135"
+  },
+  {
+    "seocNumber": "172",
+    "seocId": "TRA_AMBULANCE GROUND & MED-FLIGHT TRANSPORTATION_1.0.2",
+    "name": "TRA_AMBULANCE GROUND & MED-FLIGHT TRANSPORTATION",
+    "displayName": "TRA_AMBULANCE GROUND & MED-FLIGHT TRANSPORTATION - 172"
+  },
+  {
+    "seocNumber": "1122",
+    "seocId": "TRA_COMPACT TRANSPORTATION_1.2.2",
+    "name": "TRA_COMPACT TRANSPORTATION",
+    "displayName": "TRA_COMPACT TRANSPORTATION - 1122"
+  },
+  {
+    "seocNumber": "1294",
+    "seocId": "TRA_ELIZABETH DOLE ACT GROUND AND MED-FLIGHT TRANSPORTATION_1.3.1",
+    "name": "TRA_ELIZABETH DOLE ACT GROUND AND MED-FLIGHT TRANSPORTATION",
+    "displayName": "TRA_ELIZABETH DOLE ACT GROUND AND MED-FLIGHT TRANSPORTATION - 1294"
+  },
+  {
+    "seocNumber": "172",
+    "seocId": "TRA_GROUND AND MED FLIGHT TRANSPORTATION_1.0.7",
+    "name": "TRA_GROUND AND MED FLIGHT TRANSPORTATION",
+    "displayName": "TRA_GROUND AND MED FLIGHT TRANSPORTATION - 172"
+  },
+  {
+    "seocNumber": "285",
+    "seocId": "TRA_NON-EMERGENT TRANSPORTATION_1.1.2",
+    "name": "TRA_NON-EMERGENT TRANSPORTATION",
+    "displayName": "TRA_NON-EMERGENT TRANSPORTATION - 285"
+  },
+  {
+    "seocNumber": "1106",
+    "seocId": "WHC_ABORTION SERVICES_1.3.4",
+    "name": "WHC_ABORTION SERVICES",
+    "displayName": "WHC_ABORTION SERVICES - 1106"
+  },
+  {
+    "seocNumber": "1106",
+    "seocId": "WHC_ABORTION SERVICES VCA_1.3.2_PRCT",
+    "name": "WHC_ABORTION SERVICES VCA",
+    "displayName": "WHC_ABORTION SERVICES VCA - 1106"
+  },
+  {
+    "seocNumber": "201",
+    "seocId": "WHC_GYNECOLOGIC ONCOLOGY_1.2.13_REV",
+    "name": "WHC_GYNECOLOGIC ONCOLOGY",
+    "displayName": "WHC_GYNECOLOGIC ONCOLOGY - 201"
+  },
+  {
+    "seocNumber": "57",
+    "seocId": "WHC_GYNECOLOGY_1.0.13",
+    "name": "WHC_GYNECOLOGY",
+    "displayName": "WHC_GYNECOLOGY - 57"
+  },
+  {
+    "seocNumber": "1093",
+    "seocId": "WHC_LACTATION SERVICES_1.2.3",
+    "name": "WHC_LACTATION SERVICES",
+    "displayName": "WHC_LACTATION SERVICES - 1093"
+  },
+  {
+    "seocNumber": "74",
+    "seocId": "WHC_MATERNITY_1.0.3_PRCT",
+    "name": "WHC_MATERNITY",
+    "displayName": "WHC_MATERNITY - 74"
+  },
+  {
+    "seocNumber": "167",
+    "seocId": "WHC_MATERNITY AND NEWBORN_1.1.16_REV",
+    "name": "WHC_MATERNITY AND NEWBORN",
+    "displayName": "WHC_MATERNITY AND NEWBORN - 167"
+  },
+  {
+    "seocNumber": "1106",
+    "seocId": "WHC_PREGNANCY TERMINATION SERVICES_1.3.5",
+    "name": "WHC_PREGNANCY TERMINATION SERVICES",
+    "displayName": "WHC_PREGNANCY TERMINATION SERVICES - 1106"
+  },
+  {
+    "seocNumber": "155",
+    "seocId": "WHC_UROGYNECOLOGY_1.1.13_REV",
+    "name": "WHC_UROGYNECOLOGY",
+    "displayName": "WHC_UROGYNECOLOGY - 155"
   }
 ]
