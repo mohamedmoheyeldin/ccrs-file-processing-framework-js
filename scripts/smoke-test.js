@@ -27,6 +27,7 @@ const {
 const { summarizeUploadProfiles, uploadFileWithSftp } = require("../electron/backend/uploader");
 const {
   buildArchiveBasename,
+  buildOutputFileNames,
   formatArchiveReferralDateTime,
   formatCurrentDateTime,
   zipOutput,
@@ -61,6 +62,8 @@ const {
 const { normalizeStations } = require("../electron/backend/stationCatalog");
 const { ensureRuntimeFiles } = require("../electron/backend/appPaths");
 const { normalizeCell } = require("./import-stations");
+const { convertWorksheet: convertSeocWorksheet, splitVersionedSeocId } = require("./import-seoc");
+const { resolveSeocSelection } = require("../electron/backend/referralGenerator");
 const { assertSafeFolderRelationship, stripWindowsExtendedPathPrefix } = require("../electron/backend/batchSafety");
 const { validateReferralFile } = require("../electron/backend/referralValidator");
 const { allowedUploadTargets } = require("../electron/backend/workflowPolicy");
@@ -109,7 +112,7 @@ test("LEIE validation SQL includes the requested query set and syntax highlighti
   assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
 });
 
-test("Version 1.3.10 metadata, safety controls, and release automation stay consolidated", () => {
+test("Version 1.3.11 metadata, safety controls, and release automation stay consolidated", () => {
   const versionConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "app_version.json"), "utf8"));
   const packageConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
@@ -126,9 +129,9 @@ test("Version 1.3.10 metadata, safety controls, and release automation stay cons
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
 
-  assert.equal(versionConfig.version, "1.3.10");
-  assert.equal(versionConfig.releaseTag, "v1.3.10");
-  assert.equal(versionConfig.label, "Version 1.3.10");
+  assert.equal(versionConfig.version, "1.3.11");
+  assert.equal(versionConfig.releaseTag, "v1.3.11");
+  assert.equal(versionConfig.label, "Version 1.3.11");
   assert.match(releaseNotes, /\[Version 1\.3\.9\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.9\)/);
   assert.match(releaseNotes, /\[Version 1\.3\.7\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.7\) Internal Release Notes/);
   assert.match(releaseNotes, /Version 1\.3\.7 was released internally/);
@@ -139,7 +142,8 @@ test("Version 1.3.10 metadata, safety controls, and release automation stay cons
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Publishes one verified Windows Setup installer")), false);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Uses Electron 43")), false);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Electron sandboxing")), false);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Windows Electron end-to-end")), false);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Station IDs")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("SEOC")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Updates Electron to")), false);
   assert.equal(packageConfig.scripts["test:smoke"], "node scripts/smoke-test.js");
   assert.equal(packageConfig.scripts["test:syntax"], "node scripts/syntax-check.js");
@@ -255,7 +259,7 @@ test("Diagnostic export excludes credentials and user file paths", async () => {
   const result = await backend.handleCommand("export-diagnostics", { outputDir });
   const reportText = fs.readFileSync(result.reportPath, "utf8");
   const report = JSON.parse(reportText);
-  assert.equal(report.appVersion, "1.3.10");
+  assert.equal(report.appVersion, "1.3.11");
   assert.equal(Object.prototype.hasOwnProperty.call(report.workflowPreferences, "inputDir"), false);
   assert.doesNotMatch(reportText, /password|ciphertext|connection_details/i);
 });
@@ -367,6 +371,42 @@ test("Bundled station JSON preserves every spreadsheet row and column", () => {
   assert.equal(bingham.station_id, "402HL");
   assert.equal(bingham.visn_id, "1");
   assert.equal(bingham.parent_station_id, "402");
+});
+
+test("Long source-backed Station IDs remain exact through generated JSON and gzip", async () => {
+  for (const stationId of ["675GB01", "595GF01", "402"]) {
+    assert.equal(generateOptionalFieldOverrides({ StationID: stationId }).StationID, stationId);
+    const filePath = writeJsonFixture(`station-${stationId}.json`, {
+      ListDate: "2026-08-31 16:25:00",
+      Referrals: [{
+        ReferralNumber: "VA0000000001",
+        Patient: { ICN: "1", FirstName: "A", LastName: "B", SSN: "999-99-0001" },
+        ProgramAuthority: { StationID: "402", SeocKey: "69", SeocID: "OLD" },
+      }],
+    });
+    const result = modifyContent(filePath, "", null, "999-99-0001", 1, 1, { StationID: stationId });
+    assert.equal(JSON.parse(result.content).Referrals[0].ProgramAuthority.StationID, stationId);
+    const outputDir = fs.mkdtempSync(path.join(tempRoot, `station-output-${stationId}-`));
+    fs.writeFileSync(path.join(outputDir, "result.json"), result.content);
+    const archivePath = await zipOutput(outputDir, `station-${stationId}`);
+    const archived = JSON.parse(zlib.gunzipSync(fs.readFileSync(archivePath)).toString("utf8"));
+    assert.equal(archived.Referrals[0].ProgramAuthority.StationID, stationId);
+  }
+});
+
+test("SEOC conversion maps columns, removes version duplicates, and sorts deterministically", () => {
+  const worksheet = XLSX.utils.json_to_sheet([
+    { "seoc_source_key/Number": 2, seoc_id: "BETA_1.0.1" },
+    { "seoc_source_key/Number": 1, seoc_id: "PMR_ACUPUNCTURE INITIAL_1.0.16" },
+    { "seoc_source_key/Number": 1, seoc_id: "PMR_ACUPUNCTURE INITIAL_1.0.17" },
+    { "seoc_source_key/Number": 3, seoc_id: "ALPHA_1.2.3_REV" },
+  ]);
+  assert.deepEqual(convertSeocWorksheet(worksheet), [
+    { seocNumber: "3", seocId: "ALPHA_1.2.3_REV", name: "ALPHA", displayName: "ALPHA - 3" },
+    { seocNumber: "2", seocId: "BETA_1.0.1", name: "BETA", displayName: "BETA - 2" },
+    { seocNumber: "1", seocId: "PMR_ACUPUNCTURE INITIAL_1.0.17", name: "PMR_ACUPUNCTURE INITIAL", displayName: "PMR_ACUPUNCTURE INITIAL - 1" },
+  ]);
+  assert.deepEqual(splitVersionedSeocId("PMR_ACUPUNCTURE INITIAL_1.0.17").version, [1, 0, 17]);
 });
 
 test("Packaged upgrades refresh the installed Station ID and special SEOC catalogs", () => {
@@ -556,6 +596,7 @@ test("Referral numbers can use iFAMS and map directly to matching TEST ICNs", ()
   assert.equal(generateIcnFromReferralNumber("iFAMS26S600001"), "TEST26S600001");
   assert.equal(generateReferralNumber("26S600001", 1, "CCRS"), "CCRS26S600001");
   assert.equal(generateIcnFromReferralNumber("CCRS26S600001", ["CCRS"]), "TEST26S600001");
+  assert.equal(generateReferralNumber("12345", 1, "VA_TEST_"), "VA_TEST_0000012345");
 });
 
 test("Referral generation supports VA, iFAMS, mixed, and custom prefix modes", async () => {
@@ -942,25 +983,23 @@ test("App info exposes the complete searchable station source", async () => {
   const tremont = info.stations.find((station) => station.station_id === "614GA01");
   assert.equal(Boolean(tremont), true);
   assert.match(tremont.station_name, /Tremont VA Clinic/);
-  assert.equal(info.constants.stationIdMaxLength, 9);
+  assert.equal(Object.hasOwn(info.constants, "stationIdMaxLength"), false);
 });
 
 test("App info exposes valid synchronized SEOC pairs", async () => {
   const info = await backend.handleCommand("info", {});
   assert.equal(Array.isArray(info.seocOptions), true);
-  assert.deepEqual(info.seocOptions, [
-    { seocKey: "67", seocId: "INF_FERTILITY-1332 EXISTING OVARY_1.1.17", selectionOnly: true },
-    { seocKey: "69", seocId: "RAD_INTERVENTIONAL RADIOLOGY_1.0.12_REV_PRCT", selectionOnly: false },
-    { seocKey: "107", seocId: "PMR_PHYSICAL THERAPY_1.0.12_PRCT", selectionOnly: false },
-    { seocKey: "158", seocId: "EUC_EMERGENCY CARE_1.2.8", selectionOnly: true },
-    { seocKey: "191", seocId: "EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE_1.1.7", selectionOnly: true },
-    { seocKey: "233", seocId: "SSC_TRANSPLANT BONE MARROW COMP EVAL_1.5.14_REV", selectionOnly: true },
-    { seocKey: "268", seocId: "MHC_MENTAL HEALTH RESIDENTIAL TREATMENT_1.15.7", selectionOnly: true },
-    { seocKey: "1160", seocId: "MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT_1.22.2", selectionOnly: true },
-  ]);
+  assert.equal(info.seocOptions.length, 761);
+  const acupuncture = info.seocOptions.find((option) => option.displayName === "PMR_ACUPUNCTURE INITIAL - 1");
+  assert.equal(acupuncture.seocKey, "1");
+  assert.equal(acupuncture.seocNumber, "1");
+  assert.equal(acupuncture.seocId, "PMR_ACUPUNCTURE INITIAL_1.0.17");
+  assert.equal(resolveSeocSelection([acupuncture.selectorKey])[0].seocId, acupuncture.seocId);
+  assert.equal(resolveSeocSelection([], true).length, 761);
+  assert.throws(() => resolveSeocSelection(["missing::value"]), /no longer available/);
 });
 
-test("Special SEOCs are selection-only and apply as synchronized explicit overrides", () => {
+test("SEOC and Situational SEOC selections remain paired in generated output", () => {
   const specialKeys = new Set(["67", "158", "191", "233", "268", "1160"]);
   for (const templatePath of fs.readdirSync(path.join(projectRoot, "templates", "referrals"))) {
     const template = JSON.parse(fs.readFileSync(path.join(projectRoot, "templates", "referrals", templatePath), "utf8"));
@@ -983,11 +1022,20 @@ test("Special SEOCs are selection-only and apply as synchronized explicit overri
     "999-99-0001",
     1,
     1,
-    { SeocKey: "67", SeocID: "INF_FERTILITY-1332 EXISTING OVARY_1.1.17" }
+    {},
+    1,
+    prepareIcnSettings(),
+    1,
+    {
+      selectedSeocPairs: [{ seocKey: "67", seocId: "INF_FERTILITY-1332 EXISTING OVARY_1.1.17" }],
+      selectedSituationalSeocPairs: [{ seocKey: "107", seocId: "PMR_PHYSICAL THERAPY_1.0.12_PRCT" }],
+    }
   );
   const authority = JSON.parse(result.content).Referrals[0].ProgramAuthority;
   assert.equal(authority.SeocKey, "67");
   assert.equal(authority.SeocID, "INF_FERTILITY-1332 EXISTING OVARY_1.1.17");
+  assert.equal(authority.SituationalSeocKey, "107");
+  assert.equal(authority.SituationalSeocID, "PMR_PHYSICAL THERAPY_1.0.12_PRCT");
 });
 
 test("Archive basename can append Network and Referral DateTime safely", () => {
@@ -1004,8 +1052,8 @@ test("Archive basename can append Network and Referral DateTime safely", () => {
     },
   }, now);
 
-  assert.equal(archiveBasename, "My_Custom_Export_CCN1_20260401_134500_20260402_090807");
-  assert.equal(formatArchiveReferralDateTime("2026-04-01 13:45:00"), "20260401_134500");
+  assert.equal(archiveBasename, "My_Custom_Export_CCN1_2026-04-01_134500_20260402_090807");
+  assert.equal(formatArchiveReferralDateTime("2026-04-01 13:45:00"), "2026-04-01_134500");
   assert.equal(formatCurrentDateTime(now), "20260402_090807");
   assert.equal(
     buildArchiveBasename({
@@ -1021,6 +1069,37 @@ test("Archive basename can append Network and Referral DateTime safely", () => {
     }, now),
     "iFAMS_referrals_20260402_090807"
   );
+});
+
+test("Archive naming modes share safe JSON and gzip filenames", () => {
+  const now = new Date(2026, 7, 31, 16, 25, 0);
+  const basePayload = {
+    referralReplacementCode: "12345",
+    identityOptions: { referralPrefixMode: "va" },
+    optionalOverrides: { Network: "Network1", ReferralDateTime: "2026-08-31 16:25:00" },
+  };
+  const scenarios = [
+    ["referral-number", "VA12345_Final"],
+    ["network", "Network1_VA12345_Final"],
+    ["referral-date-time", "VA12345_2026-08-31_162500_Final"],
+    ["prefix", "VA_12345_Final"],
+  ];
+  for (const [mode, expected] of scenarios) {
+    assert.equal(buildArchiveBasename({ ...basePayload, archiveNamingOptions: { mode } }, now), expected);
+  }
+  const custom = buildOutputFileNames({
+    ...basePayload,
+    archiveNamingOptions: {
+      mode: "custom",
+      customText: "DEV:CCRS",
+      customPattern: "{customText}_{referralNumber}_Final.json.json",
+    },
+  }, now);
+  assert.deepEqual(custom, {
+    basename: "DEV_CCRS_VA12345_Final",
+    json: "DEV_CCRS_VA12345_Final.json",
+    gzip: "DEV_CCRS_VA12345_Final.gz",
+  });
 });
 
 test("UI settings normalize legacy theme values and persist user choices", () => {
@@ -1052,8 +1131,22 @@ test("UI settings normalize legacy theme values and persist user choices", () =>
     assert.equal(normalizeUiSettings({ useIfamsReferralPrefix: true }).referralPrefixMode, "ifams");
     assert.equal(normalizeUiSettings({ referralPrefixMode: "mixed" }).referralPrefixMode, "mixed");
     assert.equal(
-      normalizeUiSettings({ referralPrefixMode: "custom", customReferralPrefix: "CCRS-TEST" }).customReferralPrefix,
-      "CCRSTEST"
+      normalizeUiSettings({ referralPrefixMode: "custom", customReferralPrefix: "CCRS_TEST" }).customReferralPrefix,
+      "CCRS_TEST"
+    );
+    const namedSettings = normalizeUiSettings({
+      archiveNamingMode: "custom",
+      archiveCustomText: "DEV",
+      selectedSeocKeys: ["1::A", "1::A"],
+      useAllSituationalSeocs: true,
+    });
+    assert.equal(namedSettings.schemaVersion, 2);
+    assert.equal(namedSettings.archiveNamingMode, "custom");
+    assert.deepEqual(namedSettings.selectedSeocKeys, ["1::A"]);
+    assert.equal(namedSettings.useAllSituationalSeocs, true);
+    assert.deepEqual(
+      normalizeUiSettings({ overrideSeocKey: "107", overrideSeocId: "PMR_PHYSICAL THERAPY_1.0.12_PRCT" }).selectedSeocKeys,
+      ["107::PMR_PHYSICAL%20THERAPY_1.0.12_PRCT"]
     );
 
     saveUiSettings({
@@ -1061,6 +1154,11 @@ test("UI settings normalize legacy theme values and persist user choices", () =>
       theme: "dark",
       archiveBasename: "session_export",
       archiveAppendNetwork: true,
+      archiveNamingMode: "custom",
+      archiveCustomPattern: "{customText}_{referralNumber}_Final",
+      archiveCustomText: "CCRS",
+      selectedSeocKeys: ["1::PMR"],
+      selectedSituationalSeocKeys: ["107::PT"],
       acknowledgedReleaseKey: "1.2.0|Production V1.2",
     });
 
@@ -1068,6 +1166,10 @@ test("UI settings normalize legacy theme values and persist user choices", () =>
     assert.equal(loaded.theme, "dark");
     assert.equal(loaded.archiveBasename, "session_export");
     assert.equal(loaded.archiveAppendNetwork, true);
+    assert.equal(loaded.archiveNamingMode, "custom");
+    assert.equal(loaded.archiveCustomText, "CCRS");
+    assert.deepEqual(loaded.selectedSeocKeys, ["1::PMR"]);
+    assert.deepEqual(loaded.selectedSituationalSeocKeys, ["107::PT"]);
     assert.equal(loaded.acknowledgedReleaseKey, "1.2.0|Production V1.2");
   } finally {
     if (originalOverride === undefined) {
@@ -1087,8 +1189,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.3.10");
-    assert.equal(initialInfo.appVersion.label, "Version 1.3.10");
+    assert.equal(initialInfo.appVersion.version, "1.3.11");
+    assert.equal(initialInfo.appVersion.label, "Version 1.3.11");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);
@@ -1300,7 +1402,7 @@ test("Preview validation requires archive naming fields when append options are 
 
   assert.equal(
     preview.fieldErrors.archiveBasename,
-    "Choose a Network in Referral Details before appending it to the .gz name."
+    "Choose a Network before adding it to the archive name."
   );
 });
 

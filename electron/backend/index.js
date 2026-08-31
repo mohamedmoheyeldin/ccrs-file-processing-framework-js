@@ -12,7 +12,6 @@ const {
   REFERRAL_NUMBER_DIGIT_COUNT,
   REFERRAL_NUMBER_PREFIX,
   REFERRAL_PREFIX_MODES,
-  STATION_ID_MAX_LENGTH,
   extractJsonChangeDefaults,
   extractListDate,
   generateOptionalFieldOverrides,
@@ -37,6 +36,7 @@ const {
   buildGeneratedReferralSources,
   getGeneratorDefaults,
   getSeocOptions,
+  resolveSeocSelection,
 } = require("./referralGenerator");
 const { cleanupRuntimeArtifacts, cleanupStaleRuntimeArtifacts, removePath } = require("./runtimeCleanup");
 const { loadStationOptions, loadStations } = require("./stationCatalog");
@@ -55,7 +55,7 @@ const {
   testUploadConnection,
 } = require("./uploader");
 const { sanitizeFilenameBase } = require("./renamer");
-const { buildArchiveBasename, DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename } = require("./zipper");
+const { buildArchiveBasename, buildOutputFileNames, DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename } = require("./zipper");
 const { assertSourceFilesWithinLimits, getProcessingLimits } = require("./limits");
 const { writeFileAtomic } = require("./atomicFile");
 const { assertSafeFolderRelationship, cleanupStaleRunStagingDirectories } = require("./batchSafety");
@@ -229,7 +229,6 @@ function getInfo() {
       listDateFormat: LIST_DATE_FORMAT,
       referralNumberPrefix: REFERRAL_NUMBER_PREFIX,
       referralNumberDigits: REFERRAL_NUMBER_DIGIT_COUNT,
-      stationIdMaxLength: STATION_ID_MAX_LENGTH,
       paymentAuthorityCodeLength: PAYMENT_AUTHORITY_CODE_LENGTH,
       defaultArchiveBasename: DEFAULT_ARCHIVE_BASENAME,
     },
@@ -344,6 +343,9 @@ function buildPreview(payload) {
   const archiveBasename = fieldErrors.archiveBasename
     ? sanitizeArchiveBasename(payload.archiveBasename || DEFAULT_ARCHIVE_BASENAME)
     : buildArchiveBasename(payload);
+  const outputFileNames = fieldErrors.archiveBasename
+    ? { basename: archiveBasename, json: `${archiveBasename}.json`, gzip: `${archiveBasename}.gz` }
+    : buildOutputFileNames(payload);
 
   let normalizedReferral = "";
   const referralPrefixOptions = fieldErrors.referralPrefix
@@ -377,6 +379,7 @@ function buildPreview(payload) {
   return {
     replacementCode,
     archiveBasename,
+    outputFileNames,
     icnPreview,
     referralNumber: normalizedReferral,
     optionalOverrides: normalizedOptionalOverrides,
@@ -388,6 +391,16 @@ function collectFieldErrors(payload) {
   const fieldErrors = {};
   const icnSettings = payload.icnSettings || {};
   const optionalOverrides = payload.optionalOverrides || {};
+
+  try {
+    resolveSeocSelection(payload.identityOptions?.selectedSeocKeys, Boolean(payload.identityOptions?.useAllSeocs));
+    resolveSeocSelection(
+      payload.identityOptions?.selectedSituationalSeocKeys,
+      Boolean(payload.identityOptions?.useAllSituationalSeocs)
+    );
+  } catch (error) {
+    fieldErrors.seocSelection = error.message;
+  }
 
   if ((payload.inputDir || "").trim() && (payload.outputDir || "").trim()) {
     try {
@@ -558,6 +571,14 @@ function buildCommonArgs(payload, progressCallback) {
     randomizeDob: payload.identityOptions?.randomizeDob !== false,
     randomizeStationId: Boolean(payload.identityOptions?.randomizeStationId),
     selectedStationIds,
+    selectedSeocPairs: resolveSeocSelection(
+      payload.identityOptions?.selectedSeocKeys,
+      Boolean(payload.identityOptions?.useAllSeocs)
+    ),
+    selectedSituationalSeocPairs: resolveSeocSelection(
+      payload.identityOptions?.selectedSituationalSeocKeys,
+      Boolean(payload.identityOptions?.useAllSituationalSeocs)
+    ),
     referralPrefix,
     referralPrefixMode: referralPrefixOptions.referralPrefixMode,
     customReferralPrefix: referralPrefixOptions.customReferralPrefix,
@@ -573,11 +594,14 @@ function buildCommonArgs(payload, progressCallback) {
   }
 
   const archiveBasename = buildArchiveBasename(payload);
+  const usesNamingMode = Boolean(payload.archiveNamingOptions?.mode);
   const useIfamsFilenamePrefix = Boolean(payload.archiveNamingOptions?.useIfamsPrefix);
 
   return {
     outputDir: (payload.outputDir || "").trim(),
-    replacementCode: useIfamsFilenamePrefix
+    replacementCode: usesNamingMode
+      ? archiveBasename
+      : useIfamsFilenamePrefix
       ? archiveBasename
       : (payload.replacementCode || "").trim(),
     clearOutput: Boolean(payload.clearOutput),
@@ -670,6 +694,12 @@ async function runGenerate(payload, emitProgress) {
   }
   if (!args.referralReplacementCode) {
     args.referralReplacementCode = buildGeneratedReferralStart(fileCount * referralsPerFile);
+    const generatedNamingPayload = {
+      ...payload,
+      referralReplacementCode: args.referralReplacementCode,
+    };
+    args.archiveBasename = buildArchiveBasename(generatedNamingPayload);
+    if (payload.archiveNamingOptions?.mode) args.replacementCode = args.archiveBasename;
   }
 
   let generatedInputDir = "";

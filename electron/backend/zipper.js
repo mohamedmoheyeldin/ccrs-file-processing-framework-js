@@ -6,6 +6,13 @@ const { once } = require("events");
 const DEFAULT_ARCHIVE_BASENAME = "referrals";
 const IFAMS_FILENAME_PREFIX = "iFAMS";
 const ARCHIVE_DATE_TIME_PATTERN = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
+const ARCHIVE_NAMING_MODES = {
+  REFERRAL_NUMBER: "referral-number",
+  NETWORK: "network",
+  REFERRAL_DATE_TIME: "referral-date-time",
+  PREFIX: "prefix",
+  CUSTOM: "custom",
+};
 
 function sanitizeArchiveBasename(value) {
   let basename = (value || "").trim();
@@ -13,7 +20,7 @@ function sanitizeArchiveBasename(value) {
     return DEFAULT_ARCHIVE_BASENAME;
   }
 
-  basename = basename.replace(/\.(json|gz)$/i, "");
+  basename = basename.replace(/(?:\.(?:json|gz))+$/i, "");
   basename = basename.replace(/\s+/g, "_");
   basename = basename.replace(/[<>:"/\\|?*]+/g, "_");
   basename = basename.replace(/_+/g, "_");
@@ -33,7 +40,7 @@ function formatArchiveReferralDateTime(value) {
     throw new Error("Enter Referral DateTime in Referral Details using YYYY-MM-DD HH:mm:ss to append it to the .gz name.");
   }
 
-  return `${match[1]}${match[2]}${match[3]}_${match[4]}${match[5]}${match[6]}`;
+  return `${match[1]}-${match[2]}-${match[3]}_${match[4]}${match[5]}${match[6]}`;
 }
 
 function formatCurrentDateTime(date = new Date()) {
@@ -41,31 +48,105 @@ function formatCurrentDateTime(date = new Date()) {
   return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}_${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
 }
 
+function resolveReferralPrefix(identityOptions = {}) {
+  const mode = String(identityOptions.referralPrefixMode || "va").trim().toLowerCase();
+  if (mode === "ifams") return IFAMS_FILENAME_PREFIX;
+  if (mode === "custom") return sanitizeArchiveSegment(identityOptions.customReferralPrefix || "VA") || "VA";
+  return "VA";
+}
+
+function resolveArchivePrefixToken(identityOptions = {}) {
+  return String(identityOptions.referralPrefixMode || "").trim().toLowerCase() === "mixed"
+    ? "VA_iFAMS"
+    : resolveReferralPrefix(identityOptions);
+}
+
+function resolveReferralNumber(payload = {}) {
+  const value = String(payload.referralReplacementCode || "").trim();
+  if (!value) return DEFAULT_ARCHIVE_BASENAME;
+  const prefix = resolveReferralPrefix(payload.identityOptions);
+  if (/^(?:va|ifams)/i.test(value) || value.toLowerCase().startsWith(prefix.toLowerCase())) {
+    return sanitizeArchiveSegment(value);
+  }
+  return sanitizeArchiveSegment(`${prefix}${value}`);
+}
+
+function resolveNamingTokens(payload = {}, now = new Date()) {
+  const optionalOverrides = payload.optionalOverrides || {};
+  const referralDateTime = String(optionalOverrides.ReferralDateTime || "").trim();
+  const dateTime = referralDateTime ? formatArchiveReferralDateTime(referralDateTime) : formatCurrentDateTime(now);
+  const date = sanitizeArchiveSegment(
+    optionalOverrides.ReferralDate || referralDateTime.slice(0, 10) ||
+    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
+  );
+  return {
+    referralNumber: resolveReferralNumber(payload),
+    referralPrefix: resolveArchivePrefixToken(payload.identityOptions),
+    icn: sanitizeArchiveSegment(payload.icnPreview || ""),
+    networkName: sanitizeArchiveSegment(optionalOverrides.Network || ""),
+    date,
+    dateTime,
+    customText: sanitizeArchiveSegment(payload.archiveNamingOptions?.customText || ""),
+  };
+}
+
+function resolveNamingPattern(pattern, tokens) {
+  const resolved = String(pattern || "").replace(
+    /\{(referralNumber|referralPrefix|icn|networkName|date|dateTime|customText)\}/g,
+    (_match, tokenName) => tokens[tokenName] || ""
+  );
+  return sanitizeArchiveBasename(resolved.replace(/_+/g, "_"));
+}
+
 function buildArchiveBasename(payload = {}, now = new Date()) {
   const archiveNamingOptions = payload.archiveNamingOptions || {};
-  const optionalOverrides = payload.optionalOverrides || {};
-  const segments = [];
-  const baseSegment = sanitizeArchiveBasename(payload.archiveBasename || DEFAULT_ARCHIVE_BASENAME);
-  if (archiveNamingOptions.useIfamsPrefix && !/^ifams(?:_|$)/i.test(baseSegment)) {
-    segments.push(IFAMS_FILENAME_PREFIX);
-  }
-  segments.push(baseSegment);
-
-  if (archiveNamingOptions.includeNetwork) {
-    const networkSegment = sanitizeArchiveSegment(optionalOverrides.Network || "");
-    if (!networkSegment) {
-      throw new Error("Choose a Network in Referral Details before appending it to the .gz name.");
+  const requestedMode = String(archiveNamingOptions.mode || "").trim();
+  if (!Object.values(ARCHIVE_NAMING_MODES).includes(requestedMode)) {
+    const legacySegments = [];
+    const baseSegment = sanitizeArchiveBasename(payload.archiveBasename || DEFAULT_ARCHIVE_BASENAME);
+    if (archiveNamingOptions.useIfamsPrefix && !/^ifams(?:_|$)/i.test(baseSegment)) legacySegments.push(IFAMS_FILENAME_PREFIX);
+    legacySegments.push(baseSegment);
+    if (archiveNamingOptions.includeNetwork) {
+      const networkSegment = sanitizeArchiveSegment(payload.optionalOverrides?.Network || "");
+      if (!networkSegment) throw new Error("Choose a Network before adding it to the archive name.");
+      legacySegments.push(networkSegment);
     }
-    segments.push(networkSegment);
+    if (archiveNamingOptions.includeReferralDateTime) {
+      legacySegments.push(formatArchiveReferralDateTime(payload.optionalOverrides?.ReferralDateTime || ""));
+    }
+    legacySegments.push(formatCurrentDateTime(now));
+    return sanitizeArchiveBasename(legacySegments.join("_"));
   }
 
-  if (archiveNamingOptions.includeReferralDateTime) {
-    segments.push(formatArchiveReferralDateTime(optionalOverrides.ReferralDateTime || ""));
+  const tokens = resolveNamingTokens(payload, now);
+  if (requestedMode === ARCHIVE_NAMING_MODES.NETWORK && !tokens.networkName) {
+    throw new Error("Choose a Network before using Network Name archive naming.");
   }
+  const patterns = {
+    [ARCHIVE_NAMING_MODES.REFERRAL_NUMBER]: "{referralNumber}_Final",
+    [ARCHIVE_NAMING_MODES.NETWORK]: "{networkName}_{referralNumber}_Final",
+    [ARCHIVE_NAMING_MODES.REFERRAL_DATE_TIME]: "{referralNumber}_{dateTime}_Final",
+    [ARCHIVE_NAMING_MODES.PREFIX]: "{referralPrefix}_{referralNumber}_Final",
+    [ARCHIVE_NAMING_MODES.CUSTOM]: archiveNamingOptions.customPattern || "{customText}_{referralNumber}_Final",
+  };
+  let pattern = patterns[requestedMode];
+  if (requestedMode === ARCHIVE_NAMING_MODES.PREFIX) {
+    const body = tokens.referralNumber.replace(/^(?:VA|iFAMS)/i, "").replace(
+      new RegExp(`^${resolveReferralPrefix(payload.identityOptions).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i"),
+      ""
+    );
+    pattern = `${tokens.referralPrefix}_${body}_Final`;
+  }
+  const basename = resolveNamingPattern(pattern, tokens);
+  if (!basename || basename === DEFAULT_ARCHIVE_BASENAME) {
+    throw new Error("Archive naming must produce a non-empty filename.");
+  }
+  return basename;
+}
 
-  segments.push(formatCurrentDateTime(now));
-
-  return sanitizeArchiveBasename(segments.join("_"));
+function buildOutputFileNames(payload = {}, now = new Date()) {
+  const basename = buildArchiveBasename(payload, now);
+  return { basename, json: `${basename}.json`, gzip: `${basename}.gz` };
 }
 
 async function writeChunk(stream, chunk) {
@@ -134,11 +215,15 @@ async function zipOutput(folder, archiveBasename = DEFAULT_ARCHIVE_BASENAME) {
 }
 
 module.exports = {
+  ARCHIVE_NAMING_MODES,
   buildArchiveBasename,
+  buildOutputFileNames,
   DEFAULT_ARCHIVE_BASENAME,
   IFAMS_FILENAME_PREFIX,
   formatCurrentDateTime,
   formatArchiveReferralDateTime,
   sanitizeArchiveBasename,
+  resolveNamingPattern,
+  resolveNamingTokens,
   zipOutput,
 };

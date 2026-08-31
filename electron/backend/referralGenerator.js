@@ -48,20 +48,21 @@ function getSeocOptions() {
   const seen = new Set();
 
   function addOption(rawOption, selectionOnly = false) {
-    const seocKey = String(rawOption?.seocKey || rawOption?.SeocKey || "").trim();
+    const seocKey = String(rawOption?.seocNumber || rawOption?.seocKey || rawOption?.SeocKey || "").trim();
     const seocId = String(rawOption?.seocId || rawOption?.SeocID || "").trim();
     const pairKey = `${seocKey}\u0000${seocId}`;
     if (!seocKey || !seocId || seen.has(pairKey)) return;
     seen.add(pairKey);
-    options.push({ seocKey, seocId, selectionOnly: Boolean(selectionOnly) });
-  }
-
-  for (const templatePath of getReferralTemplatePaths()) {
-    const templateData = JSON.parse(fs.readFileSync(templatePath, "utf8"));
-    for (const referral of Array.isArray(templateData.Referrals) ? templateData.Referrals : []) {
-      const authority = referral.ProgramAuthority || referral;
-      addOption(authority, false);
-    }
+    const name = String(rawOption?.name || seocId.replace(/_\d+(?:\.\d+){1,3}(?:_[A-Za-z0-9_]+)?$/, "")).trim();
+    options.push({
+      seocNumber: seocKey,
+      seocKey,
+      seocId,
+      name,
+      displayName: String(rawOption?.displayName || `${name} - ${seocKey}`).trim(),
+      selectorKey: `${encodeURIComponent(seocKey)}::${encodeURIComponent(seocId)}`,
+      selectionOnly: Boolean(rawOption?.selectionOnly ?? selectionOnly),
+    });
   }
 
   for (const optionsPath of [
@@ -72,7 +73,7 @@ function getSeocOptions() {
       if (!fs.existsSync(optionsPath)) continue;
       const configuredOptions = JSON.parse(fs.readFileSync(optionsPath, "utf8"));
       for (const configuredOption of Array.isArray(configuredOptions) ? configuredOptions : []) {
-        addOption(configuredOption, configuredOption.selectionOnly !== false);
+        addOption(configuredOption, configuredOption.selectionOnly === true);
       }
       break;
     } catch (_error) {
@@ -80,7 +81,36 @@ function getSeocOptions() {
     }
   }
 
-  return options.sort((left, right) => Number(left.seocKey) - Number(right.seocKey));
+  return options.sort((left, right) =>
+    left.name.localeCompare(right.name, "en", { numeric: true, sensitivity: "base" }) ||
+    left.seocKey.localeCompare(right.seocKey, "en", { numeric: true })
+  );
+}
+
+function resolveSeocSelection(selectorKeys = [], useAll = false) {
+  const options = getSeocOptions();
+  const bySelectorKey = new Map(options.map((option) => [option.selectorKey, option]));
+  const requestedKeys = useAll ? options.map((option) => option.selectorKey) : selectorKeys;
+  const selections = [];
+  const seen = new Set();
+  for (const rawKey of Array.isArray(requestedKeys) ? requestedKeys : []) {
+    const selectorKey = String(rawKey || "");
+    if (!selectorKey || seen.has(selectorKey)) continue;
+    const option = bySelectorKey.get(selectorKey);
+    if (!option) throw new Error("A selected SEOC value is no longer available in the installed SEOC data.");
+    seen.add(selectorKey);
+    selections.push({ seocKey: option.seocKey, seocId: option.seocId });
+  }
+
+  if (options.length === 0) {
+    for (const templatePath of getReferralTemplatePaths()) {
+      const templateData = JSON.parse(fs.readFileSync(templatePath, "utf8"));
+      for (const referral of Array.isArray(templateData.Referrals) ? templateData.Referrals : []) {
+        addOption(referral.ProgramAuthority || referral, false);
+      }
+    }
+  }
+  return selections;
 }
 
 function buildGeneratedReferralSources(fileCount, referralsPerFile) {
@@ -124,4 +154,5 @@ module.exports = {
   buildGeneratedReferralSources,
   getGeneratorDefaults,
   getSeocOptions,
+  resolveSeocSelection,
 };

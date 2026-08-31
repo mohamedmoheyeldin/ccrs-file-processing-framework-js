@@ -4,6 +4,7 @@ const { bundlePath, dataPath, userDataPath } = require("./appPaths");
 const { writeFileAtomic } = require("./atomicFile");
 
 const DEFAULT_UI_SETTINGS = {
+  schemaVersion: 2,
   theme: "light",
   mainTab: "referral",
   subTab: "edit",
@@ -16,6 +17,9 @@ const DEFAULT_UI_SETTINGS = {
   archiveAppendNetwork: false,
   archiveAppendReferralDateTime: false,
   useIfamsFilenamePrefix: false,
+  archiveNamingMode: "referral-number",
+  archiveCustomPattern: "{customText}_{referralNumber}_Final",
+  archiveCustomText: "CCRS",
   useIfamsReferralPrefix: false,
   referralPrefixMode: "va",
   customReferralPrefix: "",
@@ -29,6 +33,10 @@ const DEFAULT_UI_SETTINGS = {
   icnCustomValue: "",
   overrideStationId: "",
   selectedStationIds: [],
+  selectedSeocKeys: [],
+  useAllSeocs: false,
+  selectedSituationalSeocKeys: [],
+  useAllSituationalSeocs: false,
   overridePaymentAuthorityCode: "",
   overrideReferralPeriod: "",
   overrideNetwork: "",
@@ -81,6 +89,7 @@ function normalizeUploadTargets(rawValue) {
 function normalizeUiSettings(rawValue = {}) {
   const normalized = {
     ...DEFAULT_UI_SETTINGS,
+    schemaVersion: DEFAULT_UI_SETTINGS.schemaVersion,
     theme:
       String(rawValue.theme || "").trim().toLowerCase() === "dark" ||
       String(rawValue.theme_mode || "").trim().toLowerCase() === "dark"
@@ -102,14 +111,21 @@ function normalizeUiSettings(rawValue = {}) {
       DEFAULT_UI_SETTINGS.archiveAppendReferralDateTime
     ),
     useIfamsFilenamePrefix: toBoolean(rawValue.useIfamsFilenamePrefix, DEFAULT_UI_SETTINGS.useIfamsFilenamePrefix),
+    archiveNamingMode: ["referral-number", "network", "referral-date-time", "prefix", "custom"].includes(
+      String(rawValue.archiveNamingMode || "").trim().toLowerCase()
+    )
+      ? String(rawValue.archiveNamingMode).trim().toLowerCase()
+      : DEFAULT_UI_SETTINGS.archiveNamingMode,
+    archiveCustomPattern: String(rawValue.archiveCustomPattern || DEFAULT_UI_SETTINGS.archiveCustomPattern).trim().slice(0, 160),
+    archiveCustomText: String(rawValue.archiveCustomText || DEFAULT_UI_SETTINGS.archiveCustomText).trim().slice(0, 48),
     useIfamsReferralPrefix: toBoolean(rawValue.useIfamsReferralPrefix, DEFAULT_UI_SETTINGS.useIfamsReferralPrefix),
     referralPrefixMode: ["va", "ifams", "mixed", "custom"].includes(String(rawValue.referralPrefixMode || "").trim().toLowerCase())
       ? String(rawValue.referralPrefixMode).trim().toLowerCase()
       : toBoolean(rawValue.useIfamsReferralPrefix, DEFAULT_UI_SETTINGS.useIfamsReferralPrefix)
         ? "ifams"
         : DEFAULT_UI_SETTINGS.referralPrefixMode,
-    customReferralPrefix: ((String(rawValue.customReferralPrefix || "").match(/[A-Za-z0-9]/g) || []).join(""))
-      .slice(0, 12),
+    customReferralPrefix: ((String(rawValue.customReferralPrefix || "").match(/[A-Za-z0-9_]/g) || []).join(""))
+      .slice(0, 24),
     referralCode: String(rawValue.referralCode || "").trim(),
     ssnValue: String(rawValue.ssnValue || DEFAULT_UI_SETTINGS.ssnValue).trim() || DEFAULT_UI_SETTINGS.ssnValue,
     randomizeSsn: toBoolean(rawValue.randomizeSsn, DEFAULT_UI_SETTINGS.randomizeSsn),
@@ -126,6 +142,25 @@ function normalizeUiSettings(rawValue = {}) {
         .map((value) => String(value || "").trim().toUpperCase())
         .filter(Boolean)
     )],
+    selectedSeocKeys: [...new Set(
+      (Array.isArray(rawValue.selectedSeocKeys)
+        ? rawValue.selectedSeocKeys
+        : rawValue.overrideSeocKey && rawValue.overrideSeocId
+          ? [`${encodeURIComponent(String(rawValue.overrideSeocKey).trim())}::${encodeURIComponent(String(rawValue.overrideSeocId).trim())}`]
+          : [])
+        .map((value) => String(value || ""))
+        .filter(Boolean)
+    )],
+    useAllSeocs: toBoolean(rawValue.useAllSeocs, DEFAULT_UI_SETTINGS.useAllSeocs),
+    selectedSituationalSeocKeys: [...new Set(
+      (Array.isArray(rawValue.selectedSituationalSeocKeys) ? rawValue.selectedSituationalSeocKeys : [])
+        .map((value) => String(value || ""))
+        .filter(Boolean)
+    )],
+    useAllSituationalSeocs: toBoolean(
+      rawValue.useAllSituationalSeocs,
+      DEFAULT_UI_SETTINGS.useAllSituationalSeocs
+    ),
     overridePaymentAuthorityCode: String(rawValue.overridePaymentAuthorityCode || "").trim(),
     overrideReferralPeriod: String(rawValue.overrideReferralPeriod || "").trim(),
     overrideNetwork: String(rawValue.overrideNetwork || "").trim(),

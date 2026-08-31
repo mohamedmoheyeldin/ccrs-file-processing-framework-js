@@ -1168,6 +1168,10 @@ body.theme-dark .combo-option:focus-visible {
   gap: 8px;
 }
 
+.situational-label {
+  color: var(--danger);
+}
+
 .selected-station-chip {
   display: inline-flex;
   align-items: center;
@@ -1757,6 +1761,42 @@ body.theme-dark .upload-config-card {
   gap: 14px;
 }
 
+.archive-mode-choices {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.archive-custom-fields {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.7fr) minmax(280px, 1.3fr);
+  gap: 14px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--panel-border);
+  background: rgba(13, 110, 253, 0.04);
+}
+
+.filename-preview {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--panel-border);
+  background: var(--panel-strong);
+}
+
+.filename-preview span {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.filename-preview strong {
+  overflow-wrap: anywhere;
+  color: var(--accent);
+}
+
 .archive-naming-head {
   display: grid;
   gap: 4px;
@@ -1979,6 +2019,10 @@ select:disabled {
   }
 
   .choice-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .archive-custom-fields {
     grid-template-columns: 1fr;
   }
 

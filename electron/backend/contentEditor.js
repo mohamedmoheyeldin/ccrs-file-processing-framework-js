@@ -22,7 +22,6 @@ const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const ISO_DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
 const OPTIONAL_RANDOM_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const NUMERIC_RANDOM_CHARSET = "0123456789";
-const STATION_ID_MAX_LENGTH = 9;
 const PAYMENT_AUTHORITY_CODE_LENGTH = 5;
 const PAYMENT_AUTHORITY_CODE_MAX = 99999;
 const PAYMENT_AUTHORITY_CODE_DEFAULT_START = 10000;
@@ -36,7 +35,7 @@ const REFERRAL_PREFIX_MODES = {
   MIXED: "mixed",
   CUSTOM: "custom",
 };
-const CUSTOM_REFERRAL_PREFIX_MAX_LENGTH = 12;
+const CUSTOM_REFERRAL_PREFIX_MAX_LENGTH = 24;
 const REFERRAL_NUMBER_TOTAL_LENGTH = 12;
 const REFERRAL_NUMBER_DIGIT_COUNT = REFERRAL_NUMBER_TOTAL_LENGTH - REFERRAL_NUMBER_PREFIX.length;
 const ICN_TEST_PREFIX = "TEST";
@@ -51,6 +50,7 @@ const ICN_MODES = {
 const RANDOM_SSN_BASE = Math.floor(Math.random() * 1000000);
 const RANDOM_DOB_BASE = Math.floor(Math.random() * 24107);
 const RANDOM_STATION_ASSIGNMENT_STATES = new WeakMap();
+const SEOC_ASSIGNMENT_STATES = new WeakMap();
 const TRACKED_JSON_FIELDS = [
   "SSN",
   "DOB",
@@ -160,13 +160,67 @@ function validateStationId(value) {
   if (!normalized) {
     return "";
   }
-  if (normalized.length > STATION_ID_MAX_LENGTH) {
-    throw new Error(`Station ID must be ${STATION_ID_MAX_LENGTH} characters or less.`);
-  }
   if (!loadStationOptions().some((option) => option.stationKey === normalized)) {
     throw new Error("Station ID must exactly match a station_id from the station reference data.");
   }
   return normalized;
+}
+
+function shuffledCopy(values) {
+  const shuffled = [...values];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
+function applySelectedSeocPairs(data, identityOptions = {}) {
+  const regularPairs = Array.isArray(identityOptions.selectedSeocPairs) ? identityOptions.selectedSeocPairs : [];
+  const situationalPairs = Array.isArray(identityOptions.selectedSituationalSeocPairs)
+    ? identityOptions.selectedSituationalSeocPairs
+    : [];
+  if (regularPairs.length === 0 && situationalPairs.length === 0) return;
+
+  let assignmentState = SEOC_ASSIGNMENT_STATES.get(identityOptions);
+  if (!assignmentState) {
+    assignmentState = {
+      regularPairs: shuffledCopy(regularPairs),
+      situationalPairs: shuffledCopy(situationalPairs),
+      referralIndex: 0,
+    };
+    SEOC_ASSIGNMENT_STATES.set(identityOptions, assignmentState);
+  }
+
+  function apply(currentData) {
+    if (Array.isArray(currentData)) {
+      currentData.forEach(apply);
+      return;
+    }
+    if (!currentData || typeof currentData !== "object") return;
+
+    const isAuthority = Object.prototype.hasOwnProperty.call(currentData, "SeocKey") ||
+      Object.prototype.hasOwnProperty.call(currentData, "SeocID") ||
+      Object.prototype.hasOwnProperty.call(currentData, "StationID");
+    if (isAuthority) {
+      const index = assignmentState.referralIndex;
+      if (assignmentState.regularPairs.length > 0) {
+        const pair = assignmentState.regularPairs[index % assignmentState.regularPairs.length];
+        currentData.SeocKey = pair.seocKey;
+        currentData.SeocID = pair.seocId;
+      }
+      if (assignmentState.situationalPairs.length > 0) {
+        const pair = assignmentState.situationalPairs[index % assignmentState.situationalPairs.length];
+        currentData.SituationalSeocKey = pair.seocKey;
+        currentData.SituationalSeocID = pair.seocId;
+      }
+      assignmentState.referralIndex += 1;
+      return;
+    }
+    Object.values(currentData).forEach(apply);
+  }
+
+  apply(data);
 }
 
 function generateRandomSsn(sequenceIndex = 1) {
@@ -390,18 +444,18 @@ function normalizeReferralPrefix(value) {
   if (normalized.toLowerCase() === IFAMS_PREFIX.toLowerCase()) {
     return IFAMS_PREFIX;
   }
-  const customPrefix = (normalized.match(/[A-Za-z0-9]/g) || []).join("");
+  const customPrefix = (normalized.match(/[A-Za-z0-9_]/g) || []).join("");
   return customPrefix.slice(0, CUSTOM_REFERRAL_PREFIX_MAX_LENGTH) || REFERRAL_NUMBER_PREFIX;
 }
 
 function validateCustomReferralPrefix(value) {
   const rawValue = String(value || "").trim();
-  const normalized = (rawValue.match(/[A-Za-z0-9]/g) || []).join("");
+  const normalized = (rawValue.match(/[A-Za-z0-9_]/g) || []).join("");
   if (!normalized) {
-    throw new Error("Enter a custom Referral Number prefix using letters or numbers.");
+    throw new Error("Enter a custom Referral Number prefix using letters, numbers, or underscores.");
   }
   if (normalized !== rawValue || normalized.length > CUSTOM_REFERRAL_PREFIX_MAX_LENGTH) {
-    throw new Error(`Custom Referral Number prefix must use up to ${CUSTOM_REFERRAL_PREFIX_MAX_LENGTH} letters or numbers.`);
+    throw new Error(`Custom Referral Number prefix must use up to ${CUSTOM_REFERRAL_PREFIX_MAX_LENGTH} letters, numbers, or underscores.`);
   }
   return normalized;
 }
@@ -987,6 +1041,7 @@ function modifyContent(
   if (identityOptions.randomizeStationId || identityOptions.selectedStationIds?.length) {
     applyRandomValidStationIds(data, identityOptions);
   }
+  applySelectedSeocPairs(data, identityOptions);
   if (icnSettings.mode === ICN_MODES.REFERRAL_MATCH) {
     const referralPrefixes = [
       resolveReferralPrefix(identityOptions, 1),
@@ -1017,7 +1072,6 @@ module.exports = {
   REFERRAL_NUMBER_DIGIT_COUNT,
   REFERRAL_NUMBER_PREFIX,
   REFERRAL_PREFIX_MODES,
-  STATION_ID_MAX_LENGTH,
   completeWithRandomSuffix,
   describeIcnPreview,
   extractJsonChangeDefaults,

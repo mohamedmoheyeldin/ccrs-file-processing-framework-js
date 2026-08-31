@@ -14,9 +14,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.3.10",
-  "releaseTag": "v1.3.10",
-  "label": "Version 1.3.10",
+  "version": "1.3.11",
+  "releaseTag": "v1.3.11",
+  "label": "Version 1.3.11",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -29,7 +29,7 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- The current user release is `Version 1.3.10` (`v1.3.10`). Version 1.3.7 remains documented as an internal release included in Version 1.3.8 and later releases.
+- The current user release is `Version 1.3.11` (`v1.3.11`). Version 1.3.7 remains documented as an internal release included in Version 1.3.8 and later releases.
 - `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
@@ -61,7 +61,7 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.10`.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.11`.
 
 The workflow requires the tag to match `releaseTag` and refuses to overwrite an existing release.
 It also refuses to build a release when `releaseNotes` is empty.
@@ -100,12 +100,13 @@ Files that are kept in sync from the shipped app:
 - Generate new referral JSON files from bundled templates
 - Use the bundled CCN1 all-fields reference templates stored under `templates\referrals`
 - Generate unique `999`-prefixed test SSNs and random DOBs per patient, or apply fixed overrides when needed
-- Search all imported station rows by station key, station ID, VISN, station name, or parent station ID; selection is optional
-- Optionally select synchronized SEOC Number and SEOC ID pairs, including six special selection-only pairs
+- Search all imported station rows by station key, station ID, VISN, station name, or parent station ID
+- Search and multi-select synchronized SEOC and Situational SEOC Number/ID pairs, or use the complete installed catalog
 - Choose how ICNs should be generated: derive `TEST` plus the Referral Number body, keep `TEST`, keep `TEST` with a custom suffix, or use a custom full ICN base
-- Choose `VA`, `iFAMS`, alternating `VA + iFAMS`, or an alphanumeric custom prefix for generated Referral Numbers
+- Choose `VA`, `iFAMS`, alternating `VA + iFAMS`, or a letters/numbers/underscore custom prefix for generated Referral Numbers
 - Match the last 3, 4, or 5 characters of each Referral Number and ICN
 - Produce final `.gz` archives
+- Choose Referral Number, Network, Referral DateTime, Prefix, or Custom JSON/gzip filename conventions with a live preview
 - Import upload settings from `WinSCP.ini` or credentials JSON
 - Upload Referral archives to `DEV`, `PPD`, or `SQA`; the separate LEIE workflow can also use `PROD`
 - Test upload connectivity before running the full workflow
@@ -132,13 +133,24 @@ pnpm data:stations -- /path/to/stations.xlsx
 pnpm verify
 ```
 
-## Version 1.3.10 Highlights
-- Generation preset, Preset name, and Recent Runs are removed so the main workflow stays focused.
-- The final run panel stays in normal page flow and shows only current status, progress, actions, results, and retry controls.
-- Generated Referral Numbers support VA, iFAMS, alternating VA + iFAMS, and validated custom prefixes.
-- Existing-file behavior uses explanatory cards, recommends preserving existing files, and clearly identifies the replace-after-success option.
-- The safety review repeats the selected prefix, output behavior, station choices, and upload destinations before processing.
-- Referral Number uniqueness, matching TEST ICNs, manifests, isolated staging, progress, cancellation, and upload safeguards remain active.
+## SEOC reference data
+
+`config\seoc_options.json` is generated from `SEOC.xlsx` and is consumed directly at runtime. Each record preserves the source SEOC Number and latest versioned SEOC ID, includes a concise display name, and is sorted deterministically. Version suffixes are normalized only for logical deduplication; the selected source SEOC ID written to referral output remains exact.
+
+To refresh the SEOC catalog from a replacement workbook:
+
+```bash
+pnpm data:seoc -- /path/to/SEOC.xlsx
+pnpm verify
+```
+
+## Version 1.3.11 Highlights
+- Source-backed Station IDs such as `675GB01` and `595GF01` remain exact through JSON and gzip output without length-only rejection.
+- Searchable SEOC and Situational SEOC controls support subsets, multiple values, clear, use-all, and saved state.
+- `SEOC.xlsx` is converted once into 761 deterministic application records and can be regenerated with `pnpm data:seoc`.
+- Referral Number, ICN, and Archive modes use the same established option-card design.
+- Archive naming includes Referral Number, Network, Referral DateTime, Prefix, and Custom modes with live `.json` and `.gz` previews.
+- Filename safety removes illegal Windows characters and repeated extensions while user preferences are restored after restart.
 - Full current and historical notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
 
 Previous release notes:

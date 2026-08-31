@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Version 1.3.10`, including the simplified referral workflow, expanded Referral Number prefixes, safer output choices, batch auditing, and recovery controls.
+This guide covers `Version 1.3.11`, including source-backed Station IDs, searchable regular and Situational SEOC selection, consistent Referral/ICN/Archive naming controls, safe live filename previews, batch auditing, and recovery controls.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download `CCRS.File.Processing.Framework.Setup.Version.1.3.10.exe` from the GitHub Releases page and run the installer.
+Download `CCRS.File.Processing.Framework.Setup.Version.1.3.11.exe` from the GitHub Releases page and run the installer.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 
@@ -233,13 +233,15 @@ Set the starting referral number, `ListDate`, and any optional overrides. Previe
 
 ### Output
 
-Choose the output folder and optionally enter:
+Choose the output folder and, when needed, a processed JSON base name. Archive naming uses the same selectable option-card design as Referral Number and ICN modes:
 
-- the processed JSON base name
-- the final `.gz` archive name
-- archive additions such as `Network` and `Referral DateTime`
+- **Referral Number** creates `<ReferralNumber>_Final`.
+- **Network Name** creates `<Network>_<ReferralNumber>_Final`.
+- **Referral DateTime** adds a filesystem-safe referral date and time.
+- **Prefix** adds the selected Referral Number prefix.
+- **Custom** accepts a reusable pattern built from the displayed friendly values.
 
-The app adds `.json` and `.gz` extensions automatically. Referral archives always end with the current local date and time in `YYYYMMDD_HHMMSS` format. Enable **Start JSON and .gz names with iFAMS** when both output types must share the `iFAMS` prefix.
+The live preview shows both `.json` and `.gz` names. The app removes illegal Windows filename characters, trailing spaces and periods, and repeated extensions, then adds exactly one extension matching each output format.
 
 The source and output folders must be separate and cannot be nested. Under **If the save folder already has files**, choose **Keep existing files** to preserve unrelated files and stop safely if a new result would reuse an existing name. Choose **Replace folder contents after success** only when the existing contents should be removed after the new batch has processed and packaged successfully in isolation. The selected card is highlighted, and the pre-run review repeats the choice before processing begins.
 
@@ -247,9 +249,10 @@ Examples:
 
 - `batch101` becomes `batch101.json`
 - multiple files become `batch101_1.json`, `batch101_2.json`, and so on
-- the default archive becomes `referrals_20260401_134500.gz`
-- the iFAMS option produces names such as `iFAMS_referrals_20260401_134500.gz` and `iFAMS_referrals_20260401_134500_1.json`
-- archive additions can produce `customname_CCN1_20260401_134500_20260402_090807.gz`
+- Referral Number mode produces `VA12345_Final.json` and `VA12345_Final.gz`.
+- Network Name mode can produce `CCN1_VA12345_Final.json`.
+- Referral DateTime mode can produce `VA12345_2026-08-31_162500_Final.gz`.
+- A custom pattern can produce `CCRS_VA12345_2026-08-31_Final.json`.
 
 ### Run
 
@@ -281,13 +284,13 @@ Choose how generated Referral Numbers should start, then enter the starting numb
 - **VA** uses `VA` for every referral.
 - **iFAMS** uses `iFAMS` for every referral.
 - **VA + iFAMS** alternates the two prefixes across the batch while incrementing one shared sequence.
-- **Custom** uses a user-entered prefix containing up to 12 letters or numbers.
+- **Custom** uses a user-entered prefix containing up to 24 letters, numbers, or underscores.
 
 Numeric bodies are zero-padded; alphanumeric bodies keep the characters the user entered. The live preview shows the first result, and the pre-run review confirms the selected prefix behavior.
 
 Rules:
 
-- letters and numbers are allowed
+- letters, numbers, and underscores are allowed in a custom prefix
 - the live preview shows the first value
 - generated referral numbers remain unique within the run
 
@@ -298,10 +301,11 @@ Examples:
 - with iFAMS, `26S600001` becomes `iFAMS26S600001`
 - with VA + iFAMS, the same sequence alternates `VA26S600001`, `iFAMS26S600002`, and so on
 - with the custom prefix `CCRS`, `26S600001` becomes `CCRS26S600001`
+- with the custom prefix `VA_TEST_`, `12345` begins with `VA_TEST_`
 
 ### ICN
 
-Open `Show Optional Fields` to configure ICN generation.
+Open `Show Additional Fields` to configure ICN generation. ICN modes use the same option-card styling as Referral Number and Archive naming.
 
 Available modes are:
 
@@ -322,7 +326,7 @@ Uncheck the corresponding random option only when a fixed value must be applied.
 
 ### Stations
 
-Stations is one optional, searchable multi-select dropdown. Leave it blank to keep the source StationID unchanged, select one station to apply it throughout the batch, or select several stations to mix them across the generated referrals. The separate all-stations option uses the complete selectable catalog.
+Stations is one searchable multi-select dropdown. Leave it in automatic mode to keep the source StationID unchanged, select one station to apply it throughout the batch, or select several stations to mix them across the generated referrals. The separate all-stations option uses the complete selectable catalog.
 
 The dropdown is driven by `config/stations.json`, the structured conversion of the approved Excel sheet. Every spreadsheet row and all source columns are retained. The menu clearly displays and searches these five values:
 
@@ -339,30 +343,22 @@ For faster searching, the dropdown displays at most 60 rows at once while search
 Rules:
 
 - a selected Station ID is never padded or extended
+- a Station ID is not rejected solely because of its length; exact source-backed values such as `675GB01` and `595GF01` remain unchanged
 - every selected value must exactly match `station_id` in `config/stations.json`
 - subset mode assigns only the stations selected by the user
 - all-stations mode uses only rows that contain `station_id`
 - randomized IDs change between referrals without repeating until the selected set or full reference list is exhausted
 - the shipped structured source is refreshed during app upgrades
 
-### SEOC Number and SEOC ID
+### SEOC Number - SEOC ID
 
-Both selectors are optional. Leave them blank to preserve source SEOC values. If you select either a SEOC Number or a SEOC ID, the other selector updates automatically so the referral receives a valid synchronized pair from the bundled reference data.
+The regular and red-labeled **Situational SEOC Number - SEOC ID** controls share the Stations selector's search, menu, chip, focus, and scroll behavior. Leave either selector in automatic mode to preserve existing values, select one pair, select several pairs to mix them across referrals, clear chips, or choose the independent use-all option.
 
-The following special pairs are marked `Special: explicit selection only`. The bundled generator never assigns them automatically:
+Each displayed record combines its logical name and source Number, for example `PMR_ACUPUNCTURE INITIAL - 1`. The exact latest versioned SEOC ID remains paired with that Number and is written to referral data; the app never combines the Number from one record with the ID from another.
 
-| SEOC key | SEOC ID |
-| --- | --- |
-| `67` | `INF_FERTILITY-1332 EXISTING OVARY_1.1.17` |
-| `158` | `EUC_EMERGENCY CARE_1.2.8` |
-| `191` | `EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE_1.1.7` |
-| `233` | `SSC_TRANSPLANT BONE MARROW COMP EVAL_1.5.14_REV` |
-| `268` | `MHC_MENTAL HEALTH RESIDENTIAL TREATMENT_1.15.7` |
-| `1160` | `MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT_1.22.2` |
+The bundled `config/seoc_options.json` contains 761 deterministic logical records converted from `SEOC.xlsx`. Search covers the display name, source Number, and exact versioned ID. At most 60 results are rendered at once; keep typing to narrow a larger result set.
 
-To use one, select its key or ID. The matching value is filled automatically. Leave both selectors at their optional blank choices when no explicit override is required.
-
-All dropdowns use the same compact design. Referral / ICN Match, Network, SEOC, and upload-user lists remain inside a scrollable menu instead of expanding beyond the application window. Long selected labels are shortened visually without changing their stored values.
+Selections and use-all choices are saved independently for regular and Situational SEOC. When the app reopens, valid selections return. A saved record that no longer exists in a refreshed catalog is removed safely and that selector falls back to automatic behavior.
 
 ## Other Optional Referral Fields
 

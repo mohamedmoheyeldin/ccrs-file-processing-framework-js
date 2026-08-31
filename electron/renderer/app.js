@@ -8,6 +8,7 @@ const DATE_PARTS = [
 ];
 const PAYMENT_AUTHORITY_CODE_MAX = 99999;
 const STATION_RESULT_LIMIT = 60;
+const SEOC_RESULT_LIMIT = 60;
 let referralUploadTargetNames = new Set(["DEV", "PPD", "SQA"]);
 const ACTIVE_STATUS_PATTERN = /working|processing|generating|uploading|importing|scanning|validating|packaging|archive|cancelling|testing|preparing/i;
 const { buildLeieValidationSql, highlightSql } = window.ccrsLeieSql;
@@ -49,6 +50,10 @@ const state = {
   previewTimer: null,
   previewRequestId: 0,
   selectedStationIds: [],
+  selectedSeocKeys: [],
+  selectedSituationalSeocKeys: [],
+  seocBySelectorKey: new Map(),
+  seocSearchIndex: [],
   stationById: new Map(),
   stationSearchIndex: [],
   stationSelectableCount: 0,
@@ -331,30 +336,92 @@ function getSeocOptions() {
   return Array.isArray(state.info?.seocOptions) ? state.info.seocOptions : [];
 }
 
-function renderSeocOptions() {
-  const keySelect = elements.overrideSeocKey;
-  const idSelect = elements.overrideSeocId;
-  if (!keySelect || !idSelect) return;
-  const selectedKey = keySelect.value;
-  const selectedId = idSelect.value;
-  keySelect.innerHTML = '<option value="">No SEOC Number override (optional)</option>';
-  idSelect.innerHTML = '<option value="">No SEOC ID override (optional)</option>';
-  for (const option of getSeocOptions()) {
-    const selectionOnlyLabel = option.selectionOnly ? " — Special: explicit selection only" : "";
-    keySelect.add(new Option(`${option.seocKey} — ${option.seocId}${selectionOnlyLabel}`, option.seocKey));
-    idSelect.add(new Option(`${option.seocId}${selectionOnlyLabel}`, option.seocId));
-  }
-  keySelect.value = selectedKey;
-  idSelect.value = selectedId;
+function getSeocSelectorConfig(situational = false) {
+  return situational
+    ? {
+        selectedKey: "selectedSituationalSeocKeys",
+        combobox: elements.situationalSeocCombobox,
+        input: elements.situationalSeocSearch,
+        toggle: elements.situationalSeocToggle,
+        menu: elements.situationalSeocMenu,
+        selected: elements.selectedSituationalSeocs,
+        match: elements.situationalSeocMatch,
+        useAll: elements.useAllSituationalSeocs,
+        label: "Situational SEOC",
+      }
+    : {
+        selectedKey: "selectedSeocKeys",
+        combobox: elements.seocCombobox,
+        input: elements.seocSearch,
+        toggle: elements.seocToggle,
+        menu: elements.seocMenu,
+        selected: elements.selectedSeocs,
+        match: elements.seocMatch,
+        useAll: elements.useAllSeocs,
+        label: "SEOC",
+      };
 }
 
-function syncSeocPair(source) {
-  const options = getSeocOptions();
-  const match = source === "key"
-    ? options.find((option) => option.seocKey === elements.overrideSeocKey.value)
-    : options.find((option) => option.seocId === elements.overrideSeocId.value);
-  elements.overrideSeocKey.value = match?.seocKey || "";
-  elements.overrideSeocId.value = match?.seocId || "";
+function setSeocMenuOpen(config, open) {
+  config.combobox?.classList.toggle("is-open", Boolean(open));
+  config.menu?.classList.toggle("hidden", !open);
+  config.input?.setAttribute("aria-expanded", String(Boolean(open)));
+}
+
+function renderSelectedSeocs(config) {
+  config.selected.innerHTML = "";
+  for (const selectorKey of state[config.selectedKey]) {
+    const option = state.seocBySelectorKey.get(selectorKey);
+    if (!option) continue;
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "selected-station-chip";
+    chip.dataset.seocSelectorKey = selectorKey;
+    chip.textContent = `${option.displayName} ×`;
+    chip.title = `Remove ${option.displayName}`;
+    config.selected.append(chip);
+  }
+  if (config.useAll.checked) {
+    config.match.textContent = `All ${getSeocOptions().length.toLocaleString()} available ${config.label} values will be used.`;
+  } else if (state[config.selectedKey].length > 0) {
+    config.match.textContent = `${state[config.selectedKey].length.toLocaleString()} ${config.label} value${state[config.selectedKey].length === 1 ? "" : "s"} selected.`;
+  } else {
+    config.match.textContent = `Automatic mode ${config.label === "SEOC" ? "keeps source SEOC values" : "leaves Situational SEOC values unchanged"}.`;
+  }
+  config.input.disabled = config.useAll.checked;
+  config.toggle.disabled = config.useAll.checked;
+}
+
+function renderSeocMenu(config) {
+  const query = config.input.value.trim().toLowerCase();
+  const matches = state.seocSearchIndex.filter((entry) => !query || entry.searchText.includes(query));
+  config.menu.innerHTML = "";
+  for (const entry of matches.slice(0, SEOC_RESULT_LIMIT)) {
+    const option = entry.option;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `combo-option${state[config.selectedKey].includes(option.selectorKey) ? " is-selected" : ""}`;
+    button.dataset.seocSelectorKey = option.selectorKey;
+    const title = document.createElement("span");
+    title.className = "combo-option-title";
+    title.textContent = option.displayName;
+    const copy = document.createElement("span");
+    copy.className = "combo-option-copy";
+    copy.textContent = option.seocId;
+    button.append(title, copy);
+    config.menu.append(button);
+  }
+  if (matches.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "combo-empty";
+    empty.textContent = "No matching SEOC values.";
+    config.menu.append(empty);
+  } else if (matches.length > SEOC_RESULT_LIMIT) {
+    const summary = document.createElement("div");
+    summary.className = "combo-result-summary";
+    summary.textContent = `Showing ${SEOC_RESULT_LIMIT} of ${matches.length.toLocaleString()} matches. Keep typing to narrow the list.`;
+    config.menu.append(summary);
+  }
 }
 
 function syncIdentityControls() {
@@ -625,7 +692,7 @@ function syncTabState() {
 
 function syncOptionalFieldsVisibility() {
   elements.optionalFields.classList.toggle("hidden", !state.optionalFieldsVisible);
-  elements.toggleOptionalFields.textContent = state.optionalFieldsVisible ? "Hide Optional Fields" : "Show Optional Fields";
+  elements.toggleOptionalFields.textContent = state.optionalFieldsVisible ? "Hide Additional Fields" : "Show Additional Fields";
   elements.toggleOptionalFields.classList.toggle("is-active", state.optionalFieldsVisible);
 }
 
@@ -710,8 +777,6 @@ function collectOptionalOverrides() {
     ReferralPeriod: readValue("override-referral-period"),
     Network: readValue("override-network"),
     DOB: readChecked("randomize-dob") ? "" : readValue("override-dob"),
-    SeocKey: readValue("override-seoc-key"),
-    SeocID: readValue("override-seoc-id"),
     ReferralCategory: readValue("override-referral-category"),
     ReferralDate: readValue("override-referral-date"),
     ReferralDateTime: readValue("override-referral-date-time"),
@@ -764,10 +829,15 @@ function collectIcnSettings() {
 
 function collectArchiveNamingOptions() {
   return {
-    includeNetwork: readChecked("archive-append-network"),
-    includeReferralDateTime: readChecked("archive-append-referral-date-time"),
-    useIfamsPrefix: readChecked("use-ifams-filename-prefix"),
+    mode: document.querySelector('input[name="archive-naming-mode"]:checked')?.value || "referral-number",
+    customPattern: readValue("archive-custom-pattern"),
+    customText: readValue("archive-custom-text"),
   };
+}
+
+function syncArchiveNamingState() {
+  const isCustom = collectArchiveNamingOptions().mode === "custom";
+  elements.archiveCustomFields?.classList.toggle("hidden", !isCustom);
 }
 
 function syncReferralPrefixState() {
@@ -821,6 +891,10 @@ function sharedPayload() {
       randomizeDob: readChecked("randomize-dob"),
       randomizeStationId: readChecked("randomize-station-id"),
       selectedStationIds: readChecked("randomize-station-id") ? [] : [...state.selectedStationIds],
+      selectedSeocKeys: [...state.selectedSeocKeys],
+      useAllSeocs: readChecked("use-all-seocs"),
+      selectedSituationalSeocKeys: [...state.selectedSituationalSeocKeys],
+      useAllSituationalSeocs: readChecked("use-all-situational-seocs"),
       ...getReferralPrefixOptions(),
       matchSuffixLength: Number(readValue("match-suffix-length")),
     },
@@ -865,6 +939,9 @@ function collectUiSettings() {
     archiveAppendNetwork: readChecked("archive-append-network"),
     archiveAppendReferralDateTime: readChecked("archive-append-referral-date-time"),
     useIfamsFilenamePrefix: readChecked("use-ifams-filename-prefix"),
+    archiveNamingMode: collectArchiveNamingOptions().mode,
+    archiveCustomPattern: readValue("archive-custom-pattern"),
+    archiveCustomText: readValue("archive-custom-text"),
     referralPrefixMode: getReferralPrefixMode(),
     customReferralPrefix: readValue("custom-referral-prefix"),
     referralCode: readValue("referral-code"),
@@ -876,12 +953,14 @@ function collectUiSettings() {
     icnMode: getSelectedIcnMode(),
     icnCustomValue: readValue("icn-custom-value"),
     selectedStationIds: [...state.selectedStationIds],
+    selectedSeocKeys: [...state.selectedSeocKeys],
+    useAllSeocs: readChecked("use-all-seocs"),
+    selectedSituationalSeocKeys: [...state.selectedSituationalSeocKeys],
+    useAllSituationalSeocs: readChecked("use-all-situational-seocs"),
     overridePaymentAuthorityCode: readValue("override-payment-authority-code"),
     overrideReferralPeriod: readValue("override-referral-period"),
     overrideNetwork: readValue("override-network"),
     overrideDob: readValue("override-dob"),
-    overrideSeocKey: readValue("override-seoc-key"),
-    overrideSeocId: readValue("override-seoc-id"),
     overrideReferralCategory: readValue("override-referral-category"),
     overrideReferralDate: readValue("override-referral-date"),
     overrideReferralDateTime: readValue("override-referral-date-time"),
@@ -979,6 +1058,8 @@ async function applyUiSettings(settings = {}) {
     "output-dir": settings.outputDir,
     "replacement-code": settings.replacementCode,
     "archive-basename": settings.archiveBasename,
+    "archive-custom-pattern": settings.archiveCustomPattern,
+    "archive-custom-text": settings.archiveCustomText,
     "referral-code": settings.referralCode,
     "ssn-value": settings.ssnValue,
     "icn-custom-value": settings.icnCustomValue,
@@ -986,8 +1067,6 @@ async function applyUiSettings(settings = {}) {
     "override-referral-period": settings.overrideReferralPeriod,
     "override-network": settings.overrideNetwork,
     "override-dob": settings.overrideDob,
-    "override-seoc-key": settings.overrideSeocKey,
-    "override-seoc-id": settings.overrideSeocId,
     "match-suffix-length": settings.matchSuffixLength || "5",
     "override-referral-category": settings.overrideReferralCategory,
     "override-referral-date": settings.overrideReferralDate,
@@ -1019,6 +1098,11 @@ async function applyUiSettings(settings = {}) {
   $("archive-append-network").checked = Boolean(settings.archiveAppendNetwork);
   $("archive-append-referral-date-time").checked = Boolean(settings.archiveAppendReferralDateTime);
   $("use-ifams-filename-prefix").checked = Boolean(settings.useIfamsFilenamePrefix);
+  const archiveNamingMode = ["referral-number", "network", "referral-date-time", "prefix", "custom"].includes(settings.archiveNamingMode)
+    ? settings.archiveNamingMode
+    : "referral-number";
+  const archiveModeInput = document.querySelector(`input[name="archive-naming-mode"][value="${archiveNamingMode}"]`);
+  if (archiveModeInput) archiveModeInput.checked = true;
   const referralPrefixMode = ["va", "ifams", "mixed", "custom"].includes(settings.referralPrefixMode)
     ? settings.referralPrefixMode
     : settings.useIfamsReferralPrefix
@@ -1041,9 +1125,22 @@ async function applyUiSettings(settings = {}) {
       .map((value) => String(value || "").trim().toUpperCase())
       .filter((value) => findStationOption(value))
   )];
+  state.selectedSeocKeys = [...new Set(
+    (Array.isArray(settings.selectedSeocKeys) ? settings.selectedSeocKeys : [])
+      .map((value) => String(value || ""))
+      .filter((value) => state.seocBySelectorKey.has(value))
+  )];
+  state.selectedSituationalSeocKeys = [...new Set(
+    (Array.isArray(settings.selectedSituationalSeocKeys) ? settings.selectedSituationalSeocKeys : [])
+      .map((value) => String(value || ""))
+      .filter((value) => state.seocBySelectorKey.has(value))
+  )];
+  elements.useAllSeocs.checked = Boolean(settings.useAllSeocs);
+  elements.useAllSituationalSeocs.checked = Boolean(settings.useAllSituationalSeocs);
 
   syncIcnFieldState();
   syncReferralPrefixState();
+  syncArchiveNamingState();
   syncIdentityControls();
   syncLeieValidationSql();
   updateTemplateSummary();
@@ -1051,6 +1148,8 @@ async function applyUiSettings(settings = {}) {
   $("leie-action-auto").checked = state.leieDuplicateHandling === "auto-remove";
   $("leie-action-manual").checked = state.leieDuplicateHandling !== "auto-remove";
   renderSelectedStations();
+  renderSelectedSeocs(getSeocSelectorConfig(false));
+  renderSelectedSeocs(getSeocSelectorConfig(true));
   applyUploadTargetSettings(settings.uploadTargets || {});
   syncUploadTargetState();
   state.lastSavedUiSettingsSignature = JSON.stringify(collectUiSettings());
@@ -1299,10 +1398,20 @@ function applyInfo(info) {
       ].filter(Boolean).join(" ").toLowerCase(),
     };
   });
+  state.seocBySelectorKey = new Map();
+  state.seocSearchIndex = (info.seocOptions || []).map((option) => {
+    state.seocBySelectorKey.set(option.selectorKey, option);
+    return {
+      option,
+      searchText: [option.displayName, option.name, option.seocNumber, option.seocKey, option.seocId]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase(),
+    };
+  });
   state.acknowledgedReleaseKey = String(
     info.releaseAnnouncement?.acknowledgedReleaseKey || state.acknowledgedReleaseKey || ""
   ).trim();
-  renderSeocOptions();
   elements.appVersionBadge.textContent = info.appVersionLabel || "";
   elements.appVersionBadge.classList.toggle("hidden", !info.appVersionLabel);
   document.title = info.appVersionLabel
@@ -1682,6 +1791,10 @@ async function updatePreviews() {
       randomizeDob: readChecked("randomize-dob"),
       randomizeStationId: readChecked("randomize-station-id"),
       selectedStationIds: readChecked("randomize-station-id") ? [] : [...state.selectedStationIds],
+      selectedSeocKeys: [...state.selectedSeocKeys],
+      useAllSeocs: readChecked("use-all-seocs"),
+      selectedSituationalSeocKeys: [...state.selectedSituationalSeocKeys],
+      useAllSituationalSeocs: readChecked("use-all-situational-seocs"),
       ...getReferralPrefixOptions(),
       matchSuffixLength: Number(readValue("match-suffix-length")),
     },
@@ -1708,7 +1821,7 @@ async function updatePreviews() {
       preview.replacementCode,
       getPreviewFileCount()
     );
-    elements.archivePreview.textContent = `Preview: ${preview.archiveBasename}.gz`;
+    elements.archivePreview.textContent = `${preview.outputFileNames.json} · ${preview.outputFileNames.gzip}`;
     elements.referralPreview.textContent = preview.referralNumber
       ? getReferralPrefixMode() === "mixed"
         ? `Preview: ${preview.referralNumber}; the next referral uses iFAMS and continues the shared sequence.`
@@ -2170,6 +2283,58 @@ async function retryFailedUploads() {
   }
 }
 
+function wireSeocSelector(config) {
+  const refresh = () => {
+    renderSelectedSeocs(config);
+    renderSeocMenu(config);
+    schedulePreviewUpdate();
+    scheduleUiSettingsSave();
+  };
+  config.input.addEventListener("input", () => {
+    renderSeocMenu(config);
+    setSeocMenuOpen(config, true);
+  });
+  config.input.addEventListener("focus", () => {
+    renderSeocMenu(config);
+    setSeocMenuOpen(config, true);
+  });
+  config.input.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setSeocMenuOpen(config, false);
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      renderSeocMenu(config);
+      setSeocMenuOpen(config, true);
+    }
+  });
+  config.input.addEventListener("blur", () => {
+    window.setTimeout(() => {
+      if (!config.combobox.contains(document.activeElement)) setSeocMenuOpen(config, false);
+    }, 120);
+  });
+  config.toggle.addEventListener("click", () => {
+    renderSeocMenu(config);
+    setSeocMenuOpen(config, !config.combobox.classList.contains("is-open"));
+    config.input.focus();
+  });
+  config.menu.addEventListener("click", (event) => {
+    const selectorKey = event.target.closest("[data-seoc-selector-key]")?.dataset.seocSelectorKey;
+    if (!selectorKey) return;
+    state[config.selectedKey] = state[config.selectedKey].includes(selectorKey)
+      ? state[config.selectedKey].filter((value) => value !== selectorKey)
+      : [...state[config.selectedKey], selectorKey];
+    config.input.value = "";
+    refresh();
+    setSeocMenuOpen(config, true);
+  });
+  config.selected.addEventListener("click", (event) => {
+    const selectorKey = event.target.closest("[data-seoc-selector-key]")?.dataset.seocSelectorKey;
+    if (!selectorKey) return;
+    state[config.selectedKey] = state[config.selectedKey].filter((value) => value !== selectorKey);
+    refresh();
+  });
+  config.useAll.addEventListener("change", refresh);
+}
+
 function setupEventHandlers() {
   setupTabs();
   wireDateControls();
@@ -2206,6 +2371,8 @@ function setupEventHandlers() {
     "archive-append-network",
     "archive-append-referral-date-time",
     "use-ifams-filename-prefix",
+    "archive-custom-pattern",
+    "archive-custom-text",
     "referral-code",
     "referral-prefix-va",
     "referral-prefix-ifams",
@@ -2220,8 +2387,6 @@ function setupEventHandlers() {
     "override-referral-period",
     "override-network",
     "override-dob",
-    "override-seoc-key",
-    "override-seoc-id",
     "override-referral-category",
     "override-referral-date",
     "override-referral-date-time",
@@ -2240,7 +2405,7 @@ function setupEventHandlers() {
       }
       if (id.startsWith("referral-prefix-") || id === "custom-referral-prefix") {
         if (id === "custom-referral-prefix") {
-          $(id).value = ((String($(id).value || "").match(/[A-Za-z0-9]/g) || []).join("")).slice(0, 12);
+          $(id).value = ((String($(id).value || "").match(/[A-Za-z0-9_]/g) || []).join("")).slice(0, 24);
         }
         syncReferralPrefixState();
       }
@@ -2338,7 +2503,12 @@ function setupEventHandlers() {
     if (!elements.stationIdCombobox.contains(event.target)) {
       setStationMenuOpen(false);
     }
+    for (const config of [getSeocSelectorConfig(false), getSeocSelectorConfig(true)]) {
+      if (!config.combobox.contains(event.target)) setSeocMenuOpen(config, false);
+    }
   });
+  wireSeocSelector(getSeocSelectorConfig(false));
+  wireSeocSelector(getSeocSelectorConfig(true));
 
   elements.overrideNetwork.addEventListener("change", () => {
     updatePreviews();
@@ -2352,16 +2522,13 @@ function setupEventHandlers() {
       scheduleUiSettingsSave();
     });
   }
-  elements.overrideSeocKey.addEventListener("change", () => {
-    syncSeocPair("key");
-    updatePreviews();
-    scheduleUiSettingsSave();
-  });
-  elements.overrideSeocId.addEventListener("change", () => {
-    syncSeocPair("id");
-    updatePreviews();
-    scheduleUiSettingsSave();
-  });
+  for (const input of document.querySelectorAll('input[name="archive-naming-mode"]')) {
+    input.addEventListener("change", () => {
+      syncArchiveNamingState();
+      updatePreviews();
+      scheduleUiSettingsSave();
+    });
+  }
   for (const input of document.querySelectorAll('input[name="icn-mode"]')) {
     input.addEventListener("change", () => {
       syncIcnFieldState();
@@ -2554,8 +2721,20 @@ function cacheElements() {
     outputDirHelp: $("output-dir-help"),
     outputSubtitle: $("output-subtitle"),
     overrideDob: $("override-dob"),
-    overrideSeocKey: $("override-seoc-key"),
-    overrideSeocId: $("override-seoc-id"),
+    seocCombobox: $("seoc-combobox"),
+    seocSearch: $("seoc-search"),
+    seocToggle: $("seoc-toggle"),
+    seocMenu: $("seoc-menu"),
+    selectedSeocs: $("selected-seocs"),
+    seocMatch: $("seoc-match"),
+    useAllSeocs: $("use-all-seocs"),
+    situationalSeocCombobox: $("situational-seoc-combobox"),
+    situationalSeocSearch: $("situational-seoc-search"),
+    situationalSeocToggle: $("situational-seoc-toggle"),
+    situationalSeocMenu: $("situational-seoc-menu"),
+    selectedSituationalSeocs: $("selected-situational-seocs"),
+    situationalSeocMatch: $("situational-seoc-match"),
+    useAllSituationalSeocs: $("use-all-situational-seocs"),
     overrideNetwork: $("override-network"),
     overrideReferralCategory: $("override-referral-category"),
     overrideReferralConsultId: $("override-referral-consult-id"),
@@ -2631,6 +2810,7 @@ function cacheElements() {
     workflowTitle: $("workflow-title"),
     outputCard: $("output-card"),
     archiveNamingCard: document.querySelector(".archive-naming-card"),
+    archiveCustomFields: $("archive-custom-fields"),
     outputRetentionCard: $("output-retention-card"),
     releaseAnnouncementAccept: $("release-announcement-accept"),
     releaseAnnouncementList: $("release-announcement-list"),
@@ -2661,6 +2841,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   setTheme("light");
   startLiveListDateClock();
   syncIcnFieldState();
+  syncArchiveNamingState();
   setupEventHandlers();
   syncWorkflowText();
   try {

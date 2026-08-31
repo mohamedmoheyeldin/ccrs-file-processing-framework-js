@@ -82,6 +82,11 @@ async function run() {
   const projectRoot = path.resolve(__dirname, "..");
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-e2e-output-"));
   const userDataRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-e2e-user-"));
+  fs.mkdirSync(path.join(userDataRoot, "config"), { recursive: true });
+  fs.writeFileSync(path.join(userDataRoot, "config", "ui_settings.json"), JSON.stringify({
+    selectedSeocKeys: ["missing::value"],
+    selectedSituationalSeocKeys: ["missing::value"],
+  }));
   const electronApp = await electron.launch({
     executablePath: require("electron"),
     args: [projectRoot],
@@ -105,8 +110,12 @@ async function run() {
     assert.equal(await window.locator("#generation-preset-name").count(), 0);
     assert.equal(await window.locator("#recent-runs").count(), 0);
     assert.equal(await window.locator('input[name="referral-prefix-mode"]').count(), 4);
+    assert.equal(await window.locator('input[name="icn-mode"]').count(), 4);
+    assert.equal(await window.locator('input[name="archive-naming-mode"]').count(), 5);
     assert.equal(await window.locator("#referral-prefix-va").isChecked(), true);
     assert.equal(await window.locator("#custom-referral-prefix-row").isHidden(), true);
+    assert.equal(await window.locator("#selected-seocs .selected-station-chip").count(), 0);
+    assert.equal(await window.locator("#selected-situational-seocs .selected-station-chip").count(), 0);
     assert.equal(await window.locator("meta[http-equiv='Content-Security-Policy']").count(), 1);
     const nativeSelectCount = await window.locator("select").count();
     assert.equal(await window.locator(".compact-select").count(), nativeSelectCount);
@@ -148,11 +157,34 @@ async function run() {
     await window.locator("#station-id-menu .combo-option", { hasText: "Tremont VA Clinic" }).click();
     assert.equal(await window.locator("#override-station-id").inputValue(), "");
     assert.equal(await window.locator("#selected-stations .selected-station-chip", { hasText: "614GA01" }).count(), 1);
-    assert.equal(
-      await window.locator('#override-seoc-key option[value="67"]').textContent(),
-      "67 — INF_FERTILITY-1332 EXISTING OVARY_1.1.17 — Special: explicit selection only"
-    );
-    assert.equal(await window.locator('#override-seoc-key option[value="1160"]').count(), 1);
+    assert.equal((await window.locator("body").textContent()).includes("(Optional)"), false);
+    const situationalColor = await window.locator(".situational-label").evaluate((element) => getComputedStyle(element).color);
+    const normalLabelColor = await window.locator(".situational-label").locator("..").evaluate((element) => getComputedStyle(element).color);
+    assert.notEqual(situationalColor, normalLabelColor);
+    await window.locator("#seoc-search").fill("PMR_ACUPUNCTURE INITIAL");
+    const primarySeoc = window.locator("#seoc-menu .combo-option", { hasText: "PMR_ACUPUNCTURE INITIAL - 1" }).first();
+    await primarySeoc.waitFor({ state: "visible" });
+    await primarySeoc.click();
+    assert.equal(await window.locator("#selected-seocs .selected-station-chip", { hasText: "PMR_ACUPUNCTURE INITIAL - 1" }).count(), 1);
+    await window.locator("#selected-seocs .selected-station-chip", { hasText: "PMR_ACUPUNCTURE INITIAL - 1" }).click();
+    assert.equal(await window.locator("#selected-seocs .selected-station-chip").count(), 0);
+    await window.locator("#seoc-search").fill("PMR_ACUPUNCTURE INITIAL");
+    await window.locator("#seoc-menu .combo-option", { hasText: "PMR_ACUPUNCTURE INITIAL - 1" }).first().click();
+    await window.locator("#situational-seoc-search").fill("PMR_PHYSICAL THERAPY");
+    const situationalSeoc = window.locator("#situational-seoc-menu .combo-option", { hasText: "PMR_PHYSICAL THERAPY - 107" }).first();
+    await situationalSeoc.waitFor({ state: "visible" });
+    await situationalSeoc.click();
+    assert.equal(await window.locator("#selected-situational-seocs .selected-station-chip", { hasText: "PMR_PHYSICAL THERAPY - 107" }).count(), 1);
+    await window.locator("#use-all-situational-seocs").check();
+    assert.equal(await window.locator("#situational-seoc-search").isDisabled(), true);
+    await window.locator("#use-all-situational-seocs").uncheck();
+    await window.locator('input[name="archive-naming-mode"][value="custom"]').check();
+    assert.equal(await window.locator("#archive-custom-fields").isVisible(), true);
+    await window.locator("#archive-custom-text").fill("CCRS");
+    await window.locator("#archive-custom-pattern").fill("{customText}_{referralNumber}_Final.json.json");
+    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS_VA26S600001_Final.json"));
+    assert.equal((await window.locator("#archive-preview").textContent()).includes(".json.json"), false);
+    await window.locator('input[name="archive-naming-mode"][value="referral-number"]').check();
     const uploadDirectoryNote = window.locator(".upload-path-help").first();
     await uploadDirectoryNote.waitFor({ state: "visible" });
     assert.match(await uploadDirectoryNote.textContent(), /CCRS Referral uploads default to \/CCRA_Uploads/);
