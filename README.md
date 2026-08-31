@@ -63,7 +63,7 @@ Before publishing:
 2. Commit and push the release changes to `main`.
 3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.11`.
 
-The workflow requires the tag to match `releaseTag` and refuses to overwrite an existing release.
+The workflow requires the tag to match `releaseTag`. While a version remains the active release line, rerunning the workflow updates that same GitHub Release in place, replaces its two verified assets, and rebuilds the release body from the complete `releaseNotes` list so earlier highlights remain present. Start a newer version only after the release metadata is intentionally advanced.
 It also refuses to build a release when `releaseNotes` is empty.
 
 Pull requests and updates to `main` run functional smoke tests, a production dependency audit, and a Windows Electron end-to-end test. Release CI repeats those checks, builds the Setup installer, silently installs it, launches the installed app, verifies the executable, and then publishes it.

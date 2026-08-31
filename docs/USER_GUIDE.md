@@ -312,7 +312,7 @@ Available modes are:
 - keep `TEST` and generate the remaining characters
 - keep `TEST` and enter a custom alphanumeric suffix
 - enter a custom full ICN base and generate the remaining characters
-- build each ICN directly from its Referral Number by removing the selected `VA`, `iFAMS`, or custom prefix and adding `TEST`; for example, `VA26S600001` becomes `TEST26S600001`
+- build each ICN directly from its Referral Number by removing the selected `VA`, `iFAMS`, or custom prefix, padding the body to the required 13 characters, and adding `TEST`; for example, `VA26S600001` becomes the 17-character ICN `TEST000026S600001`
 
 Generated ICNs remain unique. Choose `3`, `4`, or `5` to make the ending of each ICN match the ending of its Referral Number.
 
