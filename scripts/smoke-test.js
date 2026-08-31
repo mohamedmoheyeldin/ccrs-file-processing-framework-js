@@ -144,6 +144,8 @@ test("Version 1.3.11 metadata, safety controls, and release automation stay cons
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Electron sandboxing")), false);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Station IDs")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("SEOC")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("17-character TEST format")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("previews respond live")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Updates Electron to")), false);
   assert.equal(packageConfig.scripts["test:smoke"], "node scripts/smoke-test.js");
   assert.equal(packageConfig.scripts["test:syntax"], "node scripts/syntax-check.js");
@@ -196,6 +198,8 @@ test("Version 1.3.11 metadata, safety controls, and release automation stay cons
   assert.match(releaseWorkflow, /Get-AuthenticodeSignature/);
   assert.match(releaseWorkflow, /Install and launch the packaged application/);
   assert.match(releaseWorkflow, /must include at least one releaseNotes entry/);
+  assert.match(releaseWorkflow, /gh release upload[\s\S]*--clobber/);
+  assert.match(releaseWorkflow, /gh release edit/);
   assert.doesNotMatch(releaseWorkflow, /--generate-notes/);
   assert.match(buildReleaseScript, /"--publish",\s*"never"/);
   assert.match(smokeWorkflow, /pull_request:/);
@@ -592,10 +596,11 @@ test("Referral uploads reject PROD while preserving it for the separate LEIE wor
 test("Referral numbers can use iFAMS and map directly to matching TEST ICNs", () => {
   assert.equal(generateReferralNumber("26S600001", 1, "iFAMS"), "iFAMS26S600001");
   assert.equal(generateReferralNumber("26S600001", 2, "iFAMS"), "iFAMS26S600002");
-  assert.equal(generateIcnFromReferralNumber("VA26S600001"), "TEST26S600001");
-  assert.equal(generateIcnFromReferralNumber("iFAMS26S600001"), "TEST26S600001");
+  assert.equal(generateIcnFromReferralNumber("VA26S600001"), "TEST000026S600001");
+  assert.equal(generateIcnFromReferralNumber("iFAMS26S600001"), "TEST000026S600001");
   assert.equal(generateReferralNumber("26S600001", 1, "CCRS"), "CCRS26S600001");
-  assert.equal(generateIcnFromReferralNumber("CCRS26S600001", ["CCRS"]), "TEST26S600001");
+  assert.equal(generateIcnFromReferralNumber("CCRS26S600001", ["CCRS"]), "TEST000026S600001");
+  assert.equal(generateIcnFromReferralNumber("CCRS26S600001", ["CCRS"]).length, 17);
   assert.equal(generateReferralNumber("12345", 1, "VA_TEST_"), "VA_TEST_0000012345");
 });
 
@@ -1385,6 +1390,27 @@ test("Preview validation reports field-level errors without throwing", async () 
     preview.fieldErrors["upload:DEV:remote_directory"],
     "Please enter the remote upload location for DEV."
   );
+});
+
+test("Live preview resolves Referral Number, formatted ICN, and archive tokens together", async () => {
+  const preview = await backend.handleCommand("preview", {
+    referralReplacementCode: "26S600001",
+    identityOptions: { referralPrefixMode: "custom", customReferralPrefix: "CCRS" },
+    icnSettings: { mode: ICN_MODES.REFERRAL_MATCH },
+    archiveNamingOptions: {
+      mode: "custom",
+      customText: "DEV",
+      customPattern: "{customText}_{referralNumber}_{icn}_Final",
+    },
+    optionalOverrides: {},
+    fileCount: 1,
+    referralsPerFile: 1,
+  });
+
+  assert.equal(preview.referralNumber, "CCRS26S600001");
+  assert.equal(preview.icnPreview, "Preview: TEST000026S600001");
+  assert.equal(preview.outputFileNames.json, "DEV_CCRS26S600001_TEST000026S600001_Final.json");
+  assert.equal(preview.outputFileNames.gzip, "DEV_CCRS26S600001_TEST000026S600001_Final.gz");
 });
 
 test("Preview validation requires archive naming fields when append options are enabled", async () => {

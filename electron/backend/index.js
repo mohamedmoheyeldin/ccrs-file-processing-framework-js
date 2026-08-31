@@ -14,6 +14,7 @@ const {
   REFERRAL_PREFIX_MODES,
   extractJsonChangeDefaults,
   extractListDate,
+  generateIcnFromReferralNumber,
   generateOptionalFieldOverrides,
   normalizeReferralPrefix,
   normalizeReferralPrefixMode,
@@ -340,12 +341,6 @@ function buildPreview(payload) {
   const icnSettings = payload.icnSettings || {};
   const optionalOverrides = payload.optionalOverrides || {};
   const fieldErrors = collectFieldErrors(payload);
-  const archiveBasename = fieldErrors.archiveBasename
-    ? sanitizeArchiveBasename(payload.archiveBasename || DEFAULT_ARCHIVE_BASENAME)
-    : buildArchiveBasename(payload);
-  const outputFileNames = fieldErrors.archiveBasename
-    ? { basename: archiveBasename, json: `${archiveBasename}.json`, gzip: `${archiveBasename}.gz` }
-    : buildOutputFileNames(payload);
 
   let normalizedReferral = "";
   const referralPrefixOptions = fieldErrors.referralPrefix
@@ -372,9 +367,31 @@ function buildPreview(payload) {
   }
 
   let icnPreview = describeIcnPreview({ mode: ICN_MODES.TEST_DYNAMIC });
+  let icnPreviewValue = `${ICN_TEST_PREFIX}${"0".repeat(ICN_TEST_SUFFIX_LENGTH - 1)}1`;
   if (!fieldErrors.icnValue) {
-    icnPreview = describeIcnPreview(icnSettings);
+    if (icnSettings.mode === ICN_MODES.REFERRAL_MATCH && normalizedReferral) {
+      const referralPrefixes = referralPrefixOptions
+        ? [resolveReferralPrefix(referralPrefixOptions, 1), resolveReferralPrefix(referralPrefixOptions, 2)]
+        : [];
+      icnPreviewValue = generateIcnFromReferralNumber(normalizedReferral, referralPrefixes);
+      icnPreview = `Preview: ${icnPreviewValue}`;
+    } else {
+      icnPreview = describeIcnPreview(icnSettings);
+      icnPreviewValue = icnPreview.replace(/^Preview:\s*/, "").replace(/\s+\(generated (?:digits|characters) vary\)$/, "");
+    }
   }
+
+  const namingPayload = {
+    ...payload,
+    referralReplacementCode: normalizedReferral || payload.referralReplacementCode,
+    icnPreview: icnPreviewValue,
+  };
+  const archiveBasename = fieldErrors.archiveBasename
+    ? sanitizeArchiveBasename(payload.archiveBasename || DEFAULT_ARCHIVE_BASENAME)
+    : buildArchiveBasename(namingPayload);
+  const outputFileNames = fieldErrors.archiveBasename
+    ? { basename: archiveBasename, json: `${archiveBasename}.json`, gzip: `${archiveBasename}.gz` }
+    : buildOutputFileNames(namingPayload);
 
   return {
     replacementCode,
@@ -494,7 +511,10 @@ function collectFieldErrors(payload) {
   }
 
   try {
-    buildArchiveBasename(payload);
+    buildArchiveBasename({
+      ...payload,
+      icnPreview: payload.icnPreview || `${ICN_TEST_PREFIX}${"0".repeat(ICN_TEST_SUFFIX_LENGTH - 1)}1`,
+    });
   } catch (error) {
     fieldErrors.archiveBasename = error.message;
   }

@@ -4,7 +4,7 @@
 
 ### Release Summary
 
-Version 1.3.11 expands source-backed Station and SEOC handling while making the main naming controls visually consistent. Station IDs are no longer rejected by an outdated length ceiling, `SEOC.xlsx` is converted into a deterministic bundled catalog, and regular and Situational SEOC values can be searched, selected, mixed, cleared, restored, or used as a complete set. Referral, ICN, and Archive choices now share the same option-card design.
+Version 1.3.11 expands source-backed Station and SEOC handling while making the main naming controls visually consistent. Station IDs are no longer rejected by an outdated length ceiling, `SEOC.xlsx` is converted into a deterministic bundled catalog, and regular and Situational SEOC values can be searched, selected, mixed, cleared, restored, or used as a complete set. Referral, ICN, and Archive choices now share the same option-card design, and every affected preview follows the current user choices live.
 
 The GitHub Release contains:
 
@@ -35,6 +35,14 @@ The GitHub Release contains:
 - Shows live `.json` and `.gz` filename previews and keeps the correct extension after settings change.
 - Custom patterns support friendly tokens for Referral Number, prefix, ICN, Network, date, date-time, and custom text.
 - Removes illegal Windows filename characters, empty/trailing filename artifacts, and repeated `.json` or `.gz` extensions.
+
+### Live Previews and ICN Format
+
+- Updates Referral Number, ICN, processed-file, Station, Payment Authority Code, and Archive filename previews whenever the related user settings change.
+- Shows a concrete ICN preview instead of only describing its template; generated portions are clearly identified as values that vary at run time.
+- Keeps ICNs built from Referral Numbers in the required 17-character format by padding the referral body to 13 characters after `TEST`; for example, `VA26S600001` becomes `TEST000026S600001`.
+- Uses the computed live ICN when a Custom Archive naming pattern includes `{icn}`.
+- Places `SEOC Number - SEOC ID` and `Situational SEOC Number - SEOC ID` beside each other on standard desktop widths while preserving the responsive single-column layout on narrow windows.
 
 ### Persistence, Validation, and Testing
 
@@ -152,7 +160,7 @@ The GitHub Release contains:
 
 ## Included Internal Version 1.3.7 Improvements
 
-- ICNs can be derived directly from Referral Numbers, including `VA26S600001` or `iFAMS26S600001` becoming `TEST26S600001`.
+- ICNs can be derived directly from Referral Numbers while retaining the required 17-character format; `VA26S600001` and `iFAMS26S600001` become `TEST000026S600001`.
 - Generated Referral Numbers remain unique across the complete batch.
 - Multiple selected stations are shuffled across all generated referrals.
 - Optional iFAMS prefixes and timestamped JSON/gzip naming remain included.
@@ -184,7 +192,7 @@ The internal GitHub Release contains:
 
 ### Referral and ICN Generation
 
-- Adds an ICN mode that derives the value from each Referral Number: `VA26S600001` or `iFAMS26S600001` becomes `TEST26S600001`.
+- Adds an ICN mode that derives the value from each Referral Number and pads it to the required 17-character format: `VA26S600001` or `iFAMS26S600001` becomes `TEST000026S600001`.
 - Guarantees unique generated Referral Numbers across the entire batch, including batches split across multiple JSON files.
 - Adds an optional iFAMS prefix for generated Referral Numbers.
 

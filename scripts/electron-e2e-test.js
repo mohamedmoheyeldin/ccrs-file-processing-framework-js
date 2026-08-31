@@ -134,6 +134,11 @@ async function run() {
     assert.match(await window.locator("#output-retention-card").textContent(), /Recommended/);
     assert.match(await window.locator("#output-retention-card").textContent(), /Replace folder contents after success/);
     await window.locator("#toggle-optional-fields").click();
+    await window.locator("#referral-prefix-custom").check();
+    await window.locator("#icn-mode-referral-match").check();
+    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST000026S600001"));
+    assert.equal(await window.locator("#icn-custom-value").isDisabled(), true);
+    assert.match(await window.locator("#referral-preview").textContent(), /CCRS26S600001/);
     const matchTrigger = window.locator("#match-suffix-length").locator("..").locator(".compact-select-trigger");
     await matchTrigger.focus();
     await matchTrigger.press("ArrowDown");
@@ -161,6 +166,10 @@ async function run() {
     const situationalColor = await window.locator(".situational-label").evaluate((element) => getComputedStyle(element).color);
     const normalLabelColor = await window.locator(".situational-label").locator("..").evaluate((element) => getComputedStyle(element).color);
     assert.notEqual(situationalColor, normalLabelColor);
+    const seocBounds = await window.locator("#seoc-combobox").boundingBox();
+    const situationalSeocBounds = await window.locator("#situational-seoc-combobox").boundingBox();
+    assert.equal(Boolean(seocBounds && situationalSeocBounds), true);
+    assert.equal(Math.abs(seocBounds.y - situationalSeocBounds.y) < 4, true);
     await window.locator("#seoc-search").fill("PMR_ACUPUNCTURE INITIAL");
     const primarySeoc = window.locator("#seoc-menu .combo-option", { hasText: "PMR_ACUPUNCTURE INITIAL - 1" }).first();
     await primarySeoc.waitFor({ state: "visible" });
@@ -181,10 +190,17 @@ async function run() {
     await window.locator('input[name="archive-naming-mode"][value="custom"]').check();
     assert.equal(await window.locator("#archive-custom-fields").isVisible(), true);
     await window.locator("#archive-custom-text").fill("CCRS");
-    await window.locator("#archive-custom-pattern").fill("{customText}_{referralNumber}_Final.json.json");
-    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS_VA26S600001_Final.json"));
+    await window.locator("#archive-custom-pattern").fill("{customText}_{referralNumber}_{icn}_Final.json.json");
+    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS_CCRS26S600001_TEST000026S600001_Final.json"));
     assert.equal((await window.locator("#archive-preview").textContent()).includes(".json.json"), false);
     await window.locator('input[name="archive-naming-mode"][value="referral-number"]').check();
+    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_Final.json"));
+    await window.locator("#override-network").evaluate((select) => {
+      select.value = "CCN2";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await window.locator('input[name="archive-naming-mode"][value="network"]').check();
+    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCN2_CCRS26S600001_Final.json"));
     const uploadDirectoryNote = window.locator(".upload-path-help").first();
     await uploadDirectoryNote.waitFor({ state: "visible" });
     assert.match(await uploadDirectoryNote.textContent(), /CCRS Referral uploads default to \/CCRA_Uploads/);

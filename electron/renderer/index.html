@@ -400,12 +400,6 @@
                       <option value="CCN5">CCN5</option>
                     </select>
                   </label>
-                  <label class="field-block">
-                    <span>DOB</span>
-                    <input id="override-dob" type="text" placeholder="YYYY-MM-DD" />
-                    <label class="radio-chip"><input id="randomize-dob" type="checkbox" checked /><span>Generate a random DOB for every patient</span></label>
-                    <small id="dob-help" class="helper-text">Uncheck random generation to use an optional fixed date in YYYY-MM-DD format.</small>
-                  </label>
                   <div class="field-block">
                     <span title="Controls the paired SEOC Number and SEOC ID values used for referral generation.">SEOC Number - SEOC ID</span>
                     <div id="seoc-combobox" class="combo-shell">
@@ -428,6 +422,12 @@
                     <div id="selected-situational-seocs" class="selected-stations" aria-live="polite"></div>
                     <label class="radio-chip"><input id="use-all-situational-seocs" type="checkbox" /><span>Use all available Situational SEOC values instead of a selected subset</span></label>
                   </div>
+                  <label class="field-block">
+                    <span>DOB</span>
+                    <input id="override-dob" type="text" placeholder="YYYY-MM-DD" />
+                    <label class="radio-chip"><input id="randomize-dob" type="checkbox" checked /><span>Generate a random DOB for every patient</span></label>
+                    <small id="dob-help" class="helper-text">Uncheck random generation to use an optional fixed date in YYYY-MM-DD format.</small>
+                  </label>
                   <label class="field-block">
                     <span>Referral Category</span>
                     <input id="override-referral-category" type="text" />

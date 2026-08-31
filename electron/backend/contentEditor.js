@@ -334,7 +334,7 @@ function describeIcnPreview(rawSettings = {}) {
   const validatedSettings = validateIcnSettings(rawSettings);
 
   if (validatedSettings.mode === ICN_MODES.TEST_DYNAMIC) {
-    return `Preview: ${ICN_TEST_PREFIX} + ${ICN_TEST_SUFFIX_LENGTH} generated digits`;
+    return `Preview: ${ICN_TEST_PREFIX}${"0".repeat(ICN_TEST_SUFFIX_LENGTH - 1)}1 (generated digits vary)`;
   }
 
   if (validatedSettings.mode === ICN_MODES.REFERRAL_MATCH) {
@@ -343,17 +343,13 @@ function describeIcnPreview(rawSettings = {}) {
 
   if (validatedSettings.mode === ICN_MODES.TEST_CUSTOM_SUFFIX) {
     const remaining = ICN_TEST_SUFFIX_LENGTH - validatedSettings.value.length;
-    if (remaining <= 0) {
-      return `Preview: ${ICN_TEST_PREFIX}${validatedSettings.value}`;
-    }
-    return `Preview: ${ICN_TEST_PREFIX}${validatedSettings.value} + ${remaining} generated character${remaining === 1 ? "" : "s"}`;
+    const exampleValue = `${ICN_TEST_PREFIX}${validatedSettings.value}${"0".repeat(Math.max(remaining, 0))}`;
+    return remaining > 0 ? `Preview: ${exampleValue} (generated characters vary)` : `Preview: ${exampleValue}`;
   }
 
   const remaining = ICN_TOTAL_LENGTH - validatedSettings.value.length;
-  if (remaining <= 0) {
-    return `Preview: ${validatedSettings.value}`;
-  }
-  return `Preview: ${validatedSettings.value} + ${remaining} generated character${remaining === 1 ? "" : "s"}`;
+  const exampleValue = `${validatedSettings.value}${"0".repeat(Math.max(remaining, 0))}`;
+  return remaining > 0 ? `Preview: ${exampleValue} (generated characters vary)` : `Preview: ${exampleValue}`;
 }
 
 function generateIcnValue(icnSettings, sequenceIndex) {
@@ -499,7 +495,8 @@ function generateIcnFromReferralNumber(referralNumber, referralPrefixes = []) {
   if (!body) {
     throw new Error("Referral Number is required to generate its matching ICN.");
   }
-  return `${ICN_TEST_PREFIX}${body}`;
+  const formattedBody = body.slice(-ICN_TEST_SUFFIX_LENGTH).padStart(ICN_TEST_SUFFIX_LENGTH, "0");
+  return `${ICN_TEST_PREFIX}${formattedBody}`;
 }
 
 function normalizeReferralNumberStart(value, requestedPrefix = REFERRAL_NUMBER_PREFIX) {
