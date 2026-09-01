@@ -4,7 +4,7 @@ const { bundlePath, dataPath, userDataPath } = require("./appPaths");
 const { writeFileAtomic } = require("./atomicFile");
 
 const DEFAULT_UI_SETTINGS = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   theme: "light",
   mainTab: "referral",
   subTab: "edit",
@@ -18,7 +18,7 @@ const DEFAULT_UI_SETTINGS = {
   archiveAppendReferralDateTime: false,
   useIfamsFilenamePrefix: false,
   archiveNamingMode: "referral-number",
-  archiveCustomPattern: "{customText}_{referralNumber}_Final",
+  archiveCustomValues: ["referralNumber", "customText"],
   archiveCustomText: "CCRS",
   useIfamsReferralPrefix: false,
   referralPrefixMode: "va",
@@ -86,6 +86,17 @@ function normalizeUploadTargets(rawValue) {
   return normalized;
 }
 
+function normalizeArchiveCustomValues(rawValue = {}) {
+  const allowedValues = ["referralNumber", "referralPrefix", "networkName", "date", "dateTime", "customText"];
+  const suppliedValues = Array.isArray(rawValue.archiveCustomValues)
+    ? rawValue.archiveCustomValues
+    : [...String(rawValue.archiveCustomPattern || "").matchAll(/\{(referralNumber|referralPrefix|networkName|date|dateTime|customText)\}/g)]
+      .map((match) => match[1]);
+  const selected = new Set(suppliedValues.map((value) => String(value || "").trim()));
+  const normalized = allowedValues.filter((value) => selected.has(value));
+  return normalized.length > 0 ? normalized : [...DEFAULT_UI_SETTINGS.archiveCustomValues];
+}
+
 function normalizeUiSettings(rawValue = {}) {
   const normalized = {
     ...DEFAULT_UI_SETTINGS,
@@ -111,12 +122,12 @@ function normalizeUiSettings(rawValue = {}) {
       DEFAULT_UI_SETTINGS.archiveAppendReferralDateTime
     ),
     useIfamsFilenamePrefix: toBoolean(rawValue.useIfamsFilenamePrefix, DEFAULT_UI_SETTINGS.useIfamsFilenamePrefix),
-    archiveNamingMode: ["referral-number", "network", "referral-date-time", "prefix", "custom"].includes(
+    archiveNamingMode: ["referral-number", "network", "referral-date-time", "custom"].includes(
       String(rawValue.archiveNamingMode || "").trim().toLowerCase()
     )
       ? String(rawValue.archiveNamingMode).trim().toLowerCase()
       : DEFAULT_UI_SETTINGS.archiveNamingMode,
-    archiveCustomPattern: String(rawValue.archiveCustomPattern || DEFAULT_UI_SETTINGS.archiveCustomPattern).trim().slice(0, 160),
+    archiveCustomValues: normalizeArchiveCustomValues(rawValue),
     archiveCustomText: String(rawValue.archiveCustomText || DEFAULT_UI_SETTINGS.archiveCustomText).trim().slice(0, 48),
     useIfamsReferralPrefix: toBoolean(rawValue.useIfamsReferralPrefix, DEFAULT_UI_SETTINGS.useIfamsReferralPrefix),
     referralPrefixMode: ["va", "ifams", "mixed", "custom"].includes(String(rawValue.referralPrefixMode || "").trim().toLowerCase())
@@ -124,8 +135,7 @@ function normalizeUiSettings(rawValue = {}) {
       : toBoolean(rawValue.useIfamsReferralPrefix, DEFAULT_UI_SETTINGS.useIfamsReferralPrefix)
         ? "ifams"
         : DEFAULT_UI_SETTINGS.referralPrefixMode,
-    customReferralPrefix: ((String(rawValue.customReferralPrefix || "").match(/[A-Za-z0-9_]/g) || []).join(""))
-      .slice(0, 24),
+    customReferralPrefix: (String(rawValue.customReferralPrefix || "").match(/[A-Za-z0-9_]/g) || []).join(""),
     referralCode: String(rawValue.referralCode || "").trim(),
     ssnValue: String(rawValue.ssnValue || DEFAULT_UI_SETTINGS.ssnValue).trim() || DEFAULT_UI_SETTINGS.ssnValue,
     randomizeSsn: toBoolean(rawValue.randomizeSsn, DEFAULT_UI_SETTINGS.randomizeSsn),

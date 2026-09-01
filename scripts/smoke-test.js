@@ -1148,7 +1148,6 @@ test("Archive naming modes share safe JSON and gzip filenames", () => {
     ["referral-number", "VA12345_Final"],
     ["network", "Network1_VA12345_Final"],
     ["referral-date-time", "VA12345_2026-08-31_162500_Final"],
-    ["prefix", "VA_12345_Final"],
   ];
   for (const [mode, expected] of scenarios) {
     assert.equal(buildArchiveBasename({ ...basePayload, archiveNamingOptions: { mode } }, now), expected);
@@ -1158,14 +1157,53 @@ test("Archive naming modes share safe JSON and gzip filenames", () => {
     archiveNamingOptions: {
       mode: "custom",
       customText: "DEV:CCRS",
-      customPattern: "{customText}_{referralNumber}_Final.json.json",
+      customValues: ["referralNumber", "customText"],
     },
   }, now);
   assert.deepEqual(custom, {
-    basename: "DEV_CCRS_VA12345_Final",
-    json: "DEV_CCRS_VA12345_Final.json",
-    gzip: "DEV_CCRS_VA12345_Final.gz",
+    basename: "VA12345_DEV_CCRS_Final",
+    json: "VA12345_DEV_CCRS_Final.json",
+    gzip: "VA12345_DEV_CCRS_Final.gz",
   });
+  assert.equal(
+    buildArchiveBasename({ ...basePayload, archiveNamingOptions: { mode: "prefix" } }, now),
+    "VA12345_Final"
+  );
+  assert.equal(
+    buildArchiveBasename({
+      ...basePayload,
+      optionalOverrides: {
+        Network: "Network1",
+        ReferralDate: "2026-08-30",
+        ReferralDateTime: "2026-08-31 16:25:00",
+      },
+      archiveNamingOptions: {
+        mode: "custom",
+        customText: "DEV",
+        customValues: ["customText", "dateTime", "date", "networkName", "referralPrefix", "referralNumber"],
+      },
+    }, now),
+    "VA12345_VA_Network1_2026-08-30_2026-08-31_162500_DEV_Final"
+  );
+  assert.throws(
+    () => buildArchiveBasename({ ...basePayload, archiveNamingOptions: { mode: "custom", customValues: [] } }, now),
+    /Choose at least one value/
+  );
+  assert.throws(
+    () => buildArchiveBasename({
+      ...basePayload,
+      optionalOverrides: {},
+      archiveNamingOptions: { mode: "custom", customValues: ["networkName"] },
+    }, now),
+    /Choose a Network/
+  );
+  assert.throws(
+    () => buildArchiveBasename({
+      ...basePayload,
+      archiveNamingOptions: { mode: "custom", customValues: ["customText"] },
+    }, now),
+    /Enter Custom text/
+  );
 });
 
 test("UI settings normalize legacy theme values and persist user choices", () => {
@@ -1200,14 +1238,21 @@ test("UI settings normalize legacy theme values and persist user choices", () =>
       normalizeUiSettings({ referralPrefixMode: "custom", customReferralPrefix: "CCRS_TEST" }).customReferralPrefix,
       "CCRS_TEST"
     );
+    const longReferralPrefix = "CCRS_LONG_REFERRAL_PREFIX_WITHOUT_A_CHARACTER_LIMIT";
+    assert.equal(
+      normalizeUiSettings({ referralPrefixMode: "custom", customReferralPrefix: longReferralPrefix }).customReferralPrefix,
+      longReferralPrefix
+    );
     const namedSettings = normalizeUiSettings({
       archiveNamingMode: "custom",
       archiveCustomText: "DEV",
+      archiveCustomValues: ["networkName", "referralNumber", "networkName"],
       selectedSeocKeys: ["1::A", "1::A"],
       useAllSituationalSeocs: true,
     });
-    assert.equal(namedSettings.schemaVersion, 2);
+    assert.equal(namedSettings.schemaVersion, 3);
     assert.equal(namedSettings.archiveNamingMode, "custom");
+    assert.deepEqual(namedSettings.archiveCustomValues, ["referralNumber", "networkName"]);
     assert.deepEqual(namedSettings.selectedSeocKeys, ["1::A"]);
     assert.equal(namedSettings.useAllSituationalSeocs, true);
     assert.deepEqual(
@@ -1221,7 +1266,7 @@ test("UI settings normalize legacy theme values and persist user choices", () =>
       archiveBasename: "session_export",
       archiveAppendNetwork: true,
       archiveNamingMode: "custom",
-      archiveCustomPattern: "{customText}_{referralNumber}_Final",
+      archiveCustomValues: ["referralNumber", "customText"],
       archiveCustomText: "CCRS",
       selectedSeocKeys: ["1::PMR"],
       selectedSituationalSeocKeys: ["107::PT"],
@@ -1234,9 +1279,15 @@ test("UI settings normalize legacy theme values and persist user choices", () =>
     assert.equal(loaded.archiveAppendNetwork, true);
     assert.equal(loaded.archiveNamingMode, "custom");
     assert.equal(loaded.archiveCustomText, "CCRS");
+    assert.deepEqual(loaded.archiveCustomValues, ["referralNumber", "customText"]);
     assert.deepEqual(loaded.selectedSeocKeys, ["1::PMR"]);
     assert.deepEqual(loaded.selectedSituationalSeocKeys, ["107::PT"]);
     assert.equal(loaded.acknowledgedReleaseKey, "1.2.0|Production V1.2");
+    assert.deepEqual(
+      normalizeUiSettings({ archiveCustomPattern: "{customText}_{referralNumber}_Final" }).archiveCustomValues,
+      ["referralNumber", "customText"]
+    );
+    assert.equal(normalizeUiSettings({ archiveNamingMode: "prefix" }).archiveNamingMode, "referral-number");
   } finally {
     if (originalOverride === undefined) {
       delete process.env.CCRS_USER_DATA_ROOT;
@@ -1461,7 +1512,7 @@ test("Live preview resolves Referral Number, formatted ICN, and archive tokens t
     archiveNamingOptions: {
       mode: "custom",
       customText: "DEV",
-      customPattern: "{customText}_{referralNumber}_{icn}_Final",
+      customValues: ["referralNumber", "referralPrefix", "customText"],
     },
     optionalOverrides: {},
     fileCount: 1,
@@ -1470,8 +1521,8 @@ test("Live preview resolves Referral Number, formatted ICN, and archive tokens t
 
   assert.equal(preview.referralNumber, "CCRS26S600001");
   assert.equal(preview.icnPreview, "Preview: TEST000026S600001");
-  assert.equal(preview.outputFileNames.json, "DEV_CCRS26S600001_TEST000026S600001_Final.json");
-  assert.equal(preview.outputFileNames.gzip, "DEV_CCRS26S600001_TEST000026S600001_Final.gz");
+  assert.equal(preview.outputFileNames.json, "CCRS26S600001_CCRS_DEV_Final.json");
+  assert.equal(preview.outputFileNames.gzip, "CCRS26S600001_CCRS_DEV_Final.gz");
 });
 
 test("Preview validation requires archive naming fields when append options are enabled", async () => {

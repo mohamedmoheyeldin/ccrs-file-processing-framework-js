@@ -4,7 +4,7 @@
 
 ### Release Summary
 
-Version 1.3.11 expands source-backed Station and SEOC handling while making the main naming controls visually consistent. Station IDs are no longer rejected by an outdated length ceiling, and regular and Situational SEOC values can be searched, selected, mixed, cleared, restored, or used as a complete set. Referral, ICN, and Archive choices now share the same option-card design, and every affected preview follows the current user choices live. Referral Numbers now support unrestricted body and custom-prefix lengths, and the combined VAiFAMS option is applied as one prefix.
+Version 1.3.11 expands source-backed Station and SEOC handling while making the main naming controls visually consistent. Station IDs are no longer rejected by an outdated length ceiling, and regular and Situational SEOC values can be searched, selected, mixed, cleared, restored, or used as a complete set. Referral, ICN, and Archive choices now share the same option-card design, and every affected preview follows the current user choices live. Referral Numbers now support unrestricted body and custom-prefix lengths, the combined VAiFAMS option is applied as one prefix, and Custom Archive naming uses an easy checkbox builder.
 
 The GitHub Release contains:
 
@@ -31,9 +31,9 @@ The GitHub Release contains:
 - VAiFAMS is applied as one prefix before the Starting number or body for every generated referral.
 - Referral Number bodies and Custom Referral prefixes have no character ceiling; Custom prefixes support letters, numbers, and underscores, including values such as `VA_TEST` and `PROJECT1_`.
 - Restyles ICN modes with the same option cards while preserving all existing generation modes.
-- Adds Referral Number, Network Name, Referral DateTime, Prefix, and Custom archive naming cards.
+- Keeps focused Referral Number, Network Name, Referral DateTime, and Custom archive naming cards; the unclear standalone Prefix mode has been removed.
 - Shows live `.json` and `.gz` filename previews and keeps the correct extension after settings change.
-- Custom patterns support friendly tokens for Referral Number, prefix, ICN, Network, date, date-time, and custom text.
+- Custom Archive naming provides Select all and individual checkboxes for Referral Number, Referral Prefix, Network Name, Date, Date and Time, and Custom Text. Selected values use a predictable order, underscore separators, and an automatic `_Final` ending.
 - Removes illegal Windows filename characters, empty/trailing filename artifacts, and repeated `.json` or `.gz` extensions.
 
 ### Live Previews and ICN Format
@@ -42,7 +42,7 @@ The GitHub Release contains:
 - Shows a concrete ICN preview instead of only describing its template; generated portions are clearly identified as values that vary at run time.
 - Keeps ICNs built from Referral Numbers in the required 17-character format by padding the referral body to 13 characters after `TEST`; for example, `VA26S600001` becomes `TEST000026S600001`.
 - Keeps every Referral-derived ICN unique. When a long Referral Number fills the available ICN space, the app shortens the end only as needed and adds a batch-sequence marker.
-- Uses the computed live ICN when a Custom Archive naming pattern includes `{icn}`.
+- Updates the Custom Archive filename preview immediately as values are selected, cleared, or edited.
 - Places `SEOC Number - SEOC ID` and `Situational SEOC Number - SEOC ID` beside each other on standard desktop widths while preserving the responsive single-column layout on narrow windows.
 
 ### Persistence, Validation, and Testing

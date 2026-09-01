@@ -831,7 +831,8 @@ function collectIcnSettings() {
 function collectArchiveNamingOptions() {
   return {
     mode: document.querySelector('input[name="archive-naming-mode"]:checked')?.value || "referral-number",
-    customPattern: readValue("archive-custom-pattern"),
+    customValues: [...document.querySelectorAll(".archive-custom-value:checked")]
+      .map((input) => input.value),
     customText: readValue("archive-custom-text"),
   };
 }
@@ -839,6 +840,15 @@ function collectArchiveNamingOptions() {
 function syncArchiveNamingState() {
   const isCustom = collectArchiveNamingOptions().mode === "custom";
   elements.archiveCustomFields?.classList.toggle("hidden", !isCustom);
+  const valueInputs = [...document.querySelectorAll(".archive-custom-value")];
+  const selectedValues = valueInputs.filter((input) => input.checked);
+  if (elements.archiveCustomSelectAll) {
+    elements.archiveCustomSelectAll.checked = valueInputs.length > 0 && selectedValues.length === valueInputs.length;
+    elements.archiveCustomSelectAll.indeterminate = selectedValues.length > 0 && selectedValues.length < valueInputs.length;
+  }
+  if (elements.archiveCustomText) {
+    elements.archiveCustomText.disabled = !isCustom || !readChecked("archive-custom-value-custom-text");
+  }
 }
 
 function syncReferralPrefixState() {
@@ -937,7 +947,7 @@ function collectUiSettings() {
     archiveAppendReferralDateTime: readChecked("archive-append-referral-date-time"),
     useIfamsFilenamePrefix: readChecked("use-ifams-filename-prefix"),
     archiveNamingMode: collectArchiveNamingOptions().mode,
-    archiveCustomPattern: readValue("archive-custom-pattern"),
+    archiveCustomValues: collectArchiveNamingOptions().customValues,
     archiveCustomText: readValue("archive-custom-text"),
     referralPrefixMode: getReferralPrefixMode(),
     customReferralPrefix: readValue("custom-referral-prefix"),
@@ -1055,7 +1065,6 @@ async function applyUiSettings(settings = {}) {
     "output-dir": settings.outputDir,
     "replacement-code": settings.replacementCode,
     "archive-basename": settings.archiveBasename,
-    "archive-custom-pattern": settings.archiveCustomPattern,
     "archive-custom-text": settings.archiveCustomText,
     "referral-code": settings.referralCode,
     "ssn-value": settings.ssnValue,
@@ -1095,11 +1104,19 @@ async function applyUiSettings(settings = {}) {
   $("archive-append-network").checked = Boolean(settings.archiveAppendNetwork);
   $("archive-append-referral-date-time").checked = Boolean(settings.archiveAppendReferralDateTime);
   $("use-ifams-filename-prefix").checked = Boolean(settings.useIfamsFilenamePrefix);
-  const archiveNamingMode = ["referral-number", "network", "referral-date-time", "prefix", "custom"].includes(settings.archiveNamingMode)
+  const archiveNamingMode = ["referral-number", "network", "referral-date-time", "custom"].includes(settings.archiveNamingMode)
     ? settings.archiveNamingMode
     : "referral-number";
   const archiveModeInput = document.querySelector(`input[name="archive-naming-mode"][value="${archiveNamingMode}"]`);
   if (archiveModeInput) archiveModeInput.checked = true;
+  const selectedArchiveCustomValues = new Set(
+    Array.isArray(settings.archiveCustomValues)
+      ? settings.archiveCustomValues
+      : ["referralNumber", "customText"]
+  );
+  for (const input of document.querySelectorAll(".archive-custom-value")) {
+    input.checked = selectedArchiveCustomValues.has(input.value);
+  }
   const referralPrefixMode = ["va", "ifams", "mixed", "custom"].includes(settings.referralPrefixMode)
     ? settings.referralPrefixMode
     : settings.useIfamsReferralPrefix
@@ -2366,7 +2383,6 @@ function setupEventHandlers() {
     "archive-append-network",
     "archive-append-referral-date-time",
     "use-ifams-filename-prefix",
-    "archive-custom-pattern",
     "archive-custom-text",
     "referral-code",
     "referral-prefix-va",
@@ -2524,6 +2540,21 @@ function setupEventHandlers() {
       scheduleUiSettingsSave();
     });
   }
+  for (const input of document.querySelectorAll(".archive-custom-value")) {
+    input.addEventListener("change", () => {
+      syncArchiveNamingState();
+      updatePreviews();
+      scheduleUiSettingsSave();
+    });
+  }
+  elements.archiveCustomSelectAll?.addEventListener("change", () => {
+    for (const input of document.querySelectorAll(".archive-custom-value")) {
+      input.checked = elements.archiveCustomSelectAll.checked;
+    }
+    syncArchiveNamingState();
+    updatePreviews();
+    scheduleUiSettingsSave();
+  });
   for (const input of document.querySelectorAll('input[name="icn-mode"]')) {
     input.addEventListener("change", () => {
       syncIcnFieldState();
@@ -2806,6 +2837,8 @@ function cacheElements() {
     outputCard: $("output-card"),
     archiveNamingCard: document.querySelector(".archive-naming-card"),
     archiveCustomFields: $("archive-custom-fields"),
+    archiveCustomSelectAll: $("archive-custom-select-all"),
+    archiveCustomText: $("archive-custom-text"),
     outputRetentionCard: $("output-retention-card"),
     releaseAnnouncementAccept: $("release-announcement-accept"),
     releaseAnnouncementList: $("release-announcement-list"),
