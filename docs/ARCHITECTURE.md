@@ -41,7 +41,7 @@ Automatic Station assignment shuffles either the user's selected `station_id` su
 
 `config/seoc_options.json` is the deterministic runtime conversion of `SEOC.xlsx`. `scripts/import-seoc.js` maps `seoc_source_key/Number` and `seoc_id`, removes repeated version rows by logical Number/name identity, retains the latest exact source SEOC ID, and sorts the result. The renderer indexes those records once and reuses the Stations selector's menu, search, selection-chip, focus, and result-limit styles for both regular and Situational SEOC selectors. The backend resolves selector keys against the installed catalog and applies paired Number/ID records together.
 
-`electron/backend/zipper.js` owns the reusable filename token model and Windows-safe normalization. Referral Number, Network, Referral DateTime, Prefix, and Custom modes resolve the same tokens for processed JSON and gzip names, then add exactly one format-appropriate extension.
+`electron/backend/zipper.js` owns the reusable filename token model and Windows-safe normalization. Referral Number, Network, Referral DateTime, and Custom modes resolve the same tokens for processed JSON and gzip names, then add exactly one format-appropriate extension. Custom mode receives an ordered selection of Referral Number, Referral Prefix, Network Name, Date, Date and Time, and Custom Text values from the renderer's checkbox builder.
 
 ## Release boundary
 

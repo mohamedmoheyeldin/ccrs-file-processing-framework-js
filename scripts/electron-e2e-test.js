@@ -111,7 +111,8 @@ async function run() {
     assert.equal(await window.locator("#recent-runs").count(), 0);
     assert.equal(await window.locator('input[name="referral-prefix-mode"]').count(), 4);
     assert.equal(await window.locator('input[name="icn-mode"]').count(), 4);
-    assert.equal(await window.locator('input[name="archive-naming-mode"]').count(), 5);
+    assert.equal(await window.locator('input[name="archive-naming-mode"]').count(), 4);
+    assert.equal(await window.locator('input[name="archive-naming-mode"][value="prefix"]').count(), 0);
     assert.equal(await window.locator("#referral-prefix-va").isChecked(), true);
     assert.equal(await window.locator("#custom-referral-prefix-row").isHidden(), true);
     assert.equal(await window.locator("#selected-seocs .selected-station-chip").count(), 0);
@@ -224,10 +225,31 @@ async function run() {
     await window.locator("#use-all-situational-seocs").uncheck();
     await window.locator('input[name="archive-naming-mode"][value="custom"]').check();
     assert.equal(await window.locator("#archive-custom-fields").isVisible(), true);
+    assert.equal(await window.locator(".archive-custom-value").count(), 6);
+    assert.match(
+      await window.locator(".archive-values-help").textContent(),
+      /\{referralNumber\}.*\{referralPrefix\}.*\{networkName\}.*\{date\}.*\{dateTime\}.*\{customText\}/
+    );
     await window.locator("#archive-custom-text").fill("CCRS");
-    await window.locator("#archive-custom-pattern").fill("{customText}_{referralNumber}_{icn}_Final.json.json");
-    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS_CCRS26S600001_TEST000026S600001_Final.json"));
-    assert.equal((await window.locator("#archive-preview").textContent()).includes(".json.json"), false);
+    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_CCRS_Final.json"));
+    await window.locator("#archive-custom-select-all").check();
+    assert.equal(await window.locator(".archive-custom-value:checked").count(), 6);
+    await window.waitForFunction(() => {
+      const preview = document.querySelector("#archive-preview")?.textContent || "";
+      return preview.includes("CCRS26S600001_CCRS_CCN1_2019-03-17_2019-01-02_114732_CCRS_Final.json") &&
+        preview.includes(".gz");
+    });
+    assert.equal((await window.locator("#archive-preview").textContent()).includes("{"), false);
+    if (process.env.CCRS_E2E_ARCHIVE_SCREENSHOT) {
+      await window.locator(".archive-naming-card").scrollIntoViewIfNeeded();
+      await window.screenshot({ path: process.env.CCRS_E2E_ARCHIVE_SCREENSHOT, fullPage: false });
+    }
+    await window.locator("#archive-custom-select-all").uncheck();
+    assert.equal(await window.locator(".archive-custom-value:checked").count(), 0);
+    assert.equal(await window.locator("#archive-custom-text").isDisabled(), true);
+    await window.locator("#archive-custom-value-referral-number").check();
+    await window.locator("#archive-custom-value-date").check();
+    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_2019-03-17_Final.json"));
     await window.locator('input[name="archive-naming-mode"][value="referral-number"]').check();
     await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_Final.json"));
     await window.locator("#override-network").evaluate((select) => {

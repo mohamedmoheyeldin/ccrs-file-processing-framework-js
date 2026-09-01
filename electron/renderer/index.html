@@ -489,7 +489,7 @@
                   <div class="archive-naming-head">
                     <span>Archive naming</span>
                     <small class="helper-text">
-                      Set the final `.gz` base name here, then choose whether related referral details should be appended automatically.
+                      Choose a ready-made filename or build a Custom name from the values that matter to this run.
                     </small>
                   </div>
                   <input id="archive-basename" type="hidden" value="referrals" />
@@ -500,12 +500,24 @@
                     <label class="choice-card"><input name="archive-naming-mode" type="radio" value="referral-number" checked /><span><strong>Referral Number</strong><small>Example: VA12345_Final</small></span></label>
                     <label class="choice-card"><input name="archive-naming-mode" type="radio" value="network" /><span><strong>Network Name</strong><small>Add Network before the Referral Number.</small></span></label>
                     <label class="choice-card"><input name="archive-naming-mode" type="radio" value="referral-date-time" /><span><strong>Referral DateTime</strong><small>Add a filesystem-safe date and time.</small></span></label>
-                    <label class="choice-card"><input name="archive-naming-mode" type="radio" value="prefix" /><span><strong>Prefix</strong><small>Add the selected Referral prefix.</small></span></label>
-                    <label class="choice-card"><input name="archive-naming-mode" type="radio" value="custom" /><span><strong>Custom</strong><small>Build a reusable filename convention.</small></span></label>
+                    <label class="choice-card"><input name="archive-naming-mode" type="radio" value="custom" /><span><strong>Custom</strong><small>Choose any combination of filename values.</small></span></label>
                   </div>
                   <div id="archive-custom-fields" class="archive-custom-fields hidden">
-                    <label class="field-block"><span>Custom text</span><input id="archive-custom-text" type="text" maxlength="48" placeholder="Example: CCRS" /></label>
-                    <label class="field-block"><span>Custom naming pattern</span><input id="archive-custom-pattern" type="text" maxlength="160" placeholder="{customText}_{referralNumber}_Final" /><small id="archive-name-help" class="helper-text">Available values: {referralNumber}, {referralPrefix}, {networkName}, {date}, {dateTime}, {customText}.</small></label>
+                    <div class="archive-custom-intro">
+                      <strong>Choose what appears in the filename</strong>
+                      <small>Select any values or select them all. Values use the order shown below, are separated by underscores, and update the preview immediately. `_Final` is added automatically.</small>
+                    </div>
+                    <label class="radio-chip archive-select-all"><input id="archive-custom-select-all" type="checkbox" /><span>Select all available values</span></label>
+                    <div class="archive-custom-value-grid" role="group" aria-label="Custom archive filename values">
+                      <label class="archive-value-choice"><input id="archive-custom-value-referral-number" class="archive-custom-value" type="checkbox" value="referralNumber" checked /><span><strong>Referral Number</strong><small>{referralNumber}</small></span></label>
+                      <label class="archive-value-choice"><input id="archive-custom-value-referral-prefix" class="archive-custom-value" type="checkbox" value="referralPrefix" /><span><strong>Referral Prefix</strong><small>{referralPrefix}</small></span></label>
+                      <label class="archive-value-choice"><input id="archive-custom-value-network-name" class="archive-custom-value" type="checkbox" value="networkName" /><span><strong>Network Name</strong><small>{networkName}</small></span></label>
+                      <label class="archive-value-choice"><input id="archive-custom-value-date" class="archive-custom-value" type="checkbox" value="date" /><span><strong>Date</strong><small>{date}</small></span></label>
+                      <label class="archive-value-choice"><input id="archive-custom-value-date-time" class="archive-custom-value" type="checkbox" value="dateTime" /><span><strong>Date and Time</strong><small>{dateTime}</small></span></label>
+                      <label class="archive-value-choice"><input id="archive-custom-value-custom-text" class="archive-custom-value" type="checkbox" value="customText" checked /><span><strong>Custom Text</strong><small>{customText}</small></span></label>
+                    </div>
+                    <label id="archive-custom-text-row" class="field-block"><span>Custom text</span><input id="archive-custom-text" type="text" maxlength="48" placeholder="Example: CCRS" /><small class="helper-text">Used only when Custom Text is selected above.</small></label>
+                    <small id="archive-name-help" class="helper-text archive-values-help">Available values: {referralNumber}, {referralPrefix}, {networkName}, {date}, {dateTime}, {customText}.</small>
                   </div>
                   <div class="filename-preview"><span>Archive filename preview</span><strong id="archive-preview">VA12345_Final.json · VA12345_Final.gz</strong></div>
                 </div>

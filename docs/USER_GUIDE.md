@@ -235,15 +235,16 @@ Set the starting referral number, `ListDate`, and any optional overrides. Previe
 
 Choose the output folder and, when needed, a processed JSON base name. Archive naming uses the same selectable option-card design as Referral Number and ICN modes:
 
-- **Referral Number** creates `<ReferralNumber>_Final`.
-- **Network Name** creates `<Network>_<ReferralNumber>_Final`.
-- **Referral DateTime** adds a filesystem-safe referral date and time.
-- **Prefix** adds the selected Referral Number prefix.
-- **Custom** accepts a reusable pattern built from the displayed friendly values.
+- `Referral Number` creates `<ReferralNumber>_Final`.
+- `Network Name` creates `<Network>_<ReferralNumber>_Final`.
+- `Referral DateTime` adds a filesystem-safe referral date and time.
+- `Custom` lets you build the name by selecting any combination of available values.
+
+In `Custom`, choose individual values or use `Select all`. The available values are Referral Number, Referral Prefix, Network Name, Date, Date and Time, and Custom Text. They appear in that order, are separated with underscores, and receive `_Final` automatically. `Custom Text` is enabled only when its checkbox is selected. If Network Name or Custom Text is selected but empty, the preview explains what must be entered.
 
 The live preview shows both `.json` and `.gz` names. The app removes illegal Windows filename characters, trailing spaces and periods, and repeated extensions, then adds exactly one extension matching each output format.
 
-The source and output folders must be separate and cannot be nested. Under **If the save folder already has files**, choose **Keep existing files** to preserve unrelated files and stop safely if a new result would reuse an existing name. Choose **Replace folder contents after success** only when the existing contents should be removed after the new batch has processed and packaged successfully in isolation. The selected card is highlighted, and the pre-run review repeats the choice before processing begins.
+The source and output folders must be separate and cannot be nested. Under `If the save folder already has files`, choose `Keep existing files` to preserve unrelated files and stop safely if a new result would reuse an existing name. Choose `Replace folder contents after success` only when the existing contents should be removed after the new batch has processed and packaged successfully in isolation. The selected card is highlighted, and the pre-run review repeats the choice before processing begins.
 
 Examples:
 
@@ -252,7 +253,7 @@ Examples:
 - Referral Number mode produces `VA12345_Final.json` and `VA12345_Final.gz`.
 - Network Name mode can produce `CCN1_VA12345_Final.json`.
 - Referral DateTime mode can produce `VA12345_2026-08-31_162500_Final.gz`.
-- A custom pattern can produce `CCRS_VA12345_2026-08-31_Final.json`.
+- A Custom selection can produce `VA12345_VA_CCN1_2026-08-31_CCRS_Final.json`.
 
 ### Run
 
@@ -281,10 +282,10 @@ This mode does not require a source folder. It can optionally upload the complet
 
 Choose how generated Referral Numbers should start, then enter the starting number or body once:
 
-- **VA** uses `VA` for every referral.
-- **iFAMS** uses `iFAMS` for every referral.
-- **VAiFAMS** uses one combined prefix for every referral, followed by the Starting number or body.
-- **Custom** uses a user-entered prefix containing letters, numbers, or underscores, with no character limit.
+- `VA` uses `VA` for every referral.
+- `iFAMS` uses `iFAMS` for every referral.
+- `VAiFAMS` uses one combined prefix for every referral, followed by the Starting number or body.
+- `Custom` uses a user-entered prefix containing letters, numbers, or underscores, with no character limit.
 
 Numeric bodies are zero-padded; alphanumeric bodies keep the characters the user entered. The live preview shows the first result, and the pre-run review confirms the selected prefix behavior.
 
@@ -352,7 +353,7 @@ Rules:
 
 ### SEOC Number - SEOC ID
 
-The regular and red-labeled **Situational SEOC Number - SEOC ID** controls share the Stations selector's search, menu, chip, focus, and scroll behavior. Leave either selector in automatic mode to preserve existing values, select one pair, select several pairs to mix them across referrals, clear chips, or choose the independent use-all option.
+The regular and red-labeled `Situational SEOC Number - SEOC ID` controls share the Stations selector's search, menu, chip, focus, and scroll behavior. Leave either selector in automatic mode to preserve existing values, select one pair, select several pairs to mix them across referrals, clear chips, or choose the independent use-all option.
 
 Both dropdowns and their selected chips show the clean SEOC name only, such as `AUD_AUDIOLOGY`. The SEOC Number, version text, and exact SEOC ID remain available behind the selection for searching and generated JSON, but are not appended to the visible name.
 

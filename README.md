@@ -106,7 +106,7 @@ Files that are kept in sync from the shipped app:
 - Choose `VA`, `iFAMS`, combined `VAiFAMS`, or a letters/numbers/underscore custom prefix for generated Referral Numbers
 - Match the last 3, 4, or 5 characters of each Referral Number and ICN
 - Produce final `.gz` archives
-- Choose Referral Number, Network, Referral DateTime, Prefix, or Custom JSON/gzip filename conventions with a live preview
+- Choose Referral Number, Network, Referral DateTime, or checkbox-built Custom JSON/gzip filename conventions with a live preview
 - Import upload settings from `WinSCP.ini` or credentials JSON
 - Upload Referral archives to `DEV`, `PPD`, or `SQA`; the separate LEIE workflow can also use `PROD`
 - Test upload connectivity before running the full workflow
@@ -149,7 +149,7 @@ pnpm verify
 - Searchable SEOC and Situational SEOC controls support subsets, multiple values, clear, use-all, and saved state.
 - `SEOC.xlsx` is converted once into 761 deterministic application records and can be regenerated with `pnpm data:seoc`.
 - Referral Number, ICN, and Archive modes use the same established option-card design.
-- Archive naming includes Referral Number, Network, Referral DateTime, Prefix, and Custom modes with live `.json` and `.gz` previews.
+- Archive naming includes Referral Number, Network, Referral DateTime, and Custom modes with live `.json` and `.gz` previews; Custom supports any or all of six clearly labeled filename values.
 - Filename safety removes illegal Windows characters and repeated extensions while user preferences are restored after restart.
 - Full current and historical notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
 
