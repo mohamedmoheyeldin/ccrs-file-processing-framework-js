@@ -222,11 +222,12 @@
               </div>
 
               <details id="referral-help" class="context-help">
-                <summary>How Referral Numbers, ICNs, and optional fields work</summary>
+                <summary>How Referral Numbers, ICNs, SEOCs, and optional fields work</summary>
                 <div class="context-help-grid context-help-grid--three">
                   <div><strong>Referral Number</strong><span>Choose a prefix and enter the body once. The live preview shows the first value; larger batches continue the sequence automatically.</span></div>
                   <div><strong>ICN</strong><span>Open Additional Fields to control ICNs. Referral Number mode keeps the required 17-character TEST format and keeps every generated ICN unique.</span></div>
                   <div><strong>Optional overrides</strong><span>Leave a field blank to keep its source or default behavior. Selected subsets are mixed across the batch; “use all” uses the complete reference list.</span></div>
+                  <div><strong>SEOC choices</strong><span>Regular SEOC values are used automatically from each referral. Choose a regular value only to override it. Situational SEOC is manual-only and should be selected only when specifically required.</span></div>
                 </div>
               </details>
 
@@ -427,7 +428,7 @@
                       <button id="seoc-toggle" type="button" class="combo-toggle" aria-label="Show SEOC options"><span class="combo-chevron" aria-hidden="true"></span></button>
                       <div id="seoc-menu" class="combo-menu hidden" role="listbox" aria-label="SEOC Number and SEOC ID"></div>
                     </div>
-                    <small id="seoc-match" class="helper-text">Automatic mode keeps source SEOC values.</small>
+                    <small id="seoc-match" class="helper-text">Automatic mode uses each referral's regular source SEOC Number and ID.</small>
                     <div id="selected-seocs" class="selected-stations" aria-live="polite"></div>
                     <label class="radio-chip"><input id="use-all-seocs" type="checkbox" /><span>Use all available SEOC values instead of a selected subset</span></label>
                   </div>
@@ -438,9 +439,13 @@
                       <button id="situational-seoc-toggle" type="button" class="combo-toggle" aria-label="Show Situational SEOC options"><span class="combo-chevron" aria-hidden="true"></span></button>
                       <div id="situational-seoc-menu" class="combo-menu hidden" role="listbox" aria-label="Situational SEOC Number and SEOC ID"></div>
                     </div>
-                    <small id="situational-seoc-match" class="helper-text">Automatic mode leaves Situational SEOC values unchanged.</small>
+                    <small id="situational-seoc-match" class="helper-text">Manual only: no Situational SEOC is added unless you select one here.</small>
                     <div id="selected-situational-seocs" class="selected-stations" aria-live="polite"></div>
                     <label class="radio-chip"><input id="use-all-situational-seocs" type="checkbox" /><span>Use all available Situational SEOC values instead of a selected subset</span></label>
+                  </div>
+                  <div id="seoc-override-warning" class="seoc-selection-warning field-span-2 hidden" role="status" aria-live="polite">
+                    <strong>Confirm this manual SEOC choice</strong>
+                    <span>Most referrals use regular SEOC only. Confirm the required SEOC ID and Number before running, and choose Situational SEOC only when specifically instructed.</span>
                   </div>
                   <label class="field-block">
                     <span>DOB</span>

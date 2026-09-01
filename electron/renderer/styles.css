@@ -1281,6 +1281,25 @@ body.theme-dark .combo-option:focus-visible {
   word-break: break-word;
 }
 
+.seoc-selection-warning {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--warning) 52%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--warning) 10%, var(--panel-strong));
+  color: var(--text);
+}
+
+.seoc-selection-warning strong {
+  color: var(--warning);
+}
+
+.seoc-selection-warning span {
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
 .station-option-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

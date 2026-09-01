@@ -17,7 +17,7 @@
         : referralPrefixMode === "custom"
           ? `${payload.identityOptions?.customReferralPrefix || "Custom"} for every referral`
           : "VA for every referral";
-    return [
+    const items = [
       ["Workflow", command === "generate" ? "Generate Referral Files" : command === "process-leie" ? "Process LEIE Data" : "Process Referral Files"],
       ["Source", payload.inputDir || (command === "generate" ? "Built-in referral templates" : "Not selected")],
       ["Output", payload.outputDir || "Not selected"],
@@ -28,6 +28,19 @@
       ["Stations", command === "process-leie" ? "Not applicable" : stations],
       ["Upload destinations", uploads.length ? uploads.map((item) => `${item.server_name}: ${item.remote_directory}`).join("; ") : "Local output only"],
     ];
+    const regularSeocCount = payload.identityOptions?.useAllSeocs
+      ? "All regular values"
+      : (payload.identityOptions?.selectedSeocKeys || []).length;
+    const situationalSeocCount = payload.identityOptions?.useAllSituationalSeocs
+      ? "All Situational values"
+      : (payload.identityOptions?.selectedSituationalSeocKeys || []).length;
+    if (regularSeocCount || situationalSeocCount) {
+      items.push([
+        "SEOC caution",
+        `Manual choice active: regular ${regularSeocCount || 0}; Situational ${situationalSeocCount || 0}. Most referrals use regular SEOC only.`,
+      ]);
+    }
+    return items;
   }
 
   function confirm({ command, payload, sourceInspection, elements }) {

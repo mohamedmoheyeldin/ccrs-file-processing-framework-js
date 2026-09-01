@@ -1,4 +1,28 @@
-# CCRS File Processing Framework Version 1.4
+# CCRS File Processing Framework Version 1.4.1
+
+## [Version 1.4.1](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.4.1) Release Notes
+
+### Release Summary
+
+Version 1.4.1 includes every user improvement from Version 1.4 and adds clearer, safer SEOC choices. Regular SEOC continues to work automatically for normal referrals. Situational SEOC is now a separate manual-only list containing the nine approved Number and ID pairs.
+
+The GitHub Release contains:
+
+- `CCRS.File.Processing.Framework.Setup.Version.1.4.1.exe`
+- `SHA256SUMS.txt`
+
+### New in Version 1.4.1
+
+- Separates regular and Situational SEOC choices so the same Number and ID never appears in both lists.
+- Limits Situational SEOC to the nine approved choices.
+- Keeps Situational SEOC manual-only so it is not added unless a user intentionally selects it.
+- Shows the complete SEOC ID as the main option name and the matching SEOC Number underneath in both lists.
+- Keeps each referral's regular SEOC Number and ID automatically unless a user chooses an override.
+- Shows a clear reminder whenever any manual SEOC choice is active.
+
+### Included from Version 1.4
+
+All Version 1.4 improvements remain included, including expandable help, live previews, clearer Referral Number and ICN choices, reliable Station selection, searchable SEOC choices, easier Archive naming, consistent option cards, safer output choices, and workflow-specific Referral and LEIE guidance. The complete Version 1.4 notes remain directly below.
 
 ## [Version 1.4](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.4) Release Notes
 

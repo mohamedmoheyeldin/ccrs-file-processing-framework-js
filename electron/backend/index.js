@@ -37,6 +37,7 @@ const {
   buildGeneratedReferralSources,
   getGeneratorDefaults,
   getSeocOptions,
+  getSituationalSeocOptions,
   resolveSeocSelection,
 } = require("./referralGenerator");
 const { cleanupRuntimeArtifacts, cleanupStaleRuntimeArtifacts, removePath } = require("./runtimeCleanup");
@@ -220,6 +221,7 @@ function getInfo() {
     generatorDefaults: getGeneratorDefaults(),
     stations: loadStations(),
     seocOptions: getSeocOptions(),
+    situationalSeocOptions: getSituationalSeocOptions(),
     uiSettings,
     constants: {
       processingLimits: getProcessingLimits(),
@@ -413,7 +415,8 @@ function collectFieldErrors(payload) {
     resolveSeocSelection(payload.identityOptions?.selectedSeocKeys, Boolean(payload.identityOptions?.useAllSeocs));
     resolveSeocSelection(
       payload.identityOptions?.selectedSituationalSeocKeys,
-      Boolean(payload.identityOptions?.useAllSituationalSeocs)
+      Boolean(payload.identityOptions?.useAllSituationalSeocs),
+      "situational"
     );
   } catch (error) {
     fieldErrors.seocSelection = error.message;
@@ -597,7 +600,8 @@ function buildCommonArgs(payload, progressCallback) {
     ),
     selectedSituationalSeocPairs: resolveSeocSelection(
       payload.identityOptions?.selectedSituationalSeocKeys,
-      Boolean(payload.identityOptions?.useAllSituationalSeocs)
+      Boolean(payload.identityOptions?.useAllSituationalSeocs),
+      "situational"
     ),
     referralPrefix,
     referralPrefixMode: referralPrefixOptions.referralPrefixMode,

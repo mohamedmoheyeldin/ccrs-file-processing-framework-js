@@ -6,6 +6,7 @@ const { registerTemporaryPath, removePath } = require("./runtimeCleanup");
 
 const TEMPLATE_DIRECTORY = bundlePath("templates", "referrals");
 const SEOC_OPTIONS_FILE = "seoc_options.json";
+const SITUATIONAL_SEOC_OPTIONS_FILE = "situational_seoc_options.json";
 
 function getReferralTemplatePaths() {
   if (!fs.existsSync(TEMPLATE_DIRECTORY)) {
@@ -43,11 +44,11 @@ function getGeneratorDefaults() {
   };
 }
 
-function getSeocOptions() {
+function loadSeocOptions(fileName) {
   const options = [];
   const seen = new Set();
 
-  function addOption(rawOption, selectionOnly = false) {
+  function addOption(rawOption) {
     const seocKey = String(rawOption?.seocNumber || rawOption?.seocKey || rawOption?.SeocKey || "").trim();
     const seocId = String(rawOption?.seocId || rawOption?.SeocID || "").trim();
     const pairKey = `${seocKey}\u0000${seocId}`;
@@ -61,19 +62,18 @@ function getSeocOptions() {
       name,
       displayName: String(rawOption?.displayName || `${name} - ${seocKey}`).trim(),
       selectorKey: `${encodeURIComponent(seocKey)}::${encodeURIComponent(seocId)}`,
-      selectionOnly: Boolean(rawOption?.selectionOnly ?? selectionOnly),
     });
   }
 
   for (const optionsPath of [
-    dataPath("config", SEOC_OPTIONS_FILE),
-    bundlePath("config", SEOC_OPTIONS_FILE),
+    dataPath("config", fileName),
+    bundlePath("config", fileName),
   ]) {
     try {
       if (!fs.existsSync(optionsPath)) continue;
       const configuredOptions = JSON.parse(fs.readFileSync(optionsPath, "utf8"));
       for (const configuredOption of Array.isArray(configuredOptions) ? configuredOptions : []) {
-        addOption(configuredOption, configuredOption.selectionOnly === true);
+        addOption(configuredOption);
       }
       break;
     } catch (_error) {
@@ -82,13 +82,26 @@ function getSeocOptions() {
   }
 
   return options.sort((left, right) =>
-    left.name.localeCompare(right.name, "en", { numeric: true, sensitivity: "base" }) ||
+    left.seocId.localeCompare(right.seocId, "en", { numeric: true, sensitivity: "base" }) ||
     left.seocKey.localeCompare(right.seocKey, "en", { numeric: true })
   );
 }
 
-function resolveSeocSelection(selectorKeys = [], useAll = false) {
-  const options = getSeocOptions();
+function getSituationalSeocOptions() {
+  return loadSeocOptions(SITUATIONAL_SEOC_OPTIONS_FILE);
+}
+
+function getSeocOptions() {
+  const situationalIdentities = new Set(
+    getSituationalSeocOptions().map((option) => `${option.seocKey}\u0000${option.name}`)
+  );
+  return loadSeocOptions(SEOC_OPTIONS_FILE).filter(
+    (option) => !situationalIdentities.has(`${option.seocKey}\u0000${option.name}`)
+  );
+}
+
+function resolveSeocSelection(selectorKeys = [], useAll = false, catalog = "regular") {
+  const options = catalog === "situational" ? getSituationalSeocOptions() : getSeocOptions();
   const bySelectorKey = new Map(options.map((option) => [option.selectorKey, option]));
   const requestedKeys = useAll ? options.map((option) => option.selectorKey) : selectorKeys;
   const selections = [];
@@ -102,14 +115,6 @@ function resolveSeocSelection(selectorKeys = [], useAll = false) {
     selections.push({ seocKey: option.seocKey, seocId: option.seocId });
   }
 
-  if (options.length === 0) {
-    for (const templatePath of getReferralTemplatePaths()) {
-      const templateData = JSON.parse(fs.readFileSync(templatePath, "utf8"));
-      for (const referral of Array.isArray(templateData.Referrals) ? templateData.Referrals : []) {
-        addOption(referral.ProgramAuthority || referral, false);
-      }
-    }
-  }
   return selections;
 }
 
@@ -154,5 +159,6 @@ module.exports = {
   buildGeneratedReferralSources,
   getGeneratorDefaults,
   getSeocOptions,
+  getSituationalSeocOptions,
   resolveSeocSelection,
 };
