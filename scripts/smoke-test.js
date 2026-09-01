@@ -112,7 +112,7 @@ test("LEIE validation SQL includes the requested query set and syntax highlighti
   assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
 });
 
-test("Version 1.3.11 metadata, safety controls, and release automation stay consolidated", () => {
+test("Version 1.4 metadata, user release notes, safety controls, and release automation stay consolidated", () => {
   const versionConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "app_version.json"), "utf8"));
   const packageConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
@@ -129,9 +129,13 @@ test("Version 1.3.11 metadata, safety controls, and release automation stay cons
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
 
-  assert.equal(versionConfig.version, "1.3.11");
-  assert.equal(versionConfig.releaseTag, "v1.3.11");
-  assert.equal(versionConfig.label, "Version 1.3.11");
+  assert.equal(versionConfig.version, "1.4.0");
+  assert.equal(versionConfig.releaseTag, "v1.4");
+  assert.equal(versionConfig.label, "Version 1.4");
+  assert.match(releaseNotes, /\[Version 1\.4\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.4\)/);
+  assert.match(releaseNotes, /\[Version 1\.3\.11\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.11\)/);
+  const version14DocumentNotes = releaseNotes.split("## [Version 1.3.11]")[0];
+  assert.doesNotMatch(version14DocumentNotes, /Electron|smoke test|pnpm|deterministic|test coverage|source-backed|17-character|JSON|gzip/i);
   assert.match(releaseNotes, /\[Version 1\.3\.9\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.9\)/);
   assert.match(releaseNotes, /\[Version 1\.3\.7\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.7\) Internal Release Notes/);
   assert.match(releaseNotes, /Version 1\.3\.7 was released internally/);
@@ -142,17 +146,18 @@ test("Version 1.3.11 metadata, safety controls, and release automation stay cons
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Publishes one verified Windows Setup installer")), false);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Uses Electron 43")), false);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Electron sandboxing")), false);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Station IDs")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Station selection")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("SEOC")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("17-character TEST format")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("previews respond live")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("live previews")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Converts SEOC.xlsx into 761")), false);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Expands smoke and Windows Electron coverage")), false);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Uses VAiFAMS as one combined")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Removes character limits from Referral Number")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("every Referral-derived ICN unique")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("AUD_AUDIOLOGY")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("VAiFAMS")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Referral Numbers and ICNs unique")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("expandable help")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Archive naming")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Updates Electron to")), false);
+  const userReleaseCopy = versionConfig.releaseNotes.join(" ");
+  assert.doesNotMatch(userReleaseCopy, /Electron|smoke test|pnpm|deterministic|test coverage|SEOC\.xlsx|17-character|JSON|gzip|SHA-256/i);
   assert.equal(packageConfig.scripts["test:smoke"], "node scripts/smoke-test.js");
   assert.equal(packageConfig.scripts["test:syntax"], "node scripts/syntax-check.js");
   assert.equal(crypto.createHash("sha256").update(iconPng).digest("hex"), "dc3b2ab2b0beda8d92527552f2160be83572018c5bf17c0a6cca7c21c013cb95");
@@ -269,7 +274,7 @@ test("Diagnostic export excludes credentials and user file paths", async () => {
   const result = await backend.handleCommand("export-diagnostics", { outputDir });
   const reportText = fs.readFileSync(result.reportPath, "utf8");
   const report = JSON.parse(reportText);
-  assert.equal(report.appVersion, "1.3.11");
+  assert.equal(report.appVersion, "1.4.0");
   assert.equal(Object.prototype.hasOwnProperty.call(report.workflowPreferences, "inputDir"), false);
   assert.doesNotMatch(reportText, /password|ciphertext|connection_details/i);
 });
@@ -1306,8 +1311,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.3.11");
-    assert.equal(initialInfo.appVersion.label, "Version 1.3.11");
+    assert.equal(initialInfo.appVersion.version, "1.4.0");
+    assert.equal(initialInfo.appVersion.label, "Version 1.4");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);

@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Version 1.3.11`, including source-backed Station IDs, searchable regular and Situational SEOC selection, consistent Referral/ICN/Archive naming controls, expandable in-app help, safe live filename previews, batch auditing, and recovery controls.
+This guide covers `Version 1.4`, including source-backed Station IDs, searchable regular and Situational SEOC selection, consistent Referral/ICN/Archive naming controls, expandable in-app help, safe live filename previews, batch auditing, and recovery controls.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download `CCRS.File.Processing.Framework.Setup.Version.1.3.11.exe` from the GitHub Releases page and run the installer.
+Download `CCRS.File.Processing.Framework.Setup.Version.1.4.exe` from the GitHub Releases page and run the installer.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 
@@ -41,7 +41,7 @@ The app automatically displays the current release notes:
 
 Select `Start Using The App` to acknowledge the notes. The same release notes will not open again on later launches, but a future release with a new release identifier will display its own notes once. This acknowledgement is stored in the current user's AppData so reinstalling or changing the installation folder does not confuse an older release with a newer one.
 
-Complete current and historical notes are available in the repository's Release Notes document. Published notes and installers for Version 1.3.3 and Version 1.3.2 remain available on the GitHub Releases page.
+Complete current and historical notes are available in the repository's Release Notes document. Published notes and installers for Version 1.3.11 and Version 1.3.10 remain available on the GitHub Releases page.
 
 ## Before You Begin
 
