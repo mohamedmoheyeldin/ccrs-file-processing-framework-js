@@ -1,4 +1,39 @@
-# CCRS File Processing Framework Version 1.3.11
+# CCRS File Processing Framework Version 1.4
+
+## [Version 1.4](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.4) Release Notes
+
+### Release Summary
+
+Version 1.4 brings together the latest improvements from Version 1.3.11 in a clearer, more approachable release. The app is easier to understand, choices are more consistent, previews respond immediately, and the most important naming and selection tasks now provide help exactly where users need it.
+
+The GitHub Release contains:
+
+- `CCRS.File.Processing.Framework.Setup.Version.1.4.exe`
+- `SHA256SUMS.txt`
+
+### Easier to Understand
+
+- Adds expandable help for the five main workflow steps without taking up space when it is not needed.
+- Explains how Referral Numbers and ICNs work together and what happens when optional fields are left blank.
+- Clearly separates Referral output from LEIE output so the guidance always matches the current task.
+- Explains optional uploads, available destinations, and when Production confirmation is required.
+
+### Clearer Names and Previews
+
+- Shows live previews for Referral Numbers, ICNs, Station choices, Payment Authority Codes, processed filenames, and Archive filenames.
+- Makes Referral Number setup clearer with VA, iFAMS, VAiFAMS, and flexible Custom choices.
+- Keeps Referral Numbers and ICNs unique automatically, even with larger batches and longer values.
+- Makes Archive naming easier with ready-made choices or a Custom checkbox builder.
+- Keeps filenames clean and ready for Windows while remembering naming choices after restart.
+
+### Better Everyday Choices
+
+- Makes Station selection more reliable and keeps approved Station values exactly as selected.
+- Makes regular and Situational SEOC choices searchable and allows one, several, or all available values.
+- Shows clean SEOC names without extra numbers while keeping each selection correctly paired.
+- Keeps the two SEOC choices together on wider screens and easy to use on smaller windows.
+- Uses the same compact, professional choice-card design throughout the app in light and dark themes.
+- Makes the difference between keeping existing output and replacing a dedicated output folder easier to understand before starting.
 
 ## [Version 1.3.11](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.11) Release Notes
 

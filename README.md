@@ -14,9 +14,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.3.11",
-  "releaseTag": "v1.3.11",
-  "label": "Version 1.3.11",
+  "version": "1.4.0",
+  "releaseTag": "v1.4",
+  "label": "Version 1.4",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -29,7 +29,7 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- The current user release is `Version 1.3.11` (`v1.3.11`). Version 1.3.7 remains documented as an internal release included in Version 1.3.8 and later releases.
+- The current user release is `Version 1.4` (`v1.4`). Version 1.3.7 remains documented as an internal release included in Version 1.3.8 and later releases.
 - `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
@@ -61,7 +61,7 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.3.11`.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.4`.
 
 The workflow requires the tag to match `releaseTag`. While a version remains the active release line, rerunning the workflow updates that same GitHub Release in place, replaces its two verified assets, and rebuilds the release body from the complete `releaseNotes` list so earlier highlights remain present. Start a newer version only after the release metadata is intentionally advanced.
 It also refuses to build a release when `releaseNotes` is empty.
@@ -144,18 +144,20 @@ pnpm data:seoc -- /path/to/SEOC.xlsx
 pnpm verify
 ```
 
-## Version 1.3.11 Highlights
-- Source-backed Station IDs such as `675GB01` and `595GF01` remain exact through JSON and gzip output without length-only rejection.
-- Searchable SEOC and Situational SEOC controls support subsets, multiple values, clear, use-all, and saved state.
-- `SEOC.xlsx` is converted once into 761 deterministic application records and can be regenerated with `pnpm data:seoc`.
-- Referral Number, ICN, Archive, output-behavior, and equivalent choices use one compact, responsive option-card design throughout the app.
-- Expandable contextual help explains the five-step workflow, Referral/ICN relationships, output naming and safety, and optional uploads while clear `LIVE` markers identify previews driven by current settings.
-- Archive naming includes Referral Number, Network, Referral DateTime, and Custom modes with live `.json` and `.gz` previews; Custom supports any or all of six clearly labeled filename values.
-- Filename safety removes illegal Windows characters and repeated extensions while user preferences are restored after restart.
+## Version 1.4 Highlights
+- Expandable help makes the five-step workflow and its most important choices easier to understand.
+- Live previews make it easier to confirm names, Station values, and other choices before creating files.
+- Referral Number, ICN, Archive naming, and similar choices share one compact, professional design.
+- Station, SEOC, and Situational SEOC selection is clearer, searchable, and reliable across different window sizes.
+- Archive naming offers ready-made choices and an easy Custom checkbox builder.
+- Referral and LEIE guidance now matches the selected task, including the upload destinations available to each workflow.
+- User naming and selection choices return after restarting the app.
 - Full current and historical notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
 
 Previous release notes:
 
+- [Version 1.3.11](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.11)
+- [Version 1.3.10](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.10)
 - [Version 1.3.9](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.9)
 - [Version 1.3.8](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.8)
 - [Version 1.3.7](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.7) — internal release included in Version 1.3.8
