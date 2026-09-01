@@ -27,7 +27,7 @@ The CCRS File Processing Framework is a local Electron desktop application for p
 
 Runtime data is copied to the current Windows user's AppData area. Upload credentials are protected with Windows-provided encryption after import. Local credentials, WinSCP imports, logs, generated output, and temporary work directories must not be committed.
 
-`electron/backend/workflowPolicy.js` is authoritative for upload environments. The renderer consumes that policy from application information, and the backend validates it before resolving credentials. Referral Files allow DEV, PPD, and SQA. LEIE allows DEV, PPD, SQA, and PROD; the renderer also requires typed confirmation before a PROD run.
+`electron/backend/workflowPolicy.js` is authoritative for upload environments and display order. The renderer consumes that policy from application information, and the backend validates it before resolving credentials. Referral Files allow SQA, DEV, and PPD. LEIE allows SQA, DEV, PPD, and PROD; the renderer also requires typed confirmation before a PROD run. Selected destinations upload concurrently and report results independently, so one destination failure does not cancel successful destinations.
 
 `electron/backend/batchSafety.js` canonicalizes paths, rejects identical or nested source/output folders, owns isolated run staging, calculates SHA-256 values, detects output collisions, and promotes complete artifacts. `referralValidator.js` performs the versioned source-shape preflight. `runHistory.js` stores at most 20 sanitized run summaries in AppData and intentionally excludes credentials and source contents.
 

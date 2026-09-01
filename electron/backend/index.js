@@ -9,6 +9,7 @@ const {
   ICN_TOTAL_LENGTH,
   LIST_DATE_FORMAT,
   PAYMENT_AUTHORITY_CODE_LENGTH,
+  NETWORK_VALUES,
   REFERRAL_NUMBER_DIGIT_COUNT,
   REFERRAL_NUMBER_PREFIX,
   REFERRAL_PREFIX_MODES,
@@ -410,6 +411,13 @@ function collectFieldErrors(payload) {
   const fieldErrors = {};
   const icnSettings = payload.icnSettings || {};
   const optionalOverrides = payload.optionalOverrides || {};
+  const selectedNetworks = Array.isArray(payload.identityOptions?.selectedNetworks)
+    ? payload.identityOptions.selectedNetworks.map((value) => String(value || "").trim().toUpperCase()).filter(Boolean)
+    : [];
+  const invalidNetwork = selectedNetworks.find((value) => !NETWORK_VALUES.includes(value));
+  if (invalidNetwork) {
+    fieldErrors.networkSelection = `Network ${invalidNetwork} is not available. Choose CCN1, CCN2, CCN3, CCN4, or CCN5.`;
+  }
 
   try {
     resolveSeocSelection(payload.identityOptions?.selectedSeocKeys, Boolean(payload.identityOptions?.useAllSeocs));
@@ -594,6 +602,11 @@ function buildCommonArgs(payload, progressCallback) {
     randomizeDob: payload.identityOptions?.randomizeDob !== false,
     randomizeStationId: Boolean(payload.identityOptions?.randomizeStationId),
     selectedStationIds,
+    selectedNetworks: [...new Set(
+      (Array.isArray(payload.identityOptions?.selectedNetworks) ? payload.identityOptions.selectedNetworks : [])
+        .map((value) => String(value || "").trim().toUpperCase())
+        .filter(Boolean)
+    )],
     selectedSeocPairs: resolveSeocSelection(
       payload.identityOptions?.selectedSeocKeys,
       Boolean(payload.identityOptions?.useAllSeocs)
@@ -767,18 +780,16 @@ async function retryFailedUploads(payload, emitProgress) {
   }));
   const resolved = resolveUploadTargets(loadUploadProfiles(), requested);
   const results = [...run.uploadResults.filter((item) => item.status !== "failed")];
-  for (let index = 0; index < resolved.length; index += 1) {
-    const target = resolved[index];
-    emitProgress?.({ phase: "upload", state: "uploading", current: index + 1, total: resolved.length, filename: path.basename(run.archivePath), uploadTarget: target.server_name, message: `Retrying upload to ${target.server_name}.` });
-    try {
-      const remotePath = await require("./uploader").uploadFileWithRetry(run.archivePath, target.remote_directory, target.connection_details);
-      results.push({ serverName: target.server_name, userName: target.user_name || "", remoteDirectory: target.remote_directory, remotePath, status: "completed", message: "Retry completed." });
-      emitProgress?.({ phase: "upload", state: "upload-target-complete", current: index + 1, total: resolved.length, filename: path.basename(run.archivePath), uploadTarget: target.server_name });
-    } catch (error) {
-      results.push({ serverName: target.server_name, userName: target.user_name || "", remoteDirectory: target.remote_directory, remotePath: "", status: "failed", message: error.message });
-      emitProgress?.({ phase: "upload", state: "upload-target-error", current: index + 1, total: resolved.length, filename: path.basename(run.archivePath), uploadTarget: target.server_name, detail: error.message });
-    }
-  }
+  results.push(...await require("./uploader").uploadTargetsInParallel(run.archivePath, resolved, {
+    onProgress: (event) => emitProgress?.({
+      phase: "upload",
+      filename: path.basename(run.archivePath),
+      ...event,
+      message: event.state === "upload-batch-start"
+        ? `Retrying ${event.total} failed upload${event.total === 1 ? "" : "s"} in parallel.`
+        : event.message,
+    }),
+  }));
   const retryable = results.some((item) => item.status === "failed");
   const updatedRun = saveRun({ ...run, status: retryable ? "upload-failed" : "completed", uploadResults: results });
   if (run.manifestPath && fs.existsSync(run.manifestPath)) {
@@ -792,7 +803,8 @@ async function retryFailedUploads(payload, emitProgress) {
       throw new Error(`Uploads were retried, but the batch manifest could not be updated: ${error.message}`);
     }
   }
-  return { message: retryable ? "Some uploads still failed. You can retry them again without reprocessing." : "All failed uploads completed successfully.", run: updatedRun, archivePath: run.archivePath, manifestPath: run.manifestPath, outputDir: run.outputDir, uploadResults: results, retryable };
+  const remainingFailures = results.filter((item) => item.status === "failed");
+  return { message: retryable ? `${remainingFailures.map((item) => item.serverName).join(", ")} still need attention. Check the account, remote directory, or connection, then use Retry Failed Uploads again.` : "Every retried upload completed and the remote file sizes were verified.", run: updatedRun, archivePath: run.archivePath, manifestPath: run.manifestPath, outputDir: run.outputDir, uploadResults: results, retryable };
 }
 
 async function runTestUploadTarget(payload) {

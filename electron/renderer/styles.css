@@ -11,6 +11,9 @@
   --accent: #0d6efd;
   --accent-hover: #0a5ed7;
   --accent-soft: rgba(13, 110, 253, 0.1);
+  --selection-border: rgba(47, 91, 139, 0.5);
+  --selection-bg: rgba(47, 91, 139, 0.075);
+  --selection-focus: rgba(13, 110, 253, 0.2);
   --on-accent: #fff;
   --success: #34c759;
   --warning: #c27c1a;
@@ -41,6 +44,9 @@ body.theme-dark {
   --accent: #78b7ff;
   --accent-hover: #8ac0ff;
   --accent-soft: rgba(102, 171, 255, 0.24);
+  --selection-border: rgba(151, 190, 230, 0.62);
+  --selection-bg: rgba(125, 165, 207, 0.14);
+  --selection-focus: rgba(120, 183, 255, 0.28);
   --on-accent: #10213a;
   --success: #30d158;
   --warning: #ffd60a;
@@ -1548,24 +1554,28 @@ body.theme-dark .leie-upload-validation-step5 {
   transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease, transform 140ms ease;
 }
 
+body.theme-dark .choice-card {
+  background: rgba(42, 56, 77, 0.98);
+}
+
 .choice-card:hover {
   border-color: rgba(13, 110, 253, 0.36);
   transform: translateY(-1px);
 }
 
-.choice-card:focus-within {
-  border-color: rgba(13, 110, 253, 0.78);
-  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+.choice-card:has(input:focus-visible) {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--selection-focus);
 }
 
 .choice-card:has(input:checked) {
-  border-color: rgba(13, 110, 253, 0.72);
-  background: rgba(13, 110, 253, 0.08);
-  box-shadow: inset 3px 0 0 var(--accent), 0 0 0 2px rgba(13, 110, 253, 0.08);
+  border-color: var(--selection-border);
+  background: var(--selection-bg);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 body.theme-dark .choice-card:has(input:checked) {
-  background: rgba(102, 171, 255, 0.14);
+  background: rgba(62, 83, 112, 0.92);
 }
 
 .choice-card > input {
@@ -1936,7 +1946,7 @@ body.theme-dark .upload-config-card {
   padding: 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--panel-border);
-  background: rgba(13, 110, 253, 0.04);
+  background: color-mix(in srgb, var(--panel-strong) 84%, var(--accent-soft));
 }
 
 .archive-custom-intro {

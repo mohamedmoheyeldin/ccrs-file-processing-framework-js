@@ -1,4 +1,25 @@
-# CCRS File Processing Framework Version 1.4.1
+# CCRS File Processing Framework Version 1.4.2
+
+## Version 1.4.2 Release Notes
+
+Version 1.4.2 includes every improvement from Versions 1.4 and 1.4.1, with clearer choices, calmer selection styling, and more helpful progress and upload guidance.
+
+### New in Version 1.4.2
+
+- Shows clean SEOC names without trailing version numbers in both regular and Situational lists, while keeping the correct SEOC Number paired underneath.
+- Shows the manual-choice reminder only after a Situational SEOC value is selected.
+- Lets Network stay automatic, use one value for every referral, or mix a selected group—or all available values—across referrals.
+- Starts uploads to selected destinations together. A failed destination no longer prevents the others from completing.
+- Clearly reports which uploads were verified, which need attention, and whether the user can retry without processing the files again.
+- Lists destinations in SQA, DEV, PPD order. PROD remains available only for LEIE Data.
+- Uses calmer selection and keyboard-focus highlights for ICN, Archive naming, and similar choice boxes.
+- Allows hyphens and underscores in Referral Number bodies and Custom prefixes, preserves them in the live preview, and keeps later generated Referral Numbers unique.
+- Accepts lowercase, uppercase, or mixed-case text in every field where letters are valid and preserves the user's letter case in Referral Numbers, Custom prefixes, custom ICNs, filenames, and optional text values.
+- Keeps all previous Version 1.4.1 and Version 1.4 improvements listed below.
+
+### Windows installer
+
+- `CCRS File Processing Framework Setup Version 1.4.2.exe`
 
 ## [Version 1.4.1](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.4.1) Release Notes
 

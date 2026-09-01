@@ -1,8 +1,8 @@
 {
-  "version": "1.4.1",
-  "releaseTag": "v1.4.1",
-  "label": "Version 1.4.1",
-  "announcementId": "v1.4.1|Version 1.4.1|2026-09-01-seoc-guidance",
+  "version": "1.4.2",
+  "releaseTag": "v1.4.2",
+  "label": "Version 1.4.2",
+  "announcementId": "v1.4.2|Version 1.4.2|2026-09-01-mixed-case-entry",
   "releaseNotes": [
     "Adds expandable help throughout the main workflow so each step is easier to understand when guidance is needed.",
     "Shows clear live previews as choices change, making it easier to confirm Referral Numbers, ICNs, Station values, and filenames before creating files.",
@@ -20,6 +20,13 @@
     "Limits Situational SEOC to the nine approved choices and uses them only when a user selects them manually.",
     "Shows the complete SEOC ID as the main name and its matching SEOC Number directly underneath in both lists.",
     "Keeps each referral's regular SEOC Number and ID automatically unless a user intentionally chooses an override.",
-    "Shows a clear reminder whenever a manual regular or Situational SEOC choice is active."
+    "Shows a clear reminder only when a manual Situational SEOC choice is active.",
+    "Lets Network stay automatic or use one, several, or all available Network values across referrals.",
+    "Starts selected uploads together so one slow destination does not hold up the others, and keeps completed uploads when another destination needs attention.",
+    "Shows upload and progress messages that explain what finished, what still needs attention, and what the user can do next.",
+    "Lists upload destinations in SQA, DEV, PPD order, with PROD available only for LEIE Data.",
+    "Uses calmer selection and keyboard-focus highlights for ICN, Archive naming, and similar choice boxes.",
+    "Allows hyphens and underscores in Referral Number bodies and Custom prefixes while keeping generated values unique.",
+    "Accepts both lowercase and uppercase letters in every text field where letters are valid, including Referral Numbers, Custom prefixes, ICNs, filenames, and optional fields."
   ]
 }

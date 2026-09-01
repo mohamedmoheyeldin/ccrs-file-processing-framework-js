@@ -51,6 +51,8 @@ const RANDOM_SSN_BASE = Math.floor(Math.random() * 1000000);
 const RANDOM_DOB_BASE = Math.floor(Math.random() * 24107);
 const RANDOM_STATION_ASSIGNMENT_STATES = new WeakMap();
 const SEOC_ASSIGNMENT_STATES = new WeakMap();
+const NETWORK_ASSIGNMENT_STATES = new WeakMap();
+const NETWORK_VALUES = Object.freeze(["CCN1", "CCN2", "CCN3", "CCN4", "CCN5"]);
 const TRACKED_JSON_FIELDS = [
   "SSN",
   "DOB",
@@ -144,7 +146,7 @@ function normalizePaymentAuthorityCode(value) {
 }
 
 function normalizeAlphaNumeric(value) {
-  return ((value || "").trim().match(/[A-Za-z0-9]/g) || []).join("").toUpperCase();
+  return ((value || "").trim().match(/[A-Za-z0-9]/g) || []).join("");
 }
 
 function completeWithRandomSuffix(value, targetLength, fillCharacters = OPTIONAL_RANDOM_CHARSET) {
@@ -216,6 +218,39 @@ function applySelectedSeocPairs(data, identityOptions = {}) {
       }
       assignmentState.referralIndex += 1;
       return;
+    }
+    Object.values(currentData).forEach(apply);
+  }
+
+  apply(data);
+}
+
+function applySelectedNetworks(data, identityOptions = {}) {
+  const requestedValues = Array.isArray(identityOptions.selectedNetworks)
+    ? identityOptions.selectedNetworks.map((value) => String(value || "").trim().toUpperCase()).filter(Boolean)
+    : [];
+  const selectedNetworks = [...new Set(requestedValues)];
+  const invalidNetwork = selectedNetworks.find((value) => !NETWORK_VALUES.includes(value));
+  if (invalidNetwork) {
+    throw new Error(`Selected Network ${invalidNetwork} is not available. Choose CCN1, CCN2, CCN3, CCN4, or CCN5.`);
+  }
+  if (selectedNetworks.length === 0) return;
+
+  let assignmentState = NETWORK_ASSIGNMENT_STATES.get(identityOptions);
+  if (!assignmentState) {
+    assignmentState = { values: shuffledCopy(selectedNetworks), referralIndex: 0 };
+    NETWORK_ASSIGNMENT_STATES.set(identityOptions, assignmentState);
+  }
+
+  function apply(currentData) {
+    if (Array.isArray(currentData)) {
+      currentData.forEach(apply);
+      return;
+    }
+    if (!currentData || typeof currentData !== "object") return;
+    if (Object.prototype.hasOwnProperty.call(currentData, "Network")) {
+      currentData.Network = assignmentState.values[assignmentState.referralIndex % assignmentState.values.length];
+      assignmentState.referralIndex += 1;
     }
     Object.values(currentData).forEach(apply);
   }
@@ -443,18 +478,18 @@ function normalizeReferralPrefix(value) {
   if (normalized.toLowerCase() === VA_IFAMS_PREFIX.toLowerCase()) {
     return VA_IFAMS_PREFIX;
   }
-  const customPrefix = (normalized.match(/[A-Za-z0-9_]/g) || []).join("");
+  const customPrefix = (normalized.match(/[A-Za-z0-9_-]/g) || []).join("");
   return customPrefix || REFERRAL_NUMBER_PREFIX;
 }
 
 function validateCustomReferralPrefix(value) {
   const rawValue = String(value || "").trim();
-  const normalized = (rawValue.match(/[A-Za-z0-9_]/g) || []).join("");
+  const normalized = (rawValue.match(/[A-Za-z0-9_-]/g) || []).join("");
   if (!normalized) {
-    throw new Error("Enter a custom Referral Number prefix using letters, numbers, or underscores.");
+    throw new Error("Enter a custom Referral Number prefix using letters, numbers, hyphens, or underscores.");
   }
   if (normalized !== rawValue) {
-    throw new Error("Custom Referral Number prefix must use only letters, numbers, or underscores.");
+    throw new Error("Custom Referral Number prefix must use only letters, numbers, hyphens, or underscores.");
   }
   return normalized;
 }
@@ -513,7 +548,7 @@ function normalizeReferralNumberStart(value, requestedPrefix = REFERRAL_NUMBER_P
 
   normalized = stripReferralPrefix(normalized, [prefix]);
 
-  normalized = ((normalized || "").match(/[A-Za-z0-9]/g) || []).join("");
+  normalized = ((normalized || "").match(/[A-Za-z0-9_-]/g) || []).join("");
   if (!normalized) {
     return "";
   }
@@ -525,7 +560,7 @@ function validateReferralNumberStart(value, requestedPrefix = REFERRAL_NUMBER_PR
   const prefix = normalizeReferralPrefix(requestedPrefix);
   const normalized = normalizeReferralNumberStart(value, prefix);
   if (!normalized) {
-    throw new Error("Enter only the number part of Referral Number.");
+    throw new Error("Enter a Referral Number body using letters, numbers, hyphens, or underscores.");
   }
 
   return normalized;
@@ -1023,6 +1058,7 @@ function modifyContent(
   if (identityOptions.randomizeStationId || identityOptions.selectedStationIds?.length) {
     applyRandomValidStationIds(data, identityOptions);
   }
+  applySelectedNetworks(data, identityOptions);
   applySelectedSeocPairs(data, identityOptions);
   if (icnSettings.mode === ICN_MODES.REFERRAL_MATCH) {
     const referralPrefixes = [
@@ -1054,6 +1090,8 @@ module.exports = {
   REFERRAL_NUMBER_DIGIT_COUNT,
   REFERRAL_NUMBER_PREFIX,
   REFERRAL_PREFIX_MODES,
+  NETWORK_VALUES,
+  applySelectedNetworks,
   completeWithRandomSuffix,
   describeIcnPreview,
   extractJsonChangeDefaults,

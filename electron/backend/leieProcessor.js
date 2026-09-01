@@ -4,7 +4,7 @@ const { assertSafeFolderRelationship, createRunId, createRunStagingDirectory, pr
 const { clearDirectory } = require("./fileHandler");
 const { saveRun } = require("./runHistory");
 const XLSX = require("xlsx");
-const { uploadFileWithRetry, loadUploadProfiles, resolveUploadTargets } = require("./uploader");
+const { uploadTargetsInParallel, loadUploadProfiles, resolveUploadTargets } = require("./uploader");
 const { assertSourceFilesWithinLimits, getProcessingLimits } = require("./limits");
 
 const STRICT_DUPLICATE_MODE = "full-row";
@@ -432,72 +432,32 @@ async function processLeieFiles(payload = {}, progressCallback) {
   const uploadResults = [];
   const uploadOptions = buildLeieUploadOptions(payload);
   if (uploadOptions && uploadOptions.enabled) {
-    for (let index = 0; index < uploadOptions.targets.length; index += 1) {
-      const uploadTarget = uploadOptions.targets[index];
-      if (progressCallback) {
-        progressCallback(
-          index + 1,
-          uploadOptions.targets.length,
-          outputFileName,
-          "uploading",
-          uploadTarget.server_name
-        );
+    uploadResults.push(...await uploadTargetsInParallel(outputPath, uploadOptions.targets, {
+      onProgress: (event) => progressCallback?.(
+        event.current,
+        event.total,
+        outputFileName,
+        event.state,
+        event.uploadTarget,
+        event.detail || event.targetNames?.join(", ")
+      ),
+    }));
+    for (const result of uploadResults) {
+      if (result.status === "completed") {
+        uploadedPaths.push({ server_name: result.serverName, remote_path: result.remotePath });
+      } else {
+        uploadErrors.push({ server_name: result.serverName, message: result.message });
       }
-
-      try {
-        const uploadedPath = await uploadFileWithRetry(
-          outputPath,
-          uploadTarget.remote_directory,
-          uploadTarget.connection_details
-        );
-
-        uploadedPaths.push({
-          server_name: uploadTarget.server_name,
-          remote_path: uploadedPath,
-        });
-        uploadResults.push({ serverName: uploadTarget.server_name, userName: uploadTarget.user_name || "", remoteDirectory: uploadTarget.remote_directory, remotePath: uploadedPath, status: "completed", message: "Upload completed." });
-        if (progressCallback) {
-          progressCallback(
-            index + 1,
-            uploadOptions.targets.length,
-            outputFileName,
-            "upload-target-complete",
-            uploadTarget.server_name
-          );
-        }
-      } catch (error) {
-        uploadErrors.push({
-          server_name: uploadTarget.server_name,
-          message: error.message,
-        });
-        uploadResults.push({ serverName: uploadTarget.server_name, userName: uploadTarget.user_name || "", remoteDirectory: uploadTarget.remote_directory, remotePath: "", status: "failed", message: error.message });
-        if (progressCallback) {
-          progressCallback(
-            index + 1,
-            uploadOptions.targets.length,
-            outputFileName,
-            "upload-target-error",
-            uploadTarget.server_name,
-            error.message
-          );
-        }
-      }
-    }
-
-    if (progressCallback && uploadErrors.length === 0) {
-      progressCallback(uploadedPaths.length, uploadedPaths.length, outputFileName, "upload-complete");
     }
   }
-
-  const uploadedMessage = uploadedPaths.length
-    ? ` Uploaded file to ${uploadedPaths.map((item) => `${item.server_name} (${item.remote_path})`).join(", ")}.`
-    : "";
 
   const run = saveRun({ runId: createRunId(), createdAt: new Date().toISOString(), status: uploadErrors.length ? "upload-failed" : "completed", workflow: "leie", outputDir, archivePath: outputPath, manifestPath: "", processedCount: sourceData.files.length, referralCount: processed.rows.length, uploadResults });
   return {
     message: uploadErrors.length
-      ? `LEIE processing complete and ${outputFileName} was saved, but ${uploadErrors.length} upload target${uploadErrors.length === 1 ? "" : "s"} failed. Use Retry Failed Uploads without processing again.`
-      : `LEIE processing complete. Saved ${outputFileName} to ${outputDir}.${uploadedMessage}`,
+      ? `${outputFileName} is safe in the output folder and ${uploadedPaths.length} upload${uploadedPaths.length === 1 ? "" : "s"} completed, but ${uploadErrors.map((item) => item.server_name).join(", ")} still need attention. Use Retry Failed Uploads; you do not need to process the workbook again.`
+      : uploadedPaths.length
+        ? `Saved ${outputFileName} and verified uploads to ${uploadedPaths.map((item) => item.server_name).join(", ")}.`
+        : `LEIE processing complete. Saved ${outputFileName} to ${outputDir}.`,
     outputPath,
     outputDir,
     archivePath: outputPath,

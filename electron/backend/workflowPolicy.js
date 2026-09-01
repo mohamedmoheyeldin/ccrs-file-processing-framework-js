@@ -1,5 +1,5 @@
-const REFERRAL_UPLOAD_TARGET_NAMES = Object.freeze(["DEV", "PPD", "SQA"]);
-const LEIE_UPLOAD_TARGET_NAMES = Object.freeze(["DEV", "PPD", "SQA", "PROD"]);
+const REFERRAL_UPLOAD_TARGET_NAMES = Object.freeze(["SQA", "DEV", "PPD"]);
+const LEIE_UPLOAD_TARGET_NAMES = Object.freeze(["SQA", "DEV", "PPD", "PROD"]);
 
 function allowedUploadTargets(workflow = "referral") {
   return workflow === "leie" ? [...LEIE_UPLOAD_TARGET_NAMES] : [...REFERRAL_UPLOAD_TARGET_NAMES];

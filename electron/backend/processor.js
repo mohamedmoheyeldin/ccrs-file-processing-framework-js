@@ -5,7 +5,7 @@ const { clearDirectory, getFiles, saveFile } = require("./fileHandler");
 const { log } = require("./logger");
 const { renameFile } = require("./renamer");
 const { modifyContent } = require("./contentEditor");
-const { uploadFileWithRetry } = require("./uploader");
+const { uploadTargetsInParallel } = require("./uploader");
 const { zipOutput } = require("./zipper");
 const { assertSourceFilesWithinLimits } = require("./limits");
 const { saveRun } = require("./runHistory");
@@ -137,27 +137,28 @@ async function processFiles(inputDir, outputDir, replacementCode, clearOutput, r
 
     if (uploadOptions?.enabled) {
       const selectedTargets = uploadOptions.targets || [];
-      for (let index = 0; index < selectedTargets.length; index += 1) {
-        const target = selectedTargets[index];
-        emit(progressCallback, { phase: "upload", state: "uploading", current: index + 1, total: selectedTargets.length, filename: archiveName, uploadTarget: target.server_name, message: `Uploading to ${target.server_name}.` });
-        try {
-          const remotePath = await uploadFileWithRetry(archivePath, target.remote_directory, target.connection_details);
-          uploadResults.push({ serverName: target.server_name, userName: target.user_name || "", remoteDirectory: target.remote_directory, remotePath, status: "completed", message: "Upload completed." });
-          emit(progressCallback, { phase: "upload", state: "upload-target-complete", current: index + 1, total: selectedTargets.length, filename: archiveName, uploadTarget: target.server_name });
-        } catch (error) {
-          uploadResults.push({ serverName: target.server_name, userName: target.user_name || "", remoteDirectory: target.remote_directory, remotePath: "", status: "failed", message: error.message });
-          emit(progressCallback, { phase: "upload", state: "upload-target-error", current: index + 1, total: selectedTargets.length, filename: archiveName, uploadTarget: target.server_name, detail: error.message });
-        }
-      }
+      uploadResults.push(...await uploadTargetsInParallel(archivePath, selectedTargets, {
+        onProgress: (event) => emit(progressCallback, {
+          phase: "upload",
+          filename: archiveName,
+          ...event,
+          message: event.state === "upload-batch-start"
+            ? `Starting parallel uploads to ${event.targetNames.join(", ")}.`
+            : event.message,
+        }),
+      }));
     }
 
     const finalManifest = buildManifest(manifestArgs);
     writeFileAtomic(manifestPath, `${JSON.stringify(finalManifest, null, 2)}\n`, "utf8");
     const failedUploads = uploadResults.filter((item) => item.status === "failed");
     const run = saveRun({ runId, createdAt: finalManifest.completedAt, status: failedUploads.length ? "upload-failed" : "completed", workflow: "referral", outputDir, archivePath, manifestPath, processedCount, referralCount: batchSummary.referralCount, uploadResults });
+    const completedUploads = uploadResults.filter((item) => item.status === "completed");
     const message = failedUploads.length
-      ? `Processed ${processedCount} files and created ${archiveName}, but ${failedUploads.length} upload target${failedUploads.length === 1 ? "" : "s"} failed. Use Retry Failed Uploads; processing does not need to run again.`
-      : `Completed safely. Processed ${processedCount} file${processedCount === 1 ? "" : "s"}, created ${archiveName}, and wrote a batch manifest.`;
+      ? `Your files are safe in the output folder and ${completedUploads.length} upload${completedUploads.length === 1 ? "" : "s"} completed, but ${failedUploads.map((item) => item.serverName).join(", ")} still need attention. Use Retry Failed Uploads; you do not need to process the files again.`
+      : uploadResults.length
+        ? `Completed safely. Created ${archiveName} and verified uploads to ${completedUploads.map((item) => item.serverName).join(", ")}.`
+        : `Completed safely. Processed ${processedCount} file${processedCount === 1 ? "" : "s"}, created ${archiveName}, and wrote a batch manifest.`;
     return { message, run, archivePath, manifestPath, outputDir, promotedPaths, uploadResults, retryable: failedUploads.length > 0 };
   } finally {
     fs.rmSync(stagingDir, { recursive: true, force: true });

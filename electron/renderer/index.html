@@ -254,13 +254,13 @@
                   </div>
                   <label id="custom-referral-prefix-row" class="field-block compact-field hidden">
                     <span>Custom prefix</span>
-                    <input id="custom-referral-prefix" type="text" placeholder="Example: VA_TEST" />
+                    <input id="custom-referral-prefix" type="text" placeholder="Example: VA-TEST_" />
                   </label>
                   <label class="field-block compact-field">
                     <span>Starting number or body</span>
-                    <input id="referral-code" type="text" placeholder="Enter the part after VA" />
+                    <input id="referral-code" type="text" placeholder="Example: 26S6-00001_TEST" />
                   </label>
-                  <small id="referral-prefix-help" class="helper-text">VA will be added automatically. Enter the starting number or body once.</small>
+                  <small id="referral-prefix-help" class="helper-text">VA will be added automatically. The body can include letters, numbers, hyphens (-), and underscores (_).</small>
                   <small id="referral-preview" class="helper-text live-preview">Preview: default referral numbers from source files</small>
                 </div>
                 <label class="field-block">
@@ -355,7 +355,7 @@
                         <span><strong>Referral Number</strong><small>Build each ICN from its Referral Number.</small></span>
                       </label>
                     </div>
-                    <small class="helper-text">Choose how generated ICNs are named.</small>
+                    <small class="helper-text">Choose how generated ICNs are named. Custom values accept both lowercase and uppercase letters.</small>
                   </div>
                   <label class="field-block">
                     <span>ICN Custom Value</span>
@@ -410,17 +410,17 @@
                     <span>Referral Period</span>
                     <input id="override-referral-period" type="text" />
                   </label>
-                  <label class="field-block">
+                  <div class="field-block">
                     <span>Network</span>
-                    <select id="override-network">
-                      <option value="">Select Network</option>
-                      <option value="CCN1">CCN1</option>
-                      <option value="CCN2">CCN2</option>
-                      <option value="CCN3">CCN3</option>
-                      <option value="CCN4">CCN4</option>
-                      <option value="CCN5">CCN5</option>
-                    </select>
-                  </label>
+                    <div id="network-combobox" class="combo-shell">
+                      <input id="network-search" type="text" placeholder="Search or choose Network values" autocomplete="off" role="combobox" aria-label="Search Network values" aria-autocomplete="list" aria-controls="network-menu" aria-expanded="false" />
+                      <button id="network-toggle" type="button" class="combo-toggle" aria-label="Show Network options"><span class="combo-chevron" aria-hidden="true"></span></button>
+                      <div id="network-menu" class="combo-menu hidden" role="listbox" aria-label="Network values" aria-multiselectable="true"></div>
+                    </div>
+                    <small id="network-match" class="helper-text">Automatic mode keeps each referral's source Network.</small>
+                    <div id="selected-networks" class="selected-stations" aria-live="polite"></div>
+                    <label class="radio-chip"><input id="use-all-networks" type="checkbox" /><span>Use all available Network values</span></label>
+                  </div>
                   <div class="field-block">
                     <span title="Controls the paired SEOC Number and SEOC ID values used for referral generation.">SEOC Number - SEOC ID</span>
                     <div id="seoc-combobox" class="combo-shell">

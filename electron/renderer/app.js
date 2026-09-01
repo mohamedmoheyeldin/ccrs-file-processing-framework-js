@@ -9,7 +9,8 @@ const DATE_PARTS = [
 const PAYMENT_AUTHORITY_CODE_MAX = 99999;
 const STATION_RESULT_LIMIT = 60;
 const SEOC_RESULT_LIMIT = 60;
-let referralUploadTargetNames = new Set(["DEV", "PPD", "SQA"]);
+let referralUploadTargetNames = new Set(["SQA", "DEV", "PPD"]);
+const NETWORK_VALUES = Object.freeze(["CCN1", "CCN2", "CCN3", "CCN4", "CCN5"]);
 const ACTIVE_STATUS_PATTERN = /working|processing|generating|uploading|importing|scanning|validating|packaging|archive|cancelling|testing|preparing/i;
 const { buildLeieValidationSql, highlightSql } = window.ccrsLeieSql;
 const {
@@ -50,6 +51,7 @@ const state = {
   previewTimer: null,
   previewRequestId: 0,
   selectedStationIds: [],
+  selectedNetworks: [],
   selectedSeocKeys: [],
   selectedSituationalSeocKeys: [],
   seocBySelectorKey: new Map(),
@@ -340,7 +342,80 @@ function getSeocOptions(situational = false) {
 }
 
 function getSeocVisibleName(option = {}) {
-  return String(option.seocId || option.name || option.displayName || "").trim();
+  return String(option.name || option.seocId || option.displayName || "").trim();
+}
+
+function getSelectedNetworkValues() {
+  return elements.useAllNetworks?.checked ? [...NETWORK_VALUES] : [...state.selectedNetworks];
+}
+
+function setNetworkMenuOpen(open) {
+  elements.networkCombobox?.classList.toggle("is-open", Boolean(open));
+  elements.networkMenu?.classList.toggle("hidden", !open);
+  elements.networkSearch?.setAttribute("aria-expanded", String(Boolean(open)));
+}
+
+function renderNetworkSelection() {
+  elements.selectedNetworks.innerHTML = "";
+  for (const value of state.selectedNetworks) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "selected-station-chip";
+    chip.textContent = `${value} ×`;
+    chip.setAttribute("aria-label", `Remove ${value}`);
+    chip.addEventListener("click", () => {
+      state.selectedNetworks = state.selectedNetworks.filter((item) => item !== value);
+      renderNetworkSelection();
+      renderNetworkMenu();
+      updatePreviews();
+      scheduleUiSettingsSave();
+    });
+    elements.selectedNetworks.append(chip);
+  }
+
+  const selectedValues = getSelectedNetworkValues();
+  if (elements.useAllNetworks.checked) {
+    elements.networkMatch.textContent = "All five Network values will be mixed across the referrals.";
+  } else if (selectedValues.length === 1) {
+    elements.networkMatch.textContent = `${selectedValues[0]} will be used for every referral.`;
+  } else if (selectedValues.length > 1) {
+    elements.networkMatch.textContent = `Each referral will receive a value mixed from the ${selectedValues.length} selected Networks.`;
+  } else {
+    elements.networkMatch.textContent = "Automatic mode keeps each referral's source Network.";
+  }
+  elements.networkSearch.disabled = elements.useAllNetworks.checked;
+  elements.networkToggle.disabled = elements.useAllNetworks.checked;
+}
+
+function renderNetworkMenu() {
+  const query = elements.networkSearch.value.trim().toLowerCase();
+  const matches = NETWORK_VALUES.filter((value) => !query || value.toLowerCase().includes(query));
+  elements.networkMenu.innerHTML = "";
+  for (const value of matches) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "combo-option";
+    button.setAttribute("role", "option");
+    button.setAttribute("aria-selected", String(state.selectedNetworks.includes(value)));
+    const title = document.createElement("span");
+    title.className = "combo-option-title";
+    title.textContent = value;
+    const copy = document.createElement("span");
+    copy.className = "combo-option-copy";
+    copy.textContent = state.selectedNetworks.includes(value) ? "Selected — choose again to remove" : "Choose this Network";
+    button.append(title, copy);
+    button.addEventListener("click", () => {
+      state.selectedNetworks = state.selectedNetworks.includes(value)
+        ? state.selectedNetworks.filter((item) => item !== value)
+        : [...state.selectedNetworks, value];
+      elements.networkSearch.value = "";
+      renderNetworkSelection();
+      renderNetworkMenu();
+      updatePreviews();
+      scheduleUiSettingsSave();
+    });
+    elements.networkMenu.append(button);
+  }
 }
 
 function getSeocSelectorConfig(situational = false) {
@@ -376,9 +451,7 @@ function getSeocSelectorConfig(situational = false) {
 }
 
 function syncSeocOverrideWarning() {
-  const hasManualChoice = state.selectedSeocKeys.length > 0 ||
-    state.selectedSituationalSeocKeys.length > 0 ||
-    Boolean(elements.useAllSeocs?.checked) ||
+  const hasManualChoice = state.selectedSituationalSeocKeys.length > 0 ||
     Boolean(elements.useAllSituationalSeocs?.checked);
   elements.seocOverrideWarning?.classList.toggle("hidden", !hasManualChoice);
 }
@@ -642,11 +715,11 @@ function getIcnConstants() {
 function sanitizeIcnInput(value, mode = getSelectedIcnMode()) {
   const { suffixLength, totalLength } = getIcnConstants();
   if (mode === "test-custom-suffix") {
-    return ((String(value || "").toUpperCase().match(/[A-Z0-9]/g) || []).join("")).slice(0, suffixLength);
+    return ((String(value || "").match(/[A-Za-z0-9]/g) || []).join("")).slice(0, suffixLength);
   }
 
   if (mode === "custom-full") {
-    return ((String(value || "").toUpperCase().match(/[A-Z0-9]/g) || []).join("")).slice(0, totalLength);
+    return ((String(value || "").match(/[A-Za-z0-9]/g) || []).join("")).slice(0, totalLength);
   }
 
   return "";
@@ -665,7 +738,7 @@ function sanitizeReferralNumberInput(value) {
     }
   }
 
-  return (normalized.match(/[A-Za-z0-9]/g) || []).join("");
+  return (normalized.match(/[A-Za-z0-9_-]/g) || []).join("");
 }
 
 function sanitizeLeieFileNameInput(value) {
@@ -795,7 +868,6 @@ function collectOptionalOverrides() {
     StationID: "",
     PaymentAuthorityCode: readValue("override-payment-authority-code"),
     ReferralPeriod: readValue("override-referral-period"),
-    Network: readValue("override-network"),
     DOB: readChecked("randomize-dob") ? "" : readValue("override-dob"),
     ReferralCategory: readValue("override-referral-category"),
     ReferralDate: readValue("override-referral-date"),
@@ -885,7 +957,7 @@ function syncReferralPrefixState() {
     elements.referralCode.placeholder = `Enter the part after ${prefix}`;
   }
   if (elements.referralPrefixHelp) {
-    elements.referralPrefixHelp.textContent = `${prefix} will be added automatically. Enter the starting number or body once.`;
+    elements.referralPrefixHelp.textContent = `${prefix} will be added automatically. The body can include letters, numbers, hyphens (-), and underscores (_).`;
   }
 }
 
@@ -917,6 +989,7 @@ function sharedPayload() {
       randomizeDob: readChecked("randomize-dob"),
       randomizeStationId: readChecked("randomize-station-id"),
       selectedStationIds: readChecked("randomize-station-id") ? [] : [...state.selectedStationIds],
+      selectedNetworks: getSelectedNetworkValues(),
       selectedSeocKeys: [...state.selectedSeocKeys],
       useAllSeocs: readChecked("use-all-seocs"),
       selectedSituationalSeocKeys: [...state.selectedSituationalSeocKeys],
@@ -979,13 +1052,14 @@ function collectUiSettings() {
     icnMode: getSelectedIcnMode(),
     icnCustomValue: readValue("icn-custom-value"),
     selectedStationIds: [...state.selectedStationIds],
+    selectedNetworks: [...state.selectedNetworks],
+    useAllNetworks: readChecked("use-all-networks"),
     selectedSeocKeys: [...state.selectedSeocKeys],
     useAllSeocs: readChecked("use-all-seocs"),
     selectedSituationalSeocKeys: [...state.selectedSituationalSeocKeys],
     useAllSituationalSeocs: readChecked("use-all-situational-seocs"),
     overridePaymentAuthorityCode: readValue("override-payment-authority-code"),
     overrideReferralPeriod: readValue("override-referral-period"),
-    overrideNetwork: readValue("override-network"),
     overrideDob: readValue("override-dob"),
     overrideReferralCategory: readValue("override-referral-category"),
     overrideReferralDate: readValue("override-referral-date"),
@@ -1090,7 +1164,6 @@ async function applyUiSettings(settings = {}) {
     "icn-custom-value": settings.icnCustomValue,
     "override-payment-authority-code": settings.overridePaymentAuthorityCode,
     "override-referral-period": settings.overrideReferralPeriod,
-    "override-network": settings.overrideNetwork,
     "override-dob": settings.overrideDob,
     "match-suffix-length": settings.matchSuffixLength || "5",
     "override-referral-category": settings.overrideReferralCategory,
@@ -1168,8 +1241,16 @@ async function applyUiSettings(settings = {}) {
       .map((value) => String(value || ""))
       .filter((value) => state.situationalSeocBySelectorKey.has(value))
   )];
+  state.selectedNetworks = [...new Set(
+    (Array.isArray(settings.selectedNetworks)
+      ? settings.selectedNetworks
+      : settings.overrideNetwork ? [settings.overrideNetwork] : [])
+      .map((value) => String(value || "").trim().toUpperCase())
+      .filter((value) => NETWORK_VALUES.includes(value))
+  )];
   elements.useAllSeocs.checked = Boolean(settings.useAllSeocs);
   elements.useAllSituationalSeocs.checked = Boolean(settings.useAllSituationalSeocs);
+  elements.useAllNetworks.checked = Boolean(settings.useAllNetworks);
 
   syncIcnFieldState();
   syncReferralPrefixState();
@@ -1181,6 +1262,8 @@ async function applyUiSettings(settings = {}) {
   $("leie-action-auto").checked = state.leieDuplicateHandling === "auto-remove";
   $("leie-action-manual").checked = state.leieDuplicateHandling !== "auto-remove";
   renderSelectedStations();
+  renderNetworkSelection();
+  renderNetworkMenu();
   renderSelectedSeocs(getSeocSelectorConfig(false));
   renderSelectedSeocs(getSeocSelectorConfig(true));
   applyUploadTargetSettings(settings.uploadTargets || {});
@@ -1399,7 +1482,6 @@ function syncIcnFieldState() {
 function applyGeneratorDefaults() {
   const defaults = state.info?.generatorDefaults || {};
 
-  setValueIfEmpty("override-network", defaults.Network);
   setValueIfEmpty("override-referral-period", defaults.ReferralPeriod);
   setValueIfEmpty("override-referral-category", defaults.ReferralCategory);
   setValueIfEmpty("override-referral-date", defaults.ReferralDate);
@@ -1411,7 +1493,7 @@ function applyGeneratorDefaults() {
 
 function applyInfo(info) {
   state.info = info;
-  referralUploadTargetNames = new Set(info.workflowPolicy?.referralUploadTargets || ["DEV", "PPD", "SQA"]);
+  referralUploadTargetNames = new Set(info.workflowPolicy?.referralUploadTargets || ["SQA", "DEV", "PPD"]);
   state.stationById = new Map();
   state.stationSelectableCount = 0;
   state.stationSearchIndex = (info.stations || []).map((option) => {
@@ -1496,7 +1578,6 @@ function applySourceInspection(inspection) {
     : "No source ListDate found yet.";
 
   const defaults = inspection?.defaults || {};
-  setValueIfEmpty("override-network", defaults.Network);
   setValueIfEmpty("override-referral-period", defaults.ReferralPeriod);
   setValueIfEmpty("override-dob", defaults.DOB);
   setValueIfEmpty("override-referral-category", defaults.ReferralCategory);
@@ -1835,6 +1916,7 @@ async function updatePreviews() {
       randomizeDob: readChecked("randomize-dob"),
       randomizeStationId: readChecked("randomize-station-id"),
       selectedStationIds: readChecked("randomize-station-id") ? [] : [...state.selectedStationIds],
+      selectedNetworks: getSelectedNetworkValues(),
       selectedSeocKeys: [...state.selectedSeocKeys],
       useAllSeocs: readChecked("use-all-seocs"),
       selectedSituationalSeocKeys: [...state.selectedSituationalSeocKeys],
@@ -2243,7 +2325,7 @@ async function runLeieProcess() {
   try {
     const result = await window.ccrs.runJob("process-leie", payload);
     if (payload.upload.enabled && payload.upload.targets.length > 0) {
-      setStatus("Upload Complete", result.message || "LEIE upload completed.");
+      setStatus(result.retryable ? "Upload Warning" : "Upload Complete", result.message || "LEIE upload completed.");
     } else {
       setStatus("Ready to Save", result.message || "LEIE file saved.");
     }
@@ -2428,7 +2510,6 @@ function setupEventHandlers() {
     "override-station-id",
     "override-payment-authority-code",
     "override-referral-period",
-    "override-network",
     "override-dob",
     "override-referral-category",
     "override-referral-date",
@@ -2448,7 +2529,7 @@ function setupEventHandlers() {
       }
       if (id.startsWith("referral-prefix-") || id === "custom-referral-prefix") {
         if (id === "custom-referral-prefix") {
-          $(id).value = (String($(id).value || "").match(/[A-Za-z0-9_]/g) || []).join("");
+          $(id).value = (String($(id).value || "").match(/[A-Za-z0-9_-]/g) || []).join("");
         }
         syncReferralPrefixState();
       }
@@ -2549,11 +2630,30 @@ function setupEventHandlers() {
     for (const config of [getSeocSelectorConfig(false), getSeocSelectorConfig(true)]) {
       if (!config.combobox.contains(event.target)) setSeocMenuOpen(config, false);
     }
+    if (!elements.networkCombobox.contains(event.target)) setNetworkMenuOpen(false);
   });
   wireSeocSelector(getSeocSelectorConfig(false));
   wireSeocSelector(getSeocSelectorConfig(true));
 
-  elements.overrideNetwork.addEventListener("change", () => {
+  elements.networkSearch.addEventListener("input", () => {
+    renderNetworkMenu();
+    setNetworkMenuOpen(true);
+  });
+  elements.networkSearch.addEventListener("focus", () => {
+    renderNetworkMenu();
+    setNetworkMenuOpen(true);
+  });
+  elements.networkSearch.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setNetworkMenuOpen(false);
+  });
+  elements.networkToggle.addEventListener("click", () => {
+    renderNetworkMenu();
+    setNetworkMenuOpen(!elements.networkCombobox.classList.contains("is-open"));
+    elements.networkSearch.focus();
+  });
+  elements.useAllNetworks.addEventListener("change", () => {
+    if (elements.useAllNetworks.checked) setNetworkMenuOpen(false);
+    renderNetworkSelection();
     updatePreviews();
     scheduleUiSettingsSave();
   });
@@ -2688,7 +2788,20 @@ function setupEventHandlers() {
     }
 
     if (event.state === "upload-complete") {
-      setStatus("Upload Complete", `${event.filename} was uploaded to every selected server successfully.`);
+      setStatus("Upload Complete", `${event.filename} reached every selected server and each remote file size was verified.`);
+      return;
+    }
+
+    if (event.state === "upload-batch-start") {
+      setStatus(
+        "Starting Uploads",
+        event.message || `Starting ${event.total} upload${event.total === 1 ? "" : "s"} in parallel. Each server will report its own result.`
+      );
+      return;
+    }
+
+    if (event.state === "upload-batch-warning") {
+      setStatus("Upload Warning", "All selected servers have responded. Your local file is safe; review the failed server messages and use Retry Failed Uploads when ready.");
       return;
     }
 
@@ -2696,23 +2809,22 @@ function setupEventHandlers() {
       .find((row) => row.dataset.target === event.uploadTarget);
 
     if (event.state === "upload-target-complete") {
-      setUploadTargetStatus(uploadRow, `Upload complete (${event.current}/${event.total}).`, "success");
-      const nextMessage = event.current < event.total ? " Moving to the next server." : "";
-      setStatus("Uploaded", `${event.filename} uploaded to ${event.uploadTarget} (${event.current} of ${event.total} servers complete).${nextMessage}`);
+      setUploadTargetStatus(uploadRow, `Upload verified — ${event.current} of ${event.total} servers finished.`, "success");
+      const remaining = Math.max(event.total - event.current, 0);
+      setStatus("Upload Verified", `${event.uploadTarget} is complete and verified. ${remaining ? `${remaining} selected server${remaining === 1 ? " is" : "s are"} still working.` : "All selected servers have finished."}`);
       return;
     }
 
     if (event.state === "upload-target-error") {
-      setUploadTargetStatus(uploadRow, event.detail || "Upload failed.", "error");
-      const nextMessage = event.current < event.total ? " Moving to the next server." : "";
-      setStatus("Upload Warning", `Upload to ${event.uploadTarget} failed: ${event.detail || "No additional details were returned."}${nextMessage}`);
+      setUploadTargetStatus(uploadRow, `Needs attention: ${event.detail || "The server did not complete the upload."}`, "error");
+      const remaining = Math.max(event.total - event.current, 0);
+      setStatus("Upload Warning", `${event.uploadTarget} did not complete: ${event.detail || "No additional details were returned."} Your local file is safe.${remaining ? ` ${remaining} other selected server${remaining === 1 ? " continues" : "s continue"} in parallel.` : " You can retry only the failed server."}`);
       return;
     }
 
     if (event.state === "uploading") {
-      const targetText = event.uploadTarget ? ` to ${event.uploadTarget}` : "";
-      setUploadTargetStatus(uploadRow, `Uploading ${event.filename}...`, "working");
-      setStatus("Uploading", `Uploading ${event.filename}${targetText} — server ${event.current} of ${event.total}. Keep the app open until verification finishes.`);
+      setUploadTargetStatus(uploadRow, `Uploading and verifying ${event.filename}...`, "working");
+      setStatus("Uploading", `${event.uploadTarget} started. ${event.current} of ${event.total} selected servers have finished; uploads run in parallel. Keep the app open.`);
       return;
     }
 
@@ -2796,7 +2908,13 @@ function cacheElements() {
     situationalSeocMatch: $("situational-seoc-match"),
     useAllSituationalSeocs: $("use-all-situational-seocs"),
     seocOverrideWarning: $("seoc-override-warning"),
-    overrideNetwork: $("override-network"),
+    networkCombobox: $("network-combobox"),
+    networkSearch: $("network-search"),
+    networkToggle: $("network-toggle"),
+    networkMenu: $("network-menu"),
+    networkMatch: $("network-match"),
+    selectedNetworks: $("selected-networks"),
+    useAllNetworks: $("use-all-networks"),
     overrideReferralCategory: $("override-referral-category"),
     overrideReferralConsultId: $("override-referral-consult-id"),
     overrideReferralDate: $("override-referral-date"),

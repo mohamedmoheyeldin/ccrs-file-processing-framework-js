@@ -14,9 +14,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.4.1",
-  "releaseTag": "v1.4.1",
-  "label": "Version 1.4.1",
+  "version": "1.4.2",
+  "releaseTag": "v1.4.2",
+  "label": "Version 1.4.2",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -29,7 +29,7 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- The current user release is `Version 1.4.1` (`v1.4.1`). Version 1.3.7 remains documented as an internal release included in Version 1.3.8 and later releases.
+- The current local test candidate is `Version 1.4.2` (`v1.4.2`). Version 1.4.1 remains the latest published release until this candidate is approved and published.
 - `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
@@ -61,7 +61,7 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.4.1`.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.4.2` after approval.
 
 The workflow requires the tag to match `releaseTag`. While a version remains the active release line, rerunning the workflow updates that same GitHub Release in place, replaces its two verified assets, and rebuilds the release body from the complete `releaseNotes` list so earlier highlights remain present. Start a newer version only after the release metadata is intentionally advanced.
 It also refuses to build a release when `releaseNotes` is empty.
@@ -102,6 +102,7 @@ Files that are kept in sync from the shipped app:
 - Generate unique `999`-prefixed test SSNs and random DOBs per patient, or apply fixed overrides when needed
 - Search all imported station rows by station key, station ID, VISN, station name, or parent station ID
 - Search regular SEOC Number/ID pairs, or manually select from the separate nine-value Situational SEOC catalog when required
+- Keep each referral's source Network automatically, choose one Network for every referral, or mix a selected subset or all available Networks across the batch
 - Choose how ICNs should be generated: derive `TEST` plus the Referral Number body, keep `TEST`, keep `TEST` with a custom suffix, or use a custom full ICN base
 - Choose `VA`, `iFAMS`, combined `VAiFAMS`, or a letters/numbers/underscore custom prefix for generated Referral Numbers
 - Match the last 3, 4, or 5 characters of each Referral Number and ICN
@@ -143,6 +144,12 @@ To refresh the SEOC catalog from a replacement workbook:
 pnpm data:seoc -- /path/to/SEOC.xlsx
 pnpm verify
 ```
+
+## Version 1.4.2 Highlights
+
+- Keeps the complete Version 1.4.1 experience and adds cleaner SEOC labels, Network assignment choices, concurrent destination uploads, clearer recovery guidance, and calmer option-card highlighting.
+- Accepts hyphens and underscores in Referral Number bodies and Custom prefixes while preserving live previews and unique generated values.
+- Accepts lowercase, uppercase, and mixed-case text across user-entered fields without silently changing the user's capitalization.
 
 ## Version 1.4.1 Highlights
 - Includes every Version 1.4 improvement listed in the historical notes.

@@ -86,7 +86,7 @@ function inferServerName(sessionName, host) {
 }
 
 function getDefaultUploadTargets() {
-  return ["DEV", "PPD", "SQA", "PROD"];
+  return ["SQA", "DEV", "PPD", "PROD"];
 }
 
 function getUploadTargetNames(profiles = {}) {
@@ -982,6 +982,76 @@ async function uploadFileWithRetry(localPath, remoteDirectory, connectionDetails
   throw new Error(`Upload failed after ${attempts} attempts: ${lastError?.message || "Unknown upload error."}`);
 }
 
+async function uploadTargetsInParallel(localPath, targets = [], options = {}) {
+  const selectedTargets = Array.isArray(targets) ? targets : [];
+  const upload = typeof options.upload === "function" ? options.upload : uploadFileWithRetry;
+  const onProgress = typeof options.onProgress === "function" ? options.onProgress : () => {};
+  let completedCount = 0;
+
+  onProgress({
+    state: "upload-batch-start",
+    current: 0,
+    total: selectedTargets.length,
+    targetNames: selectedTargets.map((target) => target.server_name),
+  });
+
+  const results = await Promise.all(selectedTargets.map(async (target) => {
+    onProgress({
+      state: "uploading",
+      current: completedCount,
+      total: selectedTargets.length,
+      uploadTarget: target.server_name,
+    });
+    try {
+      const remotePath = await upload(localPath, target.remote_directory, target.connection_details);
+      completedCount += 1;
+      const result = {
+        serverName: target.server_name,
+        userName: target.user_name || "",
+        remoteDirectory: target.remote_directory,
+        remotePath,
+        status: "completed",
+        message: `Upload to ${target.server_name} completed and the remote file size was verified.`,
+      };
+      onProgress({
+        state: "upload-target-complete",
+        current: completedCount,
+        total: selectedTargets.length,
+        uploadTarget: target.server_name,
+        result,
+      });
+      return result;
+    } catch (error) {
+      completedCount += 1;
+      const result = {
+        serverName: target.server_name,
+        userName: target.user_name || "",
+        remoteDirectory: target.remote_directory,
+        remotePath: "",
+        status: "failed",
+        message: error.message,
+      };
+      onProgress({
+        state: "upload-target-error",
+        current: completedCount,
+        total: selectedTargets.length,
+        uploadTarget: target.server_name,
+        detail: error.message,
+        result,
+      });
+      return result;
+    }
+  }));
+
+  onProgress({
+    state: results.some((result) => result.status === "failed") ? "upload-batch-warning" : "upload-complete",
+    current: completedCount,
+    total: selectedTargets.length,
+    results,
+  });
+  return results;
+}
+
 module.exports = {
   getServerDisplayForTarget,
   getUploadProfileSourcePath,
@@ -996,5 +1066,6 @@ module.exports = {
   uploadFile,
   uploadFileWithRetry,
   uploadFileWithSftp,
+  uploadTargetsInParallel,
   withTimeout,
 };

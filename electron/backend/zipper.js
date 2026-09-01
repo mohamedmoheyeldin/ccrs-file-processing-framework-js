@@ -90,7 +90,9 @@ function resolveNamingTokens(payload = {}, now = new Date()) {
     referralNumber: resolveReferralNumber(payload),
     referralPrefix: resolveArchivePrefixToken(payload.identityOptions),
     icn: sanitizeArchiveSegment(payload.icnPreview || ""),
-    networkName: sanitizeArchiveSegment(optionalOverrides.Network || ""),
+    networkName: sanitizeArchiveSegment(
+      optionalOverrides.Network || payload.identityOptions?.selectedNetworks?.[0] || ""
+    ),
     date,
     dateTime,
     customText: sanitizeArchiveSegment(payload.archiveNamingOptions?.customText || ""),

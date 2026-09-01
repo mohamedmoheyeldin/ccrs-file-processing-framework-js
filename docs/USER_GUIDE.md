@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Version 1.4.1`, including separate regular and manual-only Situational SEOC catalogs, consistent Referral/ICN/Archive naming controls, expandable in-app help, safe live filename previews, batch auditing, and recovery controls.
+This guide covers `Version 1.4.2`, including separate regular and manual-only Situational SEOC catalogs, flexible Network assignment, consistent Referral/ICN/Archive naming controls, parallel uploads, expandable in-app help, safe live filename previews, batch auditing, and recovery controls.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download `CCRS.File.Processing.Framework.Setup.Version.1.4.1.exe` from the GitHub Releases page and run the installer.
+For this test candidate, run `CCRS File Processing Framework Setup Version 1.4.2.exe` from the local test folder supplied with the build. A GitHub release will be created only after approval.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 
@@ -79,7 +79,7 @@ Available help covers:
 
 Messages marked `LIVE` are calculated from the current settings. Review them after changing a related option. A live preview usually shows the first generated value; later values continue the configured sequence while the app maintains batch uniqueness.
 
-The Source hint confirms that source files are read without being changed. Processed files are written only to the selected Output folder. Importing an upload configuration stores the available profiles in the app but does not upload a file; upload begins only when it is enabled and a configured target is selected for a completed run. Referral uploads use DEV, PPD, and SQA. Production is available only in the LEIE workflow and requires typed confirmation.
+The Source hint confirms that source files are read without being changed. Processed files are written only to the selected Output folder. Importing an upload configuration stores the available profiles in the app but does not upload a file; upload begins only when it is enabled and a configured target is selected for a completed run. Referral uploads use SQA, DEV, and PPD. Production is available only in the LEIE workflow and requires typed confirmation.
 
 ## Consistent Controls and Keyboard Use
 
@@ -148,7 +148,7 @@ You may enter a different base name when needed. The saved output is an `.xlsx` 
 
 Enable `Upload the .xlsx file after processing` only when the processed workbook should be sent to one or more servers.
 
-Supported targets are `DEV`, `PPD`, `SQA`, and `PROD`.
+Supported targets are displayed as `SQA`, `DEV`, `PPD`, and `PROD`.
 
 Every LEIE server defaults to this remote directory:
 
@@ -168,7 +168,7 @@ For every selected server:
 
 Select `Save Processed File` after the duplicate check is complete.
 
-When upload is enabled, the app processes selected servers in order. For each server it:
+When upload is enabled, the app starts all selected servers together. For each server it independently:
 
 - shows an `Uploading` state
 - transfers the processed `.xlsx` file
@@ -176,9 +176,9 @@ When upload is enabled, the app processes selected servers in order. For each se
 - marks that server complete only after verification
 - closes the connection with a bounded timeout so a stalled disconnect cannot block the workflow
 - retries transient failures up to three times with increasing delay
-- moves to the next selected server
+- reports that server's result without waiting for or cancelling the other selected servers
 
-If one server fails, the app records the error and continues with the remaining selected servers. The final status identifies failed targets. A successfully saved local workbook remains available even when an upload target fails.
+If one server fails, the app records the error while the other selected servers continue independently. The final status identifies failed targets. A successfully saved local workbook remains available even when an upload target fails.
 
 ### Step 6: Find the ETL Batch ID
 
@@ -301,13 +301,13 @@ Choose how generated Referral Numbers should start, then enter the starting numb
 - `VA` uses `VA` for every referral.
 - `iFAMS` uses `iFAMS` for every referral.
 - `VAiFAMS` uses one combined prefix for every referral, followed by the Starting number or body.
-- `Custom` uses a user-entered prefix containing letters, numbers, or underscores, with no character limit.
+- `Custom` uses a user-entered prefix containing letters, numbers, hyphens, or underscores, with no character limit.
 
-Numeric bodies are zero-padded; alphanumeric bodies keep the characters the user entered. The live preview shows the first result, and the pre-run review confirms the selected prefix behavior.
+Numeric bodies are zero-padded. Bodies containing letters, hyphens, or underscores keep the characters and letter case the user entered. When a body ends in digits, later Referral Numbers increment those digits while preserving the separators; otherwise the sequence number is added at the end. The live preview shows the first result, and the pre-run review confirms the selected prefix behavior.
 
 Rules:
 
-- letters, numbers, and underscores are allowed in a custom prefix
+- letters, numbers, hyphens (`-`), and underscores (`_`) are allowed in the starting body and a custom prefix
 - the live preview shows the first value
 - generated referral numbers remain unique within the run
 
@@ -319,6 +319,8 @@ Examples:
 - with VAiFAMS, the sequence continues as `VAiFAMS26S600001`, `VAiFAMS26S600002`, and so on
 - with the custom prefix `CCRS`, `26S600001` becomes `CCRS26S600001`
 - with the custom prefix `VA_TEST_`, `12345` begins with `VA_TEST_`
+- `26S6-00001_TEST` becomes `VA26S6-00001_TEST`
+- `26S6_TEST-00001` continues as `VA26S6_TEST-00002`, preserving both separators
 
 ### ICN
 
@@ -332,6 +334,8 @@ Available modes are:
 - build each ICN directly from its Referral Number by removing the selected `VA`, `iFAMS`, or custom prefix, padding the body to the required 13 characters, and adding `TEST`; for example, `VA26S600001` becomes the 17-character ICN `TEST000026S600001`
 
 Generated ICNs remain unique. Choose `3`, `4`, or `5` to make the ending of each ICN match the ending of its Referral Number.
+
+Custom ICN entries accept lowercase, uppercase, or mixed-case letters. Generated `TEST` and automatically added characters retain their required format, while the letters entered by the user keep their original case.
 
 ## Patient Identity Controls
 
@@ -371,23 +375,23 @@ Rules:
 
 The regular and red-labeled `Situational SEOC Number - SEOC ID` controls share the Stations selector's search, menu, chip, focus, and scroll behavior, but they serve different purposes. Regular SEOC works automatically from each referral's existing Number and ID. Choose a regular value only when you intentionally need an override.
 
-Situational SEOC is manual-only. The app does not select a Situational value automatically. Use it only when a referral specifically requires one. Selecting anything in either dropdown displays a reminder because most referrals use regular SEOC only.
+Situational SEOC is manual-only. The app does not select a Situational value automatically. Use it only when a referral specifically requires one. Selecting a Situational value—or choosing all Situational values—displays a reminder because most referrals use regular SEOC only. A regular SEOC override does not display this reminder.
 
-Each dropdown option shows the complete versioned SEOC ID as its main name and `SEOC Number: ...` directly underneath. The paired values are always applied together; the app never combines the Number from one record with the ID from another.
+Each dropdown option shows a clean SEOC ID without its trailing version number as the main name and `SEOC Number: ...` directly underneath. The complete source ID remains paired behind the scenes; the app never combines the Number from one record with the ID from another. The confirmation reminder appears only when a Situational SEOC choice is active.
 
 The regular catalog contains 752 choices converted from `SEOC.xlsx`. The Situational catalog contains only these nine approved choices:
 
 | SEOC Number | SEOC ID |
 | --- | --- |
-| 67 | `MSC_INFERTILITY-IUI FEMALE_1.3.3_PRCT` |
-| 158 | `EUC_EMERGENCY CARE_1.2.8` |
-| 191 | `EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE_1.4.2_PRCT` |
-| 203 | `INF_FERTILITY-1334 BIRTH SEX FEMALE VETERAN_1.4.14` |
-| 207 | `INF_FERTILITY-1334 BIRTH SEX MALE VETERAN_1.5.14` |
-| 233 | `SSC_TRANSPLANT BONE MARROW COMP EVAL_1.11.2_PRCT` |
-| 246 | `MSC_CRYOPRESERVATION STORAGE FOR IVF-ART_1.8.1_PRCT` |
-| 268 | `MHC_MENTAL HEALTH RESIDENTIAL TREATMENT_1.15.7` |
-| 1160 | `MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT_1.22.2` |
+| 67 | `MSC_INFERTILITY-IUI FEMALE` |
+| 158 | `EUC_EMERGENCY CARE` |
+| 191 | `EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE` |
+| 203 | `INF_FERTILITY-1334 BIRTH SEX FEMALE VETERAN` |
+| 207 | `INF_FERTILITY-1334 BIRTH SEX MALE VETERAN` |
+| 233 | `SSC_TRANSPLANT BONE MARROW COMP EVAL` |
+| 246 | `MSC_CRYOPRESERVATION STORAGE FOR IVF-ART` |
+| 268 | `MHC_MENTAL HEALTH RESIDENTIAL TREATMENT` |
+| 1160 | `MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT` |
 
 No Number/name identity appears in both catalogs. Search covers the Number and complete ID. At most 60 regular results are rendered at once; keep typing to narrow a larger result set.
 
@@ -409,7 +413,7 @@ Supported optional fields include:
 
 Payment Authority Code accepts up to five numeric digits. Later generated referrals increment the value so it remains unique.
 
-Network values are `CCN1`, `CCN2`, `CCN3`, `CCN4`, and `CCN5`.
+Network values are `CCN1`, `CCN2`, `CCN3`, `CCN4`, and `CCN5`. Leave Network in automatic mode to keep each referral's source value. Choose one value to use it for every referral, choose several to mix only that subset across referrals, or select `Use all available Network values` to mix all five. The selected mode is saved for the next app session.
 
 If an optional field is blank, the app keeps the source value unless that field's selected mode explicitly generates a value.
 
@@ -419,9 +423,9 @@ Referral processing uploads the final `.gz` archive. Enable `Upload the .gz file
 
 Referral Files can be uploaded only to these servers:
 
+- `SQA`
 - `DEV`
 - `PPD`
-- `SQA`
 
 `PROD` is not displayed and is rejected by the Referral backend. It remains available only for the separate LEIE Data workflow.
 
@@ -435,7 +439,7 @@ This location is specific to CCRS Referral uploads. LEIE Data uploads use the se
 
 Target toggles remain disabled until the main upload option is enabled.
 
-If one destination fails after the local artifact is complete, the app records the failed target and continues recording the completed ones. Select `Retry Failed Uploads` to resend the existing artifact only to the failed destinations. Do not rerun generation or processing unless the underlying data must change.
+All selected destinations start together. Each completed upload is verified by comparing the remote file size. If one destination fails after the local artifact is complete, the app records the failed target without cancelling the others. Select `Retry Failed Uploads` to resend the existing artifact only to the failed destinations. Do not rerun generation or processing unless the underlying data must change.
 
 ## Current Run Result Actions
 
@@ -534,7 +538,7 @@ Select or rescan the source. The default should match the original source base n
 
 ### LEIE Upload Appears Stuck
 
-Check the individual server status. The app verifies the remote file and limits disconnect waiting time. If a server reports an error, review its user, path, and connection test; later selected servers are still attempted.
+Check the individual server status. The app verifies the remote file and limits disconnect waiting time. If a server reports an error, review its user, path, and connection test; the other selected servers continue independently.
 
 ### A Large File Is Rejected
 

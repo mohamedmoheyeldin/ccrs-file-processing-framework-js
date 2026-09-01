@@ -38,14 +38,14 @@
       progressElement.max = safeTotal;
       progressElement.value = safeCurrent;
       progressElement.setAttribute("aria-valuetext", `${safeCurrent} of ${safeTotal}, ${percent}% complete`);
-      if (progressLabel) progressLabel.textContent = `${safeCurrent.toLocaleString()} of ${safeTotal.toLocaleString()} complete`;
+      if (progressLabel) progressLabel.textContent = `${safeCurrent.toLocaleString()} of ${safeTotal.toLocaleString()} finished`;
       if (progressValue) progressValue.textContent = `${percent}%`;
       return;
     }
 
     progressElement.removeAttribute("value");
     progressElement.setAttribute("aria-valuetext", "Work is in progress");
-    if (progressLabel) progressLabel.textContent = "Working on the current step...";
+    if (progressLabel) progressLabel.textContent = "Working — keep the app open...";
     if (progressValue) progressValue.textContent = "In progress";
   }
 

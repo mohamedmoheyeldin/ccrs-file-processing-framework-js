@@ -8,6 +8,8 @@ const XLSX = require("xlsx");
 
 const {
   ICN_MODES,
+  NETWORK_VALUES,
+  applySelectedNetworks,
   generateIcnFromReferralNumber,
   generateOptionalFieldOverrides,
   generatePaymentAuthorityCodeValue,
@@ -24,7 +26,7 @@ const {
   cleanupKnownTemporaryArtifacts,
   registerTemporaryPath,
 } = require("../electron/backend/runtimeCleanup");
-const { summarizeUploadProfiles, uploadFileWithSftp } = require("../electron/backend/uploader");
+const { summarizeUploadProfiles, uploadFileWithSftp, uploadTargetsInParallel } = require("../electron/backend/uploader");
 const {
   buildArchiveBasename,
   buildOutputFileNames,
@@ -112,7 +114,7 @@ test("LEIE validation SQL includes the requested query set and syntax highlighti
   assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
 });
 
-test("Version 1.4.1 metadata, combined user release notes, safety controls, and release automation stay consolidated", () => {
+test("Version 1.4.2 metadata, combined user release notes, safety controls, and release automation stay consolidated", () => {
   const versionConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "app_version.json"), "utf8"));
   const packageConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
@@ -129,9 +131,10 @@ test("Version 1.4.1 metadata, combined user release notes, safety controls, and 
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
 
-  assert.equal(versionConfig.version, "1.4.1");
-  assert.equal(versionConfig.releaseTag, "v1.4.1");
-  assert.equal(versionConfig.label, "Version 1.4.1");
+  assert.equal(versionConfig.version, "1.4.2");
+  assert.equal(versionConfig.releaseTag, "v1.4.2");
+  assert.equal(versionConfig.label, "Version 1.4.2");
+  assert.match(releaseNotes, /^# CCRS File Processing Framework Version 1\.4\.2/);
   assert.match(releaseNotes, /\[Version 1\.4\.1\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.4\.1\)/);
   assert.match(releaseNotes, /\[Version 1\.4\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.4\)/);
   assert.match(releaseNotes, /\[Version 1\.3\.11\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.11\)/);
@@ -158,7 +161,9 @@ test("Version 1.4.1 metadata, combined user release notes, safety controls, and 
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Archive naming")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("nine approved choices")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("same Number and ID never appears in both")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("manual regular or Situational SEOC choice")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Situational SEOC choice")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Network")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Starts selected uploads together")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Updates Electron to")), false);
   const userReleaseCopy = versionConfig.releaseNotes.join(" ");
   assert.doesNotMatch(userReleaseCopy, /Electron|smoke test|pnpm|deterministic|test coverage|SEOC\.xlsx|17-character|JSON|gzip|SHA-256/i);
@@ -194,7 +199,7 @@ test("Version 1.4.1 metadata, combined user release notes, safety controls, and 
   assert.match(rendererStyles, /\.upload-target-grid\s*\{[^}]*align-items:\s*start/s);
   assert.doesNotMatch(rendererStyles, /\.upload-target-grid\s*\{[^}]*180px/s);
   assert.match(rendererApp, /stationIdCombobox\.contains\(document\.activeElement\)/);
-  assert.match(workflowPolicy, /REFERRAL_UPLOAD_TARGET_NAMES = Object\.freeze\(\["DEV", "PPD", "SQA"\]\)/);
+  assert.match(workflowPolicy, /REFERRAL_UPLOAD_TARGET_NAMES = Object\.freeze\(\["SQA", "DEV", "PPD"\]\)/);
   assert.match(rendererApp, /PROD is not available for Referral Files/);
   assert.match(jobUi, /progressElement\.removeAttribute\("value"\)/);
   assert.match(jobUi, /percent/);
@@ -234,8 +239,48 @@ test("Version 1.4.1 metadata, combined user release notes, safety controls, and 
 });
 
 test("Workflow policy is authoritative for Referral and LEIE upload environments", () => {
-  assert.deepEqual(allowedUploadTargets("referral"), ["DEV", "PPD", "SQA"]);
-  assert.deepEqual(allowedUploadTargets("leie"), ["DEV", "PPD", "SQA", "PROD"]);
+  assert.deepEqual(allowedUploadTargets("referral"), ["SQA", "DEV", "PPD"]);
+  assert.deepEqual(allowedUploadTargets("leie"), ["SQA", "DEV", "PPD", "PROD"]);
+});
+
+test("Network choices can stay automatic or rotate across a selected subset", () => {
+  const automatic = { Referrals: [{ Network: "SOURCE1" }, { Network: "SOURCE2" }] };
+  applySelectedNetworks(automatic, {});
+  assert.deepEqual(automatic.Referrals.map((item) => item.Network), ["SOURCE1", "SOURCE2"]);
+
+  const selected = { Referrals: Array.from({ length: 6 }, () => ({ Network: "SOURCE" })) };
+  applySelectedNetworks(selected, { selectedNetworks: ["CCN2", "CCN4"] });
+  assert.deepEqual(new Set(selected.Referrals.map((item) => item.Network)), new Set(["CCN2", "CCN4"]));
+  assert.deepEqual(NETWORK_VALUES, ["CCN1", "CCN2", "CCN3", "CCN4", "CCN5"]);
+  assert.throws(() => applySelectedNetworks({ Referrals: [{}] }, { selectedNetworks: ["OTHER"] }), /not available/);
+});
+
+test("Selected upload targets run concurrently and one failure does not stop the others", async () => {
+  const targets = ["SQA", "DEV", "PPD"].map((serverName) => ({
+    server_name: serverName,
+    user_name: `${serverName.toLowerCase()}-user`,
+    remote_directory: `/${serverName.toLowerCase()}`,
+    connection_details: {},
+  }));
+  let active = 0;
+  let maxActive = 0;
+  const events = [];
+  const results = await uploadTargetsInParallel("fixture.gz", targets, {
+    onProgress: (event) => events.push(event),
+    upload: async (_localPath, remoteDirectory) => {
+      active += 1;
+      maxActive = Math.max(maxActive, active);
+      await new Promise((resolve) => setTimeout(resolve, remoteDirectory === "/dev" ? 5 : 15));
+      active -= 1;
+      if (remoteDirectory === "/dev") throw new Error("mock DEV connection failed");
+      return `${remoteDirectory}/fixture.gz`;
+    },
+  });
+  assert.equal(maxActive, 3);
+  assert.deepEqual(results.map((item) => item.serverName), ["SQA", "DEV", "PPD"]);
+  assert.deepEqual(results.map((item) => item.status), ["completed", "failed", "completed"]);
+  assert.equal(events.filter((event) => event.state === "uploading").length, 3);
+  assert.equal(events.at(-1).state, "upload-batch-warning");
 });
 
 test("Source and output safety rejects identical and nested folders", () => {
@@ -278,7 +323,7 @@ test("Diagnostic export excludes credentials and user file paths", async () => {
   const result = await backend.handleCommand("export-diagnostics", { outputDir });
   const reportText = fs.readFileSync(result.reportPath, "utf8");
   const report = JSON.parse(reportText);
-  assert.equal(report.appVersion, "1.4.1");
+  assert.equal(report.appVersion, "1.4.2");
   assert.equal(Object.prototype.hasOwnProperty.call(report.workflowPreferences, "inputDir"), false);
   assert.doesNotMatch(reportText, /password|ciphertext|connection_details/i);
 });
@@ -608,6 +653,11 @@ test("Referral number generation preserves the VA prefix and increments", () => 
     generateReferralNumber("ALPHABETICREFERRALBODY", 2),
     "VAALPHABETICREFERRALBODY2"
   );
+  assert.equal(generateReferralNumber("26S6-00001_TEST", 1), "VA26S6-00001_TEST");
+  assert.equal(generateReferralNumber("26S6_TEST-00001", 2), "VA26S6_TEST-00002");
+  assert.equal(generateReferralNumber("BODY_TEST", 2), "VABODY_TEST2");
+  assert.equal(generateReferralNumber("26S6_TEST-00001", 1, "VA-TEST_"), "VA-TEST_26S6_TEST-00001");
+  assert.equal(generateIcnFromReferralNumber("VA26S6_TEST-00001"), "TEST26S6TEST00001");
 });
 
 test("Referral uploads reject PROD while preserving it for the separate LEIE workflow", () => {
@@ -622,7 +672,7 @@ test("Referral uploads reject PROD while preserving it for the separate LEIE wor
         }],
       },
     }),
-    /Referral Files can be uploaded only to DEV, PPD, or SQA/
+    /Referral Files can be uploaded only to SQA, DEV, or PPD/
   );
 });
 
@@ -952,13 +1002,13 @@ test("modifyContent supports a custom suffix after TEST", () => {
     1,
     {},
     1,
-    prepareIcnSettings({ mode: ICN_MODES.TEST_CUSTOM_SUFFIX, value: "AB12" }),
+    prepareIcnSettings({ mode: ICN_MODES.TEST_CUSTOM_SUFFIX, value: "Ab12" }),
     1
   );
   const parsed = JSON.parse(result.content);
 
-  assert.match(parsed.Referrals[0].ICN, /^TESTAB12[A-Z0-9]{9}$/);
-  assert.match(parsed.Referrals[1].ICN, /^TESTAB12[A-Z0-9]{9}$/);
+  assert.match(parsed.Referrals[0].ICN, /^TESTAb12[A-Z0-9]{9}$/);
+  assert.match(parsed.Referrals[1].ICN, /^TESTAb12[A-Z0-9]{9}$/);
   assert.notEqual(parsed.Referrals[0].ICN, parsed.Referrals[1].ICN);
 });
 
@@ -991,12 +1041,12 @@ test("modifyContent supports a fully custom ICN base", () => {
     1,
     {},
     1,
-    prepareIcnSettings({ mode: ICN_MODES.CUSTOM_FULL, value: "AB12" }),
+    prepareIcnSettings({ mode: ICN_MODES.CUSTOM_FULL, value: "AbCd12" }),
     1
   );
   const parsed = JSON.parse(result.content);
 
-  assert.match(parsed.Referrals[0].ICN, /^AB12[A-Z0-9]{13}$/);
+  assert.match(parsed.Referrals[0].ICN, /^AbCd12[A-Z0-9]{11}$/);
   assert.equal(parsed.Referrals[0].ICN.length, 17);
   assert.equal(parsed.Referrals[1].ICN.length, 17);
   assert.notEqual(parsed.Referrals[0].ICN, parsed.Referrals[1].ICN);
@@ -1279,6 +1329,10 @@ test("UI settings normalize legacy theme values and persist user choices", () =>
       normalizeUiSettings({ referralPrefixMode: "custom", customReferralPrefix: "CCRS_TEST" }).customReferralPrefix,
       "CCRS_TEST"
     );
+    assert.equal(
+      normalizeUiSettings({ referralPrefixMode: "custom", customReferralPrefix: "CCRS-TEST_" }).customReferralPrefix,
+      "CCRS-TEST_"
+    );
     const longReferralPrefix = "CCRS_LONG_REFERRAL_PREFIX_WITHOUT_A_CHARACTER_LIMIT";
     assert.equal(
       normalizeUiSettings({ referralPrefixMode: "custom", customReferralPrefix: longReferralPrefix }).customReferralPrefix,
@@ -1291,7 +1345,7 @@ test("UI settings normalize legacy theme values and persist user choices", () =>
       selectedSeocKeys: ["1::A", "1::A"],
       useAllSituationalSeocs: true,
     });
-    assert.equal(namedSettings.schemaVersion, 3);
+    assert.equal(namedSettings.schemaVersion, 4);
     assert.equal(namedSettings.archiveNamingMode, "custom");
     assert.deepEqual(namedSettings.archiveCustomValues, ["referralNumber", "networkName"]);
     assert.deepEqual(namedSettings.selectedSeocKeys, ["1::A"]);
@@ -1347,8 +1401,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.4.1");
-    assert.equal(initialInfo.appVersion.label, "Version 1.4.1");
+    assert.equal(initialInfo.appVersion.version, "1.4.2");
+    assert.equal(initialInfo.appVersion.label, "Version 1.4.2");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);

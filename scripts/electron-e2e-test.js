@@ -149,17 +149,23 @@ async function run() {
     await window.locator("#referral-code").fill("12345678901234567890");
     await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("CUSTOM_PREFIX_WITHOUT_A_LIMIT_12345678901234567890"));
     assert.match(await window.locator("#referral-preview").textContent(), /CUSTOM_PREFIX_WITHOUT_A_LIMIT_12345678901234567890/);
+    await window.locator("#custom-referral-prefix").fill("Ccrs-Test_");
+    await window.locator("#referral-code").fill("abC-001_Test");
+    await window.locator("#referral-preview").waitFor({ state: "visible" });
+    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("Ccrs-Test_abC-001_Test"));
+    assert.match(await window.locator("#referral-preview").textContent(), /Ccrs-Test_abC-001_Test/);
     await window.locator("#custom-referral-prefix").fill("CCRS");
     await window.locator("#referral-code").fill("26S600001");
-    await window.locator("#referral-preview").waitFor({ state: "visible" });
-    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("CCRS26S600001"));
-    assert.match(await window.locator("#referral-preview").textContent(), /CCRS26S600001/);
     await window.locator("#referral-prefix-mixed").check();
     assert.equal(await window.locator("#keep-existing-files").isChecked(), true);
     assert.match(await window.locator("#output-retention-card").textContent(), /Recommended/);
     assert.match(await window.locator("#output-retention-card").textContent(), /Replace folder contents after success/);
     await window.locator("#toggle-optional-fields").click();
     await window.locator("#referral-prefix-custom").check();
+    await window.locator("#icn-mode-test-custom-suffix").check();
+    await window.locator("#icn-custom-value").fill("aBc123");
+    assert.equal(await window.locator("#icn-custom-value").inputValue(), "aBc123");
+    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TESTaBc123"));
     await window.locator("#icn-mode-referral-match").check();
     const optionCardSystem = await window.evaluate(() => {
       const metrics = (selector) => {
@@ -228,7 +234,7 @@ async function run() {
     await window.locator("#seoc-search").fill("AUD_AUDIOLOGY_1.0.1");
     const requestedPrimarySeoc = window.locator("#seoc-menu .combo-option").first();
     await requestedPrimarySeoc.waitFor({ state: "visible" });
-    assert.equal((await requestedPrimarySeoc.locator(".combo-option-title").textContent()).trim(), "AUD_AUDIOLOGY_1.0.1");
+    assert.equal((await requestedPrimarySeoc.locator(".combo-option-title").textContent()).trim(), "AUD_AUDIOLOGY");
     assert.equal((await requestedPrimarySeoc.locator(".combo-option-copy").textContent()).trim(), "SEOC Number: 11");
     if (process.env.CCRS_E2E_PRIMARY_SEOC_SCREENSHOT) {
       await window.screenshot({ path: process.env.CCRS_E2E_PRIMARY_SEOC_SCREENSHOT, fullPage: false });
@@ -240,11 +246,11 @@ async function run() {
     await window.locator("#seoc-search").fill("PMR_ACUPUNCTURE INITIAL");
     const primarySeoc = window.locator("#seoc-menu .combo-option", { hasText: "PMR_ACUPUNCTURE INITIAL" }).first();
     await primarySeoc.waitFor({ state: "visible" });
-    assert.equal((await primarySeoc.locator(".combo-option-title").textContent()).trim(), "PMR_ACUPUNCTURE INITIAL_1.0.17");
+    assert.equal((await primarySeoc.locator(".combo-option-title").textContent()).trim(), "PMR_ACUPUNCTURE INITIAL");
     assert.equal((await primarySeoc.locator(".combo-option-copy").textContent()).trim(), "SEOC Number: 1");
     await primarySeoc.click();
-    assert.equal(await window.locator("#selected-seocs .selected-station-chip", { hasText: "PMR_ACUPUNCTURE INITIAL_1.0.17" }).count(), 1);
-    assert.equal(await window.locator("#seoc-override-warning").isVisible(), true);
+    assert.equal(await window.locator("#selected-seocs .selected-station-chip", { hasText: "PMR_ACUPUNCTURE INITIAL" }).count(), 1);
+    assert.equal(await window.locator("#seoc-override-warning").isHidden(), true);
     await window.locator("#selected-seocs .selected-station-chip", { hasText: "PMR_ACUPUNCTURE INITIAL" }).click();
     assert.equal(await window.locator("#selected-seocs .selected-station-chip").count(), 0);
     assert.equal(await window.locator("#seoc-override-warning").isHidden(), true);
@@ -260,15 +266,17 @@ async function run() {
       await window.locator("#situational-seoc-combobox").scrollIntoViewIfNeeded();
       await window.screenshot({ path: process.env.CCRS_E2E_SITUATIONAL_SEOC_SCREENSHOT, fullPage: false });
     }
-    assert.equal((await situationalSeoc.locator(".combo-option-title").textContent()).trim(), "EUC_EMERGENCY CARE_1.2.8");
+    assert.equal((await situationalSeoc.locator(".combo-option-title").textContent()).trim(), "EUC_EMERGENCY CARE");
     assert.equal((await situationalSeoc.locator(".combo-option-copy").textContent()).trim(), "SEOC Number: 158");
     await situationalSeoc.click();
-    assert.equal(await window.locator("#selected-situational-seocs .selected-station-chip", { hasText: "EUC_EMERGENCY CARE_1.2.8" }).count(), 1);
+    assert.equal(await window.locator("#selected-situational-seocs .selected-station-chip", { hasText: "EUC_EMERGENCY CARE" }).count(), 1);
     assert.match(await window.locator("#seoc-override-warning").textContent(), /Most referrals use regular SEOC only/);
     await window.locator("#use-all-situational-seocs").check();
     assert.equal(await window.locator("#situational-seoc-search").isDisabled(), true);
     assert.match(await window.locator("#situational-seoc-match").textContent(), /All 9 available Situational SEOC values/);
     await window.locator("#use-all-situational-seocs").uncheck();
+    await window.locator("#network-search").fill("CCN1");
+    await window.locator("#network-menu .combo-option", { hasText: "CCN1" }).click();
     await window.locator('input[name="archive-naming-mode"][value="custom"]').check();
     assert.equal(await window.locator("#archive-custom-fields").isVisible(), true);
     assert.equal(await window.locator(".archive-custom-value").count(), 6);
@@ -293,11 +301,18 @@ async function run() {
     }
     await window.locator('[data-theme="dark"]').click();
     assert.equal(await window.locator("body").evaluate((element) => element.classList.contains("theme-dark")), true);
+    await window.waitForTimeout(200);
     const darkCardColors = await window.evaluate(() => ({
       selected: getComputedStyle(document.querySelector('.archive-mode-choices .choice-card:has(input:checked)')).backgroundColor,
       unselected: getComputedStyle(document.querySelector('.archive-mode-choices .choice-card:not(:has(input:checked))')).backgroundColor,
     }));
     assert.notEqual(darkCardColors.selected, darkCardColors.unselected);
+    const darkUnselectedChannels = darkCardColors.unselected.match(/[\d.]+/g).slice(0, 3).map(Number);
+    assert.equal(
+      darkUnselectedChannels.every((channel) => channel < 100),
+      true,
+      `Dark-theme unselected option cards should stay dark, received ${darkCardColors.unselected}`
+    );
     if (process.env.CCRS_E2E_DARK_HELP_SCREENSHOT) {
       await window.locator("#output-help").evaluate((element) => { element.open = true; });
       await window.locator("#output-help").scrollIntoViewIfNeeded();
@@ -316,10 +331,15 @@ async function run() {
     await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_2019-03-17_Final.json"));
     await window.locator('input[name="archive-naming-mode"][value="referral-number"]').check();
     await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_Final.json"));
-    await window.locator("#override-network").evaluate((select) => {
-      select.value = "CCN2";
-      select.dispatchEvent(new Event("change", { bubbles: true }));
-    });
+    await window.locator("#selected-networks .selected-station-chip", { hasText: "CCN1" }).click();
+    await window.locator("#network-search").fill("CCN2");
+    await window.locator("#network-menu .combo-option", { hasText: "CCN2" }).click();
+    assert.match(await window.locator("#network-match").textContent(), /CCN2 will be used for every referral/);
+    await window.locator("#network-search").fill("CCN4");
+    await window.locator("#network-menu .combo-option", { hasText: "CCN4" }).click();
+    assert.match(await window.locator("#network-match").textContent(), /mixed from the 2 selected Networks/);
+    await window.locator("#network-search").press("Escape");
+    await window.locator("#selected-networks .selected-station-chip", { hasText: "CCN4" }).click();
     await window.locator('input[name="archive-naming-mode"][value="network"]').check();
     await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCN2_CCRS26S600001_Final.json"));
     const uploadDirectoryNote = window.locator(".upload-path-help").first();
@@ -328,12 +348,16 @@ async function run() {
     const referralTargets = await window.locator(".upload-target").evaluateAll((rows) => rows
       .filter((row) => window.getComputedStyle(row).display !== "none")
       .map((row) => row.dataset.target));
-    assert.deepEqual(referralTargets, ["DEV", "PPD", "SQA"]);
+    assert.deepEqual(referralTargets, ["SQA", "DEV", "PPD"]);
     assert.equal(await window.locator('.upload-target[data-target="PROD"]').isHidden(), true);
     await assertControlSystem(window);
     await window.locator("[data-main-tab='leie']").click();
     assert.match(await uploadDirectoryNote.textContent(), /LEIE Data uploads default to \/in\/manual_process\//);
     assert.equal(await window.locator('.upload-target[data-target="PROD"]').isVisible(), true);
+    const leieTargets = await window.locator(".upload-target").evaluateAll((rows) => rows
+      .filter((row) => window.getComputedStyle(row).display !== "none")
+      .map((row) => row.dataset.target));
+    assert.deepEqual(leieTargets, ["SQA", "DEV", "PPD", "PROD"]);
     assert.equal(await window.locator("#output-help").isHidden(), true);
     assert.equal(await window.locator("#leie-output-help").isVisible(), true);
     assert.match(await window.locator("#leie-output-help").textContent(), /LEIE produces a processed \.xlsx file/);
@@ -343,6 +367,10 @@ async function run() {
     assert.equal(await window.locator("#output-help").isVisible(), true);
     assert.equal(await window.locator("#leie-output-help").isHidden(), true);
     await window.locator("#referral-prefix-mixed").check();
+    await window.locator("#referral-code").fill("26S6-00001_TEST");
+    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VAiFAMS26S6-00001_TEST"));
+    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST26S600001TEST"));
+    assert.match(await window.locator("#referral-prefix-help").textContent(), /hyphens \(-\).*underscores \(_\)/);
     await window.locator("#referral-code").fill("12345678901234567890");
     await window.locator("#icn-mode-referral-match").check();
     await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VAiFAMS12345678901234567890"));

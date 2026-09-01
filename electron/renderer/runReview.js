@@ -28,18 +28,24 @@
       ["Stations", command === "process-leie" ? "Not applicable" : stations],
       ["Upload destinations", uploads.length ? uploads.map((item) => `${item.server_name}: ${item.remote_directory}`).join("; ") : "Local output only"],
     ];
-    const regularSeocCount = payload.identityOptions?.useAllSeocs
-      ? "All regular values"
-      : (payload.identityOptions?.selectedSeocKeys || []).length;
     const situationalSeocCount = payload.identityOptions?.useAllSituationalSeocs
       ? "All Situational values"
       : (payload.identityOptions?.selectedSituationalSeocKeys || []).length;
-    if (regularSeocCount || situationalSeocCount) {
+    if (situationalSeocCount) {
       items.push([
-        "SEOC caution",
-        `Manual choice active: regular ${regularSeocCount || 0}; Situational ${situationalSeocCount || 0}. Most referrals use regular SEOC only.`,
+        "Situational SEOC caution",
+        `${situationalSeocCount} selected. Most referrals use regular SEOC only; confirm this Situational choice is required.`,
       ]);
     }
+    const networkValues = payload.identityOptions?.selectedNetworks || [];
+    items.push([
+      "Network plan",
+      networkValues.length === 1
+        ? `${networkValues[0]} will be used for every referral.`
+        : networkValues.length > 1
+          ? `${networkValues.join(", ")} will be mixed across referrals.`
+          : "Keep each referral's source Network automatically.",
+    ]);
     return items;
   }
 

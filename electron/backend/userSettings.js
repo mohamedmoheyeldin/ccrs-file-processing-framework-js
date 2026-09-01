@@ -4,7 +4,7 @@ const { bundlePath, dataPath, userDataPath } = require("./appPaths");
 const { writeFileAtomic } = require("./atomicFile");
 
 const DEFAULT_UI_SETTINGS = {
-  schemaVersion: 3,
+  schemaVersion: 4,
   theme: "light",
   mainTab: "referral",
   subTab: "edit",
@@ -40,6 +40,8 @@ const DEFAULT_UI_SETTINGS = {
   overridePaymentAuthorityCode: "",
   overrideReferralPeriod: "",
   overrideNetwork: "",
+  selectedNetworks: [],
+  useAllNetworks: false,
   overrideDob: "",
   overrideSeocKey: "",
   overrideSeocId: "",
@@ -135,7 +137,7 @@ function normalizeUiSettings(rawValue = {}) {
       : toBoolean(rawValue.useIfamsReferralPrefix, DEFAULT_UI_SETTINGS.useIfamsReferralPrefix)
         ? "ifams"
         : DEFAULT_UI_SETTINGS.referralPrefixMode,
-    customReferralPrefix: (String(rawValue.customReferralPrefix || "").match(/[A-Za-z0-9_]/g) || []).join(""),
+    customReferralPrefix: (String(rawValue.customReferralPrefix || "").match(/[A-Za-z0-9_-]/g) || []).join(""),
     referralCode: String(rawValue.referralCode || "").trim(),
     ssnValue: String(rawValue.ssnValue || DEFAULT_UI_SETTINGS.ssnValue).trim() || DEFAULT_UI_SETTINGS.ssnValue,
     randomizeSsn: toBoolean(rawValue.randomizeSsn, DEFAULT_UI_SETTINGS.randomizeSsn),
@@ -174,6 +176,16 @@ function normalizeUiSettings(rawValue = {}) {
     overridePaymentAuthorityCode: String(rawValue.overridePaymentAuthorityCode || "").trim(),
     overrideReferralPeriod: String(rawValue.overrideReferralPeriod || "").trim(),
     overrideNetwork: String(rawValue.overrideNetwork || "").trim(),
+    selectedNetworks: [...new Set(
+      (Array.isArray(rawValue.selectedNetworks)
+        ? rawValue.selectedNetworks
+        : rawValue.overrideNetwork
+          ? [rawValue.overrideNetwork]
+          : [])
+        .map((value) => String(value || "").trim().toUpperCase())
+        .filter((value) => ["CCN1", "CCN2", "CCN3", "CCN4", "CCN5"].includes(value))
+    )],
+    useAllNetworks: toBoolean(rawValue.useAllNetworks, DEFAULT_UI_SETTINGS.useAllNetworks),
     overrideDob: String(rawValue.overrideDob || "").trim(),
     overrideSeocKey: String(rawValue.overrideSeocKey || "").trim(),
     overrideSeocId: String(rawValue.overrideSeocId || "").trim(),
