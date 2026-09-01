@@ -1377,16 +1377,16 @@ body.theme-dark .leie-upload-validation-step5 {
 .choice-card-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .choice-card {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 9px;
   align-items: start;
-  min-height: 76px;
-  padding: 14px;
+  min-height: 66px;
+  padding: 11px 12px;
   border: 1px solid var(--panel-border);
   border-radius: var(--radius-md);
   background: var(--panel-strong);
@@ -1400,10 +1400,15 @@ body.theme-dark .leie-upload-validation-step5 {
   transform: translateY(-1px);
 }
 
+.choice-card:focus-within {
+  border-color: rgba(13, 110, 253, 0.78);
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+}
+
 .choice-card:has(input:checked) {
   border-color: rgba(13, 110, 253, 0.72);
   background: rgba(13, 110, 253, 0.08);
-  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+  box-shadow: inset 3px 0 0 var(--accent), 0 0 0 2px rgba(13, 110, 253, 0.08);
 }
 
 body.theme-dark .choice-card:has(input:checked) {
@@ -1416,7 +1421,7 @@ body.theme-dark .choice-card:has(input:checked) {
 
 .choice-card > span {
   display: grid;
-  gap: 5px;
+  gap: 3px;
 }
 
 .choice-card strong {
@@ -1428,7 +1433,18 @@ body.theme-dark .choice-card:has(input:checked) {
 .choice-card small {
   color: var(--text-secondary);
   font-size: 0.78rem;
-  line-height: 1.45;
+  line-height: 1.35;
+}
+
+.choice-card--compact {
+  min-height: 58px;
+  padding: 9px 10px;
+}
+
+.choice-card:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none;
 }
 
 .choice-card em {
@@ -1761,10 +1777,6 @@ body.theme-dark .upload-config-card {
   gap: 14px;
 }
 
-.archive-mode-choices {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
 .archive-custom-fields {
   display: grid;
   gap: 14px;
@@ -1779,8 +1791,7 @@ body.theme-dark .upload-config-card {
   gap: 4px;
 }
 
-.archive-custom-intro small,
-.archive-value-choice small {
+.archive-custom-intro small {
   color: var(--text-secondary);
 }
 
@@ -1788,28 +1799,6 @@ body.theme-dark .upload-config-card {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
-}
-
-.archive-value-choice {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  min-height: 68px;
-  padding: 12px;
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-md);
-  background: var(--panel-strong);
-  cursor: pointer;
-}
-
-.archive-value-choice:has(input:checked) {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-}
-
-.archive-value-choice span {
-  display: grid;
-  gap: 3px;
 }
 
 .archive-values-help {

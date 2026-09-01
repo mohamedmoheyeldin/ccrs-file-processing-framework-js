@@ -4,7 +4,7 @@
 
 ### Release Summary
 
-Version 1.3.11 expands source-backed Station and SEOC handling while making the main naming controls visually consistent. Station IDs are no longer rejected by an outdated length ceiling, and regular and Situational SEOC values can be searched, selected, mixed, cleared, restored, or used as a complete set. Referral, ICN, and Archive choices now share the same option-card design, and every affected preview follows the current user choices live. Referral Numbers now support unrestricted body and custom-prefix lengths, the combined VAiFAMS option is applied as one prefix, and Custom Archive naming uses an easy checkbox builder.
+Version 1.3.11 expands source-backed Station and SEOC handling while making the main naming controls visually consistent. Station IDs are no longer rejected by an outdated length ceiling, and regular and Situational SEOC values can be searched, selected, mixed, cleared, restored, or used as a complete set. Referral, ICN, Archive, output-behavior, and equivalent choices now share one compact option-card system, and every affected preview follows the current user choices live. Referral Numbers support unrestricted body and custom-prefix lengths, the combined VAiFAMS option is applied as one prefix, and Custom Archive naming uses an easy checkbox builder.
 
 The GitHub Release contains:
 
@@ -28,10 +28,12 @@ The GitHub Release contains:
 ### Naming and Filename Controls
 
 - Keeps VA, iFAMS, combined VAiFAMS, and Custom Referral Number choices in the established option-card layout.
+- Uses the compact Referral Number and ICN card treatment as the app-wide standard for equivalent choices, with consistent spacing, typography, selection, hover, keyboard-focus, disabled, light-theme, dark-theme, and responsive states.
 - VAiFAMS is applied as one prefix before the Starting number or body for every generated referral.
 - Referral Number bodies and Custom Referral prefixes have no character ceiling; Custom prefixes support letters, numbers, and underscores, including values such as `VA_TEST` and `PROJECT1_`.
 - Restyles ICN modes with the same option cards while preserving all existing generation modes.
 - Keeps focused Referral Number, Network Name, Referral DateTime, and Custom archive naming cards; the unclear standalone Prefix mode has been removed.
+- Places Archive naming choices in the same balanced two-column layout as Referral Number and ICN, reducing empty space and visual height.
 - Shows live `.json` and `.gz` filename previews and keeps the correct extension after settings change.
 - Custom Archive naming provides Select all and individual checkboxes for Referral Number, Referral Prefix, Network Name, Date, Date and Time, and Custom Text. Selected values use a predictable order, underscore separators, and an automatic `_Final` ending.
 - Removes illegal Windows filename characters, empty/trailing filename artifacts, and repeated `.json` or `.gz` extensions.

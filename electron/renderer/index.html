@@ -129,14 +129,14 @@
               </div>
               <div id="leie-duplicate-actions" class="output-retention-card hidden">
                 <span>Resolve Duplicates</span>
-                <div class="toggle-row">
-                  <label class="radio-chip">
+                <div class="choice-card-grid compact-option-grid" role="radiogroup" aria-label="Duplicate resolution">
+                  <label class="choice-card">
                     <input id="leie-action-auto" name="leie-duplicate-action" type="radio" value="auto-remove" />
-                    <span>Remove duplicates automatically (keep first)</span>
+                    <span><strong>Remove automatically</strong><small>Keep the first matching row and remove later matches.</small></span>
                   </label>
-                  <label class="radio-chip">
+                  <label class="choice-card">
                     <input id="leie-action-manual" name="leie-duplicate-action" type="radio" value="manual" checked />
-                    <span>Review and fix manually</span>
+                    <span><strong>Review manually</strong><small>Pause processing so the source data can be corrected and rescanned.</small></span>
                   </label>
                 </div>
                 <small id="leie-action-help" class="helper-text">
@@ -509,12 +509,12 @@
                     </div>
                     <label class="radio-chip archive-select-all"><input id="archive-custom-select-all" type="checkbox" /><span>Select all available values</span></label>
                     <div class="archive-custom-value-grid" role="group" aria-label="Custom archive filename values">
-                      <label class="archive-value-choice"><input id="archive-custom-value-referral-number" class="archive-custom-value" type="checkbox" value="referralNumber" checked /><span><strong>Referral Number</strong><small>{referralNumber}</small></span></label>
-                      <label class="archive-value-choice"><input id="archive-custom-value-referral-prefix" class="archive-custom-value" type="checkbox" value="referralPrefix" /><span><strong>Referral Prefix</strong><small>{referralPrefix}</small></span></label>
-                      <label class="archive-value-choice"><input id="archive-custom-value-network-name" class="archive-custom-value" type="checkbox" value="networkName" /><span><strong>Network Name</strong><small>{networkName}</small></span></label>
-                      <label class="archive-value-choice"><input id="archive-custom-value-date" class="archive-custom-value" type="checkbox" value="date" /><span><strong>Date</strong><small>{date}</small></span></label>
-                      <label class="archive-value-choice"><input id="archive-custom-value-date-time" class="archive-custom-value" type="checkbox" value="dateTime" /><span><strong>Date and Time</strong><small>{dateTime}</small></span></label>
-                      <label class="archive-value-choice"><input id="archive-custom-value-custom-text" class="archive-custom-value" type="checkbox" value="customText" checked /><span><strong>Custom Text</strong><small>{customText}</small></span></label>
+                      <label class="choice-card choice-card--compact archive-value-choice"><input id="archive-custom-value-referral-number" class="archive-custom-value" type="checkbox" value="referralNumber" checked /><span><strong>Referral Number</strong><small>{referralNumber}</small></span></label>
+                      <label class="choice-card choice-card--compact archive-value-choice"><input id="archive-custom-value-referral-prefix" class="archive-custom-value" type="checkbox" value="referralPrefix" /><span><strong>Referral Prefix</strong><small>{referralPrefix}</small></span></label>
+                      <label class="choice-card choice-card--compact archive-value-choice"><input id="archive-custom-value-network-name" class="archive-custom-value" type="checkbox" value="networkName" /><span><strong>Network Name</strong><small>{networkName}</small></span></label>
+                      <label class="choice-card choice-card--compact archive-value-choice"><input id="archive-custom-value-date" class="archive-custom-value" type="checkbox" value="date" /><span><strong>Date</strong><small>{date}</small></span></label>
+                      <label class="choice-card choice-card--compact archive-value-choice"><input id="archive-custom-value-date-time" class="archive-custom-value" type="checkbox" value="dateTime" /><span><strong>Date and Time</strong><small>{dateTime}</small></span></label>
+                      <label class="choice-card choice-card--compact archive-value-choice"><input id="archive-custom-value-custom-text" class="archive-custom-value" type="checkbox" value="customText" checked /><span><strong>Custom Text</strong><small>{customText}</small></span></label>
                     </div>
                     <label id="archive-custom-text-row" class="field-block"><span>Custom text</span><input id="archive-custom-text" type="text" maxlength="48" placeholder="Example: CCRS" /><small class="helper-text">Used only when Custom Text is selected above.</small></label>
                     <small id="archive-name-help" class="helper-text archive-values-help">Available values: {referralNumber}, {referralPrefix}, {networkName}, {date}, {dateTime}, {customText}.</small>

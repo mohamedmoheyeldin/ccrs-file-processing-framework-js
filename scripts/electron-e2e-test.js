@@ -145,6 +145,34 @@ async function run() {
     await window.locator("#toggle-optional-fields").click();
     await window.locator("#referral-prefix-custom").check();
     await window.locator("#icn-mode-referral-match").check();
+    const optionCardSystem = await window.evaluate(() => {
+      const metrics = (selector) => {
+        const target = document.querySelector(selector);
+        const card = target.matches(".choice-card") ? target : target.closest(".choice-card");
+        const style = getComputedStyle(card);
+        return {
+          minHeight: style.minHeight,
+          padding: style.padding,
+          borderRadius: style.borderRadius,
+          columns: getComputedStyle(card.closest(".choice-card-grid")).gridTemplateColumns.split(" ").length,
+        };
+      };
+      return {
+        referral: metrics(".referral-prefix-choices .choice-card"),
+        icn: metrics('input[name="icn-mode"]:checked'),
+        archive: metrics(".archive-mode-choices .choice-card"),
+      };
+    });
+    assert.deepEqual(optionCardSystem.referral, optionCardSystem.archive);
+    assert.deepEqual(optionCardSystem.referral, optionCardSystem.icn);
+    assert.equal(optionCardSystem.referral.minHeight, "66px");
+    assert.equal(optionCardSystem.referral.columns, 2);
+    assert.equal(optionCardSystem.archive.columns, 2);
+    assert.equal(optionCardSystem.icn.columns, 2);
+    if (process.env.CCRS_E2E_OPTION_CARD_SCREENSHOT) {
+      await window.locator(".referral-prefix-choices").scrollIntoViewIfNeeded();
+      await window.screenshot({ path: process.env.CCRS_E2E_OPTION_CARD_SCREENSHOT, fullPage: false });
+    }
     await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST000026S600001"));
     assert.equal(await window.locator("#icn-custom-value").isDisabled(), true);
     assert.match(await window.locator("#referral-preview").textContent(), /CCRS26S600001/);
@@ -226,6 +254,7 @@ async function run() {
     await window.locator('input[name="archive-naming-mode"][value="custom"]').check();
     assert.equal(await window.locator("#archive-custom-fields").isVisible(), true);
     assert.equal(await window.locator(".archive-custom-value").count(), 6);
+    assert.equal(await window.locator(".archive-value-choice.choice-card.choice-card--compact").count(), 6);
     assert.match(
       await window.locator(".archive-values-help").textContent(),
       /\{referralNumber\}.*\{referralPrefix\}.*\{networkName\}.*\{date\}.*\{dateTime\}.*\{customText\}/
@@ -244,6 +273,18 @@ async function run() {
       await window.locator(".archive-naming-card").scrollIntoViewIfNeeded();
       await window.screenshot({ path: process.env.CCRS_E2E_ARCHIVE_SCREENSHOT, fullPage: false });
     }
+    await window.locator('[data-theme="dark"]').click();
+    assert.equal(await window.locator("body").evaluate((element) => element.classList.contains("theme-dark")), true);
+    const darkCardColors = await window.evaluate(() => ({
+      selected: getComputedStyle(document.querySelector('.archive-mode-choices .choice-card:has(input:checked)')).backgroundColor,
+      unselected: getComputedStyle(document.querySelector('.archive-mode-choices .choice-card:not(:has(input:checked))')).backgroundColor,
+    }));
+    assert.notEqual(darkCardColors.selected, darkCardColors.unselected);
+    if (process.env.CCRS_E2E_DARK_OPTION_CARD_SCREENSHOT) {
+      await window.locator(".archive-naming-card").scrollIntoViewIfNeeded();
+      await window.screenshot({ path: process.env.CCRS_E2E_DARK_OPTION_CARD_SCREENSHOT, fullPage: false });
+    }
+    await window.locator('[data-theme="light"]').click();
     await window.locator("#archive-custom-select-all").uncheck();
     assert.equal(await window.locator(".archive-custom-value:checked").count(), 0);
     assert.equal(await window.locator("#archive-custom-text").isDisabled(), true);
@@ -285,6 +326,10 @@ async function run() {
     await window.setViewportSize({ width: 800, height: 700 });
     const hasHorizontalOverflow = await window.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
     assert.equal(hasHorizontalOverflow, false);
+    assert.equal(
+      await window.locator(".archive-mode-choices").evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length),
+      1
+    );
     const result = await window.evaluate(async (targetOutputDir) => window.ccrs.runJob("generate", {
       outputDir: targetOutputDir,
       replacementCode: "e2e_referral",

@@ -43,6 +43,8 @@ Automatic Station assignment shuffles either the user's selected `station_id` su
 
 `electron/backend/zipper.js` owns the reusable filename token model and Windows-safe normalization. Referral Number, Network, Referral DateTime, and Custom modes resolve the same tokens for processed JSON and gzip names, then add exactly one format-appropriate extension. Custom mode receives an ordered selection of Referral Number, Referral Prefix, Network Name, Date, Date and Time, and Custom Text values from the renderer's checkbox builder.
 
+The renderer uses `.choice-card` and `.choice-card-grid` as the shared option-selection component for Referral Number, ICN, Archive naming, output behavior, duplicate handling, and equivalent checkbox choices. The base component owns compact spacing, typography, two-column layout, and interaction states; `.choice-card--compact` is reserved for dense secondary choices such as Custom Archive values. Responsive rules collapse every option grid to one column without introducing horizontal overflow.
+
 ## Release boundary
 
 `config/app_version.json` is the canonical release record. `scripts/sync-build-version.js` propagates it to package metadata before start, test, and distribution tasks. `scripts/build-release.js` builds a Windows x64 NSIS Setup installer in a validated temporary directory outside the repository. GitHub Actions performs the authoritative Windows UI, installation, launch, executable, checksum, and release checks.
