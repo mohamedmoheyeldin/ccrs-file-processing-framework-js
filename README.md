@@ -148,7 +148,7 @@ pnpm verify
 - Source-backed Station IDs such as `675GB01` and `595GF01` remain exact through JSON and gzip output without length-only rejection.
 - Searchable SEOC and Situational SEOC controls support subsets, multiple values, clear, use-all, and saved state.
 - `SEOC.xlsx` is converted once into 761 deterministic application records and can be regenerated with `pnpm data:seoc`.
-- Referral Number, ICN, and Archive modes use the same established option-card design.
+- Referral Number, ICN, Archive, output-behavior, and equivalent choices use one compact, responsive option-card design throughout the app.
 - Archive naming includes Referral Number, Network, Referral DateTime, and Custom modes with live `.json` and `.gz` previews; Custom supports any or all of six clearly labeled filename values.
 - Filename safety removes illegal Windows characters and repeated extensions while user preferences are restored after restart.
 - Full current and historical notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).

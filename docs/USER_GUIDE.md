@@ -233,7 +233,7 @@ Set the starting referral number, `ListDate`, and any optional overrides. Previe
 
 ### Output
 
-Choose the output folder and, when needed, a processed JSON base name. Archive naming uses the same selectable option-card design as Referral Number and ICN modes:
+Choose the output folder and, when needed, a processed JSON base name. Archive naming uses the same compact two-column option cards as Referral Number and ICN:
 
 - `Referral Number` creates `<ReferralNumber>_Final`.
 - `Network Name` creates `<Network>_<ReferralNumber>_Final`.
