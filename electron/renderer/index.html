@@ -498,6 +498,14 @@
                   <div><strong>Existing files</strong><span>Keep existing files is safest. Replace folder contents acts only after the new batch succeeds, so use it only for a dedicated output folder.</span></div>
                 </div>
               </details>
+              <details id="leie-output-help" class="context-help hidden">
+                <summary>Understand LEIE output naming and safety</summary>
+                <div class="context-help-grid context-help-grid--three">
+                  <div><strong>Processed workbook</strong><span>Leave the name blank to keep the source base name, or enter a new base name. The app adds .xlsx automatically.</span></div>
+                  <div><strong>Source safety</strong><span>The source workbook remains unchanged. The processed copy is written only to the selected Output folder.</span></div>
+                  <div><strong>No Referral archive</strong><span>LEIE produces a processed .xlsx file. JSON naming, .gz Archive naming, and Referral retention choices do not apply.</span></div>
+                </div>
+              </details>
 
               <div class="form-grid two-col output-grid">
                 <label class="field-block field-span-2">
@@ -601,7 +609,7 @@
                 <div class="context-help-grid context-help-grid--three">
                   <div><strong>Import</strong><span>Importing a configuration only saves connection profiles in the app. It does not upload any file.</span></div>
                   <div><strong>Choose and test</strong><span>Enable upload, select the intended environment, and test its connection before starting the run.</span></div>
-                  <div><strong>Finish safely</strong><span>The app uploads only the completed output. Keep the app open until every selected target reports success; Production also requires confirmation.</span></div>
+                  <div><strong>Finish safely</strong><span>The app uploads only completed output. Keep it open until every selected target succeeds. Production is available only for LEIE and requires confirmation.</span></div>
                 </div>
               </details>
               <div class="upload-config-card">

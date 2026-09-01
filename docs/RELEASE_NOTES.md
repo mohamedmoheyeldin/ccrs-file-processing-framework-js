@@ -51,8 +51,8 @@ The GitHub Release contains:
 
 - Adds expandable help beside the main workflow, Referral Details, Output, and Upload areas so users can get an explanation only when they need it.
 - Explains the relationship between Referral Numbers and ICNs, automatic sequencing, blank optional overrides, selected subsets, and use-all behavior.
-- Separates processed JSON naming from final Archive naming and explains the safe difference between keeping existing files and replacing a dedicated output folder after success.
-- Clarifies that source files remain unchanged, importing an upload configuration does not upload anything, and upload starts only when explicitly enabled with a configured target.
+- Separates processed JSON naming from final Archive naming and explains the safe difference between keeping existing files and replacing a dedicated output folder after success; LEIE displays its own `.xlsx`-specific output guidance instead.
+- Clarifies that source files remain unchanged, importing an upload configuration does not upload anything, and upload starts only when explicitly enabled with a configured target. Production guidance appears only in the LEIE-specific context.
 - Marks live Referral Number, ICN, processed JSON, Station, and Payment Authority Code previews with a consistent visual label.
 - Keeps all help keyboard accessible, readable in light and dark themes, and single-column on narrow windows.
 

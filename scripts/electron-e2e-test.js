@@ -106,8 +106,10 @@ async function run() {
     assert.equal(await window.locator("#status-badge").textContent(), "Ready");
     assert.equal(await window.locator("#job-progress-wrap").isHidden(), true);
     assert.equal(await window.locator("#pre-run-overlay").isHidden(), true);
-    assert.equal(await window.locator(".context-help").count(), 4);
+    assert.equal(await window.locator(".context-help").count(), 5);
     assert.equal(await window.locator(".context-help[open]").count(), 0);
+    assert.equal(await window.locator("#output-help").isVisible(), true);
+    assert.equal(await window.locator("#leie-output-help").isHidden(), true);
     assert.equal(await window.locator("#workflow-help summary").textContent(), "New here? See how the five steps work");
     await window.locator("#workflow-help summary").click();
     assert.equal(await window.locator("#workflow-help").getAttribute("open"), "");
@@ -330,8 +332,14 @@ async function run() {
     await window.locator("[data-main-tab='leie']").click();
     assert.match(await uploadDirectoryNote.textContent(), /LEIE Data uploads default to \/in\/manual_process\//);
     assert.equal(await window.locator('.upload-target[data-target="PROD"]').isVisible(), true);
+    assert.equal(await window.locator("#output-help").isHidden(), true);
+    assert.equal(await window.locator("#leie-output-help").isVisible(), true);
+    assert.match(await window.locator("#leie-output-help").textContent(), /LEIE produces a processed \.xlsx file/);
+    assert.match(await window.locator("#upload-help").textContent(), /Production is available only for LEIE/);
     await assertControlSystem(window);
     await window.locator("[data-main-tab='referral']").click();
+    assert.equal(await window.locator("#output-help").isVisible(), true);
+    assert.equal(await window.locator("#leie-output-help").isHidden(), true);
     await window.locator("#referral-prefix-mixed").check();
     await window.locator("#referral-code").fill("12345678901234567890");
     await window.locator("#icn-mode-referral-match").check();

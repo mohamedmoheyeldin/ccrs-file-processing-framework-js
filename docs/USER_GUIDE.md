@@ -73,13 +73,13 @@ Available help covers:
 
 - the `Select`, `Configure`, `Validate`, `Process`, and `Upload` workflow steps
 - how Referral Number prefixes, starting bodies, ICNs, sequencing, and optional overrides work together
-- the difference between individual processed JSON names and the final Archive name
+- the difference between individual processed JSON names and the final Archive name; LEIE switches this panel to `.xlsx`-specific naming and source-safety guidance
 - safe handling of files already in the output folder
 - what importing, enabling, testing, and completing an optional upload actually does
 
 Messages marked `LIVE` are calculated from the current settings. Review them after changing a related option. A live preview usually shows the first generated value; later values continue the configured sequence while the app maintains batch uniqueness.
 
-The Source hint confirms that source files are read without being changed. Processed files are written only to the selected Output folder. Importing an upload configuration stores the available profiles in the app but does not upload a file; upload begins only when it is enabled and a configured target is selected for a completed run.
+The Source hint confirms that source files are read without being changed. Processed files are written only to the selected Output folder. Importing an upload configuration stores the available profiles in the app but does not upload a file; upload begins only when it is enabled and a configured target is selected for a completed run. Referral uploads use DEV, PPD, and SQA. Production is available only in the LEIE workflow and requires typed confirmation.
 
 ## Consistent Controls and Keyboard Use
 
