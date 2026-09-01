@@ -1,6 +1,6 @@
 {
   "name": "ccrs-file-processing-framework",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Pure JavaScript Electron desktop app for the CCRS File Processing Framework.",
   "main": "electron/main.js",
   "author": "Mohamed Moheyeldin (Eldin)",
@@ -24,7 +24,7 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "electron": "^44.0.0",
+    "electron": "^44.1.0",
     "electron-builder": "^26.15.3",
     "playwright": "^1.62.1"
   },
@@ -101,7 +101,7 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "perMachine": false,
-      "uninstallDisplayName": "CCRS File Processing Framework Version 1.4",
+      "uninstallDisplayName": "CCRS File Processing Framework Version 1.4.1",
       "installerIcon": "assets/icons/ccrs_app_icon.ico",
       "uninstallerIcon": "assets/icons/ccrs_app_icon.ico",
       "installerHeaderIcon": "assets/icons/ccrs_app_icon.ico"

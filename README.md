@@ -14,9 +14,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.4.0",
-  "releaseTag": "v1.4",
-  "label": "Version 1.4",
+  "version": "1.4.1",
+  "releaseTag": "v1.4.1",
+  "label": "Version 1.4.1",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -29,7 +29,7 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- The current user release is `Version 1.4` (`v1.4`). Version 1.3.7 remains documented as an internal release included in Version 1.3.8 and later releases.
+- The current user release is `Version 1.4.1` (`v1.4.1`). Version 1.3.7 remains documented as an internal release included in Version 1.3.8 and later releases.
 - `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
@@ -61,7 +61,7 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.4`.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.4.1`.
 
 The workflow requires the tag to match `releaseTag`. While a version remains the active release line, rerunning the workflow updates that same GitHub Release in place, replaces its two verified assets, and rebuilds the release body from the complete `releaseNotes` list so earlier highlights remain present. Start a newer version only after the release metadata is intentionally advanced.
 It also refuses to build a release when `releaseNotes` is empty.
@@ -101,7 +101,7 @@ Files that are kept in sync from the shipped app:
 - Use the bundled CCN1 all-fields reference templates stored under `templates\referrals`
 - Generate unique `999`-prefixed test SSNs and random DOBs per patient, or apply fixed overrides when needed
 - Search all imported station rows by station key, station ID, VISN, station name, or parent station ID
-- Search and multi-select synchronized SEOC and Situational SEOC Number/ID pairs, or use the complete installed catalog
+- Search regular SEOC Number/ID pairs, or manually select from the separate nine-value Situational SEOC catalog when required
 - Choose how ICNs should be generated: derive `TEST` plus the Referral Number body, keep `TEST`, keep `TEST` with a custom suffix, or use a custom full ICN base
 - Choose `VA`, `iFAMS`, combined `VAiFAMS`, or a letters/numbers/underscore custom prefix for generated Referral Numbers
 - Match the last 3, 4, or 5 characters of each Referral Number and ICN
@@ -135,7 +135,7 @@ pnpm verify
 
 ## SEOC reference data
 
-`config\seoc_options.json` is generated from `SEOC.xlsx` and is consumed directly at runtime. Each record preserves the source SEOC Number and latest versioned SEOC ID, includes a concise display name, and is sorted deterministically. Version suffixes are normalized only for logical deduplication; the selected source SEOC ID written to referral output remains exact.
+`config\seoc_options.json` is generated from `SEOC.xlsx` and contains the regular catalog used automatically by referrals. `config\situational_seoc_options.json` contains the separate nine-value manual-only Situational catalog. The importer excludes every Situational Number/name identity from the regular catalog so the two dropdowns cannot overlap. Each option preserves its exact versioned SEOC ID and matching Number.
 
 To refresh the SEOC catalog from a replacement workbook:
 
@@ -144,7 +144,12 @@ pnpm data:seoc -- /path/to/SEOC.xlsx
 pnpm verify
 ```
 
-## Version 1.4 Highlights
+## Version 1.4.1 Highlights
+- Includes every Version 1.4 improvement listed in the historical notes.
+- Keeps regular and Situational SEOC choices in separate, non-overlapping catalogs.
+- Limits Situational SEOC to nine approved manual-only choices.
+- Displays the complete SEOC ID with its matching Number directly underneath.
+- Uses regular source SEOC values automatically and warns whenever a manual override is active.
 - Expandable help makes the five-step workflow and its most important choices easier to understand.
 - Live previews make it easier to confirm names, Station values, and other choices before creating files.
 - Referral Number, ICN, Archive naming, and similar choices share one compact, professional design.
@@ -156,6 +161,7 @@ pnpm verify
 
 Previous release notes:
 
+- [Version 1.4](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.4)
 - [Version 1.3.11](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.11)
 - [Version 1.3.10](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.10)
 - [Version 1.3.9](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.9)

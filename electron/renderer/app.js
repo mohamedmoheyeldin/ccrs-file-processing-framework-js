@@ -54,6 +54,8 @@ const state = {
   selectedSituationalSeocKeys: [],
   seocBySelectorKey: new Map(),
   seocSearchIndex: [],
+  situationalSeocBySelectorKey: new Map(),
+  situationalSeocSearchIndex: [],
   stationById: new Map(),
   stationSearchIndex: [],
   stationSelectableCount: 0,
@@ -332,16 +334,13 @@ function getStationOptions() {
   return Array.isArray(state.info?.stations) ? state.info.stations : [];
 }
 
-function getSeocOptions() {
-  return Array.isArray(state.info?.seocOptions) ? state.info.seocOptions : [];
+function getSeocOptions(situational = false) {
+  const key = situational ? "situationalSeocOptions" : "seocOptions";
+  return Array.isArray(state.info?.[key]) ? state.info[key] : [];
 }
 
 function getSeocVisibleName(option = {}) {
-  const name = String(option.name || "").trim();
-  if (name) return name;
-  return String(option.displayName || "")
-    .replace(/\s+-\s+\d+\s*$/, "")
-    .trim();
+  return String(option.seocId || option.name || option.displayName || "").trim();
 }
 
 function getSeocSelectorConfig(situational = false) {
@@ -356,6 +355,9 @@ function getSeocSelectorConfig(situational = false) {
         match: elements.situationalSeocMatch,
         useAll: elements.useAllSituationalSeocs,
         label: "Situational SEOC",
+        situational: true,
+        optionMapKey: "situationalSeocBySelectorKey",
+        searchIndexKey: "situationalSeocSearchIndex",
       }
     : {
         selectedKey: "selectedSeocKeys",
@@ -367,7 +369,18 @@ function getSeocSelectorConfig(situational = false) {
         match: elements.seocMatch,
         useAll: elements.useAllSeocs,
         label: "SEOC",
+        situational: false,
+        optionMapKey: "seocBySelectorKey",
+        searchIndexKey: "seocSearchIndex",
       };
+}
+
+function syncSeocOverrideWarning() {
+  const hasManualChoice = state.selectedSeocKeys.length > 0 ||
+    state.selectedSituationalSeocKeys.length > 0 ||
+    Boolean(elements.useAllSeocs?.checked) ||
+    Boolean(elements.useAllSituationalSeocs?.checked);
+  elements.seocOverrideWarning?.classList.toggle("hidden", !hasManualChoice);
 }
 
 function setSeocMenuOpen(config, open) {
@@ -379,7 +392,7 @@ function setSeocMenuOpen(config, open) {
 function renderSelectedSeocs(config) {
   config.selected.innerHTML = "";
   for (const selectorKey of state[config.selectedKey]) {
-    const option = state.seocBySelectorKey.get(selectorKey);
+    const option = state[config.optionMapKey].get(selectorKey);
     if (!option) continue;
     const chip = document.createElement("button");
     chip.type = "button";
@@ -391,19 +404,22 @@ function renderSelectedSeocs(config) {
     config.selected.append(chip);
   }
   if (config.useAll.checked) {
-    config.match.textContent = `All ${getSeocOptions().length.toLocaleString()} available ${config.label} values will be used.`;
+    config.match.textContent = `All ${getSeocOptions(config.situational).length.toLocaleString()} available ${config.label} values will be used.`;
   } else if (state[config.selectedKey].length > 0) {
     config.match.textContent = `${state[config.selectedKey].length.toLocaleString()} ${config.label} value${state[config.selectedKey].length === 1 ? "" : "s"} selected.`;
   } else {
-    config.match.textContent = `Automatic mode ${config.label === "SEOC" ? "keeps source SEOC values" : "leaves Situational SEOC values unchanged"}.`;
+    config.match.textContent = config.situational
+      ? "Manual only: no Situational SEOC is added unless you select one here."
+      : "Automatic mode uses each referral's regular source SEOC Number and ID.";
   }
   config.input.disabled = config.useAll.checked;
   config.toggle.disabled = config.useAll.checked;
+  syncSeocOverrideWarning();
 }
 
 function renderSeocMenu(config) {
   const query = config.input.value.trim().toLowerCase();
-  const matches = state.seocSearchIndex.filter((entry) => !query || entry.searchText.includes(query));
+  const matches = state[config.searchIndexKey].filter((entry) => !query || entry.searchText.includes(query));
   config.menu.innerHTML = "";
   for (const entry of matches.slice(0, SEOC_RESULT_LIMIT)) {
     const option = entry.option;
@@ -414,7 +430,10 @@ function renderSeocMenu(config) {
     const title = document.createElement("span");
     title.className = "combo-option-title";
     title.textContent = getSeocVisibleName(option);
-    button.append(title);
+    const copy = document.createElement("span");
+    copy.className = "combo-option-copy";
+    copy.textContent = `SEOC Number: ${option.seocNumber}`;
+    button.append(title, copy);
     config.menu.append(button);
   }
   if (matches.length === 0) {
@@ -1147,7 +1166,7 @@ async function applyUiSettings(settings = {}) {
   state.selectedSituationalSeocKeys = [...new Set(
     (Array.isArray(settings.selectedSituationalSeocKeys) ? settings.selectedSituationalSeocKeys : [])
       .map((value) => String(value || ""))
-      .filter((value) => state.seocBySelectorKey.has(value))
+      .filter((value) => state.situationalSeocBySelectorKey.has(value))
   )];
   elements.useAllSeocs.checked = Boolean(settings.useAllSeocs);
   elements.useAllSituationalSeocs.checked = Boolean(settings.useAllSituationalSeocs);
@@ -1415,6 +1434,17 @@ function applyInfo(info) {
   state.seocBySelectorKey = new Map();
   state.seocSearchIndex = (info.seocOptions || []).map((option) => {
     state.seocBySelectorKey.set(option.selectorKey, option);
+    return {
+      option,
+      searchText: [option.displayName, option.name, option.seocNumber, option.seocKey, option.seocId]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase(),
+    };
+  });
+  state.situationalSeocBySelectorKey = new Map();
+  state.situationalSeocSearchIndex = (info.situationalSeocOptions || []).map((option) => {
+    state.situationalSeocBySelectorKey.set(option.selectorKey, option);
     return {
       option,
       searchText: [option.displayName, option.name, option.seocNumber, option.seocKey, option.seocId]
@@ -2765,6 +2795,7 @@ function cacheElements() {
     selectedSituationalSeocs: $("selected-situational-seocs"),
     situationalSeocMatch: $("situational-seoc-match"),
     useAllSituationalSeocs: $("use-all-situational-seocs"),
+    seocOverrideWarning: $("seoc-override-warning"),
     overrideNetwork: $("override-network"),
     overrideReferralCategory: $("override-referral-category"),
     overrideReferralConsultId: $("override-referral-consult-id"),

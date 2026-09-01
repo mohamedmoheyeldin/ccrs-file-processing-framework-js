@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Version 1.4`, including source-backed Station IDs, searchable regular and Situational SEOC selection, consistent Referral/ICN/Archive naming controls, expandable in-app help, safe live filename previews, batch auditing, and recovery controls.
+This guide covers `Version 1.4.1`, including separate regular and manual-only Situational SEOC catalogs, consistent Referral/ICN/Archive naming controls, expandable in-app help, safe live filename previews, batch auditing, and recovery controls.
 
 ## Purpose
 
@@ -17,7 +17,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download `CCRS.File.Processing.Framework.Setup.Version.1.4.exe` from the GitHub Releases page and run the installer.
+Download `CCRS.File.Processing.Framework.Setup.Version.1.4.1.exe` from the GitHub Releases page and run the installer.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 
@@ -41,7 +41,7 @@ The app automatically displays the current release notes:
 
 Select `Start Using The App` to acknowledge the notes. The same release notes will not open again on later launches, but a future release with a new release identifier will display its own notes once. This acknowledgement is stored in the current user's AppData so reinstalling or changing the installation folder does not confuse an older release with a newer one.
 
-Complete current and historical notes are available in the repository's Release Notes document. Published notes and installers for Version 1.3.11 and Version 1.3.10 remain available on the GitHub Releases page.
+Complete current and historical notes are available in the repository's Release Notes document. Published notes and installers for Version 1.4, Version 1.3.11, and earlier releases remain available on the GitHub Releases page.
 
 ## Before You Begin
 
@@ -369,15 +369,29 @@ Rules:
 
 ### SEOC Number - SEOC ID
 
-The regular and red-labeled `Situational SEOC Number - SEOC ID` controls share the Stations selector's search, menu, chip, focus, and scroll behavior. Leave either selector in automatic mode to preserve existing values, select one pair, select several pairs to mix them across referrals, clear chips, or choose the independent use-all option.
+The regular and red-labeled `Situational SEOC Number - SEOC ID` controls share the Stations selector's search, menu, chip, focus, and scroll behavior, but they serve different purposes. Regular SEOC works automatically from each referral's existing Number and ID. Choose a regular value only when you intentionally need an override.
 
-Both dropdowns and their selected chips show the clean SEOC name only, such as `AUD_AUDIOLOGY`. The SEOC Number, version text, and exact SEOC ID remain available behind the selection for searching and generated JSON, but are not appended to the visible name.
+Situational SEOC is manual-only. The app does not select a Situational value automatically. Use it only when a referral specifically requires one. Selecting anything in either dropdown displays a reminder because most referrals use regular SEOC only.
 
-Each stored record keeps its source Number and exact latest versioned SEOC ID paired behind the clean visible name. Those paired values are written to referral data; the app never combines the Number from one record with the ID from another.
+Each dropdown option shows the complete versioned SEOC ID as its main name and `SEOC Number: ...` directly underneath. The paired values are always applied together; the app never combines the Number from one record with the ID from another.
 
-The bundled `config/seoc_options.json` contains 761 deterministic logical records converted from `SEOC.xlsx`. Search covers the display name, source Number, and exact versioned ID. At most 60 results are rendered at once; keep typing to narrow a larger result set.
+The regular catalog contains 752 choices converted from `SEOC.xlsx`. The Situational catalog contains only these nine approved choices:
 
-Selections and use-all choices are saved independently for regular and Situational SEOC. When the app reopens, valid selections return. A saved record that no longer exists in a refreshed catalog is removed safely and that selector falls back to automatic behavior.
+| SEOC Number | SEOC ID |
+| --- | --- |
+| 67 | `MSC_INFERTILITY-IUI FEMALE_1.3.3_PRCT` |
+| 158 | `EUC_EMERGENCY CARE_1.2.8` |
+| 191 | `EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE_1.4.2_PRCT` |
+| 203 | `INF_FERTILITY-1334 BIRTH SEX FEMALE VETERAN_1.4.14` |
+| 207 | `INF_FERTILITY-1334 BIRTH SEX MALE VETERAN_1.5.14` |
+| 233 | `SSC_TRANSPLANT BONE MARROW COMP EVAL_1.11.2_PRCT` |
+| 246 | `MSC_CRYOPRESERVATION STORAGE FOR IVF-ART_1.8.1_PRCT` |
+| 268 | `MHC_MENTAL HEALTH RESIDENTIAL TREATMENT_1.15.7` |
+| 1160 | `MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT_1.22.2` |
+
+No Number/name identity appears in both catalogs. Search covers the Number and complete ID. At most 60 regular results are rendered at once; keep typing to narrow a larger result set.
+
+Selections and use-all choices are saved independently for regular and Situational SEOC. When the app reopens, valid selections return. A saved record that no longer exists in its catalog is removed safely. With no manual selection, regular SEOC stays automatic and Situational SEOC remains unused.
 
 ## Other Optional Referral Fields
 

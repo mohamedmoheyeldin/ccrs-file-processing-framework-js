@@ -348,22 +348,10 @@
     "displayName": "EUC_DOD ONLY UC - 284"
   },
   {
-    "seocNumber": "158",
-    "seocId": "EUC_EMERGENCY CARE_1.2.8",
-    "name": "EUC_EMERGENCY CARE",
-    "displayName": "EUC_EMERGENCY CARE - 158"
-  },
-  {
     "seocNumber": "49",
     "seocId": "EUC_EMERGENCY/URGENT CARE_1.0.2_PRCT",
     "name": "EUC_EMERGENCY/URGENT CARE",
     "displayName": "EUC_EMERGENCY/URGENT CARE - 49"
-  },
-  {
-    "seocNumber": "191",
-    "seocId": "EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE_1.4.2_PRCT",
-    "name": "EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE",
-    "displayName": "EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE - 191"
   },
   {
     "seocNumber": "190",
@@ -420,22 +408,10 @@
     "displayName": "INF_FERTILITY-1334 BIRTH SEX FEMALE SPOUSE - 1139"
   },
   {
-    "seocNumber": "203",
-    "seocId": "INF_FERTILITY-1334 BIRTH SEX FEMALE VETERAN_1.4.14",
-    "name": "INF_FERTILITY-1334 BIRTH SEX FEMALE VETERAN",
-    "displayName": "INF_FERTILITY-1334 BIRTH SEX FEMALE VETERAN - 203"
-  },
-  {
     "seocNumber": "1140",
     "seocId": "INF_FERTILITY-1334 BIRTH SEX MALE SPOUSE_1.8.3",
     "name": "INF_FERTILITY-1334 BIRTH SEX MALE SPOUSE",
     "displayName": "INF_FERTILITY-1334 BIRTH SEX MALE SPOUSE - 1140"
-  },
-  {
-    "seocNumber": "207",
-    "seocId": "INF_FERTILITY-1334 BIRTH SEX MALE VETERAN_1.5.14",
-    "name": "INF_FERTILITY-1334 BIRTH SEX MALE VETERAN",
-    "displayName": "INF_FERTILITY-1334 BIRTH SEX MALE VETERAN - 207"
   },
   {
     "seocNumber": "203",
@@ -706,12 +682,6 @@
     "seocId": "MHC_MENTAL HEALTH OUTPATIENT 12M_1.12.11",
     "name": "MHC_MENTAL HEALTH OUTPATIENT 12M",
     "displayName": "MHC_MENTAL HEALTH OUTPATIENT 12M - 256"
-  },
-  {
-    "seocNumber": "268",
-    "seocId": "MHC_MENTAL HEALTH RESIDENTIAL TREATMENT_1.15.7",
-    "name": "MHC_MENTAL HEALTH RESIDENTIAL TREATMENT",
-    "displayName": "MHC_MENTAL HEALTH RESIDENTIAL TREATMENT - 268"
   },
   {
     "seocNumber": "1281",
@@ -1002,12 +972,6 @@
     "displayName": "MHC_PSYCHOTHERAPY OUTPATIENT 12M - 101"
   },
   {
-    "seocNumber": "1160",
-    "seocId": "MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT_1.22.2",
-    "name": "MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT",
-    "displayName": "MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT - 1160"
-  },
-  {
     "seocNumber": "220",
     "seocId": "MHC_TREATMENT RESISTANT DEPRESSION_1.10.12",
     "name": "MHC_TREATMENT RESISTANT DEPRESSION",
@@ -1206,12 +1170,6 @@
     "displayName": "MSC_CRYOPRESERVATION STORAGE FOR INFERTILITY - 245"
   },
   {
-    "seocNumber": "246",
-    "seocId": "MSC_CRYOPRESERVATION STORAGE FOR IVF-ART_1.8.1_PRCT",
-    "name": "MSC_CRYOPRESERVATION STORAGE FOR IVF-ART",
-    "displayName": "MSC_CRYOPRESERVATION STORAGE FOR IVF-ART - 246"
-  },
-  {
     "seocNumber": "45",
     "seocId": "MSC_DERMATOLOGY_1.0.14",
     "name": "MSC_DERMATOLOGY",
@@ -1408,12 +1366,6 @@
     "seocId": "MSC_INFERTILITY-FEMALE_1.3.6_PRCT",
     "name": "MSC_INFERTILITY-FEMALE",
     "displayName": "MSC_INFERTILITY-FEMALE - 67"
-  },
-  {
-    "seocNumber": "67",
-    "seocId": "MSC_INFERTILITY-IUI FEMALE_1.3.3_PRCT",
-    "name": "MSC_INFERTILITY-IUI FEMALE",
-    "displayName": "MSC_INFERTILITY-IUI FEMALE - 67"
   },
   {
     "seocNumber": "68",
@@ -4384,12 +4336,6 @@
     "seocId": "SSC_THORACIC SURGERY_1.0.13_REV",
     "name": "SSC_THORACIC SURGERY",
     "displayName": "SSC_THORACIC SURGERY - 127"
-  },
-  {
-    "seocNumber": "233",
-    "seocId": "SSC_TRANSPLANT BONE MARROW COMP EVAL_1.11.2_PRCT",
-    "name": "SSC_TRANSPLANT BONE MARROW COMP EVAL",
-    "displayName": "SSC_TRANSPLANT BONE MARROW COMP EVAL - 233"
   },
   {
     "seocNumber": "236",

@@ -1,8 +1,8 @@
 {
-  "version": "1.4.0",
-  "releaseTag": "v1.4",
-  "label": "Version 1.4",
-  "announcementId": "v1.4|Version 1.4|2026-08-31-user-friendly-release",
+  "version": "1.4.1",
+  "releaseTag": "v1.4.1",
+  "label": "Version 1.4.1",
+  "announcementId": "v1.4.1|Version 1.4.1|2026-09-01-seoc-guidance",
   "releaseNotes": [
     "Adds expandable help throughout the main workflow so each step is easier to understand when guidance is needed.",
     "Shows clear live previews as choices change, making it easier to confirm Referral Numbers, ICNs, Station values, and filenames before creating files.",
@@ -15,6 +15,11 @@
     "Makes Archive naming easier with ready-made choices or a Custom checkbox builder, plus an immediate filename preview.",
     "Uses the same compact, professional choice-card design throughout the app in both light and dark themes.",
     "Makes keeping or replacing existing output files easier to understand before a run begins.",
-    "Explains the difference between Referral and LEIE output, including which upload destinations are available, and remembers user choices after the app restarts."
+    "Explains the difference between Referral and LEIE output, including which upload destinations are available, and remembers user choices after the app restarts.",
+    "Separates regular and Situational SEOC choices so the same Number and ID never appears in both lists.",
+    "Limits Situational SEOC to the nine approved choices and uses them only when a user selects them manually.",
+    "Shows the complete SEOC ID as the main name and its matching SEOC Number directly underneath in both lists.",
+    "Keeps each referral's regular SEOC Number and ID automatically unless a user intentionally chooses an override.",
+    "Shows a clear reminder whenever a manual regular or Situational SEOC choice is active."
   ]
 }

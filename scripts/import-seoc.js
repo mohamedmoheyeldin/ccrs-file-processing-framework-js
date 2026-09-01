@@ -1,10 +1,14 @@
 const fs = require("fs");
 const path = require("path");
 const XLSX = require("xlsx");
+const situationalSeocOptions = require("../config/situational_seoc_options.json");
 
 const SEOC_NUMBER_COLUMN = "seoc_source_key/Number";
 const SEOC_ID_COLUMN = "seoc_id";
 const VERSION_SUFFIX_PATTERN = /_(\d+(?:\.\d+){1,3})(?:_([A-Za-z0-9_]+))?$/;
+const SITUATIONAL_LOGICAL_KEYS = new Set(
+  situationalSeocOptions.map((option) => `${String(option.seocNumber)}\u0000${String(option.name)}`)
+);
 
 function normalizeCell(value) {
   return String(value ?? "").trim();
@@ -54,6 +58,7 @@ function convertWorksheet(worksheet) {
     const parsed = splitVersionedSeocId(seocId);
     if (!parsed.name) continue;
     const identity = `${seocNumber}\u0000${parsed.name}`;
+    if (SITUATIONAL_LOGICAL_KEYS.has(identity)) continue;
     const candidate = {
       seocNumber,
       seocId,
