@@ -4,7 +4,7 @@
 
 ### Release Summary
 
-Version 1.3.11 expands source-backed Station and SEOC handling while making the main naming controls visually consistent. Station IDs are no longer rejected by an outdated length ceiling, and regular and Situational SEOC values can be searched, selected, mixed, cleared, restored, or used as a complete set. Referral, ICN, Archive, output-behavior, and equivalent choices now share one compact option-card system, and every affected preview follows the current user choices live. Referral Numbers support unrestricted body and custom-prefix lengths, the combined VAiFAMS option is applied as one prefix, and Custom Archive naming uses an easy checkbox builder.
+Version 1.3.11 expands source-backed Station and SEOC handling while making the main naming controls visually consistent and easier to understand. Station IDs are no longer rejected by an outdated length ceiling, and regular and Situational SEOC values can be searched, selected, mixed, cleared, restored, or used as a complete set. Referral, ICN, Archive, output-behavior, and equivalent choices now share one compact option-card system, and every affected preview follows the current user choices live. Referral Numbers support unrestricted body and custom-prefix lengths, the combined VAiFAMS option is applied as one prefix, and Custom Archive naming uses an easy checkbox builder. Expandable guidance now explains the five-step workflow, key naming relationships, output safety, and optional uploads without crowding the main form.
 
 The GitHub Release contains:
 
@@ -46,6 +46,15 @@ The GitHub Release contains:
 - Keeps every Referral-derived ICN unique. When a long Referral Number fills the available ICN space, the app shortens the end only as needed and adds a batch-sequence marker.
 - Updates the Custom Archive filename preview immediately as values are selected, cleared, or edited.
 - Places `SEOC Number - SEOC ID` and `Situational SEOC Number - SEOC ID` beside each other on standard desktop widths while preserving the responsive single-column layout on narrow windows.
+
+### In-App Help and Guidance
+
+- Adds expandable help beside the main workflow, Referral Details, Output, and Upload areas so users can get an explanation only when they need it.
+- Explains the relationship between Referral Numbers and ICNs, automatic sequencing, blank optional overrides, selected subsets, and use-all behavior.
+- Separates processed JSON naming from final Archive naming and explains the safe difference between keeping existing files and replacing a dedicated output folder after success; LEIE displays its own `.xlsx`-specific output guidance instead.
+- Clarifies that source files remain unchanged, importing an upload configuration does not upload anything, and upload starts only when explicitly enabled with a configured target. Production guidance appears only in the LEIE-specific context.
+- Marks live Referral Number, ICN, processed JSON, Station, and Payment Authority Code previews with a consistent visual label.
+- Keeps all help keyboard accessible, readable in light and dark themes, and single-column on narrow windows.
 
 ### Persistence, Validation, and Testing
 

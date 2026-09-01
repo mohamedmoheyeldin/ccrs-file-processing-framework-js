@@ -2,7 +2,7 @@
   "version": "1.3.11",
   "releaseTag": "v1.3.11",
   "label": "Version 1.3.11",
-  "announcementId": "v1.3.11|Version 1.3.11|2026-08-31-unified-option-cards",
+  "announcementId": "v1.3.11|Version 1.3.11|2026-08-31-contextual-help",
   "releaseNotes": [
     "Preserves authoritative Station IDs such as 675GB01 and 595GF01 without rejecting them because of an outdated length limit.",
     "Adds searchable multi-select controls for paired SEOC and Situational SEOC values, including subset, use-all, clear, and saved-selection behavior.",
@@ -17,6 +17,7 @@
     "Keeps every Referral-derived ICN unique by shortening the end only when the 17-character ICN needs room for a uniqueness marker.",
     "Shows clean names such as AUD_AUDIOLOGY in both SEOC selectors without trailing numbers or version text.",
     "Makes Custom Archive naming easier with Select all and individual checkboxes for Referral Number, Referral Prefix, Network Name, Date, Date and Time, and Custom Text.",
-    "Uses one compact, polished option-card style across Referral Number, ICN, Archive naming, output behavior, and other equivalent choices."
+    "Uses one compact, polished option-card style across Referral Number, ICN, Archive naming, output behavior, and other equivalent choices.",
+    "Adds expandable in-app help for the five-step workflow, Referral and ICN behavior, output naming and safety, and optional uploads, with clearly marked live previews."
   ]
 }

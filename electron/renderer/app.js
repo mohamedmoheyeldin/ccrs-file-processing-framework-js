@@ -2003,6 +2003,8 @@ function syncWorkflowText() {
   elements.outputCard.classList.toggle("hidden", isOther);
   elements.archiveNamingCard?.classList.toggle("hidden", isLeie);
   elements.outputRetentionCard?.classList.toggle("hidden", isLeie);
+  elements.outputHelp?.classList.toggle("hidden", isLeie);
+  elements.leieOutputHelp?.classList.toggle("hidden", !isLeie);
   elements.uploadCard.classList.toggle("hidden", isOther);
   elements.runCard.classList.toggle("hidden", isOther);
   elements.runProcess.classList.toggle("hidden", isGenerate || isOther);
@@ -2740,6 +2742,8 @@ function cacheElements() {
     openUserGuide: $("open-user-guide"),
     optionalFields: $("optional-fields"),
     outputJsonPreview: $("output-json-preview"),
+    outputHelp: $("output-help"),
+    leieOutputHelp: $("leie-output-help"),
     outputNameHelp: $("output-name-help"),
     outputNameLabel: $("output-name-label"),
     replacementCode: $("replacement-code"),

@@ -149,6 +149,7 @@ pnpm verify
 - Searchable SEOC and Situational SEOC controls support subsets, multiple values, clear, use-all, and saved state.
 - `SEOC.xlsx` is converted once into 761 deterministic application records and can be regenerated with `pnpm data:seoc`.
 - Referral Number, ICN, Archive, output-behavior, and equivalent choices use one compact, responsive option-card design throughout the app.
+- Expandable contextual help explains the five-step workflow, Referral/ICN relationships, output naming and safety, and optional uploads while clear `LIVE` markers identify previews driven by current settings.
 - Archive naming includes Referral Number, Network, Referral DateTime, and Custom modes with live `.json` and `.gz` previews; Custom supports any or all of six clearly labeled filename values.
 - Filename safety removes illegal Windows characters and repeated extensions while user preferences are restored after restart.
 - Full current and historical notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
