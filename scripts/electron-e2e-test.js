@@ -106,6 +106,20 @@ async function run() {
     assert.equal(await window.locator("#status-badge").textContent(), "Ready");
     assert.equal(await window.locator("#job-progress-wrap").isHidden(), true);
     assert.equal(await window.locator("#pre-run-overlay").isHidden(), true);
+    assert.equal(await window.locator(".context-help").count(), 4);
+    assert.equal(await window.locator(".context-help[open]").count(), 0);
+    assert.equal(await window.locator("#workflow-help summary").textContent(), "New here? See how the five steps work");
+    await window.locator("#workflow-help summary").click();
+    assert.equal(await window.locator("#workflow-help").getAttribute("open"), "");
+    assert.equal(await window.locator("#workflow-help .context-help-grid > div").count(), 5);
+    assert.match(await window.locator("#workflow-help").textContent(), /Source files are never edited/);
+    assert.equal(await window.locator("#input-dir").getAttribute("aria-describedby"), "source-folder-help");
+    assert.match(await window.locator("#source-folder-help").textContent(), /never changes the originals/);
+    assert.equal(await window.locator(".helper-text.live-preview").count(), 5);
+    if (process.env.CCRS_E2E_HELP_SCREENSHOT) {
+      await window.locator("#workflow-help").scrollIntoViewIfNeeded();
+      await window.screenshot({ path: process.env.CCRS_E2E_HELP_SCREENSHOT, fullPage: false });
+    }
     assert.equal(await window.locator("#generation-preset").count(), 0);
     assert.equal(await window.locator("#generation-preset-name").count(), 0);
     assert.equal(await window.locator("#recent-runs").count(), 0);
@@ -280,6 +294,11 @@ async function run() {
       unselected: getComputedStyle(document.querySelector('.archive-mode-choices .choice-card:not(:has(input:checked))')).backgroundColor,
     }));
     assert.notEqual(darkCardColors.selected, darkCardColors.unselected);
+    if (process.env.CCRS_E2E_DARK_HELP_SCREENSHOT) {
+      await window.locator("#output-help").evaluate((element) => { element.open = true; });
+      await window.locator("#output-help").scrollIntoViewIfNeeded();
+      await window.screenshot({ path: process.env.CCRS_E2E_DARK_HELP_SCREENSHOT, fullPage: false });
+    }
     if (process.env.CCRS_E2E_DARK_OPTION_CARD_SCREENSHOT) {
       await window.locator(".archive-naming-card").scrollIntoViewIfNeeded();
       await window.screenshot({ path: process.env.CCRS_E2E_DARK_OPTION_CARD_SCREENSHOT, fullPage: false });
@@ -324,10 +343,15 @@ async function run() {
       await window.screenshot({ path: process.env.CCRS_E2E_SCREENSHOT, fullPage: true });
     }
     await window.setViewportSize({ width: 800, height: 700 });
+    await window.locator("#output-help").evaluate((element) => { element.open = true; });
     const hasHorizontalOverflow = await window.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
     assert.equal(hasHorizontalOverflow, false);
     assert.equal(
       await window.locator(".archive-mode-choices").evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length),
+      1
+    );
+    assert.equal(
+      await window.locator("#output-help .context-help-grid").evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length),
       1
     );
     const result = await window.evaluate(async (targetOutputDir) => window.ccrs.runJob("generate", {

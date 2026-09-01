@@ -74,6 +74,16 @@
                 <li data-workflow-step="process">4. Process</li>
                 <li data-workflow-step="upload">5. Upload</li>
               </ol>
+              <details id="workflow-help" class="context-help context-help--workflow">
+                <summary>New here? See how the five steps work</summary>
+                <div class="context-help-grid">
+                  <div><strong>1. Select</strong><span>Choose the source folder or generation template. Source files are never edited.</span></div>
+                  <div><strong>2. Configure</strong><span>Set the fields you want to change. Leave optional overrides blank to keep source values.</span></div>
+                  <div><strong>3. Validate</strong><span>Check the live previews and correct any highlighted fields before continuing.</span></div>
+                  <div><strong>4. Process</strong><span>Review the run summary, then create the new files in the selected output folder.</span></div>
+                  <div><strong>5. Upload</strong><span>Upload is optional and runs only when you enable it and choose a configured target.</span></div>
+                </div>
+              </details>
             </article>
 
             <article id="future-card" class="content-card glass-card hidden">
@@ -102,9 +112,10 @@
               <label class="field-block" id="source-folder-field">
                 <span>Source Folder</span>
                 <div class="field-row">
-                  <input id="input-dir" type="text" placeholder="Choose the folder that contains source files" />
+                  <input id="input-dir" type="text" placeholder="Choose the folder that contains source files" aria-describedby="source-folder-help" />
                   <button data-pick="input-dir" class="toolbar-button">Browse</button>
                 </div>
+                <small id="source-folder-help" class="helper-text">The app reads supported files from this folder but never changes the originals. New files are written to the Output folder.</small>
               </label>
               <div class="info-chips">
                 <span id="source-file-count" class="info-chip">No source folder selected.</span>
@@ -210,6 +221,15 @@
                 <button id="toggle-optional-fields" class="toolbar-button invert-active">Show Additional Fields</button>
               </div>
 
+              <details id="referral-help" class="context-help">
+                <summary>How Referral Numbers, ICNs, and optional fields work</summary>
+                <div class="context-help-grid context-help-grid--three">
+                  <div><strong>Referral Number</strong><span>Choose a prefix and enter the body once. The live preview shows the first value; larger batches continue the sequence automatically.</span></div>
+                  <div><strong>ICN</strong><span>Open Additional Fields to control ICNs. Referral Number mode keeps the required 17-character TEST format and keeps every generated ICN unique.</span></div>
+                  <div><strong>Optional overrides</strong><span>Leave a field blank to keep its source or default behavior. Selected subsets are mixed across the batch; “use all” uses the complete reference list.</span></div>
+                </div>
+              </details>
+
               <div class="form-grid two-col">
                 <div class="field-block referral-number-field">
                   <span>Referral Number</span>
@@ -240,7 +260,7 @@
                     <input id="referral-code" type="text" placeholder="Enter the part after VA" />
                   </label>
                   <small id="referral-prefix-help" class="helper-text">VA will be added automatically. Enter the starting number or body once.</small>
-                  <small id="referral-preview" class="helper-text">Preview: default referral numbers from source files</small>
+                  <small id="referral-preview" class="helper-text live-preview">Preview: default referral numbers from source files</small>
                 </div>
                 <label class="field-block">
                   <span>SSN</span>
@@ -339,7 +359,7 @@
                   <label class="field-block">
                     <span>ICN Custom Value</span>
                     <input id="icn-custom-value" type="text" placeholder="Using TEST + generated digits" />
-                    <small id="icn-preview" class="helper-text">Preview: TEST + 13 generated digits</small>
+                    <small id="icn-preview" class="helper-text live-preview">Preview: TEST + 13 generated digits</small>
                   </label>
                   <label class="field-block">
                     <span>Referral / ICN Match</span>
@@ -378,12 +398,12 @@
                     </small>
                     <div id="selected-stations" class="selected-stations" aria-live="polite"></div>
                     <label class="radio-chip"><input id="randomize-station-id" type="checkbox" /><span>Use all available station IDs instead of a selected subset</span></label>
-                    <small id="station-id-preview" class="helper-text">Preview: no Station ID override</small>
+                    <small id="station-id-preview" class="helper-text live-preview">Preview: no Station ID override</small>
                   </label>
                   <label class="field-block">
                     <span>Payment Authority Code</span>
                     <input id="override-payment-authority-code" type="text" inputmode="numeric" maxlength="5" placeholder="Accepts up to 5 integers" />
-                    <small id="payment-authority-code-preview" class="helper-text">Preview: no Payment Authority Code override</small>
+                    <small id="payment-authority-code-preview" class="helper-text live-preview">Preview: no Payment Authority Code override</small>
                   </label>
                   <label class="field-block">
                     <span>Referral Period</span>
@@ -470,6 +490,15 @@
                 </div>
               </div>
 
+              <details id="output-help" class="context-help">
+                <summary>Understand JSON names, Archive names, and output safety</summary>
+                <div class="context-help-grid context-help-grid--three">
+                  <div><strong>Processed JSON name</strong><span>Changes the names of individual JSON files. Leave it blank to keep source names when editing existing files.</span></div>
+                  <div><strong>Archive name</strong><span>Controls the final .gz package. Custom values are joined in the order shown, and the filename preview updates immediately.</span></div>
+                  <div><strong>Existing files</strong><span>Keep existing files is safest. Replace folder contents acts only after the new batch succeeds, so use it only for a dedicated output folder.</span></div>
+                </div>
+              </details>
+
               <div class="form-grid two-col output-grid">
                 <label class="field-block field-span-2">
                   <span>Save processed files to</span>
@@ -483,7 +512,7 @@
                   <span id="output-name-label">Name for the processed JSON files</span>
                   <input id="replacement-code" type="text" placeholder="Leave blank to keep original file names" />
                   <small id="output-name-help" class="helper-text">Leave blank to keep original file names.</small>
-                  <small id="output-json-preview" class="helper-text">Preview: original JSON names will be used</small>
+                  <small id="output-json-preview" class="helper-text live-preview">Preview: original JSON names will be used</small>
                 </label>
                 <div class="field-block field-span-2 output-retention-card archive-naming-card">
                   <div class="archive-naming-head">
@@ -567,6 +596,14 @@
                   <span id="upload-enabled-label">Upload the .gz file after processing</span>
                 </label>
               </div>
+              <details id="upload-help" class="context-help">
+                <summary>How optional uploads work</summary>
+                <div class="context-help-grid context-help-grid--three">
+                  <div><strong>Import</strong><span>Importing a configuration only saves connection profiles in the app. It does not upload any file.</span></div>
+                  <div><strong>Choose and test</strong><span>Enable upload, select the intended environment, and test its connection before starting the run.</span></div>
+                  <div><strong>Finish safely</strong><span>The app uploads only the completed output. Keep the app open until every selected target reports success; Production also requires confirmation.</span></div>
+                </div>
+              </details>
               <div class="upload-config-card">
                 <div class="upload-config-copy">
                   <div id="upload-ready-pill" class="pill-note">No upload config imported</div>

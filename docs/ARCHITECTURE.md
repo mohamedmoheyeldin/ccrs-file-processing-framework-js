@@ -45,6 +45,8 @@ Automatic Station assignment shuffles either the user's selected `station_id` su
 
 The renderer uses `.choice-card` and `.choice-card-grid` as the shared option-selection component for Referral Number, ICN, Archive naming, output behavior, duplicate handling, and equivalent checkbox choices. The base component owns compact spacing, typography, two-column layout, and interaction states; `.choice-card--compact` is reserved for dense secondary choices such as Custom Archive values. Responsive rules collapse every option grid to one column without introducing horizontal overflow.
 
+Native `<details>` elements use the shared `.context-help` system for progressive, keyboard-accessible explanations near complex decisions. They require no renderer state, remain closed by default, adapt to light and dark themes, and collapse their explanation grids to one column at the shared responsive breakpoint.
+
 ## Release boundary
 
 `config/app_version.json` is the canonical release record. `scripts/sync-build-version.js` propagates it to package metadata before start, test, and distribution tasks. `scripts/build-release.js` builds a Windows x64 NSIS Setup installer in a validated temporary directory outside the repository. GitHub Actions performs the authoritative Windows UI, installation, launch, executable, checksum, and release checks.

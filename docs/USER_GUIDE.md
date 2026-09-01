@@ -2,7 +2,7 @@
 
 ## Version
 
-This guide covers `Version 1.3.11`, including source-backed Station IDs, searchable regular and Situational SEOC selection, consistent Referral/ICN/Archive naming controls, safe live filename previews, batch auditing, and recovery controls.
+This guide covers `Version 1.3.11`, including source-backed Station IDs, searchable regular and Situational SEOC selection, consistent Referral/ICN/Archive naming controls, expandable in-app help, safe live filename previews, batch auditing, and recovery controls.
 
 ## Purpose
 
@@ -64,6 +64,22 @@ The app has three main tabs:
 
 - `Edit Existing Files`
 - `Generate New Files`
+
+## In-App Help and Live Previews
+
+The app provides short, expandable help where several settings work together. Select any help heading to open it, then select the heading again to close it. The main form remains compact while the explanation is closed.
+
+Available help covers:
+
+- the `Select`, `Configure`, `Validate`, `Process`, and `Upload` workflow steps
+- how Referral Number prefixes, starting bodies, ICNs, sequencing, and optional overrides work together
+- the difference between individual processed JSON names and the final Archive name
+- safe handling of files already in the output folder
+- what importing, enabling, testing, and completing an optional upload actually does
+
+Messages marked `LIVE` are calculated from the current settings. Review them after changing a related option. A live preview usually shows the first generated value; later values continue the configured sequence while the app maintains batch uniqueness.
+
+The Source hint confirms that source files are read without being changed. Processed files are written only to the selected Output folder. Importing an upload configuration stores the available profiles in the app but does not upload a file; upload begins only when it is enabled and a configured target is selected for a completed run.
 
 ## Consistent Controls and Keyboard Use
 
