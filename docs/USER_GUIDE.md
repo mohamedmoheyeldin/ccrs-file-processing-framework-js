@@ -283,8 +283,8 @@ Choose how generated Referral Numbers should start, then enter the starting numb
 
 - **VA** uses `VA` for every referral.
 - **iFAMS** uses `iFAMS` for every referral.
-- **VA + iFAMS** alternates the two prefixes across the batch while incrementing one shared sequence.
-- **Custom** uses a user-entered prefix containing up to 24 letters, numbers, or underscores.
+- **VAiFAMS** uses one combined prefix for every referral, followed by the Starting number or body.
+- **Custom** uses a user-entered prefix containing letters, numbers, or underscores, with no character limit.
 
 Numeric bodies are zero-padded; alphanumeric bodies keep the characters the user entered. The live preview shows the first result, and the pre-run review confirms the selected prefix behavior.
 
@@ -299,7 +299,7 @@ Examples:
 - `1` becomes `VA0000000001`
 - `26S600001` becomes `VA26S600001`
 - with iFAMS, `26S600001` becomes `iFAMS26S600001`
-- with VA + iFAMS, the same sequence alternates `VA26S600001`, `iFAMS26S600002`, and so on
+- with VAiFAMS, the sequence continues as `VAiFAMS26S600001`, `VAiFAMS26S600002`, and so on
 - with the custom prefix `CCRS`, `26S600001` becomes `CCRS26S600001`
 - with the custom prefix `VA_TEST_`, `12345` begins with `VA_TEST_`
 

@@ -2,17 +2,18 @@
   "version": "1.3.11",
   "releaseTag": "v1.3.11",
   "label": "Version 1.3.11",
-  "announcementId": "v1.3.11|Version 1.3.11|2026-08-31-complete-live-previews",
+  "announcementId": "v1.3.11|Version 1.3.11|2026-08-31-unlimited-referrals",
   "releaseNotes": [
     "Preserves authoritative Station IDs such as 675GB01 and 595GF01 without rejecting them because of an outdated length limit.",
     "Adds searchable multi-select controls for paired SEOC and Situational SEOC values, including subset, use-all, clear, and saved-selection behavior.",
-    "Converts SEOC.xlsx into 761 deterministic application records and includes a repeatable pnpm data:seoc import command for future refreshes.",
     "Uses the existing option-card design for Referral Number, ICN, and Archive naming choices, with underscore-friendly custom Referral prefixes.",
     "Adds Referral Number, Network, Referral DateTime, Prefix, and Custom archive naming modes with live JSON and gzip filename previews.",
     "Sanitizes illegal filename characters and duplicate extensions while preserving user naming preferences across app restarts.",
-    "Expands smoke and Windows Electron coverage for Station IDs, SEOC conversion and pairing, selector behavior, naming modes, persistence, focus, and responsive layout.",
     "Makes Referral Number, ICN, processed-file, Station, Payment Authority Code, and Archive filename previews respond live to the current user choices.",
     "Keeps Referral-derived ICNs in the required 17-character TEST format and reuses the computed ICN in custom Archive filename previews.",
-    "Places the regular and Situational SEOC Number - SEOC ID selectors side by side on standard desktop widths."
+    "Places the regular and Situational SEOC Number - SEOC ID selectors side by side on standard desktop widths.",
+    "Uses VAiFAMS as one combined Referral Number prefix followed by the starting number or body.",
+    "Removes character limits from Referral Number bodies and custom Referral Number prefixes.",
+    "Keeps every Referral-derived ICN unique by shortening the end only when the 17-character ICN needs room for a uniqueness marker."
   ]
 }

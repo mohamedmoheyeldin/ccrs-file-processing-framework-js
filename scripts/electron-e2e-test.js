@@ -121,9 +121,17 @@ async function run() {
     assert.equal(await window.locator(".compact-select").count(), nativeSelectCount);
     await window.locator("[data-sub-tab='generate']").click();
     await window.locator("#referral-prefix-mixed").check();
-    assert.match(await window.locator("#referral-prefix-help").textContent(), /alternates VA and iFAMS/);
+    assert.match(await window.locator("#referral-prefix-help").textContent(), /VAiFAMS will be added automatically/);
+    await window.locator("#referral-code").fill("DD");
+    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VAiFAMSDD"));
+    assert.match(await window.locator("#referral-preview").textContent(), /Preview: VAiFAMSDD/);
     await window.locator("#referral-prefix-custom").check();
     assert.equal(await window.locator("#custom-referral-prefix-row").isVisible(), true);
+    assert.equal(await window.locator("#custom-referral-prefix").getAttribute("maxlength"), null);
+    await window.locator("#custom-referral-prefix").fill("CUSTOM_PREFIX_WITHOUT_A_LIMIT_");
+    await window.locator("#referral-code").fill("12345678901234567890");
+    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("CUSTOM_PREFIX_WITHOUT_A_LIMIT_12345678901234567890"));
+    assert.match(await window.locator("#referral-preview").textContent(), /CUSTOM_PREFIX_WITHOUT_A_LIMIT_12345678901234567890/);
     await window.locator("#custom-referral-prefix").fill("CCRS");
     await window.locator("#referral-code").fill("26S600001");
     await window.locator("#referral-preview").waitFor({ state: "visible" });
@@ -215,6 +223,13 @@ async function run() {
     assert.equal(await window.locator('.upload-target[data-target="PROD"]').isVisible(), true);
     await assertControlSystem(window);
     await window.locator("[data-main-tab='referral']").click();
+    await window.locator("#referral-prefix-mixed").check();
+    await window.locator("#referral-code").fill("12345678901234567890");
+    await window.locator("#icn-mode-referral-match").check();
+    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VAiFAMS12345678901234567890"));
+    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST1234567890121"));
+    assert.match(await window.locator("#referral-preview").textContent(), /Preview: VAiFAMS12345678901234567890/);
+    assert.match(await window.locator("#icn-preview").textContent(), /Preview: TEST1234567890121/);
     if (process.env.CCRS_E2E_SCREENSHOT) {
       await window.screenshot({ path: process.env.CCRS_E2E_SCREENSHOT, fullPage: true });
     }

@@ -4,7 +4,7 @@
 
 ### Release Summary
 
-Version 1.3.11 expands source-backed Station and SEOC handling while making the main naming controls visually consistent. Station IDs are no longer rejected by an outdated length ceiling, `SEOC.xlsx` is converted into a deterministic bundled catalog, and regular and Situational SEOC values can be searched, selected, mixed, cleared, restored, or used as a complete set. Referral, ICN, and Archive choices now share the same option-card design, and every affected preview follows the current user choices live.
+Version 1.3.11 expands source-backed Station and SEOC handling while making the main naming controls visually consistent. Station IDs are no longer rejected by an outdated length ceiling, and regular and Situational SEOC values can be searched, selected, mixed, cleared, restored, or used as a complete set. Referral, ICN, and Archive choices now share the same option-card design, and every affected preview follows the current user choices live. Referral Numbers now support unrestricted body and custom-prefix lengths, and the combined VAiFAMS option is applied as one prefix.
 
 The GitHub Release contains:
 
@@ -15,8 +15,6 @@ The GitHub Release contains:
 
 - Preserves exact source-backed Station IDs, including `675GB01` and `595GF01`, through application state, generated JSON, and final gzip output.
 - Removes length-only Station ID rejection while retaining authoritative catalog matching.
-- Converts 3,299 `SEOC.xlsx` rows into 761 deterministic logical records by keeping the latest version for each SEOC Number and normalized SEOC name.
-- Adds `pnpm data:seoc -- <SEOC.xlsx>` so later workbooks can regenerate `config/seoc_options.json` without adding Excel parsing to normal runtime.
 - Keeps each SEOC Number and SEOC ID paired during selection and referral generation.
 
 ### Searchable SEOC Controls
@@ -28,8 +26,9 @@ The GitHub Release contains:
 
 ### Naming and Filename Controls
 
-- Keeps VA, iFAMS, VA + iFAMS, and Custom Referral Number choices in the established option-card layout.
-- Custom Referral prefixes now support letters, numbers, and underscores, including values such as `VA_TEST` and `PROJECT1_`.
+- Keeps VA, iFAMS, combined VAiFAMS, and Custom Referral Number choices in the established option-card layout.
+- VAiFAMS is applied as one prefix before the Starting number or body for every generated referral.
+- Referral Number bodies and Custom Referral prefixes have no character ceiling; Custom prefixes support letters, numbers, and underscores, including values such as `VA_TEST` and `PROJECT1_`.
 - Restyles ICN modes with the same option cards while preserving all existing generation modes.
 - Adds Referral Number, Network Name, Referral DateTime, Prefix, and Custom archive naming cards.
 - Shows live `.json` and `.gz` filename previews and keeps the correct extension after settings change.
@@ -41,6 +40,7 @@ The GitHub Release contains:
 - Updates Referral Number, ICN, processed-file, Station, Payment Authority Code, and Archive filename previews whenever the related user settings change.
 - Shows a concrete ICN preview instead of only describing its template; generated portions are clearly identified as values that vary at run time.
 - Keeps ICNs built from Referral Numbers in the required 17-character format by padding the referral body to 13 characters after `TEST`; for example, `VA26S600001` becomes `TEST000026S600001`.
+- Keeps every Referral-derived ICN unique. When a long Referral Number fills the available ICN space, the app shortens the end only as needed and adds a batch-sequence marker.
 - Uses the computed live ICN when a Custom Archive naming pattern includes `{icn}`.
 - Places `SEOC Number - SEOC ID` and `Situational SEOC Number - SEOC ID` beside each other on standard desktop widths while preserving the responsive single-column layout on narrow windows.
 
@@ -48,7 +48,6 @@ The GitHub Release contains:
 
 - Adds versioned UI settings for SEOC selections and use-all choices, Referral and ICN choices, Archive mode, and custom filename configuration.
 - Validates saved SEOC values against the installed catalog and falls back to automatic mode when records no longer exist.
-- Adds workbook-conversion, Station JSON/gzip, SEOC pairing, use-all, missing-selection, Referral prefix, Archive mode, filename safety, persistence, keyboard/focus, and real Electron UI regression coverage.
 - Updates the README, architecture, development, testing, User Guide, generated PDF, and release metadata for Version 1.3.11.
 
 ## [Version 1.3.10](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.10) Release Notes

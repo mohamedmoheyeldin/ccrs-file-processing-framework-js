@@ -103,7 +103,7 @@ Files that are kept in sync from the shipped app:
 - Search all imported station rows by station key, station ID, VISN, station name, or parent station ID
 - Search and multi-select synchronized SEOC and Situational SEOC Number/ID pairs, or use the complete installed catalog
 - Choose how ICNs should be generated: derive `TEST` plus the Referral Number body, keep `TEST`, keep `TEST` with a custom suffix, or use a custom full ICN base
-- Choose `VA`, `iFAMS`, alternating `VA + iFAMS`, or a letters/numbers/underscore custom prefix for generated Referral Numbers
+- Choose `VA`, `iFAMS`, combined `VAiFAMS`, or a letters/numbers/underscore custom prefix for generated Referral Numbers
 - Match the last 3, 4, or 5 characters of each Referral Number and ICN
 - Produce final `.gz` archives
 - Choose Referral Number, Network, Referral DateTime, Prefix, or Custom JSON/gzip filename conventions with a live preview
