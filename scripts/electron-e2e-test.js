@@ -178,20 +178,47 @@ async function run() {
     const situationalSeocBounds = await window.locator("#situational-seoc-combobox").boundingBox();
     assert.equal(Boolean(seocBounds && situationalSeocBounds), true);
     assert.equal(Math.abs(seocBounds.y - situationalSeocBounds.y) < 4, true);
+    await window.locator("#override-station-id").press("Escape");
+    await window.locator("#seoc-combobox").scrollIntoViewIfNeeded();
+    await window.locator("#seoc-search").fill("AUD_AUDIOLOGY");
+    const requestedPrimarySeoc = window.locator("#seoc-menu .combo-option").first();
+    await requestedPrimarySeoc.waitFor({ state: "visible" });
+    assert.equal((await requestedPrimarySeoc.textContent()).trim(), "AUD_AUDIOLOGY");
+    assert.equal((await requestedPrimarySeoc.textContent()).includes("11"), false);
+    assert.equal((await requestedPrimarySeoc.textContent()).includes("1.0.1"), false);
+    if (process.env.CCRS_E2E_PRIMARY_SEOC_SCREENSHOT) {
+      await window.screenshot({ path: process.env.CCRS_E2E_PRIMARY_SEOC_SCREENSHOT, fullPage: false });
+    }
+    await window.locator("#seoc-search").press("Escape");
     await window.locator("#seoc-search").fill("PMR_ACUPUNCTURE INITIAL");
-    const primarySeoc = window.locator("#seoc-menu .combo-option", { hasText: "PMR_ACUPUNCTURE INITIAL - 1" }).first();
+    const primarySeoc = window.locator("#seoc-menu .combo-option", { hasText: "PMR_ACUPUNCTURE INITIAL" }).first();
     await primarySeoc.waitFor({ state: "visible" });
+    assert.equal((await primarySeoc.textContent()).trim(), "PMR_ACUPUNCTURE INITIAL");
+    assert.equal(await primarySeoc.locator(".combo-option-copy").count(), 0);
     await primarySeoc.click();
-    assert.equal(await window.locator("#selected-seocs .selected-station-chip", { hasText: "PMR_ACUPUNCTURE INITIAL - 1" }).count(), 1);
-    await window.locator("#selected-seocs .selected-station-chip", { hasText: "PMR_ACUPUNCTURE INITIAL - 1" }).click();
+    assert.equal(await window.locator("#selected-seocs .selected-station-chip", { hasText: "PMR_ACUPUNCTURE INITIAL" }).count(), 1);
+    await window.locator("#selected-seocs .selected-station-chip", { hasText: "PMR_ACUPUNCTURE INITIAL" }).click();
     assert.equal(await window.locator("#selected-seocs .selected-station-chip").count(), 0);
     await window.locator("#seoc-search").fill("PMR_ACUPUNCTURE INITIAL");
-    await window.locator("#seoc-menu .combo-option", { hasText: "PMR_ACUPUNCTURE INITIAL - 1" }).first().click();
+    await window.locator("#seoc-menu .combo-option", { hasText: "PMR_ACUPUNCTURE INITIAL" }).first().click();
+    await window.locator("#situational-seoc-search").fill("AUD_AUDIOLOGY");
+    const requestedSituationalSeoc = window.locator("#situational-seoc-menu .combo-option").first();
+    await requestedSituationalSeoc.waitFor({ state: "visible" });
+    assert.equal((await requestedSituationalSeoc.textContent()).trim(), "AUD_AUDIOLOGY");
+    assert.equal((await requestedSituationalSeoc.textContent()).includes("11"), false);
+    assert.equal((await requestedSituationalSeoc.textContent()).includes("1.0.1"), false);
+    if (process.env.CCRS_E2E_SITUATIONAL_SEOC_SCREENSHOT) {
+      await window.locator("#seoc-search").press("Escape");
+      await window.locator("#situational-seoc-combobox").scrollIntoViewIfNeeded();
+      await window.screenshot({ path: process.env.CCRS_E2E_SITUATIONAL_SEOC_SCREENSHOT, fullPage: false });
+    }
     await window.locator("#situational-seoc-search").fill("PMR_PHYSICAL THERAPY");
-    const situationalSeoc = window.locator("#situational-seoc-menu .combo-option", { hasText: "PMR_PHYSICAL THERAPY - 107" }).first();
+    const situationalSeoc = window.locator("#situational-seoc-menu .combo-option", { hasText: "PMR_PHYSICAL THERAPY" }).first();
     await situationalSeoc.waitFor({ state: "visible" });
+    assert.equal((await situationalSeoc.textContent()).trim(), "PMR_PHYSICAL THERAPY");
+    assert.equal(await situationalSeoc.locator(".combo-option-copy").count(), 0);
     await situationalSeoc.click();
-    assert.equal(await window.locator("#selected-situational-seocs .selected-station-chip", { hasText: "PMR_PHYSICAL THERAPY - 107" }).count(), 1);
+    assert.equal(await window.locator("#selected-situational-seocs .selected-station-chip", { hasText: "PMR_PHYSICAL THERAPY" }).count(), 1);
     await window.locator("#use-all-situational-seocs").check();
     assert.equal(await window.locator("#situational-seoc-search").isDisabled(), true);
     await window.locator("#use-all-situational-seocs").uncheck();

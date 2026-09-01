@@ -22,6 +22,7 @@ The GitHub Release contains:
 - Replaces the separate SEOC Number and SEOC ID dropdowns with one searchable multi-select `SEOC Number - SEOC ID` control.
 - Adds the matching `Situational SEOC Number - SEOC ID` control with the requested red Situational label.
 - Both selectors support automatic/default behavior, search, subset and multi-selection, chip removal, use-all behavior, reopening without state loss, saved selection restoration, and graceful fallback when a stored record no longer exists.
+- Shows only the clean SEOC name in both dropdowns and selected chips; trailing SEOC numbers and version text remain hidden while search and generated Number/ID pairing stay unchanged.
 - Removes `(Optional)` from the affected visible field labels without changing default behavior.
 
 ### Naming and Filename Controls

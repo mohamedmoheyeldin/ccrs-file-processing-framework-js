@@ -151,6 +151,7 @@ test("Version 1.3.11 metadata, safety controls, and release automation stay cons
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Uses VAiFAMS as one combined")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Removes character limits from Referral Number")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("every Referral-derived ICN unique")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("AUD_AUDIOLOGY")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Updates Electron to")), false);
   assert.equal(packageConfig.scripts["test:smoke"], "node scripts/smoke-test.js");
   assert.equal(packageConfig.scripts["test:syntax"], "node scripts/syntax-check.js");
