@@ -5,6 +5,7 @@ const { once } = require("events");
 
 const DEFAULT_ARCHIVE_BASENAME = "referrals";
 const IFAMS_FILENAME_PREFIX = "iFAMS";
+const VA_IFAMS_FILENAME_PREFIX = "VAiFAMS";
 const ARCHIVE_DATE_TIME_PATTERN = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
 const ARCHIVE_NAMING_MODES = {
   REFERRAL_NUMBER: "referral-number",
@@ -51,14 +52,13 @@ function formatCurrentDateTime(date = new Date()) {
 function resolveReferralPrefix(identityOptions = {}) {
   const mode = String(identityOptions.referralPrefixMode || "va").trim().toLowerCase();
   if (mode === "ifams") return IFAMS_FILENAME_PREFIX;
+  if (mode === "mixed") return VA_IFAMS_FILENAME_PREFIX;
   if (mode === "custom") return sanitizeArchiveSegment(identityOptions.customReferralPrefix || "VA") || "VA";
   return "VA";
 }
 
 function resolveArchivePrefixToken(identityOptions = {}) {
-  return String(identityOptions.referralPrefixMode || "").trim().toLowerCase() === "mixed"
-    ? "VA_iFAMS"
-    : resolveReferralPrefix(identityOptions);
+  return resolveReferralPrefix(identityOptions);
 }
 
 function resolveReferralNumber(payload = {}) {

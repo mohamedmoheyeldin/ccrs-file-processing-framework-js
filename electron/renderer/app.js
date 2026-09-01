@@ -606,10 +606,6 @@ function getSelectedIcnMode() {
   return selected?.value || "test-dynamic";
 }
 
-function getReferralNumberBodyLimit() {
-  return Number(state.info?.constants?.referralNumberDigits || 10);
-}
-
 function getIcnConstants() {
   return {
     testPrefix: state.info?.constants?.icnTestPrefix || "TEST",
@@ -632,10 +628,9 @@ function sanitizeIcnInput(value, mode = getSelectedIcnMode()) {
 }
 
 function sanitizeReferralNumberInput(value) {
-  const limit = getReferralNumberBodyLimit();
   let normalized = String(value || "").trim();
   const prefixOptions = getReferralPrefixOptions();
-  const prefixes = [prefixOptions.customReferralPrefix, "iFAMS", "VA"]
+  const prefixes = [prefixOptions.customReferralPrefix, "VAiFAMS", "iFAMS", "VA"]
     .filter(Boolean)
     .sort((left, right) => right.length - left.length);
   for (const prefix of prefixes) {
@@ -645,7 +640,7 @@ function sanitizeReferralNumberInput(value) {
     }
   }
 
-  return ((normalized.match(/[A-Za-z0-9]/g) || []).join("")).slice(0, limit);
+  return (normalized.match(/[A-Za-z0-9]/g) || []).join("");
 }
 
 function sanitizeLeieFileNameInput(value) {
@@ -849,17 +844,13 @@ function syncReferralPrefixState() {
     : isCustom
       ? customReferralPrefix || "your custom prefix"
       : referralPrefixMode === "mixed"
-        ? "VA or iFAMS"
+        ? "VAiFAMS"
         : "VA";
   if (elements.referralCode) {
-    elements.referralCode.placeholder = referralPrefixMode === "mixed"
-      ? "Enter one starting number or body for both prefixes"
-      : `Enter the part after ${prefix}`;
+    elements.referralCode.placeholder = `Enter the part after ${prefix}`;
   }
   if (elements.referralPrefixHelp) {
-    elements.referralPrefixHelp.textContent = referralPrefixMode === "mixed"
-      ? "The batch alternates VA and iFAMS while incrementing one shared sequence."
-      : `${prefix} will be added automatically. Enter the starting number or body once.`;
+    elements.referralPrefixHelp.textContent = `${prefix} will be added automatically. Enter the starting number or body once.`;
   }
 }
 
@@ -1823,9 +1814,7 @@ async function updatePreviews() {
     );
     elements.archivePreview.textContent = `${preview.outputFileNames.json} · ${preview.outputFileNames.gzip}`;
     elements.referralPreview.textContent = preview.referralNumber
-      ? getReferralPrefixMode() === "mixed"
-        ? `Preview: ${preview.referralNumber}; the next referral uses iFAMS and continues the shared sequence.`
-        : `Preview: ${preview.referralNumber}`
+      ? `Preview: ${preview.referralNumber}`
       : "Preview: default referral numbers from source files";
     elements.icnPreview.textContent = preview.icnPreview || "Preview: TEST + 13 generated digits";
     elements.stationIdPreview.textContent = readChecked("randomize-station-id")
@@ -2405,7 +2394,7 @@ function setupEventHandlers() {
       }
       if (id.startsWith("referral-prefix-") || id === "custom-referral-prefix") {
         if (id === "custom-referral-prefix") {
-          $(id).value = ((String($(id).value || "").match(/[A-Za-z0-9_]/g) || []).join("")).slice(0, 24);
+          $(id).value = (String($(id).value || "").match(/[A-Za-z0-9_]/g) || []).join("");
         }
         syncReferralPrefixState();
       }

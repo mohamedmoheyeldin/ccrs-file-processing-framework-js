@@ -146,6 +146,11 @@ test("Version 1.3.11 metadata, safety controls, and release automation stay cons
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("SEOC")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("17-character TEST format")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("previews respond live")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Converts SEOC.xlsx into 761")), false);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Expands smoke and Windows Electron coverage")), false);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Uses VAiFAMS as one combined")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Removes character limits from Referral Number")), true);
+  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("every Referral-derived ICN unique")), true);
   assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Updates Electron to")), false);
   assert.equal(packageConfig.scripts["test:smoke"], "node scripts/smoke-test.js");
   assert.equal(packageConfig.scripts["test:syntax"], "node scripts/syntax-check.js");
@@ -575,6 +580,14 @@ test("Referral number generation preserves the VA prefix and increments", () => 
   assert.equal(generateReferralNumber("123", 1), "VA0000000123");
   assert.equal(generateReferralNumber("123", 2), "VA0000000124");
   assert.equal(generateReferralNumber("ABC123", 2), "VAABC124");
+  assert.equal(
+    generateReferralNumber("123456789012345678901234567890", 2),
+    "VA123456789012345678901234567891"
+  );
+  assert.equal(
+    generateReferralNumber("ALPHABETICREFERRALBODY", 2),
+    "VAALPHABETICREFERRALBODY2"
+  );
 });
 
 test("Referral uploads reject PROD while preserving it for the separate LEIE workflow", () => {
@@ -602,9 +615,19 @@ test("Referral numbers can use iFAMS and map directly to matching TEST ICNs", ()
   assert.equal(generateIcnFromReferralNumber("CCRS26S600001", ["CCRS"]), "TEST000026S600001");
   assert.equal(generateIcnFromReferralNumber("CCRS26S600001", ["CCRS"]).length, 17);
   assert.equal(generateReferralNumber("12345", 1, "VA_TEST_"), "VA_TEST_0000012345");
+  assert.equal(
+    generateReferralNumber("UNLIMITEDBODY", 1, "CUSTOM_PREFIX_WITHOUT_A_CHARACTER_LIMIT_"),
+    "CUSTOM_PREFIX_WITHOUT_A_CHARACTER_LIMIT_UNLIMITEDBODY"
+  );
+  const longIcnOne = generateIcnFromReferralNumber("VA12345678901234567890", [], 1);
+  const longIcnTwo = generateIcnFromReferralNumber("VA12345678901234567891", [], 2);
+  assert.equal(longIcnOne, "TEST1234567890121");
+  assert.equal(longIcnTwo, "TEST1234567890122");
+  assert.equal(longIcnOne.length, 17);
+  assert.notEqual(longIcnOne, longIcnTwo);
 });
 
-test("Referral generation supports VA, iFAMS, mixed, and custom prefix modes", async () => {
+test("Referral generation supports VA, iFAMS, combined VAiFAMS, and custom prefix modes", async () => {
   const invalidCustomPreview = await backend.handleCommand("preview", {
     referralReplacementCode: "26S600001",
     identityOptions: { referralPrefixMode: "custom", customReferralPrefix: "" },
@@ -614,7 +637,7 @@ test("Referral generation supports VA, iFAMS, mixed, and custom prefix modes", a
   const scenarios = [
     { mode: "va", customReferralPrefix: "", expected: [/^VA/, /^VA/, /^VA/, /^VA/] },
     { mode: "ifams", customReferralPrefix: "", expected: [/^iFAMS/, /^iFAMS/, /^iFAMS/, /^iFAMS/] },
-    { mode: "mixed", customReferralPrefix: "", expected: [/^VA/, /^iFAMS/, /^VA/, /^iFAMS/] },
+    { mode: "mixed", customReferralPrefix: "", expected: [/^VAiFAMS/, /^VAiFAMS/, /^VAiFAMS/, /^VAiFAMS/] },
     { mode: "custom", customReferralPrefix: "CCRS", expected: [/^CCRS/, /^CCRS/, /^CCRS/, /^CCRS/] },
   ];
 
@@ -677,6 +700,43 @@ test("modifyContent derives ICNs from unique referral numbers and mixes only sel
     assert.equal(["402", "614GA01", "570"].includes(referral.ProgramAuthority.StationID), true);
   }
   assert.equal(new Set(referrals.map((item) => item.ProgramAuthority.StationID)).size, 3);
+});
+
+test("Long Referral Numbers stay complete while Referral-derived ICNs remain unique and 17 characters", () => {
+  const filePath = writeJsonFixture("long-matched-referrals.json", {
+    Referrals: Array.from({ length: 3 }, (_, index) => ({
+      ReferralNumber: `VA${index + 1}`,
+      Patient: { ICN: String(index + 1), FirstName: "A", LastName: "B", SSN: "999-99-0001" },
+    })),
+  });
+  const result = modifyContent(
+    filePath,
+    "12345678901234567890",
+    null,
+    "999-99-0001",
+    1,
+    1,
+    {},
+    1,
+    prepareIcnSettings({ mode: ICN_MODES.REFERRAL_MATCH }),
+    1,
+    { referralPrefixMode: "mixed" }
+  );
+  const referrals = JSON.parse(result.content).Referrals;
+  assert.deepEqual(
+    referrals.map((item) => item.ReferralNumber),
+    [
+      "VAiFAMS12345678901234567890",
+      "VAiFAMS12345678901234567891",
+      "VAiFAMS12345678901234567892",
+    ]
+  );
+  assert.equal(new Set(referrals.map((item) => item.Patient.ICN)).size, referrals.length);
+  assert.equal(referrals.every((item) => item.Patient.ICN.length === 17), true);
+  assert.deepEqual(
+    referrals.map((item) => item.Patient.ICN),
+    ["TEST1234567890121", "TEST1234567890122", "TEST1234567890123"]
+  );
 });
 
 test("Generated batches keep referral numbers unique and share timestamped iFAMS JSON and gzip names", async () => {
