@@ -354,7 +354,9 @@ Rules:
 
 The regular and red-labeled **Situational SEOC Number - SEOC ID** controls share the Stations selector's search, menu, chip, focus, and scroll behavior. Leave either selector in automatic mode to preserve existing values, select one pair, select several pairs to mix them across referrals, clear chips, or choose the independent use-all option.
 
-Each displayed record combines its logical name and source Number, for example `PMR_ACUPUNCTURE INITIAL - 1`. The exact latest versioned SEOC ID remains paired with that Number and is written to referral data; the app never combines the Number from one record with the ID from another.
+Both dropdowns and their selected chips show the clean SEOC name only, such as `AUD_AUDIOLOGY`. The SEOC Number, version text, and exact SEOC ID remain available behind the selection for searching and generated JSON, but are not appended to the visible name.
+
+Each stored record keeps its source Number and exact latest versioned SEOC ID paired behind the clean visible name. Those paired values are written to referral data; the app never combines the Number from one record with the ID from another.
 
 The bundled `config/seoc_options.json` contains 761 deterministic logical records converted from `SEOC.xlsx`. Search covers the display name, source Number, and exact versioned ID. At most 60 results are rendered at once; keep typing to narrow a larger result set.
 

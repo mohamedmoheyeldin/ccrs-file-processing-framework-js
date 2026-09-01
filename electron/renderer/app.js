@@ -336,6 +336,14 @@ function getSeocOptions() {
   return Array.isArray(state.info?.seocOptions) ? state.info.seocOptions : [];
 }
 
+function getSeocVisibleName(option = {}) {
+  const name = String(option.name || "").trim();
+  if (name) return name;
+  return String(option.displayName || "")
+    .replace(/\s+-\s+\d+\s*$/, "")
+    .trim();
+}
+
 function getSeocSelectorConfig(situational = false) {
   return situational
     ? {
@@ -377,8 +385,9 @@ function renderSelectedSeocs(config) {
     chip.type = "button";
     chip.className = "selected-station-chip";
     chip.dataset.seocSelectorKey = selectorKey;
-    chip.textContent = `${option.displayName} ×`;
-    chip.title = `Remove ${option.displayName}`;
+    const visibleName = getSeocVisibleName(option);
+    chip.textContent = `${visibleName} ×`;
+    chip.title = `Remove ${visibleName}`;
     config.selected.append(chip);
   }
   if (config.useAll.checked) {
@@ -404,11 +413,8 @@ function renderSeocMenu(config) {
     button.dataset.seocSelectorKey = option.selectorKey;
     const title = document.createElement("span");
     title.className = "combo-option-title";
-    title.textContent = option.displayName;
-    const copy = document.createElement("span");
-    copy.className = "combo-option-copy";
-    copy.textContent = option.seocId;
-    button.append(title, copy);
+    title.textContent = getSeocVisibleName(option);
+    button.append(title);
     config.menu.append(button);
   }
   if (matches.length === 0) {
