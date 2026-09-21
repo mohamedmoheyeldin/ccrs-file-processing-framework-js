@@ -100,6 +100,15 @@ function normalizeArchiveCustomValues(rawValue = {}) {
 }
 
 function normalizeUiSettings(rawValue = {}) {
+  rawValue = { ...rawValue };
+  if (["ifams", "mixed"].includes(rawValue.referralPrefixMode)) {
+    rawValue.customReferralPrefix = rawValue.referralPrefixMode === "ifams" ? "iFAMS" : "VAiFAMS";
+    rawValue.referralPrefixMode = "custom";
+  }
+  if (rawValue.icnMode === "test-custom-suffix") {
+    rawValue.icnMode = "custom-full";
+    rawValue.icnCustomValue = `TEST${rawValue.icnCustomValue || ""}`;
+  }
   const normalized = {
     ...DEFAULT_UI_SETTINGS,
     schemaVersion: DEFAULT_UI_SETTINGS.schemaVersion,
@@ -200,6 +209,9 @@ function normalizeUiSettings(rawValue = {}) {
       String(rawValue.referralsPerFile || DEFAULT_UI_SETTINGS.referralsPerFile).trim() ||
       DEFAULT_UI_SETTINGS.referralsPerFile,
     clearOutput: toBoolean(rawValue.clearOutput, DEFAULT_UI_SETTINGS.clearOutput),
+    keepMasterJson: rawValue.keepMasterJson !== false,
+    selectedPaymentCodes: [...new Set((Array.isArray(rawValue.selectedPaymentCodes) ? rawValue.selectedPaymentCodes : [rawValue.overridePaymentAuthorityCode]).map((value) => String(value || "").trim()).filter((value) => require("./paymentAuthorityCatalog").codes.includes(value)))],
+    useAllPaymentCodes: rawValue.useAllPaymentCodes !== false && !rawValue.overridePaymentAuthorityCode,
     keepProcessedJson: toBoolean(rawValue.keepProcessedJson, DEFAULT_UI_SETTINGS.keepProcessedJson),
     uploadEnabled: toBoolean(rawValue.uploadEnabled, DEFAULT_UI_SETTINGS.uploadEnabled),
     uploadTargets: normalizeUploadTargets(rawValue.uploadTargets),

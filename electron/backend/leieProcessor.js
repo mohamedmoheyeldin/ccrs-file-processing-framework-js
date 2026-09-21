@@ -4,7 +4,7 @@ const { assertSafeFolderRelationship, createRunId, createRunStagingDirectory, pr
 const { clearDirectory } = require("./fileHandler");
 const { saveRun } = require("./runHistory");
 const XLSX = require("xlsx");
-const { uploadTargetsInParallel, loadUploadProfiles, resolveUploadTargets } = require("./uploader");
+const { uploadTargetsSequentially, loadUploadProfiles, resolveUploadTargets } = require("./uploader");
 const { assertSourceFilesWithinLimits, getProcessingLimits } = require("./limits");
 
 const STRICT_DUPLICATE_MODE = "full-row";
@@ -432,7 +432,7 @@ async function processLeieFiles(payload = {}, progressCallback) {
   const uploadResults = [];
   const uploadOptions = buildLeieUploadOptions(payload);
   if (uploadOptions && uploadOptions.enabled) {
-    uploadResults.push(...await uploadTargetsInParallel(outputPath, uploadOptions.targets, {
+    uploadResults.push(...await uploadTargetsSequentially(outputPath, uploadOptions.targets, {
       onProgress: (event) => progressCallback?.(
         event.current,
         event.total,

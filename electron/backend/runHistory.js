@@ -17,6 +17,7 @@ function sanitizeRun(run = {}) {
     outputDir: String(run.outputDir || ""),
     archivePath: String(run.archivePath || ""),
     manifestPath: String(run.manifestPath || ""),
+    manifestData: run.manifestData && typeof run.manifestData === "object" ? run.manifestData : null,
     processedCount: Math.max(Number(run.processedCount) || 0, 0),
     referralCount: Math.max(Number(run.referralCount) || 0, 0),
     uploadResults: (Array.isArray(run.uploadResults) ? run.uploadResults : []).map((item) => ({

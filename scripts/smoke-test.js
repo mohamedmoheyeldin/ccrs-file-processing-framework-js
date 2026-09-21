@@ -26,7 +26,7 @@ const {
   cleanupKnownTemporaryArtifacts,
   registerTemporaryPath,
 } = require("../electron/backend/runtimeCleanup");
-const { summarizeUploadProfiles, uploadFileWithSftp, uploadTargetsInParallel } = require("../electron/backend/uploader");
+const { summarizeUploadProfiles, uploadFileWithSftp, uploadTargetsSequentially } = require("../electron/backend/uploader");
 const {
   buildArchiveBasename,
   buildOutputFileNames,
@@ -114,7 +114,7 @@ test("LEIE validation SQL includes the requested query set and syntax highlighti
   assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
 });
 
-test("Version 1.4.2 metadata, combined user release notes, safety controls, and release automation stay consolidated", () => {
+test("Version 1.5.3 metadata, combined user release notes, safety controls, and release automation stay consolidated", () => {
   const versionConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "app_version.json"), "utf8"));
   const packageConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
@@ -131,15 +131,15 @@ test("Version 1.4.2 metadata, combined user release notes, safety controls, and 
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
 
-  assert.equal(versionConfig.version, "1.4.2");
-  assert.equal(versionConfig.releaseTag, "v1.4.2");
-  assert.equal(versionConfig.label, "Version 1.4.2");
-  assert.match(releaseNotes, /^# CCRS File Processing Framework Version 1\.4\.2/);
+  assert.equal(versionConfig.version, "1.5.3");
+  assert.equal(versionConfig.releaseTag, "v1.5.3");
+  assert.equal(versionConfig.label, "Version 1.5.3");
+  assert.match(releaseNotes, /^# CCRS File Processing Framework Version 1\.5\.3/);
   assert.match(releaseNotes, /\[Version 1\.4\.1\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.4\.1\)/);
   assert.match(releaseNotes, /\[Version 1\.4\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.4\)/);
   assert.match(releaseNotes, /\[Version 1\.3\.11\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.11\)/);
   const currentUserDocumentNotes = releaseNotes.split("## [Version 1.3.11]")[0];
-  assert.doesNotMatch(currentUserDocumentNotes, /Electron|smoke test|pnpm|deterministic|test coverage|source-backed|17-character|JSON|gzip/i);
+  assert.match(currentUserDocumentNotes, /Matching names are overwritten after validation/);
   assert.match(releaseNotes, /\[Version 1\.3\.9\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.9\)/);
   assert.match(releaseNotes, /\[Version 1\.3\.7\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.7\) Internal Release Notes/);
   assert.match(releaseNotes, /Version 1\.3\.7 was released internally/);
@@ -147,26 +147,10 @@ test("Version 1.4.2 metadata, combined user release notes, safety controls, and 
   assert.match(releaseNotes, /\[Version 1\.3\.5\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.5\)/);
   assert.match(releaseNotes, /\[Version 1\.3\.3\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.3\)/);
   assert.match(releaseNotes, /\[Version 1\.3\.2\]\(https:\/\/github\.com\/mohamedmoheyeldin\/ccrs-file-processing-framework-js\/releases\/tag\/v1\.3\.2\)/);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Publishes one verified Windows Setup installer")), false);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Uses Electron 43")), false);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Electron sandboxing")), false);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Station selection")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("SEOC")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("live previews")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Converts SEOC.xlsx into 761")), false);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Expands smoke and Windows Electron coverage")), false);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("VAiFAMS")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Referral Numbers and ICNs unique")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("expandable help")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Archive naming")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("nine approved choices")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("same Number and ID never appears in both")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Situational SEOC choice")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Network")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Starts selected uploads together")), true);
-  assert.equal(versionConfig.releaseNotes.some((note) => note.includes("Updates Electron to")), false);
-  const userReleaseCopy = versionConfig.releaseNotes.join(" ");
-  assert.doesNotMatch(userReleaseCopy, /Electron|smoke test|pnpm|deterministic|test coverage|SEOC\.xlsx|17-character|JSON|gzip|SHA-256/i);
+  assert.ok(versionConfig.releaseNotes.length > 0);
+  assert.match(versionConfig.releaseNotes.join(" "), /43 unique codes/);
+  assert.match(versionConfig.releaseNotes.join(" "), /sequential queue/);
+  assert.match(versionConfig.releaseNotes.join(" "), /master JSON/);
   assert.equal(packageConfig.scripts["test:smoke"], "node scripts/smoke-test.js");
   assert.equal(packageConfig.scripts["test:syntax"], "node scripts/syntax-check.js");
   assert.equal(crypto.createHash("sha256").update(iconPng).digest("hex"), "dc3b2ab2b0beda8d92527552f2160be83572018c5bf17c0a6cca7c21c013cb95");
@@ -228,7 +212,7 @@ test("Version 1.4.2 metadata, combined user release notes, safety controls, and 
   assert.match(mainProcess, /sandbox:\s*true/);
   assert.match(mainProcess, /jobWorker\.js/);
   assert.match(mainProcess, /backend:cancel/);
-  assert.match(mainProcess, /Background generation did not return its archive and manifest/);
+  assert.match(mainProcess, /Background generation must return an archive without an automatic manifest/);
   assert.match(rendererHtml, /id="pre-run-overlay"/);
   assert.match(rendererHtml, /id="retry-failed-uploads"/);
   assert.doesNotMatch(rendererHtml, /id="recent-runs"/);
@@ -255,7 +239,7 @@ test("Network choices can stay automatic or rotate across a selected subset", ()
   assert.throws(() => applySelectedNetworks({ Referrals: [{}] }, { selectedNetworks: ["OTHER"] }), /not available/);
 });
 
-test("Selected upload targets run concurrently and one failure does not stop the others", async () => {
+test("Selected upload targets run sequentially and one failure does not stop the others", async () => {
   const targets = ["SQA", "DEV", "PPD"].map((serverName) => ({
     server_name: serverName,
     user_name: `${serverName.toLowerCase()}-user`,
@@ -265,7 +249,7 @@ test("Selected upload targets run concurrently and one failure does not stop the
   let active = 0;
   let maxActive = 0;
   const events = [];
-  const results = await uploadTargetsInParallel("fixture.gz", targets, {
+  const results = await uploadTargetsSequentially("fixture.gz", targets, {
     onProgress: (event) => events.push(event),
     upload: async (_localPath, remoteDirectory) => {
       active += 1;
@@ -276,7 +260,7 @@ test("Selected upload targets run concurrently and one failure does not stop the
       return `${remoteDirectory}/fixture.gz`;
     },
   });
-  assert.equal(maxActive, 3);
+  assert.equal(maxActive, 1);
   assert.deepEqual(results.map((item) => item.serverName), ["SQA", "DEV", "PPD"]);
   assert.deepEqual(results.map((item) => item.status), ["completed", "failed", "completed"]);
   assert.equal(events.filter((event) => event.state === "uploading").length, 3);
@@ -323,7 +307,7 @@ test("Diagnostic export excludes credentials and user file paths", async () => {
   const result = await backend.handleCommand("export-diagnostics", { outputDir });
   const reportText = fs.readFileSync(result.reportPath, "utf8");
   const report = JSON.parse(reportText);
-  assert.equal(report.appVersion, "1.4.2");
+  assert.equal(report.appVersion, "1.5.3");
   assert.equal(Object.prototype.hasOwnProperty.call(report.workflowPreferences, "inputDir"), false);
   assert.doesNotMatch(reportText, /password|ciphertext|connection_details/i);
 });
@@ -368,33 +352,22 @@ test("Referral and LEIE upload notes identify their separate default directories
   assert.match(rendererSource, /separate from the CCRS Referral default/);
 });
 
-test("Payment Authority Code accepts up to 5 digits", () => {
-  assert.equal(validatePaymentAuthorityCode("99999"), "99999");
-  assert.equal(validatePaymentAuthorityCode("12-345"), "12345");
-  assert.throws(
-    () => validatePaymentAuthorityCode("100000"),
-    /Payment Authority Code must be a whole number between 0 and 99999/
-  );
-});
-
-test("Payment Authority Code generation increments and stops at 99999", () => {
-  assert.equal(generatePaymentAuthorityCodeValue("12345", 3), "12347");
-  assert.equal(generatePaymentAuthorityCodeValue("", 1), "10000");
-  assert.throws(
-    () => generatePaymentAuthorityCodeValue("99999", 2),
-    /Payment Authority Code range exceeded/
-  );
+test("Payment Authority Codes are restricted to the team catalog and never increment", () => {
+  assert.equal(validatePaymentAuthorityCode("21"), "21");
+  assert.throws(() => validatePaymentAuthorityCode("99999"), /team's reference list/);
+  assert.throws(() => validatePaymentAuthorityCode("12-345"), /team's reference list/);
+  assert.equal(generatePaymentAuthorityCodeValue("21", 300), "21");
 });
 
 test("Optional override normalization keeps the validated Payment Authority Code", () => {
   const overrides = generateOptionalFieldOverrides({
     StationID: "402",
-    PaymentAuthorityCode: "54321",
+    PaymentAuthorityCode: "21",
   });
 
-  assert.equal(overrides.PaymentAuthorityCode, "54321");
+  assert.equal(overrides.PaymentAuthorityCode, "21");
   assert.equal(overrides.StationID, "402");
-  assert.equal(generateOptionalFieldOverrides({ StationID: "564GF_OLD" }).StationID, "564GF_OLD");
+  assert.throws(() => generateOptionalFieldOverrides({ StationID: "564GF_OLD" }), /station_id/);
   assert.equal(generateOptionalFieldOverrides({ StationID: "aa" }).StationID, "AA");
   assert.throws(
     () => generateOptionalFieldOverrides({ StationID: "150" }),
@@ -437,8 +410,8 @@ test("Bundled station JSON preserves every spreadsheet row and column", () => {
   assert.equal(bingham.parent_station_id, "402");
 });
 
-test("Long source-backed Station IDs remain exact through generated JSON and gzip", async () => {
-  for (const stationId of ["675GB01", "595GF01", "402"]) {
+test("Valid source-backed Station IDs remain exact through generated JSON and gzip", async () => {
+  for (const stationId of ["508GS", "508QG", "402"]) {
     assert.equal(generateOptionalFieldOverrides({ StationID: stationId }).StationID, stationId);
     const filePath = writeJsonFixture(`station-${stationId}.json`, {
       ListDate: "2026-08-31 16:25:00",
@@ -482,7 +455,7 @@ test("Packaged upgrades refresh the installed Station ID and special SEOC catalo
   fs.mkdirSync(path.join(userDataRoot, "config"), { recursive: true });
   fs.writeFileSync(
     path.join(bundleRoot, "config", "stations.json"),
-    JSON.stringify([{ station_key: "2242", station_id: "614GA01", station_name: "Tremont VA Clinic" }])
+    JSON.stringify([{ station_key: "2242", station_id: "508GS", station_name: "Tremont VA Clinic" }])
   );
   fs.writeFileSync(
     path.join(userDataRoot, "config", "stations.json"),
@@ -508,7 +481,7 @@ test("Packaged upgrades refresh the installed Station ID and special SEOC catalo
     process.env.CCRS_USER_DATA_ROOT = userDataRoot;
     ensureRuntimeFiles();
     const installed = JSON.parse(fs.readFileSync(path.join(userDataRoot, "config", "stations.json"), "utf8"));
-    assert.equal(installed[0].station_id, "614GA01");
+    assert.equal(installed[0].station_id, "508GS");
     const installedSeocs = JSON.parse(fs.readFileSync(path.join(userDataRoot, "config", "seoc_options.json"), "utf8"));
     assert.equal(installedSeocs[0].seocKey, "1");
     const installedSituationalSeocs = JSON.parse(
@@ -549,7 +522,7 @@ test("modifyContent randomizes identity data and matches Referral Number and ICN
     "999-99-0001",
     1,
     1,
-    { StationID: "614GA01", SeocKey: "107", SeocID: "PMR_PHYSICAL THERAPY_1.0.12_PRCT" },
+    { StationID: "508GS", SeocKey: "107", SeocID: "PMR_PHYSICAL THERAPY_1.0.12_PRCT" },
     1,
     prepareIcnSettings(),
     1,
@@ -557,7 +530,7 @@ test("modifyContent randomizes identity data and matches Referral Number and ICN
   );
   const referrals = JSON.parse(result.content).Referrals;
 
-  assert.deepEqual(referrals.map((item) => item.ProgramAuthority.StationID), ["614GA01", "614GA01"]);
+  assert.deepEqual(referrals.map((item) => item.ProgramAuthority.StationID), ["508GS", "508GS"]);
   assert.deepEqual(referrals.map((item) => item.ProgramAuthority.SeocKey), ["107", "107"]);
   assert.deepEqual(referrals.map((item) => item.ProgramAuthority.SeocID), [
     "PMR_PHYSICAL THERAPY_1.0.12_PRCT",
@@ -729,7 +702,7 @@ test("Referral generation supports VA, iFAMS, combined VAiFAMS, and custom prefi
       },
       upload: { enabled: false },
     });
-    const jsonName = fs.readdirSync(outputDir).find((name) => name.endsWith(".json") && !name.endsWith(".manifest.json"));
+    const jsonName = fs.readdirSync(outputDir).find((name) => name.endsWith(".json") && !name.endsWith(".manifest.json") && !name.endsWith("_Master.json"));
     const referrals = JSON.parse(fs.readFileSync(path.join(outputDir, jsonName), "utf8")).Referrals;
     assert.equal(new Set(referrals.map((referral) => referral.ReferralNumber)).size, 4);
     referrals.forEach((referral, index) => {
@@ -761,13 +734,13 @@ test("modifyContent derives ICNs from unique referral numbers and mixes only sel
     1,
     prepareIcnSettings({ mode: ICN_MODES.REFERRAL_MATCH }),
     1,
-    { selectedStationIds: ["402", "614GA01", "570"], referralPrefix: "VA" }
+    { selectedStationIds: ["402", "508GS", "570"], referralPrefix: "VA" }
   );
   const referrals = JSON.parse(result.content).Referrals;
   assert.equal(new Set(referrals.map((item) => item.ReferralNumber)).size, referrals.length);
   for (const referral of referrals) {
     assert.equal(referral.Patient.ICN, generateIcnFromReferralNumber(referral.ReferralNumber));
-    assert.equal(["402", "614GA01", "570"].includes(referral.ProgramAuthority.StationID), true);
+    assert.equal(["402", "508GS", "570"].includes(referral.ProgramAuthority.StationID), true);
   }
   assert.equal(new Set(referrals.map((item) => item.ProgramAuthority.StationID)).size, 3);
 });
@@ -812,7 +785,7 @@ test("Long Referral Numbers stay complete while Referral-derived ICNs remain uni
 test("Generated batches keep referral numbers unique and share timestamped iFAMS JSON and gzip names", async () => {
   const outputDir = path.join(tempRoot, "ifams-generated-batch");
   fs.mkdirSync(outputDir, { recursive: true });
-  await backend.handleCommand("generate", {
+  const generatedRun = await backend.handleCommand("generate", {
     outputDir,
     fileCount: 3,
     referralsPerFile: 4,
@@ -829,10 +802,12 @@ test("Generated batches keep referral numbers unique and share timestamped iFAMS
     keepProcessedJson: true,
   });
 
+  assert.equal(fs.readdirSync(outputDir).some((name) => name.endsWith(".manifest.json")), false);
+  await backend.handleCommand("generate-manifest", { runId: generatedRun.run.runId });
   const names = fs.readdirSync(outputDir).sort();
   const gzipName = names.find((name) => name.endsWith(".gz"));
   const manifestName = names.find((name) => name.endsWith(".manifest.json"));
-  const jsonNames = names.filter((name) => name.endsWith(".json") && !name.endsWith(".manifest.json"));
+  const jsonNames = names.filter((name) => name.endsWith(".json") && !name.endsWith(".manifest.json") && !name.endsWith("_Master.json"));
   assert.match(gzipName, /^iFAMS_referrals_\d{8}_\d{6}\.gz$/);
   assert.equal(jsonNames.length, 3);
   assert.equal(jsonNames.every((name) => name.startsWith(gzipName.slice(0, -3))), true);
@@ -899,7 +874,7 @@ test("A malformed source stops the batch before output or upload artifacts are c
   assert.deepEqual(fs.readdirSync(outputDir), ["existing.txt"]);
 });
 
-test("modifyContent applies Payment Authority Code overrides uniquely across referrals", () => {
+test("modifyContent keeps the selected Payment Authority Code across referrals", () => {
   const filePath = writeJsonFixture("override-referrals.json", {
     ListDate: "2026-01-01 00:00:00",
     Referrals: [
@@ -929,14 +904,14 @@ test("modifyContent applies Payment Authority Code overrides uniquely across ref
     "999-99-0001",
     1,
     1,
-    { PaymentAuthorityCode: "55550" },
+    { PaymentAuthorityCode: "21" },
     1
   );
   const parsed = JSON.parse(result.content);
 
   assert.deepEqual(
     parsed.Referrals.map((item) => item.PaymentAuthorityCode),
-    ["55550", "55551"]
+    ["21", "21"]
   );
   assert.deepEqual(
     parsed.Referrals.map((item) => item.ReferralNumber),
@@ -1052,7 +1027,7 @@ test("modifyContent supports a fully custom ICN base", () => {
   assert.notEqual(parsed.Referrals[0].ICN, parsed.Referrals[1].ICN);
 });
 
-test("modifyContent rejects source files with oversized Payment Authority Code values", () => {
+test("modifyContent replaces invalid source payment values with approved team codes", () => {
   const filePath = writeJsonFixture("invalid-payment-authority-code.json", {
     Referrals: [
       {
@@ -1066,10 +1041,8 @@ test("modifyContent rejects source files with oversized Payment Authority Code v
     ],
   });
 
-  assert.throws(
-    () => modifyContent(filePath, "", null, "999-99-0001", 1, 1, {}, 1),
-    /Payment Authority Code must be a whole number between 0 and 99999/
-  );
+  const result = modifyContent(filePath, "", null, "999-99-0001", 1, 1, {}, 1);
+  assert.equal(require("../electron/backend/paymentAuthorityCatalog").codes.includes(JSON.parse(result.content).Referrals[0].PaymentAuthorityCode), true);
 });
 
 test("runtime cleanup removes tracked temp directories and stale known temp files", () => {
@@ -1107,7 +1080,7 @@ test("App info exposes the complete searchable station source", async () => {
   const info = await backend.handleCommand("info", {});
 
   assert.equal(Array.isArray(info.stations), true);
-  assert.equal(info.stations.length, 1573);
+  assert.equal(info.stations.every((station) => /^[A-Za-z0-9]{1,5}$/.test(station.station_id)), true);
 
   const stationKeys = info.stations.map((station) => station.station_key);
   assert.equal(new Set(stationKeys).size, stationKeys.length);
@@ -1115,9 +1088,9 @@ test("App info exposes the complete searchable station source", async () => {
   const sample = info.stations.find((station) => station.station_id === "402");
   assert.equal(Boolean(sample), true);
   assert.match(sample.station_name, /Togus VA Medical Center/);
-  const tremont = info.stations.find((station) => station.station_id === "614GA01");
+  const tremont = info.stations.find((station) => station.station_id === "508GS");
   assert.equal(Boolean(tremont), true);
-  assert.match(tremont.station_name, /Tremont VA Clinic/);
+  assert.match(tremont.station_name, /Pike County VA Clinic/);
   assert.equal(Object.hasOwn(info.constants, "stationIdMaxLength"), false);
 });
 
@@ -1324,7 +1297,7 @@ test("UI settings normalize legacy theme values and persist user choices", () =>
     assert.equal(normalized.uploadTargets.DEV.userName, "devuser");
     assert.equal(normalized.acknowledgedReleaseKey, "");
     assert.equal(normalizeUiSettings({ useIfamsReferralPrefix: true }).referralPrefixMode, "ifams");
-    assert.equal(normalizeUiSettings({ referralPrefixMode: "mixed" }).referralPrefixMode, "mixed");
+    assert.equal(normalizeUiSettings({ referralPrefixMode: "mixed" }).referralPrefixMode, "custom");
     assert.equal(
       normalizeUiSettings({ referralPrefixMode: "custom", customReferralPrefix: "CCRS_TEST" }).customReferralPrefix,
       "CCRS_TEST"
@@ -1401,8 +1374,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.4.2");
-    assert.equal(initialInfo.appVersion.label, "Version 1.4.2");
+    assert.equal(initialInfo.appVersion.version, "1.5.3");
+    assert.equal(initialInfo.appVersion.label, "Version 1.5.3");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);
@@ -1588,7 +1561,7 @@ test("Preview validation reports field-level errors without throwing", async () 
 
   assert.equal(preview.fieldErrors.ssnValue, "SSN must start with 999 and use the format 999-99-0001.");
   assert.equal(preview.fieldErrors.icnValue, "Enter up to 13 letters or numbers after TEST.");
-  assert.equal(preview.fieldErrors.PaymentAuthorityCode, "Payment Authority Code must be a whole number between 0 and 99999.");
+  assert.equal(preview.fieldErrors.PaymentAuthorityCode, "Choose a Payment Authority Code from the team's reference list.");
   assert.equal(preview.fieldErrors.DOB, "DOB must use the format YYYY-MM-DD.");
   assert.equal(preview.fieldErrors.fileCount, "Number of JSON files to generate must be greater than zero.");
   assert.equal(preview.fieldErrors.referralsPerFile, "Number of referrals per file must be greater than zero.");

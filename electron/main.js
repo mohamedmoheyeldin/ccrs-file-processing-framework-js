@@ -9,8 +9,8 @@ const backend = require("./backend");
 let mainWindow;
 const activeJobs = new Map();
 const APP_USER_MODEL_ID = "com.ccrs.fileprocessingframework";
-const BACKGROUND_COMMANDS = new Set(["inspect-source", "inspect-leie-source", "process", "process-leie", "generate", "retry-upload", "test-upload-target"]);
-const CANCELLABLE_COMMANDS = new Set(["process", "process-leie", "generate", "retry-upload", "test-upload-target"]);
+const BACKGROUND_COMMANDS = new Set(["inspect-source", "inspect-leie-source", "process", "process-leie", "generate", "generate-manifest", "retry-upload", "test-upload-target"]);
+const CANCELLABLE_COMMANDS = new Set(["process", "process-leie", "generate", "generate-manifest", "retry-upload", "test-upload-target"]);
 
 process.env.CCRS_IS_PACKAGED = app.isPackaged ? "1" : "0";
 process.env.CCRS_BUNDLE_ROOT = app.isPackaged ? process.resourcesPath : path.resolve(__dirname, "..");
@@ -81,11 +81,12 @@ async function runPackagedSmokeTest() {
       optionalOverrides: {},
       upload: { enabled: false, targets: [] },
     });
-    if (!result?.archivePath || !result?.manifestPath) throw new Error("Background generation did not return its archive and manifest.");
+    if (!result?.archivePath || result?.manifestPath) throw new Error("Background generation must return an archive without an automatic manifest.");
     if (!fs.existsSync(result.archivePath) || !fs.readdirSync(outputDir).some((name) => /^installed_smoke_archive_\d{8}_\d{6}\.gz$/.test(name))) {
       throw new Error("Smoke archive was not created.");
     }
-    if (!fs.existsSync(result.manifestPath)) throw new Error("Smoke batch manifest was not created.");
+    const exported = await backend.handleCommand("generate-manifest", { runId: result.run.runId });
+    if (!fs.existsSync(exported.manifestPath)) throw new Error("Requested manifest was not created.");
   } catch (error) {
     console.error("Installed application smoke test failed.", error);
     exitCode = 1;

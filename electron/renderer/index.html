@@ -227,7 +227,7 @@
                   <div><strong>Referral Number</strong><span>Choose a prefix and enter the body once. The live preview shows the first value; larger batches continue the sequence automatically.</span></div>
                   <div><strong>ICN</strong><span>Open Additional Fields to control ICNs. Referral Number mode keeps the required 17-character TEST format and keeps every generated ICN unique.</span></div>
                   <div><strong>Optional overrides</strong><span>Leave a field blank to keep its source or default behavior. Selected subsets are mixed across the batch; “use all” uses the complete reference list.</span></div>
-                  <div><strong>SEOC choices</strong><span>Regular SEOC values are used automatically from each referral. Choose a regular value only to override it. Situational SEOC is manual-only and should be selected only when specifically required.</span></div>
+                  <div><strong>SEOC choices</strong><span>Regular SEOC values are mixed automatically from the approved catalog. Select a subset to restrict the values. Situational SEOC is manual-only and should be selected only when specifically required.</span></div>
                 </div>
               </details>
 
@@ -239,14 +239,8 @@
                       <input id="referral-prefix-va" name="referral-prefix-mode" type="radio" value="va" checked />
                       <span><strong>VA</strong><small>Use VA for every referral.</small></span>
                     </label>
-                    <label class="choice-card">
-                      <input id="referral-prefix-ifams" name="referral-prefix-mode" type="radio" value="ifams" />
-                      <span><strong>iFAMS</strong><small>Use iFAMS for every referral.</small></span>
-                    </label>
-                    <label class="choice-card">
-                      <input id="referral-prefix-mixed" name="referral-prefix-mode" type="radio" value="mixed" />
-                      <span><strong>VAiFAMS</strong><small>Use VAiFAMS for every referral.</small></span>
-                    </label>
+
+
                     <label class="choice-card">
                       <input id="referral-prefix-custom" name="referral-prefix-mode" type="radio" value="custom" />
                       <span><strong>Custom</strong><small>Enter your own letters or numbers.</small></span>
@@ -337,15 +331,7 @@
                         <input id="icn-mode-test-dynamic" name="icn-mode" type="radio" value="test-dynamic" checked />
                         <span><strong>Default</strong><small>Keep TEST and generate the rest.</small></span>
                       </label>
-                      <label class="choice-card">
-                        <input
-                          id="icn-mode-test-custom-suffix"
-                          name="icn-mode"
-                          type="radio"
-                          value="test-custom-suffix"
-                        />
-                        <span><strong>TEST Prefix</strong><small>Keep TEST and enter the remaining prefix.</small></span>
-                      </label>
+
                       <label class="choice-card">
                         <input id="icn-mode-custom-full" name="icn-mode" type="radio" value="custom-full" />
                         <span><strong>Custom</strong><small>Enter a custom full ICN base.</small></span>
@@ -401,11 +387,18 @@
                     <label class="radio-chip"><input id="randomize-station-id" type="checkbox" /><span>Use all available station IDs instead of a selected subset</span></label>
                     <small id="station-id-preview" class="helper-text live-preview">Preview: no Station ID override</small>
                   </label>
-                  <label class="field-block">
+                  <div class="field-block">
                     <span>Payment Authority Code</span>
-                    <input id="override-payment-authority-code" type="text" inputmode="numeric" maxlength="5" placeholder="Accepts up to 5 integers" />
-                    <small id="payment-authority-code-preview" class="helper-text live-preview">Preview: no Payment Authority Code override</small>
-                  </label>
+                    <div id="payment-code-combobox" class="combo-shell">
+                      <input id="override-payment-authority-code" type="text" placeholder="Search Payment Authority Code" autocomplete="off" role="combobox" aria-label="Search Payment Authority Code" aria-autocomplete="list" aria-controls="payment-code-menu" aria-expanded="false" />
+                      <button id="payment-code-toggle" type="button" class="combo-toggle" aria-label="Show Payment Authority Code options"><span class="combo-chevron" aria-hidden="true"></span></button>
+                      <div id="payment-code-menu" class="combo-menu hidden" role="listbox" aria-label="Payment Authority Codes" aria-multiselectable="true"></div>
+                    </div>
+                    <small id="payment-code-match" class="helper-text">Choose one, several, or all team-approved codes.</small>
+                    <div id="selected-payment-codes" class="selected-stations" aria-live="polite"></div>
+                    <label class="radio-chip"><input id="use-all-payment-codes" type="checkbox" checked /><span>Use all available Payment Authority Codes instead of a selected subset</span></label>
+                    <small id="payment-authority-code-preview" class="helper-text live-preview">Preview: mixed from the team reference codes</small>
+                  </div>
                   <label class="field-block">
                     <span>Referral Period</span>
                     <input id="override-referral-period" type="text" />
@@ -457,6 +450,10 @@
                     <span>Referral Category</span>
                     <input id="override-referral-category" type="text" />
                   </label>
+                  <label id="current-referral-dates-control" class="radio-chip current-dates-control">
+                    <input id="use-current-referral-dates" type="checkbox" checked />
+                    <span><strong>Use current dates</strong><small>Expiration follows Referral Period. Edit any date to customize.</small></span>
+                  </label>
                   <label class="field-block">
                     <span>Referral Date</span>
                     <input id="override-referral-date" type="text" placeholder="YYYY-MM-DD" />
@@ -500,7 +497,7 @@
                 <div class="context-help-grid context-help-grid--three">
                   <div><strong>Processed JSON name</strong><span>Changes the names of individual JSON files. Leave it blank to keep source names when editing existing files.</span></div>
                   <div><strong>Archive name</strong><span>Controls the final .gz package. Custom values are joined in the order shown, and the filename preview updates immediately.</span></div>
-                  <div><strong>Existing files</strong><span>Keep existing files is safest. Replace folder contents acts only after the new batch succeeds, so use it only for a dedicated output folder.</span></div>
+                  <div><strong>Existing files</strong><span>Matching filenames are overwritten after validation. Unrelated files stay in place.</span></div>
                 </div>
               </details>
               <details id="leie-output-help" class="context-help hidden">
@@ -566,9 +563,9 @@
                 <div id="output-retention-card" class="field-block field-span-2 output-retention-card">
                   <div class="output-behavior-heading">
                     <span>If the save folder already has files</span>
-                    <small>Choose how the app protects or replaces files already in that folder.</small>
+                    <small>Matching filenames are overwritten automatically after the new batch passes validation.</small>
                   </div>
-                  <div class="choice-card-grid output-mode-choices" role="radiogroup" aria-label="Existing save folder files">
+                  <div class="choice-card-grid output-mode-choices hidden" role="radiogroup" aria-label="Existing save folder files">
                     <label class="choice-card recommended-choice">
                       <input id="keep-existing-files" name="output-mode" type="radio" checked />
                       <span>
@@ -589,9 +586,10 @@
                       <strong>Files to keep after creating the .gz archive</strong>
                       <small class="retention-label">The archive is always kept.</small>
                     </div>
+                    <label class="choice-card compact-choice"><input id="keep-master-json" type="checkbox" checked /><span><strong>Keep formatted master JSON</strong><small>All referrals in one file. Clear both JSON options to keep only gzip. Generate a manifest after the job if needed.</small></span></label>
                     <label class="choice-card compact-choice">
                       <input id="keep-processed-json" type="checkbox" checked />
-                      <span><strong>Keep formatted JSON files too</strong><small>Uncheck to keep only the final .gz archive and manifest.</small></span>
+                      <span><strong>Keep individual formatted JSON files</strong><small>Each source file remains available to inspect.</small></span>
                     </label>
                   </div>
                 </div>
@@ -693,7 +691,7 @@
                 </div>
                 <div id="result-actions" class="result-actions hidden">
                   <button id="open-output-folder" class="toolbar-button">Open Output Folder</button>
-                  <button id="open-batch-manifest" class="toolbar-button">View Batch Manifest</button>
+                  <button id="open-batch-manifest" class="toolbar-button">Generate Manifest</button>
                   <button id="copy-archive-path" class="toolbar-button">Copy Output Path</button>
                   <button id="retry-failed-uploads" class="toolbar-button primary hidden">Retry Failed Uploads</button>
                 </div>

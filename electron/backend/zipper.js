@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const zlib = require("zlib");
 const { once } = require("events");
+const { finished } = require("node:stream/promises");
 
 const DEFAULT_ARCHIVE_BASENAME = "referrals";
 const IFAMS_FILENAME_PREFIX = "iFAMS";
@@ -183,13 +184,13 @@ async function writeChunk(stream, chunk) {
   if (!stream.write(chunk)) await once(stream, "drain");
 }
 
-async function zipOutput(folder, archiveBasename = DEFAULT_ARCHIVE_BASENAME) {
+async function zipOutput(folder, archiveBasename = DEFAULT_ARCHIVE_BASENAME, masterName = "") {
   if (!fs.existsSync(folder)) {
     return null;
   }
 
   const normalizedArchiveBase = sanitizeArchiveBasename(archiveBasename);
-  const jsonFiles = fs.readdirSync(folder).sort().filter((filename) => {
+  const jsonFiles = fs.readdirSync(folder).sort((a, b) => a.localeCompare(b, "en", { numeric: true })).filter((filename) => {
     const filePath = path.join(folder, filename);
     return fs.statSync(filePath).isFile() && filename.toLowerCase().endsWith(".json");
   });
@@ -199,6 +200,21 @@ async function zipOutput(folder, archiveBasename = DEFAULT_ARCHIVE_BASENAME) {
   const gzip = zlib.createGzip({ level: zlib.constants.Z_BEST_SPEED });
   const output = fs.createWriteStream(archivePath);
   gzip.pipe(output);
+  const master = masterName ? fs.createWriteStream(path.join(folder, masterName)) : null;
+  let streamError;
+  const streams = [gzip, output, master].filter(Boolean);
+  const completion = Promise.all([finished(output), ...(master ? [finished(master)] : [])]);
+  completion.catch(() => {});
+  for (const stream of streams) stream.on("error", (error) => {
+    streamError = error;
+    for (const other of streams) if (!other.destroyed) other.destroy(error);
+  });
+  async function writeContent(chunk) {
+    if (streamError) throw streamError;
+    await writeChunk(gzip, chunk);
+    if (master) await writeChunk(master, chunk);
+  }
+  try {
 
   const firstPath = path.join(folder, jsonFiles[0]);
   let firstContent;
@@ -212,19 +228,21 @@ async function zipOutput(folder, archiveBasename = DEFAULT_ARCHIVE_BASENAME) {
   if (referralMode) {
     const metadata = { ...firstContent };
     delete metadata.Referrals;
-    const metadataJson = JSON.stringify(metadata);
-    await writeChunk(gzip, `${metadataJson.slice(0, -1)},"Referrals":[`);
+    const metadataEntries = Object.entries(metadata).map(([key, value]) =>
+      `    ${JSON.stringify(key)}: ${JSON.stringify(value, null, 4).replace(/\n/g, "\n    ")}`
+    );
+    await writeContent(`{\n${metadataEntries.length ? metadataEntries.join(",\n") + ",\n" : ""}    "Referrals": [`);
     let firstReferral = true;
     for (const filename of jsonFiles) {
       const content = JSON.parse(fs.readFileSync(path.join(folder, filename), "utf8"));
       for (const referral of Array.isArray(content.Referrals) ? content.Referrals : []) {
-        await writeChunk(gzip, `${firstReferral ? "" : ","}${JSON.stringify(referral)}`);
+        await writeContent(`${firstReferral ? "\n" : ",\n"}${JSON.stringify(referral, null, 4).split("\n").map((line) => `        ${line}`).join("\n")}`);
         firstReferral = false;
       }
     }
-    await writeChunk(gzip, "]}");
+    await writeContent(`${firstReferral ? "" : "\n    "}]\n}\n`);
   } else {
-    await writeChunk(gzip, "[");
+    await writeContent( "[");
     for (let index = 0; index < jsonFiles.length; index += 1) {
       const filename = jsonFiles[index];
       const rawContent = fs.readFileSync(path.join(folder, filename), "utf8");
@@ -234,14 +252,17 @@ async function zipOutput(folder, archiveBasename = DEFAULT_ARCHIVE_BASENAME) {
       } catch (_error) {
         // Preserve non-JSON input as text in the fallback archive format.
       }
-      await writeChunk(gzip, `${index ? "," : ""}${JSON.stringify({ filename, content })}`);
+      await writeContent( `${index ? "," : ""}${JSON.stringify({ filename, content })}`);
     }
-    await writeChunk(gzip, "]");
+    await writeContent( "]");
   }
 
   gzip.end();
-  await once(output, "finish");
+  if (master) master.end();
+  await completion;
+  if (streamError) throw streamError;
   return archivePath;
+  } finally { gzip.destroy(); output.destroy(); master?.destroy(); }
 }
 
 module.exports = {

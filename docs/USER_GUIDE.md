@@ -1,8 +1,20 @@
 # CCRS File Processing Framework User Guide
 
+## Version 1.5.3
+
+Release highlights for Version 1.5.3.
+
+- Payment Authority Code: 43 unique values imported from the team PACodes.xlsx (Sheet1); pipe-separated cells are split and duplicates removed.
+- Referral Number: VA or Custom. ICN: Default, Custom, or Referral Number.
+- Output: individual formatted JSON and combined `_Master.json` can be retained independently. Gzip contains the same combined data; the manifest is generated only when requested. Matching names are overwritten after validation; unrelated files are preserved.
+- Selections: one value stays fixed; subsets use only selected values; all clears the selected subset and selecting a value turns all off. Stations must be in the approved catalog and fit the five-character contract. Automatic regular SEOC uses approved Number/ID pairs; Situational SEOC remains optional.
+- Uploads: one shared sequential queue for referrals and LEIE, retaining their separate remote-directory defaults. Each destination is attempted once per run; failure proceeds to the next server. Explicit retry handles only failed servers. Status shows the active server and completed-server count, not a simulated transfer-byte percentage. SFTP completion checks the remote file size; WinSCP reports its own transfer completion.
+- Dialogs scroll at high zoom and on small displays. Setup distinguishes Install from Upgrade using the selected installation folder.
+
+
 ## Version
 
-This guide covers `Version 1.4.2`, including separate regular and manual-only Situational SEOC catalogs, flexible Network assignment, consistent Referral/ICN/Archive naming controls, parallel uploads, expandable in-app help, safe live filename previews, batch auditing, and recovery controls.
+This guide covers `Version 1.5.3`, including separate regular and manual-only Situational SEOC catalogs, flexible Network assignment, consistent Referral/ICN/Archive naming controls, sequential uploads, expandable in-app help, safe live filename previews, batch auditing, and recovery controls.
 
 ## Purpose
 
@@ -17,7 +29,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-For this test candidate, run `CCRS File Processing Framework Setup Version 1.4.2.exe` from the local test folder supplied with the build. A GitHub release will be created only after approval.
+Download the Version 1.5.3 Setup installer from the GitHub release Assets. Use Google Chrome; Microsoft Edge may block the download.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 
@@ -168,7 +180,7 @@ For every selected server:
 
 Select `Save Processed File` after the duplicate check is complete.
 
-When upload is enabled, the app starts all selected servers together. For each server it independently:
+When upload is enabled, the app visits each selected server in order. For each server it:
 
 - shows an `Uploading` state
 - transfers the processed `.xlsx` file
@@ -260,7 +272,7 @@ In `Custom`, choose individual values or use `Select all`. The available values 
 
 The live preview shows both `.json` and `.gz` names. The app removes illegal Windows filename characters, trailing spaces and periods, and repeated extensions, then adds exactly one extension matching each output format.
 
-The source and output folders must be separate and cannot be nested. Under `If the save folder already has files`, choose `Keep existing files` to preserve unrelated files and stop safely if a new result would reuse an existing name. Choose `Replace folder contents after success` only when the existing contents should be removed after the new batch has processed and packaged successfully in isolation. The selected card is highlighted, and the pre-run review repeats the choice before processing begins.
+The source and output folders must be separate and cannot be nested. Matching output filenames are overwritten automatically after validation. Unrelated files are preserved. If copying fails, the previous matching files are restored.
 
 Examples:
 
@@ -277,7 +289,7 @@ Select `Run Processing`. The app applies changes, creates processed JSON files, 
 
 If any source file is malformed or cannot be processed, the full batch stops. No incomplete referral archive is created or uploaded. Correct the reported file and run the workflow again.
 
-Each successful archive includes a matching `.manifest.json` file. The manifest records counts, Referral Number uniqueness, station distribution, source and archive SHA-256 hashes, and upload outcomes.
+After a successful run, click **Generate Manifest** to create an optional `.manifest.json` file. No manifest is written automatically. The manifest records counts, Referral Number uniqueness, station distribution, source and archive SHA-256 hashes, and upload outcomes.
 
 ## Generate New Referral Files
 
@@ -299,8 +311,6 @@ This mode does not require a source folder. It can optionally upload the complet
 Choose how generated Referral Numbers should start, then enter the starting number or body once:
 
 - `VA` uses `VA` for every referral.
-- `iFAMS` uses `iFAMS` for every referral.
-- `VAiFAMS` uses one combined prefix for every referral, followed by the Starting number or body.
 - `Custom` uses a user-entered prefix containing letters, numbers, hyphens, or underscores, with no character limit.
 
 Numeric bodies are zero-padded. Bodies containing letters, hyphens, or underscores keep the characters and letter case the user entered. When a body ends in digits, later Referral Numbers increment those digits while preserving the separators; otherwise the sequence number is added at the end. The live preview shows the first result, and the pre-run review confirms the selected prefix behavior.
@@ -315,8 +325,6 @@ Examples:
 
 - `1` becomes `VA0000000001`
 - `26S600001` becomes `VA26S600001`
-- with iFAMS, `26S600001` becomes `iFAMS26S600001`
-- with VAiFAMS, the sequence continues as `VAiFAMS26S600001`, `VAiFAMS26S600002`, and so on
 - with the custom prefix `CCRS`, `26S600001` becomes `CCRS26S600001`
 - with the custom prefix `VA_TEST_`, `12345` begins with `VA_TEST_`
 - `26S6-00001_TEST` becomes `VA26S6-00001_TEST`
@@ -329,7 +337,6 @@ Open `Show Additional Fields` to configure ICN generation. ICN modes use the sam
 Available modes are:
 
 - keep `TEST` and generate the remaining characters
-- keep `TEST` and enter a custom alphanumeric suffix
 - enter a custom full ICN base and generate the remaining characters
 - build each ICN directly from its Referral Number by removing the selected `VA`, `iFAMS`, or custom prefix, padding the body to the required 13 characters, and adding `TEST`; for example, `VA26S600001` becomes the 17-character ICN `TEST000026S600001`
 
@@ -347,7 +354,7 @@ Uncheck the corresponding random option only when a fixed value must be applied.
 
 ### Stations
 
-Stations is one searchable multi-select dropdown. Leave it in automatic mode to keep the source StationID unchanged, select one station to apply it throughout the batch, or select several stations to mix them across the generated referrals. The separate all-stations option uses the complete selectable catalog.
+Stations is one searchable multi-select dropdown. Leave it in automatic mode to mix approved Station IDs, select one station to apply it throughout the batch, or select several stations to mix them across the generated referrals. The separate all-stations option uses the complete selectable catalog.
 
 The dropdown is driven by `config/stations.json`, the structured conversion of the approved Excel sheet. Every spreadsheet row and all source columns are retained. The menu clearly displays and searches these five values:
 
@@ -357,7 +364,7 @@ The dropdown is driven by `config/stations.json`, the structured conversion of t
 - `station_name`
 - `parent_station_id`
 
-Type any part of those values, then select each matching station. Selected stations appear as removable chips below the search field. A source row without `station_id` remains visible for completeness but is disabled because it cannot provide a StationID.
+Type any part of those values, then select each matching station. Selected stations appear as removable chips below the search field. Only alphanumeric Station IDs of one to five characters are selectable. The original reference file is preserved.
 
 For faster searching, the dropdown displays at most 60 rows at once while searching the complete station catalog. Continue typing when the result summary indicates that more matches are available.
 
@@ -367,13 +374,13 @@ Rules:
 - a Station ID is not rejected solely because of its length; exact source-backed values such as `675GB01` and `595GF01` remain unchanged
 - every selected value must exactly match `station_id` in `config/stations.json`
 - subset mode assigns only the stations selected by the user
-- all-stations mode uses only rows that contain `station_id`
+- all-stations mode uses only approved one-to-five-character alphanumeric Station IDs
 - randomized IDs change between referrals without repeating until the selected set or full reference list is exhausted
 - the shipped structured source is refreshed during app upgrades
 
 ### SEOC Number - SEOC ID
 
-The regular and red-labeled `Situational SEOC Number - SEOC ID` controls share the Stations selector's search, menu, chip, focus, and scroll behavior, but they serve different purposes. Regular SEOC works automatically from each referral's existing Number and ID. Choose a regular value only when you intentionally need an override.
+The regular and red-labeled `Situational SEOC Number - SEOC ID` controls share the Stations selector's search, menu, chip, focus, and scroll behavior, but they serve different purposes. Regular SEOC automatically mixes approved pairs from the current catalog. Select specific pairs to restrict the batch to those choices.
 
 Situational SEOC is manual-only. The app does not select a Situational value automatically. Use it only when a referral specifically requires one. Selecting a Situational value—or choosing all Situational values—displays a reminder because most referrals use regular SEOC only. A regular SEOC override does not display this reminder.
 
@@ -411,7 +418,7 @@ Supported optional fields include:
 - Referral Period
 - Referral Consult ID
 
-Payment Authority Code accepts up to five numeric digits. Later generated referrals increment the value so it remains unique.
+Payment Authority Codes come from the 43 unique team-provided values in PACodes.xlsx. Select one code to keep it fixed, select several to mix only those values, or select all. Codes never increment. Search by code and click an option to add or remove it. Selected codes appear as removable chips. Press Escape or click outside to close the list.
 
 Network values are `CCN1`, `CCN2`, `CCN3`, `CCN4`, and `CCN5`. Leave Network in automatic mode to keep each referral's source value. Choose one value to use it for every referral, choose several to mix only that subset across referrals, or select `Use all available Network values` to mix all five. The selected mode is saved for the next app session.
 
@@ -439,7 +446,7 @@ This location is specific to CCRS Referral uploads. LEIE Data uploads use the se
 
 Target toggles remain disabled until the main upload option is enabled.
 
-All selected destinations start together. Each completed upload is verified by comparing the remote file size. If one destination fails after the local artifact is complete, the app records the failed target without cancelling the others. Select `Retry Failed Uploads` to resend the existing artifact only to the failed destinations. Do not rerun generation or processing unless the underlying data must change.
+Selected destinations run one at a time. SFTP verifies the remote file size; WinSCP reports transfer completion. If one destination fails after the local artifact is complete, the app records the failed target without cancelling the others. Select `Retry Failed Uploads` to resend the existing artifact only to the failed destinations. Do not rerun generation or processing unless the underlying data must change.
 
 ## Current Run Result Actions
 
@@ -563,3 +570,17 @@ Resolve duplicates automatically, or correct them in the source and select `Resc
 ### SQL Uses the Example Batch ID
 
 Paste the actual `etl_batch_id` into the in-app field before selecting `Copy SQL`.
+
+
+### Local 1.5.2 update
+
+Payment Authority Code uses the same searchable, multi-select chip control as SEOC. Selecting all clears the subset; selections are saved between sessions. New referrals default to current local dates and an expiration based on Referral Period (990 days by default). Editing a date switches to custom dates; checking Use current dates restores automatic dates. Existing source files are not rewritten by this default. Master JSON is formatted with four-space indentation and combines numbered files in natural numeric order. Regression coverage checks current and custom dates, leap-year expiration, selection persistence, master equality, and ordering beyond nine files.
+
+New generated appointment, treatment, allocated, and clinically indicated dates use the referral start date; the last-update timestamp uses the current date/time. These synthetic defaults do not change patient birth dates.
+
+Payment Authority Code dropdown options display only numbers. Search, selection chips, and the use-all option work as before.
+
+
+### Optional manifest export (1.5.3)
+
+Jobs validate output automatically but no longer write a manifest into the output folder. After a referral job finishes, Generate Manifest exports batch details from the saved run history. Export checks retained files against their original hashes and rejects changed or missing files. Existing manifests are not deleted. The current-dates control uses a compact title and helper line.

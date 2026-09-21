@@ -9,6 +9,7 @@ function getFiles(directory) {
   return fs
     .readdirSync(directory, { withFileTypes: true })
     .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".json"))
+    .sort((left, right) => left.name.localeCompare(right.name, "en", { numeric: true }))
     .map((entry) => path.join(directory, entry.name));
 }
 

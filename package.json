@@ -1,6 +1,6 @@
 {
   "name": "ccrs-file-processing-framework",
-  "version": "1.4.2",
+  "version": "1.5.3",
   "description": "Pure JavaScript Electron desktop app for the CCRS File Processing Framework.",
   "main": "electron/main.js",
   "author": "Mohamed Moheyeldin (Eldin)",
@@ -9,7 +9,7 @@
     "prestart": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
     "start": "electron .",
     "pretest": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
-    "test": "pnpm run test:syntax && pnpm run test:smoke",
+    "test": "pnpm run test:syntax && pnpm run test:smoke && pnpm run test:regression",
     "verify": "pnpm test",
     "test:syntax": "node scripts/syntax-check.js",
     "test:smoke": "node scripts/smoke-test.js",
@@ -17,16 +17,17 @@
     "data:stations": "node scripts/import-stations.js",
     "data:seoc": "node scripts/import-seoc.js",
     "predist": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
-    "dist": "node scripts/build-release.js"
+    "dist": "node scripts/build-release.js",
+    "test:regression": "node scripts/workflow-regression-test.js"
   },
   "dependencies": {
     "ssh2-sftp-client": "^12.1.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "electron": "^44.1.0",
+    "electron": "^44.4.1",
     "electron-builder": "^26.15.3",
-    "playwright": "^1.62.1"
+    "playwright": "^1.63.0"
   },
   "build": {
     "appId": "com.ccrs.fileprocessingframework",
@@ -101,10 +102,11 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "perMachine": false,
-      "uninstallDisplayName": "CCRS File Processing Framework Version 1.4.2",
+      "uninstallDisplayName": "CCRS File Processing Framework Version 1.5.3",
       "installerIcon": "assets/icons/ccrs_app_icon.ico",
       "uninstallerIcon": "assets/icons/ccrs_app_icon.ico",
-      "installerHeaderIcon": "assets/icons/ccrs_app_icon.ico"
+      "installerHeaderIcon": "assets/icons/ccrs_app_icon.ico",
+      "include": "scripts/installer.nsh"
     }
   },
   "packageManager": "pnpm@11.22.0"

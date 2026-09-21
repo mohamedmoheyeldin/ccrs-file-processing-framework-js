@@ -1,3 +1,4 @@
+const { validateOutputFiles } = require("./outputValidation");
 const fs = require("fs");
 const path = require("path");
 const { assertSafeFolderRelationship, createRunId, createRunStagingDirectory, listFileMetadata, promoteStagedFiles, sha256File } = require("./batchSafety");
@@ -5,7 +6,7 @@ const { clearDirectory, getFiles, saveFile } = require("./fileHandler");
 const { log } = require("./logger");
 const { renameFile } = require("./renamer");
 const { modifyContent } = require("./contentEditor");
-const { uploadTargetsInParallel } = require("./uploader");
+const { uploadTargetsSequentially } = require("./uploader");
 const { zipOutput } = require("./zipper");
 const { assertSourceFilesWithinLimits } = require("./limits");
 const { saveRun } = require("./runHistory");
@@ -68,6 +69,12 @@ function buildManifest({ runId, startedAt, sourceFiles, stagingDir, archiveName,
     referralNumbers: batchSummary.referralNumbers,
     icnMode: String(icnSettings?.mode || ""),
     selectedStationIds: [...(identityOptions?.selectedStationIds || [])],
+    selections: {
+      paymentAuthorityCodes: { mode: identityOptions?.useAllPaymentCodes || !identityOptions?.selectedPaymentCodes?.length ? "all" : "selected", values: [...(identityOptions?.selectedPaymentCodes || [])] },
+      networks: [...(identityOptions?.selectedNetworks || [])],
+      regularSeocPairs: identityOptions?.selectedSeocPairs || [],
+      situationalSeocPairs: identityOptions?.selectedSituationalSeocPairs || [],
+    },
     stationDistribution: batchSummary.stationDistribution,
     sourceFiles: sourceFiles.map((filePath) => ({ name: path.basename(filePath), bytes: fs.statSync(filePath).size, sha256: sha256File(filePath) })),
     generatedJsonFiles: listFileMetadata(stagingDir, ".json").filter((item) => !item.name.endsWith(".manifest.json")),
@@ -116,49 +123,52 @@ async function processFiles(inputDir, outputDir, replacementCode, clearOutput, r
       throw new Error(`The batch was stopped because ${failures.length} source file${failures.length === 1 ? "" : "s"} failed. No archive was created or uploaded. ${summary}${failures.length > 5 ? "; ..." : ""}`);
     }
 
+    validateReferralSourceFiles(getFiles(stagingDir));
+    validateOutputFiles(getFiles(stagingDir), identityOptions, optionalOverrides);
     const batchSummary = summarizeProcessedJson(stagingDir);
     if (!batchSummary.referralNumbers.unique) throw new Error("The batch contains duplicate Referral Numbers. No archive was created or uploaded.");
     emit(progressCallback, { phase: "packaging", state: "packaging", filename: archiveBasename || "referrals", message: "Creating the gzip archive from this run's isolated staging folder." });
-    const stagedArchivePath = await zipOutput(stagingDir, archiveBasename);
+    const masterName = `${archiveBasename || "referrals"}_Master.json`;
+    const stagedArchivePath = await zipOutput(stagingDir, archiveBasename, identityOptions?.keepMasterJson === false ? "" : masterName);
     if (!stagedArchivePath) throw new Error("No .gz archive could be created from the processed files.");
     const archiveName = path.basename(stagedArchivePath);
     const manifestName = `${path.basename(archiveName, ".gz")}.manifest.json`;
     const uploadResults = [];
     const manifestArgs = { runId, startedAt, sourceFiles: files, stagingDir, archiveName, outputDir, processedCount, batchSummary, identityOptions, icnSettings, uploadResults, appVersion: runContext.appVersion };
-    writeFileAtomic(path.join(stagingDir, manifestName), `${JSON.stringify(buildManifest(manifestArgs), null, 2)}\n`, "utf8");
 
     const jsonNames = keepProcessedJson
-      ? getFiles(stagingDir).map((filePath) => path.basename(filePath)).filter((name) => name !== manifestName)
+      ? getFiles(stagingDir).map((filePath) => path.basename(filePath)).filter((name) => name !== manifestName && name !== masterName)
       : [];
-    const promotedPaths = promoteStagedFiles(stagingDir, outputDir, [...jsonNames, archiveName, manifestName], clearOutput, clearDirectory);
+    if (identityOptions?.keepMasterJson !== false) jsonNames.push(masterName);
+    const promotedPaths = promoteStagedFiles(stagingDir, outputDir, [...jsonNames, archiveName], clearOutput, clearDirectory);
     const archivePath = path.join(outputDir, archiveName);
-    const manifestPath = path.join(outputDir, manifestName);
-    emit(progressCallback, { phase: "packaging", state: "archive-created", current: 1, total: 1, filename: archiveName, message: "Archive and manifest were saved safely." });
+    const manifestPath = "";
+    emit(progressCallback, { phase: "packaging", state: "archive-created", current: 1, total: 1, filename: archiveName, message: "Archive was saved safely." });
 
     if (uploadOptions?.enabled) {
       const selectedTargets = uploadOptions.targets || [];
-      uploadResults.push(...await uploadTargetsInParallel(archivePath, selectedTargets, {
+      uploadResults.push(...await uploadTargetsSequentially(archivePath, selectedTargets, {
         onProgress: (event) => emit(progressCallback, {
           phase: "upload",
           filename: archiveName,
           ...event,
           message: event.state === "upload-batch-start"
-            ? `Starting parallel uploads to ${event.targetNames.join(", ")}.`
+            ? `Uploading in order to ${event.targetNames.join(", ")}.`
             : event.message,
         }),
       }));
     }
 
     const finalManifest = buildManifest(manifestArgs);
-    writeFileAtomic(manifestPath, `${JSON.stringify(finalManifest, null, 2)}\n`, "utf8");
+    finalManifest.generatedJsonFiles = finalManifest.generatedJsonFiles.filter((item) => jsonNames.includes(item.name));
     const failedUploads = uploadResults.filter((item) => item.status === "failed");
-    const run = saveRun({ runId, createdAt: finalManifest.completedAt, status: failedUploads.length ? "upload-failed" : "completed", workflow: "referral", outputDir, archivePath, manifestPath, processedCount, referralCount: batchSummary.referralCount, uploadResults });
+    const run = saveRun({ runId, createdAt: finalManifest.completedAt, status: failedUploads.length ? "upload-failed" : "completed", workflow: "referral", outputDir, archivePath, manifestPath, manifestData: finalManifest, processedCount, referralCount: batchSummary.referralCount, uploadResults });
     const completedUploads = uploadResults.filter((item) => item.status === "completed");
     const message = failedUploads.length
       ? `Your files are safe in the output folder and ${completedUploads.length} upload${completedUploads.length === 1 ? "" : "s"} completed, but ${failedUploads.map((item) => item.serverName).join(", ")} still need attention. Use Retry Failed Uploads; you do not need to process the files again.`
       : uploadResults.length
         ? `Completed safely. Created ${archiveName} and verified uploads to ${completedUploads.map((item) => item.serverName).join(", ")}.`
-        : `Completed safely. Processed ${processedCount} file${processedCount === 1 ? "" : "s"}, created ${archiveName}, and wrote a batch manifest.`;
+        : `Completed safely. Processed ${processedCount} file${processedCount === 1 ? "" : "s"}, created ${archiveName}, and saved the output files.`;
     return { message, run, archivePath, manifestPath, outputDir, promotedPaths, uploadResults, retryable: failedUploads.length > 0 };
   } finally {
     fs.rmSync(stagingDir, { recursive: true, force: true });

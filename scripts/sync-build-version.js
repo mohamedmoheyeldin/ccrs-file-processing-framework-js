@@ -79,3 +79,5 @@ if (changed) {
 } else {
   console.log(`Build version already synced at ${derivedVersion}.`);
 }
+
+require("./generate-release-message");

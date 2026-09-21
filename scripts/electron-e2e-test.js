@@ -98,7 +98,19 @@ async function run() {
     await window.waitForLoadState("domcontentloaded");
     await window.locator("#status-message").waitFor({ state: "visible" });
     const releaseButton = window.locator("#release-announcement-accept");
-    if (await releaseButton.isVisible()) await releaseButton.click();
+    if (await releaseButton.isVisible()) {
+      await window.setViewportSize({ width: 800, height: 600 });
+      for (const zoom of [1.5, 2, 3]) {
+        await electronApp.evaluate(({ BrowserWindow }, factor) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(factor), zoom);
+        await releaseButton.scrollIntoViewIfNeeded();
+        assert.ok(await releaseButton.evaluate((element) => {
+          const rect = element.getBoundingClientRect(); return rect.top >= 0 && rect.bottom <= innerHeight;
+        }), `Release button reachable at ${zoom * 100}%`);
+      }
+      await releaseButton.click();
+      await electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1));
+      await window.setViewportSize({ width: 1280, height: 900 });
+    }
     assert.match(await window.title(), /CCRS File Processing Framework/);
     assert.equal(await window.locator("#workflow-stepper").isVisible(), true);
     assert.equal(await window.locator("#run-process").isVisible(), true);
@@ -125,8 +137,8 @@ async function run() {
     assert.equal(await window.locator("#generation-preset").count(), 0);
     assert.equal(await window.locator("#generation-preset-name").count(), 0);
     assert.equal(await window.locator("#recent-runs").count(), 0);
-    assert.equal(await window.locator('input[name="referral-prefix-mode"]').count(), 4);
-    assert.equal(await window.locator('input[name="icn-mode"]').count(), 4);
+    assert.equal(await window.locator('input[name="referral-prefix-mode"]').count(), 2);
+    assert.equal(await window.locator('input[name="icn-mode"]').count(), 3);
     assert.equal(await window.locator('input[name="archive-naming-mode"]').count(), 4);
     assert.equal(await window.locator('input[name="archive-naming-mode"][value="prefix"]').count(), 0);
     assert.equal(await window.locator("#referral-prefix-va").isChecked(), true);
@@ -134,14 +146,14 @@ async function run() {
     assert.equal(await window.locator("#selected-seocs .selected-station-chip").count(), 0);
     assert.equal(await window.locator("#selected-situational-seocs .selected-station-chip").count(), 0);
     assert.equal(await window.locator("meta[http-equiv='Content-Security-Policy']").count(), 1);
-    const nativeSelectCount = await window.locator("select").count();
+    const nativeSelectCount = await window.locator("select:not([multiple])").count();
     assert.equal(await window.locator(".compact-select").count(), nativeSelectCount);
     await window.locator("[data-sub-tab='generate']").click();
-    await window.locator("#referral-prefix-mixed").check();
-    assert.match(await window.locator("#referral-prefix-help").textContent(), /VAiFAMS will be added automatically/);
+    await window.locator("#referral-prefix-va").check();
+    assert.match(await window.locator("#referral-prefix-help").textContent(), /VA will be added automatically/);
     await window.locator("#referral-code").fill("DD");
-    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VAiFAMSDD"));
-    assert.match(await window.locator("#referral-preview").textContent(), /Preview: VAiFAMSDD/);
+    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VADD"));
+    assert.match(await window.locator("#referral-preview").textContent(), /Preview: VADD/);
     await window.locator("#referral-prefix-custom").check();
     assert.equal(await window.locator("#custom-referral-prefix-row").isVisible(), true);
     assert.equal(await window.locator("#custom-referral-prefix").getAttribute("maxlength"), null);
@@ -156,16 +168,49 @@ async function run() {
     assert.match(await window.locator("#referral-preview").textContent(), /Ccrs-Test_abC-001_Test/);
     await window.locator("#custom-referral-prefix").fill("CCRS");
     await window.locator("#referral-code").fill("26S600001");
-    await window.locator("#referral-prefix-mixed").check();
+    await window.locator("#referral-prefix-va").check();
     assert.equal(await window.locator("#keep-existing-files").isChecked(), true);
     assert.match(await window.locator("#output-retention-card").textContent(), /Recommended/);
     assert.match(await window.locator("#output-retention-card").textContent(), /Replace folder contents after success/);
     await window.locator("#toggle-optional-fields").click();
+    assert.equal(await window.locator("#use-current-referral-dates").isChecked(), true);
+    const today = await window.evaluate(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; });
+    assert.equal(await window.locator("#override-referral-date").inputValue(), today);
+    await window.locator("#override-referral-date").fill("2024-02-25");
+    assert.equal(await window.locator("#use-current-referral-dates").isChecked(), false);
+    await window.locator("#use-current-referral-dates").check();
+    assert.equal(await window.locator("#override-referral-date").inputValue(), today);
+    await window.locator("#override-payment-authority-code").focus();
+    assert.equal(await window.locator("#payment-code-menu .combo-option").count(), 43);
+    await window.locator('#payment-code-menu [data-seoc-selector-key="21"]').click();
+    await window.locator('#payment-code-menu [data-seoc-selector-key="28"]').click();
+    assert.equal(await window.locator("#selected-payment-codes .selected-station-chip").count(), 2);
+    assert.equal(await window.locator("#use-all-payment-codes").isChecked(), false);
+    await window.locator("#override-payment-authority-code").press("Escape");
+    await window.locator("#use-all-payment-codes").check();
+    assert.equal(await window.locator("#selected-payment-codes .selected-station-chip").count(), 0);
+    await window.locator("#override-payment-authority-code").fill("21");
+    assert.equal(await window.locator("#payment-code-menu .combo-option").count(), 1);
+    await window.locator('#payment-code-menu [data-seoc-selector-key="21"]').click();
+    assert.equal(await window.locator("#use-all-payment-codes").isChecked(), false);
+    await window.locator("#override-payment-authority-code").press("Escape");
+    await window.waitForFunction(async () => {
+      const info = await window.ccrs.getInfo();
+      return info.uiSettings.selectedPaymentCodes?.join(",") === "21" && info.uiSettings.useAllPaymentCodes === false;
+    });
+    if (process.env.CCRS_E2E_PAYMENT_SCREENSHOT) {
+      await window.locator("#payment-code-combobox").scrollIntoViewIfNeeded();
+      await window.locator("#override-payment-authority-code").fill("2");
+      await window.locator("#payment-code-combobox").evaluate((element) => element.scrollIntoView({ block: "start", behavior: "instant" }));
+      await window.waitForTimeout(300);
+      await window.screenshot({ path: process.env.CCRS_E2E_PAYMENT_SCREENSHOT });
+      await window.locator("#override-payment-authority-code").press("Escape");
+    }
     await window.locator("#referral-prefix-custom").check();
-    await window.locator("#icn-mode-test-custom-suffix").check();
+    await window.locator("#icn-mode-custom-full").check();
     await window.locator("#icn-custom-value").fill("aBc123");
     assert.equal(await window.locator("#icn-custom-value").inputValue(), "aBc123");
-    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TESTaBc123"));
+    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("aBc123"));
     await window.locator("#icn-mode-referral-match").check();
     const optionCardSystem = await window.evaluate(() => {
       const metrics = (selector) => {
@@ -214,13 +259,13 @@ async function run() {
     await window.locator("#station-id-menu .combo-option").first().waitFor({ state: "visible" });
     assert.equal(await window.locator("#station-id-menu .combo-option").count(), 60);
     assert.match(await window.locator("#station-id-menu .combo-result-summary").textContent(), /complete catalog/);
-    await window.locator("#override-station-id").fill("614GA01");
+    await window.locator("#override-station-id").fill("508GS");
     await window.locator("#station-id-toggle").click();
-    assert.equal(await window.locator("#station-id-menu .station-option-field", { hasText: "station_id: 614GA01" }).count(), 1);
-    assert.equal(await window.locator("#station-id-menu .station-option-field", { hasText: "station_key: 2242" }).count(), 1);
-    await window.locator("#station-id-menu .combo-option", { hasText: "Tremont VA Clinic" }).click();
+    assert.equal(await window.locator("#station-id-menu .station-option-field", { hasText: "station_id: 508GS" }).count(), 1);
+    assert.equal(await window.locator("#station-id-menu .station-option-field", { hasText: "station_key: 2864" }).count(), 1);
+    await window.locator("#station-id-menu .combo-option", { hasText: "Pike County VA Clinic" }).click();
     assert.equal(await window.locator("#override-station-id").inputValue(), "");
-    assert.equal(await window.locator("#selected-stations .selected-station-chip", { hasText: "614GA01" }).count(), 1);
+    assert.equal(await window.locator("#selected-stations .selected-station-chip", { hasText: "508GS" }).count(), 1);
     assert.equal((await window.locator("body").textContent()).includes("(Optional)"), false);
     const situationalColor = await window.locator(".situational-label").evaluate((element) => getComputedStyle(element).color);
     const normalLabelColor = await window.locator(".situational-label").locator("..").evaluate((element) => getComputedStyle(element).color);
@@ -251,6 +296,7 @@ async function run() {
     await primarySeoc.click();
     assert.equal(await window.locator("#selected-seocs .selected-station-chip", { hasText: "PMR_ACUPUNCTURE INITIAL" }).count(), 1);
     assert.equal(await window.locator("#seoc-override-warning").isHidden(), true);
+    await window.locator("#seoc-search").press("Escape");
     await window.locator("#selected-seocs .selected-station-chip", { hasText: "PMR_ACUPUNCTURE INITIAL" }).click();
     assert.equal(await window.locator("#selected-seocs .selected-station-chip").count(), 0);
     assert.equal(await window.locator("#seoc-override-warning").isHidden(), true);
@@ -271,8 +317,9 @@ async function run() {
     await situationalSeoc.click();
     assert.equal(await window.locator("#selected-situational-seocs .selected-station-chip", { hasText: "EUC_EMERGENCY CARE" }).count(), 1);
     assert.match(await window.locator("#seoc-override-warning").textContent(), /Most referrals use regular SEOC only/);
+    await window.locator("#situational-seoc-search").press("Escape");
     await window.locator("#use-all-situational-seocs").check();
-    assert.equal(await window.locator("#situational-seoc-search").isDisabled(), true);
+    assert.equal(await window.locator("#situational-seoc-search").isDisabled(), false);
     assert.match(await window.locator("#situational-seoc-match").textContent(), /All 9 available Situational SEOC values/);
     await window.locator("#use-all-situational-seocs").uncheck();
     await window.locator("#network-search").fill("CCN1");
@@ -286,12 +333,14 @@ async function run() {
       /\{referralNumber\}.*\{referralPrefix\}.*\{networkName\}.*\{date\}.*\{dateTime\}.*\{customText\}/
     );
     await window.locator("#archive-custom-text").fill("CCRS");
-    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_CCRS_Final.json"));
+    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_CCRS_Final_Master.json"));
+    await window.locator("#override-referral-date").fill("2019-03-17");
+    await window.locator("#override-referral-date-time").fill("2019-01-02 11:47:32");
     await window.locator("#archive-custom-select-all").check();
     assert.equal(await window.locator(".archive-custom-value:checked").count(), 6);
     await window.waitForFunction(() => {
       const preview = document.querySelector("#archive-preview")?.textContent || "";
-      return preview.includes("CCRS26S600001_CCRS_CCN1_2019-03-17_2019-01-02_114732_CCRS_Final.json") &&
+      return preview.includes("CCRS26S600001_CCRS_CCN1_2019-03-17_2019-01-02_114732_CCRS_Final_Master.json") &&
         preview.includes(".gz");
     });
     assert.equal((await window.locator("#archive-preview").textContent()).includes("{"), false);
@@ -328,9 +377,9 @@ async function run() {
     assert.equal(await window.locator("#archive-custom-text").isDisabled(), true);
     await window.locator("#archive-custom-value-referral-number").check();
     await window.locator("#archive-custom-value-date").check();
-    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_2019-03-17_Final.json"));
+    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_2019-03-17_Final_Master.json"));
     await window.locator('input[name="archive-naming-mode"][value="referral-number"]').check();
-    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_Final.json"));
+    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_Final_Master.json"));
     await window.locator("#selected-networks .selected-station-chip", { hasText: "CCN1" }).click();
     await window.locator("#network-search").fill("CCN2");
     await window.locator("#network-menu .combo-option", { hasText: "CCN2" }).click();
@@ -341,7 +390,7 @@ async function run() {
     await window.locator("#network-search").press("Escape");
     await window.locator("#selected-networks .selected-station-chip", { hasText: "CCN4" }).click();
     await window.locator('input[name="archive-naming-mode"][value="network"]').check();
-    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCN2_CCRS26S600001_Final.json"));
+    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCN2_CCRS26S600001_Final_Master.json"));
     const uploadDirectoryNote = window.locator(".upload-path-help").first();
     await uploadDirectoryNote.waitFor({ state: "visible" });
     assert.match(await uploadDirectoryNote.textContent(), /CCRS Referral uploads default to \/CCRA_Uploads/);
@@ -366,16 +415,16 @@ async function run() {
     await window.locator("[data-main-tab='referral']").click();
     assert.equal(await window.locator("#output-help").isVisible(), true);
     assert.equal(await window.locator("#leie-output-help").isHidden(), true);
-    await window.locator("#referral-prefix-mixed").check();
+    await window.locator("#referral-prefix-va").check();
     await window.locator("#referral-code").fill("26S6-00001_TEST");
-    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VAiFAMS26S6-00001_TEST"));
+    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VA26S6-00001_TEST"));
     await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST26S600001TEST"));
     assert.match(await window.locator("#referral-prefix-help").textContent(), /hyphens \(-\).*underscores \(_\)/);
     await window.locator("#referral-code").fill("12345678901234567890");
     await window.locator("#icn-mode-referral-match").check();
-    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VAiFAMS12345678901234567890"));
+    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VA12345678901234567890"));
     await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST1234567890121"));
-    assert.match(await window.locator("#referral-preview").textContent(), /Preview: VAiFAMS12345678901234567890/);
+    assert.match(await window.locator("#referral-preview").textContent(), /Preview: VA12345678901234567890/);
     assert.match(await window.locator("#icn-preview").textContent(), /Preview: TEST1234567890121/);
     if (process.env.CCRS_E2E_SCREENSHOT) {
       await window.screenshot({ path: process.env.CCRS_E2E_SCREENSHOT, fullPage: true });
@@ -392,6 +441,21 @@ async function run() {
       await window.locator("#output-help .context-help-grid").evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length),
       1
     );
+    // Exercise the real review dialog at small sizes and high zoom without submitting it.
+    await window.evaluate(() => { window.ccrsRunReview.confirm({ command: "generate", payload: { outputDir: "C:\\Example", fileCount: 3, referralsPerFile: 400 }, elements: {
+        overlay: document.querySelector("#pre-run-overlay"), summary: document.querySelector("#pre-run-summary"),
+        prodWrap: document.querySelector("#prod-confirm-wrap"), prodInput: document.querySelector("#prod-confirm-input"),
+        confirmButton: document.querySelector("#pre-run-confirm") } }); });
+    for (const zoom of [1.5, 2, 3]) {
+      await electronApp.evaluate(({ BrowserWindow }, factor) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(factor), zoom);
+      const confirm = window.locator("#pre-run-confirm");
+      await confirm.scrollIntoViewIfNeeded();
+      assert.ok(await confirm.evaluate((element) => {
+        const rect = element.getBoundingClientRect(); return rect.top >= 0 && rect.bottom <= innerHeight;
+      }), `Generate confirmation reachable at ${zoom * 100}%`);
+    }
+    await window.locator("#pre-run-cancel").click();
+    await electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1));
     const result = await window.evaluate(async (targetOutputDir) => window.ccrs.runJob("generate", {
       outputDir: targetOutputDir,
       replacementCode: "e2e_referral",
@@ -413,8 +477,12 @@ async function run() {
     assert.equal(fs.readdirSync(outputDir).some((name) => /^e2e_archive_\d{8}_\d{6}\.gz$/.test(name)), true);
     const outputJsonPaths = fs.readdirSync(outputDir)
       .map((name) => path.join(outputDir, name))
-      .filter((filePath) => filePath.toLowerCase().endsWith(".json") && !filePath.toLowerCase().endsWith(".manifest.json"));
+      .filter((filePath) => filePath.toLowerCase().endsWith(".json") && !filePath.toLowerCase().endsWith(".manifest.json") && !filePath.endsWith("_Master.json"));
     assert.equal(outputJsonPaths.length, 2);
+    assert.equal(fs.readdirSync(outputDir).some((name) => name.endsWith(".manifest.json")), false);
+    await window.evaluate((run) => showResultActions(run), result.run);
+    await window.locator("#open-batch-manifest").click();
+    await window.waitForFunction(() => document.body.textContent.includes("Manifest generated in the output folder."));
     assert.equal(fs.readdirSync(outputDir).some((name) => name.endsWith(".manifest.json")), true);
     const generatedReferrals = outputJsonPaths.flatMap(
       (filePath) => JSON.parse(fs.readFileSync(filePath, "utf8")).Referrals
@@ -434,6 +502,11 @@ async function run() {
       assert.equal(validStationIds.has(stationId), true);
       assert.equal(specialSeocKeys.has(String(seocKey)), false);
     }
+    await window.reload();
+    await window.waitForLoadState("domcontentloaded");
+    await window.locator("#selected-payment-codes .selected-station-chip").waitFor({ state: "attached" });
+    assert.equal(await window.locator("#selected-payment-codes .selected-station-chip").textContent(), "21 ×");
+    assert.equal(await window.locator("#use-all-payment-codes").isChecked(), false);
   } finally {
     await electronApp.close();
     fs.rmSync(outputDir, { recursive: true, force: true });

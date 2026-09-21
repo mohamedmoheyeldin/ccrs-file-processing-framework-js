@@ -1,3 +1,19 @@
+# CCRS File Processing Framework Version 1.5.3
+
+## Version 1.5.3
+
+Release highlights for Version 1.5.3.
+
+- Payment Authority Code: 43 unique values imported from the team PACodes.xlsx (Sheet1); pipe-separated cells are split and duplicates removed.
+- Referral Number: VA or Custom. ICN: Default, Custom, or Referral Number.
+- Output: individual formatted JSON and combined `_Master.json` can be retained independently. Gzip contains the same combined data; the manifest is generated only when requested. Matching names are overwritten after validation; unrelated files are preserved.
+- Selections: one value stays fixed; subsets use only selected values; all clears the selected subset and selecting a value turns all off. Stations must be in the approved catalog and fit the five-character contract. Automatic regular SEOC uses approved Number/ID pairs; Situational SEOC remains optional.
+- Uploads: one shared sequential queue for referrals and LEIE, retaining their separate remote-directory defaults. Each destination is attempted once per run; failure proceeds to the next server. Explicit retry handles only failed servers. Status shows the active server and completed-server count, not a simulated transfer-byte percentage. SFTP completion checks the remote file size; WinSCP reports its own transfer completion.
+- Dialogs scroll at high zoom and on small displays. Setup distinguishes Install from Upgrade using the selected installation folder.
+
+
+## Prior releases
+
 # CCRS File Processing Framework Version 1.4.2
 
 ## Version 1.4.2 Release Notes
@@ -434,7 +450,7 @@ The following synchronized pairs are available in both SEOC selectors. They are 
 | `67` | `INF_FERTILITY-1332 EXISTING OVARY_1.1.17` |
 | `158` | `EUC_EMERGENCY CARE_1.2.8` |
 | `191` | `EUC_POM USE ONLY UNAUTHORIZED EMERGENCY ROOM CARE_1.1.7` |
-| `233` | `SSC_TRANSPLANT BONE MARROW COMP EVAL_1.5.14_REV` |
+| `233` | `SSC_TRANSPLANT BONE MARROW COMP EVAL_1.5.24_REV` |
 | `268` | `MHC_MENTAL HEALTH RESIDENTIAL TREATMENT_1.15.7` |
 | `1160` | `MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT_1.22.2` |
 

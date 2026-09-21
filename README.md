@@ -1,5 +1,17 @@
 # CCRS File Processing Framework
 
+## Version 1.5.3
+
+Release highlights for Version 1.5.3.
+
+- Payment Authority Code: 43 unique values imported from the team PACodes.xlsx (Sheet1); pipe-separated cells are split and duplicates removed.
+- Referral Number: VA or Custom. ICN: Default, Custom, or Referral Number.
+- Output: individual formatted JSON and combined `_Master.json` can be retained independently. Gzip contains the same combined data; the manifest is generated only when requested. Matching names are overwritten after validation; unrelated files are preserved.
+- Selections: one value stays fixed; subsets use only selected values; all clears the selected subset and selecting a value turns all off. Stations must be in the approved catalog and fit the five-character contract. Automatic regular SEOC uses approved Number/ID pairs; Situational SEOC remains optional.
+- Uploads: one shared sequential queue for referrals and LEIE, retaining their separate remote-directory defaults. Each destination is attempted once per run; failure proceeds to the next server. Explicit retry handles only failed servers. Status shows the active server and completed-server count, not a simulated transfer-byte percentage. SFTP completion checks the remote file size; WinSCP reports its own transfer completion.
+- Dialogs scroll at high zoom and on small displays. Setup distinguishes Install from Upgrade using the selected installation folder.
+
+
 This project is a pure JavaScript Electron desktop app for working with CCRS referral files. It supports editing existing referral JSON files, generating new referral files, building final `.gz` packages, importing WinSCP upload settings, and uploading the finished archive to configured targets.
 
 ## Architecture
@@ -14,9 +26,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.4.2",
-  "releaseTag": "v1.4.2",
-  "label": "Version 1.4.2",
+  "version": "1.5.3",
+  "releaseTag": "v1.5.3",
+  "label": "Version 1.5.3",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -29,7 +41,7 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- The current local test candidate is `Version 1.4.2` (`v1.4.2`). Version 1.4.1 remains the latest published release until this candidate is approved and published.
+- Current release: [Version 1.5.3](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.5.3).
 - `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
@@ -61,7 +73,7 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.4.2` after approval.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.5.3` after approval.
 
 The workflow requires the tag to match `releaseTag`. While a version remains the active release line, rerunning the workflow updates that same GitHub Release in place, replaces its two verified assets, and rebuilds the release body from the complete `releaseNotes` list so earlier highlights remain present. Start a newer version only after the release metadata is intentionally advanced.
 It also refuses to build a release when `releaseNotes` is empty.
@@ -103,8 +115,8 @@ Files that are kept in sync from the shipped app:
 - Search all imported station rows by station key, station ID, VISN, station name, or parent station ID
 - Search regular SEOC Number/ID pairs, or manually select from the separate nine-value Situational SEOC catalog when required
 - Keep each referral's source Network automatically, choose one Network for every referral, or mix a selected subset or all available Networks across the batch
-- Choose how ICNs should be generated: derive `TEST` plus the Referral Number body, keep `TEST`, keep `TEST` with a custom suffix, or use a custom full ICN base
-- Choose `VA`, `iFAMS`, combined `VAiFAMS`, or a letters/numbers/underscore custom prefix for generated Referral Numbers
+- Choose how ICNs should be generated: derive `TEST` plus the Referral Number body, keep `TEST`, or use a custom full ICN base
+- Choose `VA` or a custom prefix for generated Referral Numbers
 - Match the last 3, 4, or 5 characters of each Referral Number and ICN
 - Produce final `.gz` archives
 - Choose Referral Number, Network, Referral DateTime, or checkbox-built Custom JSON/gzip filename conventions with a live preview
@@ -145,7 +157,7 @@ pnpm data:seoc -- /path/to/SEOC.xlsx
 pnpm verify
 ```
 
-## Version 1.4.2 Highlights
+## Version 1.5.3 Highlights
 
 - Keeps the complete Version 1.4.1 experience and adds cleaner SEOC labels, Network assignment choices, concurrent destination uploads, clearer recovery guidance, and calmer option-card highlighting.
 - Accepts hyphens and underscores in Referral Number bodies and Custom prefixes while preserving live previews and unique generated values.
@@ -208,3 +220,5 @@ The Windows Playwright test in [scripts/electron-e2e-test.js](scripts/electron-e
 ## User Documentation
 The user guide source lives in [docs/USER_GUIDE.md](docs/USER_GUIDE.md).
 Packaged builds open the generated `docs/USER_GUIDE.pdf` from the app UI.
+
+Team chat announcement: [copy the current release message](docs/RELEASE_UPDATE.md). It is regenerated from release metadata for each release.

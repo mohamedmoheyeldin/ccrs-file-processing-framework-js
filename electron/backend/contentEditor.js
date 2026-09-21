@@ -1,3 +1,4 @@
+const { codes: paymentCodes, validatePaymentCode, applyPaymentCodes } = require("./paymentAuthorityCatalog");
 const fs = require("fs");
 const { bundlePath, dataPath } = require("./appPaths");
 const { loadStationOptions } = require("./stationCatalog");
@@ -70,12 +71,7 @@ const TRACKED_JSON_FIELDS = [
   "ReferralConsultId",
 ];
 
-const VARIABLE_OVERRIDE_FIELDS = {
-  PaymentAuthorityCode: {
-    length: PAYMENT_AUTHORITY_CODE_LENGTH,
-    charset: NUMERIC_RANDOM_CHARSET,
-  },
-};
+const VARIABLE_OVERRIDE_FIELDS = {};
 
 const FIRST_NAMES = [
   "James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda",
@@ -273,23 +269,8 @@ function generateRandomDob(sequenceIndex = 1) {
   return new Date(firstDay + dayOffset * 86400000).toISOString().slice(0, 10);
 }
 
-function validatePaymentAuthorityCode(value) {
-  const normalized = normalizePaymentAuthorityCode(value);
-  if (!normalized) {
-    return "";
-  }
+function validatePaymentAuthorityCode(value) { return validatePaymentCode(value); }
 
-  if (normalized.length > PAYMENT_AUTHORITY_CODE_LENGTH) {
-    throw new Error(PAYMENT_AUTHORITY_CODE_ERROR_MESSAGE);
-  }
-
-  const numericValue = Number(normalized);
-  if (!Number.isInteger(numericValue) || numericValue < 0 || numericValue > PAYMENT_AUTHORITY_CODE_MAX) {
-    throw new Error(PAYMENT_AUTHORITY_CODE_ERROR_MESSAGE);
-  }
-
-  return normalized;
-}
 
 function validateIcnSettings(rawSettings = {}) {
   const requestedMode = String(rawSettings.mode || ICN_MODES.TEST_DYNAMIC).trim();
@@ -413,20 +394,8 @@ function generateIcnValue(icnSettings, sequenceIndex) {
   )}`;
 }
 
-function generatePaymentAuthorityCodeValue(baseValue, sequenceIndex) {
-  const normalized = normalizePaymentAuthorityCode(baseValue);
-  const baseNumericValue = normalized ? Number(normalized) : PAYMENT_AUTHORITY_CODE_DEFAULT_START;
-  const offset = Math.max((sequenceIndex || 1) - 1, 0);
-  const candidateValue = baseNumericValue + offset;
+function generatePaymentAuthorityCodeValue(baseValue) { return validatePaymentCode(baseValue) || paymentCodes[0]; }
 
-  if (!Number.isInteger(candidateValue) || candidateValue < 0 || candidateValue > PAYMENT_AUTHORITY_CODE_MAX) {
-    throw new Error(
-      `Payment Authority Code range exceeded. The largest supported value is ${PAYMENT_AUTHORITY_CODE_MAX}.`
-    );
-  }
-
-  return String(candidateValue);
-}
 
 function generateOptionalFieldOverrides(rawOverrides) {
   const overrides = {};
@@ -1055,7 +1024,7 @@ function modifyContent(
   if (optionalOverrides && Object.keys(optionalOverrides).length > 0) {
     applyOptionalOverrides(data, optionalOverrides);
   }
-  if (identityOptions.randomizeStationId || identityOptions.selectedStationIds?.length) {
+  if (identityOptions.randomizeStationId || identityOptions.selectedStationIds?.length || !optionalOverrides?.StationID) {
     applyRandomValidStationIds(data, identityOptions);
   }
   applySelectedNetworks(data, identityOptions);
@@ -1069,7 +1038,7 @@ function modifyContent(
   } else {
     alignReferralAndIcnSuffixes(data, identityOptions.matchSuffixLength);
   }
-  ensureSourceVariableFieldsAreUnique(data, optionalOverrides);
+  applyPaymentCodes(data, identityOptions, optionalOverrides?.PaymentAuthorityCode);
 
   return {
     content: JSON.stringify(data, null, 4),

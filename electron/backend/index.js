@@ -1,3 +1,4 @@
+const { codes: paymentAuthorityCodes, validatePaymentCode } = require("./paymentAuthorityCatalog");
 const fs = require("fs");
 const path = require("path");
 const { Worker } = require("worker_threads");
@@ -220,7 +221,8 @@ function getInfo() {
       leieUploadTargets: allowedUploadTargets("leie"),
     },
     generatorDefaults: getGeneratorDefaults(),
-    stations: loadStations(),
+    stations: loadStations().filter((station) => /^[A-Za-z0-9]{1,5}$/.test(station.station_id || "")),
+    paymentAuthorityCodes,
     seocOptions: getSeocOptions(),
     situationalSeocOptions: getSituationalSeocOptions(),
     uiSettings,
@@ -397,7 +399,7 @@ function buildPreview(payload) {
     : buildOutputFileNames(namingPayload);
 
   return {
-    replacementCode,
+    replacementCode: replacementCode || (payload.archiveNamingOptions?.mode ? archiveBasename : ""),
     archiveBasename,
     outputFileNames,
     icnPreview,
@@ -598,10 +600,13 @@ function buildCommonArgs(payload, progressCallback) {
   )];
   const ssnValue = (payload.ssnValue || "999-99-0001").trim();
   const identityOptions = {
+    selectedPaymentCodes: (payload.identityOptions?.selectedPaymentCodes || []).map(validatePaymentCode),
+    useAllPaymentCodes: Boolean(payload.identityOptions?.useAllPaymentCodes),
+    keepMasterJson: payload.keepMasterJson !== false,
     randomizeSsn: payload.identityOptions?.randomizeSsn !== false,
     randomizeDob: payload.identityOptions?.randomizeDob !== false,
     randomizeStationId: Boolean(payload.identityOptions?.randomizeStationId),
-    selectedStationIds,
+    selectedStationIds: payload.identityOptions?.randomizeStationId ? [] : selectedStationIds,
     selectedNetworks: [...new Set(
       (Array.isArray(payload.identityOptions?.selectedNetworks) ? payload.identityOptions.selectedNetworks : [])
         .map((value) => String(value || "").trim().toUpperCase())
@@ -609,7 +614,7 @@ function buildCommonArgs(payload, progressCallback) {
     )],
     selectedSeocPairs: resolveSeocSelection(
       payload.identityOptions?.selectedSeocKeys,
-      Boolean(payload.identityOptions?.useAllSeocs)
+      Boolean(payload.identityOptions?.useAllSeocs) || !payload.identityOptions?.selectedSeocKeys?.length
     ),
     selectedSituationalSeocPairs: resolveSeocSelection(
       payload.identityOptions?.selectedSituationalSeocKeys,
@@ -637,7 +642,7 @@ function buildCommonArgs(payload, progressCallback) {
   return {
     outputDir: (payload.outputDir || "").trim(),
     replacementCode: usesNamingMode
-      ? archiveBasename
+      ? sanitizeFilenameBase(payload.replacementCode || "") || archiveBasename
       : useIfamsFilenamePrefix
       ? archiveBasename
       : (payload.replacementCode || "").trim(),
@@ -741,7 +746,7 @@ async function runGenerate(payload, emitProgress) {
 
   let generatedInputDir = "";
   try {
-    generatedInputDir = buildGeneratedReferralSources(fileCount, referralsPerFile);
+    generatedInputDir = buildGeneratedReferralSources(fileCount, referralsPerFile, args.optionalOverrides);
     return await processFiles(
       generatedInputDir,
       args.outputDir,
@@ -780,13 +785,13 @@ async function retryFailedUploads(payload, emitProgress) {
   }));
   const resolved = resolveUploadTargets(loadUploadProfiles(), requested);
   const results = [...run.uploadResults.filter((item) => item.status !== "failed")];
-  results.push(...await require("./uploader").uploadTargetsInParallel(run.archivePath, resolved, {
+  results.push(...await require("./uploader").uploadTargetsSequentially(run.archivePath, resolved, {
     onProgress: (event) => emitProgress?.({
       phase: "upload",
       filename: path.basename(run.archivePath),
       ...event,
       message: event.state === "upload-batch-start"
-        ? `Retrying ${event.total} failed upload${event.total === 1 ? "" : "s"} in parallel.`
+        ? `Retrying ${event.total} failed upload${event.total === 1 ? "" : "s"} one at a time.`
         : event.message,
     }),
   }));
@@ -805,6 +810,23 @@ async function retryFailedUploads(payload, emitProgress) {
   }
   const remainingFailures = results.filter((item) => item.status === "failed");
   return { message: retryable ? `${remainingFailures.map((item) => item.serverName).join(", ")} still need attention. Check the account, remote directory, or connection, then use Retry Failed Uploads again.` : "Every retried upload completed and the remote file sizes were verified.", run: updatedRun, archivePath: run.archivePath, manifestPath: run.manifestPath, outputDir: run.outputDir, uploadResults: results, retryable };
+}
+
+function generateManifest(payload) {
+  const run = getRun(payload.runId);
+  if (!run?.manifestData) throw new Error("Manifest details are unavailable for this run. Generate a new batch first.");
+  const { sha256File } = require("./batchSafety");
+  const data = { ...run.manifestData, uploads: run.uploadResults, status: run.status };
+  for (const file of [...data.generatedJsonFiles, data.archive]) {
+    const target = path.join(run.outputDir, path.basename(file.name));
+    if (!fs.existsSync(target) || sha256File(target) !== file.sha256) {
+      throw new Error("This batch's files have changed or been removed. Generate the manifest for the latest unchanged batch.");
+    }
+  }
+  const manifestPath = path.join(run.outputDir, `${path.basename(run.archivePath, ".gz")}.manifest.json`);
+  writeFileAtomic(manifestPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
+  const updatedRun = saveRun({ ...run, manifestPath, manifestData: data });
+  return { message: "Manifest generated in the output folder.", manifestPath, run: updatedRun };
 }
 
 async function runTestUploadTarget(payload) {
@@ -830,6 +852,7 @@ async function runTestUploadTarget(payload) {
 }
 
 async function handleCommand(command, payload, emitProgress) {
+  if (command === "generate-manifest") return generateManifest(payload);
   if (command === "info") {
     return getInfo();
   }

@@ -2303,3 +2303,18 @@ select:disabled {
     white-space: normal;
   }
 }
+
+/* Keep every dialog action reachable even at high zoom and low screen heights. */
+.modal-overlay { overflow: auto; padding: min(24px, 3vh); }
+.modal-panel { max-height: calc(100dvh - 24px); overflow-y: auto; min-height: 0; }
+.release-announcement-modal { height: auto; display: block; overflow-y: auto; }
+.release-announcement-scroll { overflow: visible; }
+.release-announcement-actions { flex-wrap: wrap; }
+select[multiple] { width: 100%; min-height: 130px; padding: 8px; color: var(--text); background: var(--panel-strong); }
+@media (max-height: 500px) { .modal-panel { padding: 12px; } .release-announcement-header { padding: 12px; } }
+
+/* Keep the date preference compact within the two-column field grid. */
+.current-dates-control { align-self: start; min-height: 0; border-radius: 12px; padding: 10px 12px; gap: 10px; }
+.current-dates-control span { display: grid; gap: 3px; }
+.current-dates-control strong { font-size: 13px; font-weight: 600; }
+.current-dates-control small { font-size: 12px; line-height: 1.4; }

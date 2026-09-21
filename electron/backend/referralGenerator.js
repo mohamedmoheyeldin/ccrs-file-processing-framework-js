@@ -20,6 +20,27 @@ function getReferralTemplatePaths() {
     .sort();
 }
 
+function getCurrentReferralDates(overrides = {}, now = new Date()) {
+  const dateText = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  const today = dateText(now);
+  const period = String(overrides.ReferralPeriod || "990 days").match(/^(\d+)\s*(?:days?)?$/i);
+  const start = overrides.ReferralDate || today;
+  const expiration = new Date(`${start}T12:00:00`);
+  expiration.setDate(expiration.getDate() + (period ? Number(period[1]) : 990));
+  const time = [now.getHours(), now.getMinutes(), now.getSeconds()].map((value) => String(value).padStart(2, "0")).join(":");
+  return {
+    ReferralDate: start,
+    ReferralDateTime: `${start} ${time}`,
+    ReferralExpirationDate: dateText(expiration),
+    ReferralLastUpdateDate: overrides.ReferralLastUpdateDate || today,
+    ReferralLastUpdateDateTime: `${overrides.ReferralLastUpdateDate || today} ${time}`,
+    AllocatedDate: start,
+    TreatmentStartDate: start,
+    ClinicallyIndicatedDate: start,
+    AppointmentDate: start,
+  };
+}
+
 function getGeneratorDefaults() {
   const [firstTemplatePath] = getReferralTemplatePaths();
   if (!firstTemplatePath) {
@@ -40,7 +61,8 @@ function getGeneratorDefaults() {
     ReferralExpirationDate: firstReferral.ReferralExpirationDate || "",
     ReferralLastUpdateDate: firstReferral.ReferralLastUpdateDate || "",
     ReferralNumber: firstReferral.ReferralNumber || "",
-    ReferralPeriod: firstReferral.ReferralPeriod || "",
+    ReferralPeriod: firstReferral.ReferralPeriod || "990 days",
+    ...getCurrentReferralDates({ ReferralPeriod: firstReferral.ReferralPeriod }),
   };
 }
 
@@ -118,7 +140,8 @@ function resolveSeocSelection(selectorKeys = [], useAll = false, catalog = "regu
   return selections;
 }
 
-function buildGeneratedReferralSources(fileCount, referralsPerFile) {
+function buildGeneratedReferralSources(fileCount, referralsPerFile, overrides = {}) {
+  const currentDates = getCurrentReferralDates(overrides);
   const templatePaths = getReferralTemplatePaths();
   if (templatePaths.length === 0) {
     throw new Error("No bundled referral templates were found.");
@@ -139,7 +162,7 @@ function buildGeneratedReferralSources(fileCount, referralsPerFile) {
       const generatedData = structuredClone(templateData);
       generatedData.Referrals = [];
       for (let referralIndex = 0; referralIndex < referralsPerFile; referralIndex += 1) {
-        generatedData.Referrals.push(structuredClone(referrals[referralIndex % referrals.length]));
+        generatedData.Referrals.push({ ...structuredClone(referrals[referralIndex % referrals.length]), ...currentDates });
       }
 
       fs.writeFileSync(
@@ -158,6 +181,7 @@ function buildGeneratedReferralSources(fileCount, referralsPerFile) {
 module.exports = {
   buildGeneratedReferralSources,
   getGeneratorDefaults,
+  getCurrentReferralDates,
   getSeocOptions,
   getSituationalSeocOptions,
   resolveSeocSelection,

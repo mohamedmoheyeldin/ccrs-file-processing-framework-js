@@ -86,7 +86,7 @@ function loadStations() {
 
 function loadStationOptions() {
   return loadStations()
-    .filter((station) => station.station_id)
+    .filter((station) => /^[A-Za-z0-9]{1,5}$/.test(station.station_id || ""))
     .map((station) => ({
       stationKey: station.station_id,
       stationName: station.station_name || `Station key ${station.station_key}`,

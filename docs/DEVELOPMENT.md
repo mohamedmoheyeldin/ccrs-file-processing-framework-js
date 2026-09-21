@@ -45,3 +45,12 @@ pnpm verify
 ## Windows-only work
 
 From native Windows, run `pnpm run test:e2e` to launch the Electron UI. Use `pnpm run dist` only when validating the Setup build. The GitHub release workflow is the authoritative publishing path.
+
+## Local development candidate
+
+Use Node 24 and Corepack pnpm 11.22.0. Install with `corepack pnpm install --frozen-lockfile`, run `corepack pnpm start`, verify with `corepack pnpm verify`, and build with `corepack pnpm run dist`. The local working branch is `local/1.5-workflow-improvements`. No automatic remote upload or publishing is performed.
+
+
+## Team announcement for every release
+
+Update `version`, `releaseTag`, `releaseNotes`, and optional concise `teamHighlights` in `config/app_version.json`. Version synchronization automatically regenerates `docs/RELEASE_UPDATE.md` during start, test, and release build. Commit this file with each release. Copy its entire contents into Teams only after the release and installer are published and verified. Do not edit the generated message directly.

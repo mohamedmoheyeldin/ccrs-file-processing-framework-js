@@ -52,6 +52,9 @@ const state = {
   previewRequestId: 0,
   selectedStationIds: [],
   selectedNetworks: [],
+  selectedPaymentCodes: [],
+  paymentCodeBySelectorKey: new Map(),
+  paymentCodeSearchIndex: [],
   selectedSeocKeys: [],
   selectedSituationalSeocKeys: [],
   seocBySelectorKey: new Map(),
@@ -178,6 +181,7 @@ function setJobProgress(current = 0, total = 0) {
 
 function setBusy(busy, cancellable = false) {
   state.busy = busy;
+  if (elements.openBatchManifest) elements.openBatchManifest.disabled = busy || !state.lastRun?.manifestData;
   state.jobCancellable = Boolean(busy && cancellable);
   if (!busy) {
     state.cancelRequested = false;
@@ -356,6 +360,7 @@ function setNetworkMenuOpen(open) {
 }
 
 function renderNetworkSelection() {
+  if (elements.useAllNetworks.checked) state.selectedNetworks = [];
   elements.selectedNetworks.innerHTML = "";
   for (const value of state.selectedNetworks) {
     const chip = document.createElement("button");
@@ -383,8 +388,8 @@ function renderNetworkSelection() {
   } else {
     elements.networkMatch.textContent = "Automatic mode keeps each referral's source Network.";
   }
-  elements.networkSearch.disabled = elements.useAllNetworks.checked;
-  elements.networkToggle.disabled = elements.useAllNetworks.checked;
+  elements.networkSearch.disabled = false;
+  elements.networkToggle.disabled = false;
 }
 
 function renderNetworkMenu() {
@@ -405,6 +410,7 @@ function renderNetworkMenu() {
     copy.textContent = state.selectedNetworks.includes(value) ? "Selected — choose again to remove" : "Choose this Network";
     button.append(title, copy);
     button.addEventListener("click", () => {
+      elements.useAllNetworks.checked = false;
       state.selectedNetworks = state.selectedNetworks.includes(value)
         ? state.selectedNetworks.filter((item) => item !== value)
         : [...state.selectedNetworks, value];
@@ -419,6 +425,14 @@ function renderNetworkMenu() {
 }
 
 function getSeocSelectorConfig(situational = false) {
+  if (situational === "payment") return {
+    selectedKey: "selectedPaymentCodes", combobox: elements.paymentCodeCombobox,
+    input: $("override-payment-authority-code"), toggle: elements.paymentCodeToggle,
+    menu: elements.paymentCodeMenu, selected: elements.selectedPaymentCodes,
+    match: elements.paymentCodeMatch, useAll: elements.useAllPaymentCodes,
+    label: "Payment Authority Code", payment: true,
+    optionMapKey: "paymentCodeBySelectorKey", searchIndexKey: "paymentCodeSearchIndex",
+  };
   return situational
     ? {
         selectedKey: "selectedSituationalSeocKeys",
@@ -463,6 +477,7 @@ function setSeocMenuOpen(config, open) {
 }
 
 function renderSelectedSeocs(config) {
+  if (config.useAll.checked) state[config.selectedKey] = [];
   config.selected.innerHTML = "";
   for (const selectorKey of state[config.selectedKey]) {
     const option = state[config.optionMapKey].get(selectorKey);
@@ -477,16 +492,16 @@ function renderSelectedSeocs(config) {
     config.selected.append(chip);
   }
   if (config.useAll.checked) {
-    config.match.textContent = `All ${getSeocOptions(config.situational).length.toLocaleString()} available ${config.label} values will be used.`;
+    config.match.textContent = `All ${state[config.optionMapKey].size.toLocaleString()} available ${config.label} values will be used.`;
   } else if (state[config.selectedKey].length > 0) {
     config.match.textContent = `${state[config.selectedKey].length.toLocaleString()} ${config.label} value${state[config.selectedKey].length === 1 ? "" : "s"} selected.`;
   } else {
-    config.match.textContent = config.situational
+    config.match.textContent = config.payment ? "Automatic mode mixes only team-approved payment codes." : config.situational
       ? "Manual only: no Situational SEOC is added unless you select one here."
-      : "Automatic mode uses each referral's regular source SEOC Number and ID.";
+      : "Automatic mode mixes approved SEOC Number and ID pairs from the reference list.";
   }
-  config.input.disabled = config.useAll.checked;
-  config.toggle.disabled = config.useAll.checked;
+  config.input.disabled = false;
+  config.toggle.disabled = false;
   syncSeocOverrideWarning();
 }
 
@@ -500,19 +515,24 @@ function renderSeocMenu(config) {
     button.type = "button";
     button.className = `combo-option${state[config.selectedKey].includes(option.selectorKey) ? " is-selected" : ""}`;
     button.dataset.seocSelectorKey = option.selectorKey;
+    button.setAttribute("role", "option");
+    button.setAttribute("aria-selected", String(state[config.selectedKey].includes(option.selectorKey)));
     const title = document.createElement("span");
     title.className = "combo-option-title";
     title.textContent = getSeocVisibleName(option);
     const copy = document.createElement("span");
     copy.className = "combo-option-copy";
-    copy.textContent = `SEOC Number: ${option.seocNumber}`;
-    button.append(title, copy);
+    button.append(title);
+    if (!config.payment) {
+      copy.textContent = `SEOC Number: ${option.seocNumber}`;
+      button.append(copy);
+    }
     config.menu.append(button);
   }
   if (matches.length === 0) {
     const empty = document.createElement("div");
     empty.className = "combo-empty";
-    empty.textContent = "No matching SEOC values.";
+    empty.textContent = `No matching ${config.label} values.`;
     config.menu.append(empty);
   } else if (matches.length > SEOC_RESULT_LIMIT) {
     const summary = document.createElement("div");
@@ -525,11 +545,12 @@ function renderSeocMenu(config) {
 function syncIdentityControls() {
   $("ssn-value").disabled = readChecked("randomize-ssn");
   $("override-dob").disabled = readChecked("randomize-dob");
-  elements.overrideStationId.disabled = readChecked("randomize-station-id");
-  elements.stationIdToggle.disabled = readChecked("randomize-station-id");
+  elements.overrideStationId.disabled = false;
+  elements.stationIdToggle.disabled = false;
 }
 
 function renderSelectedStations() {
+  if (readChecked("randomize-station-id")) state.selectedStationIds = [];
   if (!elements.selectedStations) return;
   elements.selectedStations.innerHTML = "";
   for (const stationId of state.selectedStationIds) {
@@ -863,10 +884,17 @@ function adjustDatePart(partKey, delta) {
   input.value = String(current).padStart(part.width, "0");
 }
 
+const referralDateFields = {
+  "override-referral-date": "ReferralDate",
+  "override-referral-date-time": "ReferralDateTime",
+  "override-referral-expiration-date": "ReferralExpirationDate",
+  "override-referral-last-update-date": "ReferralLastUpdateDate",
+};
+
 function collectOptionalOverrides() {
   const rawValues = {
     StationID: "",
-    PaymentAuthorityCode: readValue("override-payment-authority-code"),
+    PaymentAuthorityCode: "",
     ReferralPeriod: readValue("override-referral-period"),
     DOB: readChecked("randomize-dob") ? "" : readValue("override-dob"),
     ReferralCategory: readValue("override-referral-category"),
@@ -877,6 +905,9 @@ function collectOptionalOverrides() {
     ReferralConsultId: readValue("override-referral-consult-id"),
   };
 
+  if (state.subTab === "generate" && readChecked("use-current-referral-dates")) {
+    for (const key of Object.values(referralDateFields)) delete rawValues[key];
+  }
   return Object.fromEntries(
     Object.entries(rawValues).filter(([, value]) => value)
   );
@@ -987,6 +1018,8 @@ function sharedPayload() {
     identityOptions: {
       randomizeSsn: readChecked("randomize-ssn"),
       randomizeDob: readChecked("randomize-dob"),
+      selectedPaymentCodes: [...state.selectedPaymentCodes],
+      useAllPaymentCodes: readChecked("use-all-payment-codes"),
       randomizeStationId: readChecked("randomize-station-id"),
       selectedStationIds: readChecked("randomize-station-id") ? [] : [...state.selectedStationIds],
       selectedNetworks: getSelectedNetworkValues(),
@@ -999,6 +1032,7 @@ function sharedPayload() {
     },
     listDateOverride: getListDateOverride(),
     clearOutput: readChecked("clear-output"),
+    keepMasterJson: readChecked("keep-master-json"),
     keepProcessedJson: readChecked("keep-processed-json"),
     optionalOverrides: collectOptionalOverrides(),
     upload: collectUploadSettings(),
@@ -1058,10 +1092,12 @@ function collectUiSettings() {
     useAllSeocs: readChecked("use-all-seocs"),
     selectedSituationalSeocKeys: [...state.selectedSituationalSeocKeys],
     useAllSituationalSeocs: readChecked("use-all-situational-seocs"),
-    overridePaymentAuthorityCode: readValue("override-payment-authority-code"),
+    selectedPaymentCodes: [...state.selectedPaymentCodes],
+    useAllPaymentCodes: readChecked("use-all-payment-codes"),
     overrideReferralPeriod: readValue("override-referral-period"),
     overrideDob: readValue("override-dob"),
     overrideReferralCategory: readValue("override-referral-category"),
+    useCurrentReferralDates: readChecked("use-current-referral-dates"),
     overrideReferralDate: readValue("override-referral-date"),
     overrideReferralDateTime: readValue("override-referral-date-time"),
     overrideReferralExpirationDate: readValue("override-referral-expiration-date"),
@@ -1070,6 +1106,7 @@ function collectUiSettings() {
     fileCount: readValue("file-count"),
     referralsPerFile: readValue("referrals-per-file"),
     clearOutput: readChecked("clear-output"),
+    keepMasterJson: readChecked("keep-master-json"),
     keepProcessedJson: readChecked("keep-processed-json"),
     uploadEnabled: readChecked("upload-enabled"),
     uploadTargets: collectPersistedUploadTargets(),
@@ -1153,6 +1190,7 @@ async function applyUiSettings(settings = {}) {
   state.optionalFieldsVisible = Boolean(settings.optionalFieldsVisible);
   syncOptionalFieldsVisibility();
 
+  $("use-current-referral-dates").checked = settings.useCurrentReferralDates !== false;
   const valueMap = {
     "input-dir": settings.inputDir,
     "output-dir": settings.outputDir,
@@ -1162,7 +1200,7 @@ async function applyUiSettings(settings = {}) {
     "referral-code": settings.referralCode,
     "ssn-value": settings.ssnValue,
     "icn-custom-value": settings.icnCustomValue,
-    "override-payment-authority-code": settings.overridePaymentAuthorityCode,
+
     "override-referral-period": settings.overrideReferralPeriod,
     "override-dob": settings.overrideDob,
     "match-suffix-length": settings.matchSuffixLength || "5",
@@ -1219,6 +1257,9 @@ async function applyUiSettings(settings = {}) {
   $("custom-referral-prefix").value = settings.customReferralPrefix || "";
   $("clear-output").checked = Boolean(settings.clearOutput);
   $("keep-existing-files").checked = !Boolean(settings.clearOutput);
+  $("use-all-payment-codes").checked = settings.useAllPaymentCodes !== false;
+  state.selectedPaymentCodes = [...new Set((settings.selectedPaymentCodes || [settings.overridePaymentAuthorityCode]).filter((code) => state.paymentCodeBySelectorKey.has(code)))];
+  $("keep-master-json").checked = settings.keepMasterJson !== false;
   $("keep-processed-json").checked = settings.keepProcessedJson !== false;
   $("upload-enabled").checked = Boolean(settings.uploadEnabled);
   $("randomize-ssn").checked = settings.randomizeSsn !== false;
@@ -1264,6 +1305,7 @@ async function applyUiSettings(settings = {}) {
   renderSelectedStations();
   renderNetworkSelection();
   renderNetworkMenu();
+  renderSelectedSeocs(getSeocSelectorConfig("payment"));
   renderSelectedSeocs(getSeocSelectorConfig(false));
   renderSelectedSeocs(getSeocSelectorConfig(true));
   applyUploadTargetSettings(settings.uploadTargets || {});
@@ -1484,16 +1526,29 @@ function applyGeneratorDefaults() {
 
   setValueIfEmpty("override-referral-period", defaults.ReferralPeriod);
   setValueIfEmpty("override-referral-category", defaults.ReferralCategory);
-  setValueIfEmpty("override-referral-date", defaults.ReferralDate);
-  setValueIfEmpty("override-referral-date-time", defaults.ReferralDateTime);
-  setValueIfEmpty("override-referral-expiration-date", defaults.ReferralExpirationDate);
-  setValueIfEmpty("override-referral-last-update-date", defaults.ReferralLastUpdateDate);
+  if (state.subTab === "generate" && readChecked("use-current-referral-dates")) {
+    const now = new Date();
+    const text = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const period = readValue("override-referral-period").match(/^(\d+)\s*(?:days?)?$/i);
+    const expiration = new Date(now);
+    expiration.setDate(expiration.getDate() + (period ? Number(period[1]) : 990));
+    $("override-referral-date").value = text(now);
+    $("override-referral-date-time").value = `${text(now)} ${[now.getHours(), now.getMinutes(), now.getSeconds()].map((value) => String(value).padStart(2, "0")).join(":")}`;
+    $("override-referral-expiration-date").value = text(expiration);
+    $("override-referral-last-update-date").value = text(now);
+  }
   setValueIfEmpty("override-referral-consult-id", defaults.ReferralConsultId);
 }
 
 function applyInfo(info) {
   state.info = info;
   referralUploadTargetNames = new Set(info.workflowPolicy?.referralUploadTargets || ["SQA", "DEV", "PPD"]);
+  state.paymentCodeBySelectorKey = new Map();
+  state.paymentCodeSearchIndex = (info.paymentAuthorityCodes || []).map((code) => {
+    const option = { selectorKey: code, name: code };
+    state.paymentCodeBySelectorKey.set(code, option);
+    return { option, searchText: code.toLowerCase() };
+  });
   state.stationById = new Map();
   state.stationSelectableCount = 0;
   state.stationSearchIndex = (info.stations || []).map((option) => {
@@ -1914,6 +1969,8 @@ async function updatePreviews() {
     identityOptions: {
       randomizeSsn: readChecked("randomize-ssn"),
       randomizeDob: readChecked("randomize-dob"),
+      selectedPaymentCodes: [...state.selectedPaymentCodes],
+      useAllPaymentCodes: readChecked("use-all-payment-codes"),
       randomizeStationId: readChecked("randomize-station-id"),
       selectedStationIds: readChecked("randomize-station-id") ? [] : [...state.selectedStationIds],
       selectedNetworks: getSelectedNetworkValues(),
@@ -1947,7 +2004,7 @@ async function updatePreviews() {
       preview.replacementCode,
       getPreviewFileCount()
     );
-    elements.archivePreview.textContent = `${preview.outputFileNames.json} · ${preview.outputFileNames.gzip}`;
+    elements.archivePreview.textContent = `${preview.outputFileNames.basename}_Master.json · ${preview.outputFileNames.gzip}`;
     elements.referralPreview.textContent = preview.referralNumber
       ? `Preview: ${preview.referralNumber}`
       : "Preview: default referral numbers from source files";
@@ -1958,9 +2015,7 @@ async function updatePreviews() {
         ? `Preview: randomized from ${state.selectedStationIds.join(", ")}`
         : "Preview: no Station ID override";
     updateStationIdMatch();
-    elements.paymentAuthorityCodePreview.textContent = preview.optionalOverrides.PaymentAuthorityCode
-      ? `Preview: ${preview.optionalOverrides.PaymentAuthorityCode}`
-      : "Preview: no Payment Authority Code override";
+    elements.paymentAuthorityCodePreview.textContent = (readChecked("use-all-payment-codes") || !state.selectedPaymentCodes.length) ? "Preview: mixed from the team reference codes" : `Preview: ${[...state.selectedPaymentCodes].join(", ")}`;
     applyFieldErrors(preview.fieldErrors || {});
     return preview;
   } catch (error) {
@@ -1982,7 +2037,7 @@ function showResultActions(run) {
   const hasRun = Boolean(run?.outputDir || run?.archivePath || run?.manifestPath);
   elements.resultActions?.classList.toggle("hidden", !hasRun);
   elements.openOutputFolder.disabled = !run?.outputDir;
-  elements.openBatchManifest.disabled = !run?.manifestPath;
+  elements.openBatchManifest.disabled = !run?.manifestData || state.busy;
   elements.copyArchivePath.disabled = !run?.archivePath;
   elements.retryFailedUploads.classList.toggle("hidden", !run?.retryable && run?.status !== "upload-failed");
 }
@@ -2049,6 +2104,7 @@ function syncWorkflowText() {
   const isReferral = state.mainTab === "referral";
   const isLeie = state.mainTab === "leie";
   const isGenerate = state.subTab === "generate" && isReferral;
+  $("current-referral-dates-control").classList.toggle("hidden", !isGenerate);
   const isOther = state.mainTab === "other";
 
   elements.heroTitle.textContent = "CCRS File Processing";
@@ -2445,11 +2501,13 @@ function wireSeocSelector(config) {
   config.menu.addEventListener("click", (event) => {
     const selectorKey = event.target.closest("[data-seoc-selector-key]")?.dataset.seocSelectorKey;
     if (!selectorKey) return;
+    config.useAll.checked = false;
     state[config.selectedKey] = state[config.selectedKey].includes(selectorKey)
       ? state[config.selectedKey].filter((value) => value !== selectorKey)
       : [...state[config.selectedKey], selectorKey];
     config.input.value = "";
     refresh();
+    config.input.focus();
     setSeocMenuOpen(config, true);
   });
   config.selected.addEventListener("click", (event) => {
@@ -2462,6 +2520,10 @@ function wireSeocSelector(config) {
 }
 
 function setupEventHandlers() {
+  $("use-current-referral-dates").addEventListener("change", () => {
+    applyGeneratorDefaults(); schedulePreviewUpdate(); scheduleUiSettingsSave();
+  });
+  $("keep-master-json").addEventListener("change", scheduleUiSettingsSave);
   setupTabs();
   wireDateControls();
   elements.cancelJob?.addEventListener("click", cancelActiveJob);
@@ -2472,7 +2534,19 @@ function setupEventHandlers() {
     elements.preRunConfirm.disabled = elements.prodConfirmInput.value.trim().toUpperCase() !== "PROD";
   });
   elements.openOutputFolder?.addEventListener("click", () => state.lastRun?.outputDir && window.ccrs.openPath(state.lastRun.outputDir));
-  elements.openBatchManifest?.addEventListener("click", () => state.lastRun?.manifestPath && window.ccrs.openPath(state.lastRun.manifestPath));
+  elements.openBatchManifest?.addEventListener("click", async () => {
+    if (!state.lastRun?.runId || state.busy) return;
+    elements.openBatchManifest.disabled = true;
+    try {
+      const result = await window.ccrs.runJob("generate-manifest", { runId: state.lastRun.runId });
+      showResultActions(result.run);
+      setStatus("Manifest Generated", result.message);
+    } catch (error) {
+      setStatus("Manifest Not Generated", error.message);
+    } finally {
+      elements.openBatchManifest.disabled = !state.lastRun?.manifestData;
+    }
+  });
   elements.copyArchivePath?.addEventListener("click", () => {
     if (!state.lastRun?.archivePath) return;
     window.ccrs.copyText(state.lastRun.archivePath);
@@ -2500,15 +2574,12 @@ function setupEventHandlers() {
     "archive-custom-text",
     "referral-code",
     "referral-prefix-va",
-    "referral-prefix-ifams",
-    "referral-prefix-mixed",
     "referral-prefix-custom",
     "custom-referral-prefix",
     "icn-custom-value",
     "ssn-value",
     "match-suffix-length",
     "override-station-id",
-    "override-payment-authority-code",
     "override-referral-period",
     "override-dob",
     "override-referral-category",
@@ -2521,6 +2592,8 @@ function setupEventHandlers() {
     "referrals-per-file",
   ]) {
     $(id).addEventListener("input", () => {
+      if (state.subTab === "generate" && referralDateFields[id]) $("use-current-referral-dates").checked = false;
+      if (id === "override-referral-period") applyGeneratorDefaults();
       if (id === "replacement-code" && state.mainTab === "leie") {
         $(id).value = sanitizeLeieFileNameInput($(id).value);
       }
@@ -2610,6 +2683,7 @@ function setupEventHandlers() {
     const stationOption = event.target.closest("[data-station-id]");
     const stationId = stationOption?.dataset.stationId;
     if (!stationId || stationOption.disabled) return;
+    $("randomize-station-id").checked = false;
     if (state.selectedStationIds.includes(stationId)) {
       state.selectedStationIds = state.selectedStationIds.filter((value) => value !== stationId);
     } else {
@@ -2627,11 +2701,12 @@ function setupEventHandlers() {
     if (!elements.stationIdCombobox.contains(event.target)) {
       setStationMenuOpen(false);
     }
-    for (const config of [getSeocSelectorConfig(false), getSeocSelectorConfig(true)]) {
+    for (const config of [getSeocSelectorConfig(false), getSeocSelectorConfig(true), getSeocSelectorConfig("payment")]) {
       if (!config.combobox.contains(event.target)) setSeocMenuOpen(config, false);
     }
     if (!elements.networkCombobox.contains(event.target)) setNetworkMenuOpen(false);
   });
+  wireSeocSelector(getSeocSelectorConfig("payment"));
   wireSeocSelector(getSeocSelectorConfig(false));
   wireSeocSelector(getSeocSelectorConfig(true));
 
@@ -2659,6 +2734,7 @@ function setupEventHandlers() {
   });
   for (const id of ["randomize-ssn", "randomize-dob", "randomize-station-id"]) {
     $(id).addEventListener("change", () => {
+      if (id === "randomize-station-id" && $(id).checked) { state.selectedStationIds = []; renderSelectedStations(); }
       syncIdentityControls();
       updateStationIdMatch();
       updatePreviews();
@@ -2765,7 +2841,7 @@ function setupEventHandlers() {
       return;
     }
     state.currentPhase = event.phase || state.currentPhase || "processing";
-    setJobProgress(event.current, event.total);
+    setJobProgress(event.phase === "upload" && event.state === "uploading" ? 0 : event.current, event.phase === "upload" && event.state === "uploading" ? 0 : event.total);
 
     if (event.state === "preflight-complete") {
       setStatus("Preflight Complete", event.message || "The source, output, and business settings passed validation.");
@@ -2788,14 +2864,14 @@ function setupEventHandlers() {
     }
 
     if (event.state === "upload-complete") {
-      setStatus("Upload Complete", `${event.filename} reached every selected server and each remote file size was verified.`);
+      setStatus("Upload Complete", `${event.filename} reached every selected server.`);
       return;
     }
 
     if (event.state === "upload-batch-start") {
       setStatus(
         "Starting Uploads",
-        event.message || `Starting ${event.total} upload${event.total === 1 ? "" : "s"} in parallel. Each server will report its own result.`
+        event.message || `Uploading to ${event.total} selected environment${event.total === 1 ? "" : "s"}, one at a time.`
       );
       return;
     }
@@ -2809,7 +2885,7 @@ function setupEventHandlers() {
       .find((row) => row.dataset.target === event.uploadTarget);
 
     if (event.state === "upload-target-complete") {
-      setUploadTargetStatus(uploadRow, `Upload verified — ${event.current} of ${event.total} servers finished.`, "success");
+      setUploadTargetStatus(uploadRow, `Upload complete — ${event.current} of ${event.total} servers finished.`, "success");
       const remaining = Math.max(event.total - event.current, 0);
       setStatus("Upload Verified", `${event.uploadTarget} is complete and verified. ${remaining ? `${remaining} selected server${remaining === 1 ? " is" : "s are"} still working.` : "All selected servers have finished."}`);
       return;
@@ -2818,13 +2894,13 @@ function setupEventHandlers() {
     if (event.state === "upload-target-error") {
       setUploadTargetStatus(uploadRow, `Needs attention: ${event.detail || "The server did not complete the upload."}`, "error");
       const remaining = Math.max(event.total - event.current, 0);
-      setStatus("Upload Warning", `${event.uploadTarget} did not complete: ${event.detail || "No additional details were returned."} Your local file is safe.${remaining ? ` ${remaining} other selected server${remaining === 1 ? " continues" : "s continue"} in parallel.` : " You can retry only the failed server."}`);
+      setStatus("Upload Warning", `${event.uploadTarget} did not complete: ${event.detail || "No additional details were returned."} Your local file is safe.${remaining ? ` ${remaining} remaining server${remaining === 1 ? " will be tried" : "s will be tried"} in order.` : " You can retry only the failed server."}`);
       return;
     }
 
     if (event.state === "uploading") {
       setUploadTargetStatus(uploadRow, `Uploading and verifying ${event.filename}...`, "working");
-      setStatus("Uploading", `${event.uploadTarget} started. ${event.current} of ${event.total} selected servers have finished; uploads run in parallel. Keep the app open.`);
+      setStatus("Uploading", `${event.uploadTarget} started. ${event.current} of ${event.total} selected servers have finished; uploads run one at a time. Keep the app open.`);
       return;
     }
 
@@ -2897,6 +2973,12 @@ function cacheElements() {
     seocSearch: $("seoc-search"),
     seocToggle: $("seoc-toggle"),
     seocMenu: $("seoc-menu"),
+    paymentCodeCombobox: $("payment-code-combobox"),
+    paymentCodeToggle: $("payment-code-toggle"),
+    paymentCodeMenu: $("payment-code-menu"),
+    paymentCodeMatch: $("payment-code-match"),
+    selectedPaymentCodes: $("selected-payment-codes"),
+    useAllPaymentCodes: $("use-all-payment-codes"),
     selectedSeocs: $("selected-seocs"),
     seocMatch: $("seoc-match"),
     useAllSeocs: $("use-all-seocs"),

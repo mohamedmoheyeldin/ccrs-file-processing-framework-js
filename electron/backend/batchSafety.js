@@ -98,20 +98,35 @@ function assertNoOutputCollisions(stagingDir, outputDir, names) {
   }
 }
 
-function promoteStagedFiles(stagingDir, outputDir, names, clearOutput, clearDirectory) {
+function promoteStagedFiles(stagingDir, outputDir, names) {
   fs.mkdirSync(outputDir, { recursive: true });
-  if (clearOutput) clearDirectory(outputDir);
-  else assertNoOutputCollisions(stagingDir, outputDir, names);
-
+  const backupDir = fs.mkdtempSync(path.join(stagingDir, "previous-"));
   const promoted = [];
+  const backups = [];
+  const uniqueNames = [...new Set(names)];
+  for (const name of uniqueNames) {
+    if (path.basename(name) !== name || !fs.statSync(path.join(stagingDir, name)).isFile()) {
+      throw new Error(`Invalid staged filename: ${name}`);
+    }
+    const destination = path.join(outputDir, name);
+    if (fs.existsSync(destination) && (!fs.lstatSync(destination).isFile() || fs.lstatSync(destination).isSymbolicLink())) {
+      throw new Error(`Output destination is not a regular file: ${name}`);
+    }
+  }
   try {
-    for (const name of names) {
+    for (const name of uniqueNames) {
       const destination = path.join(outputDir, name);
-      fs.copyFileSync(path.join(stagingDir, name), destination, clearOutput ? 0 : fs.constants.COPYFILE_EXCL);
+      if (fs.existsSync(destination)) {
+        const backup = path.join(backupDir, name);
+        fs.copyFileSync(destination, backup);
+        backups.push([backup, destination]);
+      }
       promoted.push(destination);
+      fs.copyFileSync(path.join(stagingDir, name), destination);
     }
   } catch (error) {
-    for (const promotedPath of promoted) fs.rmSync(promotedPath, { force: true });
+    for (const destination of promoted) fs.rmSync(destination, { force: true });
+    for (const [backup, destination] of backups) fs.copyFileSync(backup, destination);
     throw error;
   }
   return promoted;

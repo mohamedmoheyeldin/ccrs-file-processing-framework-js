@@ -85,6 +85,7 @@
   }
 
   function enhance(select) {
+    if (select.multiple) return;
     if (enhancedSelects.has(select) || select.closest(".compact-select")) return;
     enhancedSelects.add(select);
 

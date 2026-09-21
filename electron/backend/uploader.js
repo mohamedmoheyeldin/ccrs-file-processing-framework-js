@@ -20,7 +20,7 @@ const UPLOAD_SOURCE_MARKER_PATH = userDataPath("config", "upload_source_marker.j
 const SFTP_CONNECT_TIMEOUT_MS = 30_000;
 const SFTP_OPERATION_TIMEOUT_MS = 10 * 60_000;
 const SFTP_CLOSE_TIMEOUT_MS = 5_000;
-const DEFAULT_UPLOAD_ATTEMPTS = 3;
+const DEFAULT_UPLOAD_ATTEMPTS = 1;
 
 function summarizeUploadProfiles(profiles) {
   return {
@@ -982,9 +982,15 @@ async function uploadFileWithRetry(localPath, remoteDirectory, connectionDetails
   throw new Error(`Upload failed after ${attempts} attempts: ${lastError?.message || "Unknown upload error."}`);
 }
 
-async function uploadTargetsInParallel(localPath, targets = [], options = {}) {
-  const selectedTargets = Array.isArray(targets) ? targets : [];
-  const upload = typeof options.upload === "function" ? options.upload : uploadFileWithRetry;
+async function uploadTargetsSequentially(localPath, targets = [], options = {}) {
+  const seen = new Set();
+  const selectedTargets = (Array.isArray(targets) ? targets : []).filter((target) => {
+    const c = target.connection_details || {};
+    const key = [String(c.host || c.session_name || target.server_name).toLowerCase(), c.port || 22, String(target.remote_directory || "").replace(/\/+$/, "")].join("|");
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+  const upload = typeof options.upload === "function" ? options.upload : uploadFile;
   const onProgress = typeof options.onProgress === "function" ? options.onProgress : () => {};
   let completedCount = 0;
 
@@ -995,7 +1001,9 @@ async function uploadTargetsInParallel(localPath, targets = [], options = {}) {
     targetNames: selectedTargets.map((target) => target.server_name),
   });
 
-  const results = await Promise.all(selectedTargets.map(async (target) => {
+  const results = [];
+  for (const target of selectedTargets) {
+    results.push(await (async () => {
     onProgress({
       state: "uploading",
       current: completedCount,
@@ -1011,7 +1019,7 @@ async function uploadTargetsInParallel(localPath, targets = [], options = {}) {
         remoteDirectory: target.remote_directory,
         remotePath,
         status: "completed",
-        message: `Upload to ${target.server_name} completed and the remote file size was verified.`,
+        message: `Upload to ${target.server_name} completed.`,
       };
       onProgress({
         state: "upload-target-complete",
@@ -1041,7 +1049,8 @@ async function uploadTargetsInParallel(localPath, targets = [], options = {}) {
       });
       return result;
     }
-  }));
+    })());
+  }
 
   onProgress({
     state: results.some((result) => result.status === "failed") ? "upload-batch-warning" : "upload-complete",
@@ -1066,6 +1075,6 @@ module.exports = {
   uploadFile,
   uploadFileWithRetry,
   uploadFileWithSftp,
-  uploadTargetsInParallel,
+  uploadTargetsSequentially,
   withTimeout,
 };

@@ -50,3 +50,17 @@ Native `<details>` elements use the shared `.context-help` system for progressiv
 ## Release boundary
 
 `config/app_version.json` is the canonical release record. `scripts/sync-build-version.js` propagates it to package metadata before start, test, and distribution tasks. `scripts/build-release.js` builds a Windows x64 NSIS Setup installer in a validated temporary directory outside the repository. GitHub Actions performs the authoritative Windows UI, installation, launch, executable, checksum, and release checks.
+
+## Version 1.5 pipeline
+
+Team payment codes are bundled in config/payment_authority_codes.json. outputValidation.js checks generated fields and SEOC pairs against selected catalog sets before packaging. zipOutput streams the combined JSON to gzip and optional master output. batchSafety promotes only the current run files, backing up overwritten files for rollback. Both LEIE and referrals call uploadTargetsSequentially; implicit retries are disabled.
+
+
+### Local 1.5.1 update
+
+Payment Authority Code uses the same searchable, multi-select chip control as SEOC. Selecting all clears the subset; selections are saved between sessions. New referrals default to current local dates and an expiration based on Referral Period (990 days by default). Editing a date switches to custom dates; checking Use current dates restores automatic dates. Existing source files are not rewritten by this default. Master JSON is formatted with four-space indentation and combines numbered files in natural numeric order. Regression coverage checks current and custom dates, leap-year expiration, selection persistence, master equality, and ordering beyond nine files.
+
+
+### Optional manifest export (1.5.3)
+
+Jobs validate output automatically but no longer write a manifest into the output folder. After a referral job finishes, Generate Manifest exports batch details from the saved run history. Export checks retained files against their original hashes and rejects changed or missing files. Existing manifests are not deleted. The current-dates control uses a compact title and helper line.
