@@ -6,6 +6,13 @@ const { spawnSync } = require("child_process");
 const repoRoot = path.resolve(__dirname, "..");
 const guides = [
   {
+    id: "stakeholder",
+    markdownPath: path.join(repoRoot, "docs", "STAKEHOLDER_OVERVIEW.md"),
+    outputPath: path.join(repoRoot, "docs", "STAKEHOLDER_OVERVIEW.pdf"),
+    title: "CCRS File Processing Framework - Stakeholder Overview",
+    tempFileName: "ccrs-stakeholder-overview-print.html",
+  },
+  {
     id: "user",
     markdownPath: path.join(repoRoot, "docs", "USER_GUIDE.md"),
     outputPath: path.join(repoRoot, "docs", "USER_GUIDE.pdf"),
@@ -80,6 +87,12 @@ function markdownToHtml(markdown, title) {
     const rawLine = lines[lineIndex];
     const line = rawLine.trimEnd();
     const trimmed = line.trim();
+    if (trimmed === "<!-- pagebreak -->" && !state.inCode) {
+      flushParagraph(paragraphLines, parts);
+      closeList(parts, state);
+      parts.push('<div class="page-break"></div>');
+      continue;
+    }
 
     if (trimmed.startsWith("```")) {
       flushParagraph(paragraphLines, parts);
@@ -272,6 +285,8 @@ function markdownToHtml(markdown, title) {
         padding: 0;
         color: inherit;
       }
+      .page-break { break-before: page; }
+      tr { break-inside: avoid; }
       @page {
         margin: 18mm 14mm;
       }

@@ -222,3 +222,7 @@ The user guide source lives in [docs/USER_GUIDE.md](docs/USER_GUIDE.md).
 Packaged builds open the generated `docs/USER_GUIDE.pdf` from the app UI.
 
 Team chat announcement: [copy the current release message](docs/RELEASE_UPDATE.md). It is regenerated from release metadata for each release.
+
+## Stakeholder overview
+
+Share [the stakeholder PDF](docs/STAKEHOLDER_OVERVIEW.pdf) with project managers, Scrum Masters, and team members for a concise introduction to the workflows, benefits, environment scope, and documentation. Its [Markdown source](docs/STAKEHOLDER_OVERVIEW.md) is maintained alongside the user guide.

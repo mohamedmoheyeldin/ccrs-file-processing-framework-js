@@ -54,3 +54,7 @@ Use Node 24 and Corepack pnpm 11.22.0. Install with `corepack pnpm install --fro
 ## Team announcement for every release
 
 Update `version`, `releaseTag`, `releaseNotes`, and optional concise `teamHighlights` in `config/app_version.json`. Version synchronization automatically regenerates `docs/RELEASE_UPDATE.md` during start, test, and release build. Commit this file with each release. Copy its entire contents into Teams only after the release and installer are published and verified. Do not edit the generated message directly.
+
+## Stakeholder documentation
+
+Maintain `STAKEHOLDER_OVERVIEW.md` when workflow scope, supported environments, or release information changes. Keep reported timing examples distinct from measured benchmarks. Generate its PDF with `node scripts/generate-user-guide-pdf.js --guide stakeholder`; it uses the same format as the user guide and is included in normal guide generation. Render and inspect the PDF before committing it.
