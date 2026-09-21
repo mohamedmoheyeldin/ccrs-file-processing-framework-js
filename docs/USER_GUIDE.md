@@ -18,7 +18,9 @@ This guide covers `Version 1.5.3`, including separate regular and manual-only Si
 
 ## Purpose
 
-The CCRS File Processing Framework supports these workflows:
+The CCRS File Processing Framework is an evolving team automation application. Its long-term purpose is to automate more repetitive team work, reduce manual effort, and give team members more time for meaningful testing, defect discovery, and prevention before production. LEIE and referral processing are the first two supported workflows, not the limit of the application. Additional capabilities can be prioritized and added as team needs evolve; they are not available until implemented and validated.
+
+This guide describes the currently implemented workflows:
 
 - process existing CCRS referral JSON files
 - generate new referral JSON files from the bundled templates
@@ -29,7 +31,7 @@ The CCRS File Processing Framework supports these workflows:
 
 ## Install and Start the App
 
-Download the Version 1.5.3 Setup installer from the GitHub release Assets. Use Google Chrome; Microsoft Edge may block the download.
+Download the Version 1.5.3 Setup installer from the team-shared OneDrive folder. Use Google Chrome; Microsoft Edge may block the download.
 
 The release contains a full Windows Setup installer. Portable executables are not generated.
 
@@ -42,7 +44,7 @@ Runtime data includes:
 - `logs`
 - `upload_import`
 
-Use `GitHub Releases` for official installers. Build directories such as `dist-electron` and `release` are not part of the project or normal user workflow.
+Use the team-shared OneDrive folder for the approved installer. Build directories such as `dist-electron` and `release` are not part of the project or normal user workflow.
 
 ### What's New Release Notes
 
@@ -53,7 +55,7 @@ The app automatically displays the current release notes:
 
 Select `Start Using The App` to acknowledge the notes. The same release notes will not open again on later launches, but a future release with a new release identifier will display its own notes once. This acknowledgement is stored in the current user's AppData so reinstalling or changing the installation folder does not confuse an older release with a newer one.
 
-Complete current and historical notes are available in the repository's Release Notes document. Published notes and installers for Version 1.4, Version 1.3.11, and earlier releases remain available on the GitHub Releases page.
+Complete current and historical notes are available in RELEASE_NOTES.md in the shared documentation package.
 
 ## Before You Begin
 
@@ -289,7 +291,7 @@ Select `Run Processing`. The app applies changes, creates processed JSON files, 
 
 If any source file is malformed or cannot be processed, the full batch stops. No incomplete referral archive is created or uploaded. Correct the reported file and run the workflow again.
 
-After a successful run, click **Generate Manifest** to create an optional `.manifest.json` file. No manifest is written automatically. The manifest records counts, Referral Number uniqueness, station distribution, source and archive SHA-256 hashes, and upload outcomes.
+After a successful run, click `Generate Manifest` to create an optional `.manifest.json` file. No manifest is written automatically. The manifest records counts, Referral Number uniqueness, station distribution, source and archive SHA-256 hashes, and upload outcomes.
 
 ## Generate New Referral Files
 
@@ -371,7 +373,7 @@ For faster searching, the dropdown displays at most 60 rows at once while search
 Rules:
 
 - a selected Station ID is never padded or extended
-- a Station ID is not rejected solely because of its length; exact source-backed values such as `675GB01` and `595GF01` remain unchanged
+- Station IDs longer than five characters are excluded from selectable values
 - every selected value must exactly match `station_id` in `config/stations.json`
 - subset mode assigns only the stations selected by the user
 - all-stations mode uses only approved one-to-five-character alphanumeric Station IDs
@@ -453,7 +455,7 @@ Selected destinations run one at a time. SFTP verifies the remote file size; Win
 After the current run completes, the app shows the actions that apply to that result:
 
 - `Open Output Folder`
-- `View Batch Manifest` for referral runs
+- `Generate Manifest` for optional export after referral runs
 - `Copy Output Path`
 - `Retry Failed Uploads` when a target still needs attention
 
@@ -535,7 +537,7 @@ General behavior:
 - existing `.gz` files are not deleted automatically
 - processed JSON files may be kept or removed after archive creation
 - app-created staging folders and temporary upload helper files are cleaned after a run or when the app closes
-- release binaries are distributed through GitHub Releases rather than stored in the source repository
+- release installers are shared through the team OneDrive folder
 
 ## Troubleshooting
 

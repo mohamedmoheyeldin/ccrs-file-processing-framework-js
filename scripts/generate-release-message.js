@@ -7,11 +7,13 @@ const text = `Hi team,
 
 **Release Update — CCRS File Processing Framework v${config.version}**
 
+This framework is intended to grow beyond LEIE and referrals, automating more repetitive team work so we can focus on testing and preventing production defects. These are its first two supported workflows.
+
 ${highlights.map((line) => `- ${line}`).join("\n")}
 
-**Download:** [Version ${config.version} — Windows Setup installer](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/${config.releaseTag})
+**Download:** Open our team-shared OneDrive folder and download the Version ${config.version} Windows Setup installer.
 
-**Please use Google Chrome to download the installer. Microsoft Edge may block the download.** Choose the Setup .exe under Assets and confirm the version is **${config.version}**.
+**Please use Google Chrome to download the installer. Microsoft Edge may block the download.** Choose the Setup .exe in the shared folder and confirm the version is **${config.version}**.
 
 Please share any issues with the steps and a screenshot. Thank you!
 `;

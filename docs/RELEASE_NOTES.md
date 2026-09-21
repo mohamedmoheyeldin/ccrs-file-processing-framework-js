@@ -1,5 +1,7 @@
 # CCRS File Processing Framework Version 1.5.3
 
+Project direction: LEIE and referral processing are the first two workflows in an evolving team automation application. Future capabilities aim to reduce repetitive work and free time for testing and defect prevention. This clarifies the project vision; it does not add functionality to the published 1.5.3 installer.
+
 ## Version 1.5.3
 
 Release highlights for Version 1.5.3.
@@ -37,13 +39,13 @@ Version 1.4.2 includes every improvement from Versions 1.4 and 1.4.1, with clear
 
 - `CCRS File Processing Framework Setup Version 1.4.2.exe`
 
-## [Version 1.4.1](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.4.1) Release Notes
+## Version 1.4.1 Release Notes
 
 ### Release Summary
 
 Version 1.4.1 includes every user improvement from Version 1.4 and adds clearer, safer SEOC choices. Regular SEOC continues to work automatically for normal referrals. Situational SEOC is now a separate manual-only list containing the nine approved Number and ID pairs.
 
-The GitHub Release contains:
+The release contains:
 
 - `CCRS.File.Processing.Framework.Setup.Version.1.4.1.exe`
 - `SHA256SUMS.txt`
@@ -61,13 +63,13 @@ The GitHub Release contains:
 
 All Version 1.4 improvements remain included, including expandable help, live previews, clearer Referral Number and ICN choices, reliable Station selection, searchable SEOC choices, easier Archive naming, consistent option cards, safer output choices, and workflow-specific Referral and LEIE guidance. The complete Version 1.4 notes remain directly below.
 
-## [Version 1.4](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.4) Release Notes
+## Version 1.4 Release Notes
 
 ### Release Summary
 
 Version 1.4 brings together the latest improvements from Version 1.3.11 in a clearer, more approachable release. The app is easier to understand, choices are more consistent, previews respond immediately, and the most important naming and selection tasks now provide help exactly where users need it.
 
-The GitHub Release contains:
+The release contains:
 
 - `CCRS.File.Processing.Framework.Setup.Version.1.4.exe`
 - `SHA256SUMS.txt`
@@ -96,13 +98,13 @@ The GitHub Release contains:
 - Uses the same compact, professional choice-card design throughout the app in light and dark themes.
 - Makes the difference between keeping existing output and replacing a dedicated output folder easier to understand before starting.
 
-## [Version 1.3.11](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.11) Release Notes
+## Version 1.3.11 Release Notes
 
 ### Release Summary
 
 Version 1.3.11 expands source-backed Station and SEOC handling while making the main naming controls visually consistent and easier to understand. Station IDs are no longer rejected by an outdated length ceiling, and regular and Situational SEOC values can be searched, selected, mixed, cleared, restored, or used as a complete set. Referral, ICN, Archive, output-behavior, and equivalent choices now share one compact option-card system, and every affected preview follows the current user choices live. Referral Numbers support unrestricted body and custom-prefix lengths, the combined VAiFAMS option is applied as one prefix, and Custom Archive naming uses an easy checkbox builder. Expandable guidance now explains the five-step workflow, key naming relationships, output safety, and optional uploads without crowding the main form.
 
-The GitHub Release contains:
+The release contains:
 
 - `CCRS.File.Processing.Framework.Setup.Version.1.3.11.exe`
 - `SHA256SUMS.txt`
@@ -158,13 +160,13 @@ The GitHub Release contains:
 - Validates saved SEOC values against the installed catalog and falls back to automatic mode when records no longer exist.
 - Updates the README, architecture, development, testing, User Guide, generated PDF, and release metadata for Version 1.3.11.
 
-## [Version 1.3.10](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.10) Release Notes
+## Version 1.3.10 Release Notes
 
 ### Release Summary
 
 Version 1.3.10 makes referral processing simpler without removing the safety and audit controls added in Version 1.3.9. It removes optional interface areas that complicated the main workflow, expands Referral Number prefix behavior, and makes existing-file handling easier to understand before a run begins.
 
-The GitHub Release contains:
+The release contains:
 
 - `CCRS.File.Processing.Framework.Setup.Version.1.3.10.exe`
 - `SHA256SUMS.txt`
@@ -196,13 +198,13 @@ The GitHub Release contains:
 - Added regression coverage for all four prefix modes, custom-prefix validation, matching ICNs, legacy setting migration, and the redesigned Electron controls.
 - Updated the README, architecture, testing guide, User Guide, generated PDF, and release notes for Version 1.3.10.
 
-## [Version 1.3.9](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.9) Release Notes
+## Version 1.3.9 Release Notes
 
 ### Release Summary
 
 Version 1.3.9 makes file processing safer, more auditable, and easier to recover. It prevents source/output path mistakes, isolates each referral run before publishing results, blocks incomplete batches, adds a pre-run safety review, records batch manifests and recent runs, and retries failed uploads without repeating file generation.
 
-The GitHub Release contains:
+The release contains:
 
 - `CCRS.File.Processing.Framework.Setup.Version.1.3.9.exe`
 - `SHA256SUMS.txt`
@@ -246,7 +248,7 @@ The GitHub Release contains:
 
 Version 1.3.8 is the consolidated user release. It includes the referral-generation and responsiveness improvements released internally as Version 1.3.7, removes PROD from Referral Files uploads, and gives users clearer status and progress feedback throughout the application.
 
-The GitHub Release contains:
+The release contains:
 
 - `CCRS.File.Processing.Framework.Setup.Version.1.3.8.exe`
 - `SHA256SUMS.txt`
@@ -284,7 +286,7 @@ The GitHub Release contains:
 - README, architecture, testing, release notes, User Guide, and generated PDFs describe the consolidated Version 1.3.8 user release.
 - Version 1.3.7 is retained below as an internal release record.
 
-## [Version 1.3.7](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.7) Internal Release Notes
+## Version 1.3.7 Internal Release Notes
 
 Version 1.3.7 was released internally. Its features are included in the consolidated Version 1.3.8 user release.
 
@@ -292,7 +294,7 @@ Version 1.3.7 was released internally. Its features are included in the consolid
 
 Version 1.3.7 improves high-volume referral generation with referral-derived ICNs, unique Referral Numbers, multi-station assignment, predictable iFAMS naming, and a faster station-selection experience.
 
-The internal GitHub Release contains:
+The internal release contains:
 
 - `CCRS.File.Processing.Framework.Setup.Version.1.3.7.exe`
 - `SHA256SUMS.txt`
@@ -330,13 +332,13 @@ The internal GitHub Release contains:
 
 - README, architecture, testing, release notes, User Guide, and generated PDFs describe the Version 1.3.7 workflows.
 
-## [Version 1.3.6](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.6) Release Notes
+## Version 1.3.6 Release Notes
 
 ## Release Summary
 
 Version 1.3.6 replaces the reduced legacy Station ID list with a complete structured conversion of the approved station workbook. The application exposes one optional Stations selector that makes the five requested station identifiers clear and searchable while preserving all workbook fields for application use.
 
-The GitHub Release contains:
+The release contains:
 
 - `CCRS.File.Processing.Framework.Setup.Version.1.3.6.exe`
 - `SHA256SUMS.txt`
@@ -365,13 +367,13 @@ The GitHub Release contains:
 - README, architecture, development, testing, release notes, User Guide, and generated User Guide PDF describe the new source and workflow.
 - The workbook import can be repeated with `pnpm data:stations -- /path/to/stations.xlsx`.
 
-## [Version 1.3.5](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.5) Release Notes
+## Version 1.3.5 Release Notes
 
 ## Release Summary
 
 Version 1.3.5 refines the upload-target form layout introduced by Version 1.3.4. Upload User now remains compact while the longer Remote Directory value receives more horizontal room, without changing the established control height, responsive behavior, accessibility, or upload workflow.
 
-The GitHub Release contains:
+The release contains:
 
 - `CCRS.File.Processing.Framework.Setup.Version.1.3.5.exe`
 - `SHA256SUMS.txt`
@@ -398,10 +400,10 @@ The GitHub Release contains:
 ## Documentation and Release History
 
 - The README and User Guide now identify Version 1.3.5 and its Setup installer.
-- Historical sections link directly to the published Version 1.3.4, Version 1.3.3, and Version 1.3.2 GitHub Releases.
+- Historical sections preserve notes for earlier versions.
 - The generated User Guide PDF and LEIE Upload and Validation Guide PDF are refreshed for the release package.
 
-## [Version 1.3.4](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.4) Release Notes
+## Version 1.3.4 Release Notes
 
 Version 1.3.4 completed an application-wide control-system pass so form fields remain visually consistent, responsive, keyboard accessible, and easier to use in both light and dark themes.
 
@@ -425,7 +427,7 @@ Version 1.3.4 completed an application-wide control-system pass so form fields r
 - The Electron end-to-end test measures every visible standard text box and dropdown on Referral and LEIE screens and requires the shared 48-pixel height.
 - The test rejects undersized interaction targets, unnamed enabled fields, invalid upload-field proportions, and broken keyboard dropdown selection.
 
-## [Version 1.3.3](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.3) Release Notes
+## Version 1.3.3 Release Notes
 
 ### Correct Test SSNs
 
@@ -454,7 +456,7 @@ The following synchronized pairs are available in both SEOC selectors. They are 
 | `268` | `MHC_MENTAL HEALTH RESIDENTIAL TREATMENT_1.15.7` |
 | `1160` | `MHC_RESIDENTIAL WITHDRAWAL MANAGEMENT_1.22.2` |
 
-## [Version 1.3.2](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.2) Release Notes
+## Version 1.3.2 Release Notes
 
 ### Correct DIM_VA_STATION IDs
 

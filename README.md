@@ -1,5 +1,11 @@
 # CCRS File Processing Framework
 
+## Project mission
+
+The CCRS File Processing Framework is an evolving team automation application. Its long-term purpose is to automate more repetitive team work, reduce manual effort, and give team members more time for meaningful testing, defect discovery, and prevention before production. LEIE and referral processing are the first two supported workflows, not the limit of the application. Additional capabilities can be prioritized and added as team needs evolve; they are not available until implemented and validated.
+
+See [Project Vision](docs/PROJECT_VISION.md) for the broader direction and how to propose new workflows.
+
 ## Version 1.5.3
 
 Release highlights for Version 1.5.3.
@@ -41,7 +47,7 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- Current release: [Version 1.5.3](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.5.3).
+- Current version: 1.5.3. Distribute the Setup installer and guides using the team-shared OneDrive folder. See [sharing checklist](docs/TEAM_SHARING_CHECKLIST.md).
 - `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
@@ -180,17 +186,17 @@ pnpm verify
 
 Previous release notes:
 
-- [Version 1.4](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.4)
-- [Version 1.3.11](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.11)
-- [Version 1.3.10](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.10)
-- [Version 1.3.9](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.9)
-- [Version 1.3.8](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.8)
-- [Version 1.3.7](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.7) — internal release included in Version 1.3.8
-- [Version 1.3.6](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.6)
-- [Version 1.3.5](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.5)
-- [Version 1.3.4](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.4)
-- [Version 1.3.3](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.3)
-- [Version 1.3.2](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.3.2)
+- Version 1.4
+- Version 1.3.11
+- Version 1.3.10
+- Version 1.3.9
+- Version 1.3.8
+- Version 1.3.7 — internal release included in Version 1.3.8
+- Version 1.3.6
+- Version 1.3.5
+- Version 1.3.4
+- Version 1.3.3
+- Version 1.3.2
 
 ## Validation And Testing
 Developer setup, architecture, and test-layer details are maintained in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and [docs/TESTING.md](docs/TESTING.md).

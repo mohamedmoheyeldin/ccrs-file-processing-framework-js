@@ -34,3 +34,7 @@ Payment Authority Code uses the same searchable, multi-select chip control as SE
 ### Optional manifest export (1.5.3)
 
 Jobs validate output automatically but no longer write a manifest into the output folder. After a referral job finishes, Generate Manifest exports batch details from the saved run history. Export checks retained files against their original hashes and rejects changed or missing files. Existing manifests are not deleted. The current-dates control uses a compact title and helper line.
+
+## Testing future workflows
+
+The product goal is to automate more repetitive work and return time to actual testing. For each added workflow, verify data correctness, authorized environments, failure recovery, responsiveness, and non-regression of existing workflows. Compare preparation time and manual steps with a representative baseline. Track how saved time supports test coverage and defect discovery; do not infer fewer production bugs from faster processing alone. See PROJECT_VISION.md for suggested outcome measures.

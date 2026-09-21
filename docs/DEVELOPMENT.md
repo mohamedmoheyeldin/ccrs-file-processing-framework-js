@@ -58,3 +58,7 @@ Update `version`, `releaseTag`, `releaseNotes`, and optional concise `teamHighli
 ## Stakeholder documentation
 
 Maintain `STAKEHOLDER_OVERVIEW.md` when workflow scope, supported environments, or release information changes. Keep reported timing examples distinct from measured benchmarks. Generate its PDF with `node scripts/generate-user-guide-pdf.js --guide stakeholder`; it uses the same format as the user guide and is included in normal guide generation. Render and inspect the PDF before committing it.
+
+## Expanding the framework
+
+LEIE and referrals are initial capabilities, not the permanent scope. Use PROJECT_VISION.md to capture a proposed team's workflow, manual baseline, expected testing benefit, allowed environments, and acceptance criteria. Reuse shared services where appropriate; preserve workflow-specific rules. Update architecture, user guidance, stakeholder overview, and regression coverage when an addition becomes available. Label ideas as proposed until delivered; do not imply an existing plugin mechanism.

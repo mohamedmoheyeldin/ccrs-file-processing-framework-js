@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document explains how to upload LEIE data, validate the database load, and confirm the results in the CCRS UI.
+This document covers one current workflow in the broader CCRS team automation application: upload LEIE data, validate the database load, and confirm the results in the CCRS UI. The framework can grow beyond LEIE and referrals to automate more repetitive work and free time for testing. This guide documents only the implemented LEIE workflow; see PROJECT_VISION.md for the wider direction.
 
 LEIE Data upload is separate from CCRS Referral upload. LEIE sends the processed `.xlsx` file to `/in/manual_process/`; CCRS Referral sends its final `.gz` archive to `/CCRA_Uploads`.
 

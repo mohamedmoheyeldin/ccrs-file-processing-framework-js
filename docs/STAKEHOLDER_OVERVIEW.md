@@ -6,13 +6,11 @@ Version 1.5.3 | September 21, 2026
 
 For project managers, Scrum Masters, QA teams, and new team members.
 
-## What the project solves
+## At a glance: helping CCRS and the team
 
-The CCRS File Processing Framework is a Windows desktop application that helps the team prepare referral test data, process LEIE data, and deliver files to configured CCRS environments. It brings repetitive file preparation, customization, validation, and upload steps into one guided workflow.
+The framework automates repetitive CCRS preparation and file-delivery work so the team can spend more time testing. Today it prepares and uploads LEIE data and creates, edits, validates, and uploads customized referral files. It is designed to grow with additional team workflows, helping improve consistency, speed up test readiness, and support earlier defect discovery before production.
 
-Instead of manually editing files and repeating transfers, team members select the required data and destinations, review the settings, and let the application process the batch. This supports faster test preparation and more repeatable execution across team members.
-
-## Two workflows with immediate team value
+## Current examples: the first two workflows
 
 | Workflow | What the application does | Team value |
 | --- | --- | --- |
@@ -57,9 +55,15 @@ Review dialogs, progress messages, failure isolation, and retry of failed destin
 - Make handovers easier through shared workflows, documented settings, and visible results.
 - Assess outcomes using preparation time, manual steps avoided, upload success, and time needed for a new team member to complete a first run. These are suggested measures, not claimed results.
 
+## Broader automation direction
+
+The team can propose other repetitive tasks for automation. Potential areas include additional data preparation, environment checks, result comparison, and reporting. These are opportunities to evaluate, not committed or available features. Prioritize work by effort saved, frequency, and testing value; validate each addition before wider use.
+
+The intended outcome is more time for test design, execution, investigation, and regression coverage. Better testing can support fewer production defects, but that outcome must be measured rather than assumed. See PROJECT_VISION.md for the proposed intake and measurement approach.
+
 ## Designed for practical team adoption
 
-The application uses a modern JavaScript desktop stack, including Electron, Node.js, and automated Playwright UI checks. Version 1.5.3 passed automated code and workflow tests, a production dependency audit, and Windows installer and installed-application launch checks in GitHub Actions.
+The application uses a modern JavaScript desktop stack, including Electron, Node.js, and automated Playwright UI checks. Version 1.5.3 passed automated code and workflow tests, a production dependency audit, and Windows installer and installed-application launch checks in the automated release pipeline.
 
 The published installer is 114,312,755 bytes: approximately 109 MiB, often displayed as about 109 MB by Windows. This gives the team one installer to share and use for installation or upgrade. Installer size is not the installed disk footprint or a measure of runtime memory. CPU, memory, and large-batch performance on team Government Furnished Equipment (GFE) should be measured with representative workloads. The design goal is a responsive, practical tool for daily team use.
 
@@ -80,13 +84,13 @@ The documentation is maintained alongside the application so team members can un
 
 ## Getting started and keeping information current
 
-1. Download Version 1.5.3 from the release page below. Use Google Chrome; Microsoft Edge may block the installer download. Follow organizational software policies.
+1. Download the Version 1.5.3 Setup installer from the team-shared OneDrive folder. Use Google Chrome if Microsoft Edge blocks the download, and follow organizational software policies.
 2. Read USER_GUIDE.pdf, confirm authorized environment access, and start with a small representative batch.
 3. Review the resulting files and transfer status, then complete the relevant downstream validation.
 4. Report issues with the application version, reproduction steps, and suitable screenshots. Avoid including sensitive data or credentials.
 
-Release: https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases/tag/v1.5.3
-
-Documentation: https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/tree/main/docs
 
 
+
+
+See TEAM_SHARING_CHECKLIST.md for the complete OneDrive package and access checks.

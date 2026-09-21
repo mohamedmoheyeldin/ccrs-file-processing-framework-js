@@ -2,7 +2,9 @@
 
 ## Purpose
 
-The CCRS File Processing Framework is a local Electron desktop application for preparing referral and LEIE data, creating final artifacts, and optionally uploading them to configured environments.
+The CCRS File Processing Framework is an evolving team automation application. Its long-term purpose is to automate more repetitive team work, reduce manual effort, and give team members more time for meaningful testing, defect discovery, and prevention before production. LEIE and referral processing are the first two supported workflows, not the limit of the application. Additional capabilities can be prioritized and added as team needs evolve; they are not available until implemented and validated.
+
+The current local Electron application implements referral and LEIE workflows. New workflows should reuse the existing UI, background-job, validation, progress, and upload boundaries where appropriate. This is a development direction, not a claim that arbitrary workflows or plugins are supported today.
 
 ## Main boundaries
 
