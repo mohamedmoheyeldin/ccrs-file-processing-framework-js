@@ -11,4 +11,15 @@ src/__pycache__/
 .env
 .env.*
 !.env.example
-.codex
+
+# Ruflo local secrets and runtime data
+.env.local
+.env.*.local
+.claude-flow/data/
+.claude-flow/logs/
+.claude-flow/sessions/
+
+# Claude Code local tooling (Ruflo)
+.claude/
+.claude-flow/
+.swarm/
