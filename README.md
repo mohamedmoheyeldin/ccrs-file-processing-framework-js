@@ -35,17 +35,7 @@ Release highlights for Version 1.5.4.
 - Output names: archive names no longer end in `_Final`, and the combined JSON file name can be edited (default `<archive>_Master.json`).
 - Maintenance: Electron, electron-builder, Playwright, and several transitive dependencies were updated to patched releases.
 
-## Version 1.5.3
-
-Release highlights for Version 1.5.3.
-
-- Payment Authority Code: 43 unique values imported from the team PACodes.xlsx (Sheet1); pipe-separated cells are split and duplicates removed.
-- Referral Number: VA or Custom. ICN: Default, Custom, or Referral Number.
-- Output: individual formatted JSON and combined `_Master.json` can be retained independently. Gzip contains the same combined data; the manifest is generated only when requested. Matching names are overwritten after validation; unrelated files are preserved.
-- Selections: one value stays fixed; subsets use only selected values; all clears the selected subset and selecting a value turns all off. Stations must be in the approved catalog and fit the five-character contract. Automatic regular SEOC uses approved Number/ID pairs; Situational SEOC remains optional.
-- Uploads: one shared sequential queue for referrals and LEIE, retaining their separate remote-directory defaults. Each destination is attempted once per run; failure proceeds to the next server. Explicit retry handles only failed servers. Status shows the active server and completed-server count, not a simulated transfer-byte percentage. SFTP completion checks the remote file size; WinSCP reports its own transfer completion.
-- Dialogs scroll at high zoom and on small displays. Setup distinguishes Install from Upgrade using the selected installation folder.
-
+Earlier versions are in the [Release Notes](docs/RELEASE_NOTES.md).
 
 This project is a pure JavaScript Electron desktop app for working with CCRS referral files. It supports editing existing referral JSON files, generating new referral files, building final `.gz` packages, importing WinSCP upload settings, and uploading the finished archive to configured targets.
 
@@ -205,41 +195,6 @@ To refresh the SEOC catalog from a replacement workbook:
 pnpm data:seoc -- /path/to/SEOC.xlsx
 pnpm verify
 ```
-
-## Version 1.5.3 Highlights
-
-- Keeps the complete Version 1.4.1 experience and adds cleaner SEOC labels, Network assignment choices, a sequential upload queue that continues past a failed server, clearer recovery guidance, and calmer option-card highlighting.
-- Accepts hyphens and underscores in Referral Number bodies and Custom prefixes while preserving live previews and unique generated values.
-- Accepts lowercase, uppercase, and mixed-case text across user-entered fields without silently changing the user's capitalization.
-
-## Version 1.4.1 Highlights
-- Includes every Version 1.4 improvement listed in the historical notes.
-- Keeps regular and Situational SEOC choices in separate, non-overlapping catalogs.
-- Limits Situational SEOC to nine approved manual-only choices.
-- Displays the complete SEOC ID with its matching Number directly underneath.
-- Uses regular source SEOC values automatically and warns whenever a manual override is active.
-- Expandable help makes the five-step workflow and its most important choices easier to understand.
-- Live previews make it easier to confirm names, Station values, and other choices before creating files.
-- Referral Number, ICN, Archive naming, and similar choices share one compact, professional design.
-- Station, SEOC, and Situational SEOC selection is clearer, searchable, and reliable across different window sizes.
-- Archive naming offers ready-made choices and an easy Custom checkbox builder.
-- Referral and LEIE guidance now matches the selected task, including the upload destinations available to each workflow.
-- User naming and selection choices return after restarting the app.
-- Full current and historical notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
-
-Previous release notes:
-
-- Version 1.4
-- Version 1.3.11
-- Version 1.3.10
-- Version 1.3.9
-- Version 1.3.8
-- Version 1.3.7 — internal release included in Version 1.3.8
-- Version 1.3.6
-- Version 1.3.5
-- Version 1.3.4
-- Version 1.3.3
-- Version 1.3.2
 
 ## Validation And Testing
 Developer setup, architecture, and test-layer details are maintained in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and [docs/TESTING.md](docs/TESTING.md).
