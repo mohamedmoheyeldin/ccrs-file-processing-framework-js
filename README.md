@@ -1,5 +1,15 @@
 # CCRS File Processing Framework
 
+[![Release](https://img.shields.io/github/v/release/mohamedmoheyeldin/ccrs-file-processing-framework-js?label=release)](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases)
+[![Smoke tests](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/actions/workflows/smoke-tests.yml/badge.svg)](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/actions/workflows/smoke-tests.yml)
+![Platform](https://img.shields.io/badge/platform-Windows%20x64-0078D4)
+![Electron](https://img.shields.io/badge/Electron-44-47848F?logo=electron&logoColor=white)
+![Node](https://img.shields.io/badge/Node.js-24-5FA04E?logo=nodedotjs&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-blue)
+
+> [!NOTE]
+> A Windows desktop app that automates repetitive CCRS test-data work: it edits and generates referral files, prepares LEIE data, packages the results, and uploads them to approved test environments.
+
 ## Project mission
 
 The CCRS File Processing Framework is an evolving team automation application. Its long-term purpose is to automate more repetitive team work, reduce manual effort, and give team members more time for meaningful testing, defect discovery, and prevention before production. LEIE and referral processing are the first two supported workflows, not the limit of the application. Additional capabilities can be prioritized and added as team needs evolve; they are not available until implemented and validated.
@@ -21,6 +31,18 @@ Release highlights for Version 1.5.3.
 This project is a pure JavaScript Electron desktop app for working with CCRS referral files. It supports editing existing referral JSON files, generating new referral files, building final `.gz` packages, importing WinSCP upload settings, and uploading the finished archive to configured targets.
 
 ## Architecture
+
+```mermaid
+flowchart LR
+  UI["Renderer<br/>electron/renderer"] -- "preload bridge + IPC" --> Main["Main process<br/>electron/main.js"]
+  Main --> Backend["Backend<br/>electron/backend"]
+  Main -- "worker threads" --> Jobs["Background jobs<br/>progress + cancel"]
+  Jobs --> Backend
+  Backend --> Staging["Isolated run staging<br/>validate → package → promote"]
+  Staging --> Output["Output folder<br/>JSON · _Master.json · .gz"]
+  Output --> Queue["Sequential upload queue<br/>SQA → DEV → PPD (→ PROD for LEIE)"]
+```
+
 - Electron handles the desktop window, dialogs, IPC, and Windows packaging.
 - The runtime logic lives under [electron/backend](electron/backend).
 - The UI lives under [electron/renderer](electron/renderer).
@@ -129,7 +151,9 @@ Files that are kept in sync from the shipped app:
 - Import upload settings from `WinSCP.ini` or credentials JSON
 - Upload Referral archives to `DEV`, `PPD`, or `SQA`; the separate LEIE workflow can also use `PROD`
 - Test upload connectivity before running the full workflow
-- Verify each LEIE upload and continue through every selected server even when one target fails
+- Send each file exactly once per server (same host, account, and folder is treated as one endpoint), verify it, and continue through every selected server even when one fails, stalls, or cannot be reached
+- Show a per-server Upload results list (Passed, Failed, or Skipped, with the reason and duration) after every run and retry
+- Retry Failed Uploads checks the server first and never re-sends a file that already arrived
 - Default every LEIE server upload to `/in/manual_process/` while retaining `/CCRA_Uploads` for referral workflows
 - Automatically clean app-created temporary staging folders and upload helper files after a run or when the app closes
 - Process long-running work in background workers with progress and cancellation
@@ -165,7 +189,7 @@ pnpm verify
 
 ## Version 1.5.3 Highlights
 
-- Keeps the complete Version 1.4.1 experience and adds cleaner SEOC labels, Network assignment choices, concurrent destination uploads, clearer recovery guidance, and calmer option-card highlighting.
+- Keeps the complete Version 1.4.1 experience and adds cleaner SEOC labels, Network assignment choices, a sequential upload queue that continues past a failed server, clearer recovery guidance, and calmer option-card highlighting.
 - Accepts hyphens and underscores in Referral Number bodies and Custom prefixes while preserving live previews and unique generated values.
 - Accepts lowercase, uppercase, and mixed-case text across user-entered fields without silently changing the user's capitalization.
 
@@ -222,6 +246,20 @@ Smoke coverage lives in [scripts/smoke-test.js](scripts/smoke-test.js). The curr
 - secure credential imports, atomic settings writes, source limits, and streaming gzip output
 
 The Windows Playwright test in [scripts/electron-e2e-test.js](scripts/electron-e2e-test.js) launches the actual Electron UI and verifies a background referral generation job.
+
+## Documentation map
+
+| Document | Read it for |
+|---|---|
+| [Project Vision](docs/PROJECT_VISION.md) | Why the app exists and how new workflows are proposed |
+| [Architecture](docs/ARCHITECTURE.md) | Process boundaries, safety design, data flow |
+| [Development](docs/DEVELOPMENT.md) | Setup, change rules, release metadata |
+| [Testing](docs/TESTING.md) | Test layers and when to run them |
+| [User Guide](docs/USER_GUIDE.md) | Step-by-step use of both workflows |
+| [LEIE Upload Validation Guide](docs/LEIE_UPLOAD_VALIDATION_GUIDE.md) | Checking LEIE uploads |
+| [Stakeholder Overview](docs/STAKEHOLDER_OVERVIEW.md) | A short introduction for managers and the team |
+| [Release Notes](docs/RELEASE_NOTES.md) | Every release, newest first |
+| [Team Sharing Checklist](docs/TEAM_SHARING_CHECKLIST.md) | Distributing a release to the team |
 
 ## User Documentation
 The user guide source lives in [docs/USER_GUIDE.md](docs/USER_GUIDE.md).

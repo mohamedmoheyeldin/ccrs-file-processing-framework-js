@@ -99,11 +99,18 @@ async function assertControlSystem(window) {
 async function assertReachable(electronApp, window, locator, label) {
   for (const zoom of [1.5, 2, 3]) {
     await electronApp.evaluate(({ BrowserWindow }, factor) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(factor), zoom);
-    await locator.scrollIntoViewIfNeeded();
-    assert.ok(await locator.evaluate((element) => {
-      const rect = element.getBoundingClientRect();
-      return rect.top >= 0 && rect.bottom <= innerHeight;
-    }), `${label} reachable at ${zoom * 100}%`);
+    // Zoom changes are applied asynchronously, so re-check until the layout has settled
+    // instead of measuring once right after the zoom call.
+    let reachable = false;
+    for (let attempt = 0; attempt < 20 && !reachable; attempt += 1) {
+      await locator.scrollIntoViewIfNeeded();
+      reachable = await locator.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.top >= 0 && rect.bottom <= innerHeight;
+      });
+      if (!reachable) await window.waitForTimeout(100);
+    }
+    assert.ok(reachable, `${label} reachable at ${zoom * 100}%`);
   }
   await electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1));
 }

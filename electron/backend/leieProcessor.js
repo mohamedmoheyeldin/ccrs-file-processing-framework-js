@@ -433,19 +433,20 @@ async function processLeieFiles(payload = {}, progressCallback) {
   const uploadOptions = buildLeieUploadOptions(payload);
   if (uploadOptions && uploadOptions.enabled) {
     uploadResults.push(...await uploadTargetsSequentially(outputPath, uploadOptions.targets, {
-      onProgress: (event) => progressCallback?.(
-        event.current,
-        event.total,
-        outputFileName,
-        event.state,
-        event.uploadTarget,
-        event.detail || event.targetNames?.join(", ")
-      ),
+      onProgress: (event) => progressCallback?.({
+        ...event,
+        phase: "upload",
+        filename: outputFileName,
+        detail: event.detail || event.targetNames?.join(", ") || null,
+        message: event.state === "upload-batch-start"
+          ? `Uploading ${outputFileName} once to each of ${event.targetNames.join(", ")}, one server at a time.`
+          : event.message || null,
+      }),
     }));
     for (const result of uploadResults) {
       if (result.status === "completed") {
         uploadedPaths.push({ server_name: result.serverName, remote_path: result.remotePath });
-      } else {
+      } else if (result.status === "failed") {
         uploadErrors.push({ server_name: result.serverName, message: result.message });
       }
     }

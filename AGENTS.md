@@ -24,3 +24,4 @@ This is a CommonJS Electron application that processes CCRS referral and LEIE fi
 - Start with `README.md`.
 - Keep `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT.md`, and `docs/TESTING.md` aligned with behavior.
 - Update `docs/USER_GUIDE.md` and generated PDF output when user-visible workflows change.
+- Update README.md and the relevant `docs/` file in the same change when behavior, setup, or architecture changes.
