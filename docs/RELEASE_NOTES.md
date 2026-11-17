@@ -1,6 +1,16 @@
-# CCRS File Processing Framework Version 1.5.3
+# CCRS File Processing Framework Version 1.5.4
 
-Project direction: LEIE and referral processing are the first two workflows in an evolving team automation application. Future capabilities aim to reduce repetitive work and free time for testing and defect prevention. This clarifies the project vision; it does not add functionality to the published 1.5.3 installer.
+Project direction: LEIE and referral processing are the first two workflows in an evolving team automation application. Future capabilities aim to reduce repetitive work and free time for testing and defect prevention. This clarifies the project vision; it does not by itself add functionality to the installer.
+
+## Version 1.5.4
+
+Release highlights for Version 1.5.4.
+
+- Uploads: each file is sent exactly once per endpoint (server, account, and folder). A repeated endpoint is reported as Skipped. A stalled or unreachable server is stopped and the next server starts right away. A new Upload results list shows every server as Passed, Failed, or Skipped with the reason and duration.
+- LEIE uploads: a file picked up immediately by the server's inbound folder counts as delivered. Retry Failed Uploads checks the server first and never re-sends a file that already arrived.
+- Referral Number: every generated value is exactly 12 characters including the prefix and stays unique across the batch. Custom prefixes are limited to 8 characters.
+- Output names: archive names no longer end in `_Final`, and the combined JSON file name can be edited (default `<archive>_Master.json`).
+- Maintenance: Electron, electron-builder, Playwright, and several transitive dependencies were updated to patched releases.
 
 ## Version 1.5.3
 

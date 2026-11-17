@@ -115,7 +115,7 @@ test("LEIE validation SQL includes the requested query set and syntax highlighti
   assert.match(highlighted, /class="sql-comment">-- First get the etl_batch_id<\/span>/);
 });
 
-test("Version 1.5.3 metadata, combined user release notes, safety controls, and release automation stay consolidated", () => {
+test("Version 1.5.4 metadata, combined user release notes, safety controls, and release automation stay consolidated", () => {
   const versionConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "config", "app_version.json"), "utf8"));
   const packageConfig = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8"));
   const releaseWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "release.yml"), "utf8");
@@ -136,10 +136,10 @@ test("Version 1.5.3 metadata, combined user release notes, safety controls, and 
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
 
-  assert.equal(versionConfig.version, "1.5.3");
-  assert.equal(versionConfig.releaseTag, "v1.5.3");
-  assert.equal(versionConfig.label, "Version 1.5.3");
-  assert.match(releaseNotes, /^# CCRS File Processing Framework Version 1\.5\.3/);
+  assert.equal(versionConfig.version, "1.5.4");
+  assert.equal(versionConfig.releaseTag, "v1.5.4");
+  assert.equal(versionConfig.label, "Version 1.5.4");
+  assert.match(releaseNotes, /^# CCRS File Processing Framework Version 1\.5\.4/);
   assert.match(releaseNotes, /^## Version 1\.4\.1\ (?:Internal )?Release Notes/m);
   assert.match(releaseNotes, /^## Version 1\.4\ (?:Internal )?Release Notes/m);
   assert.match(releaseNotes, /^## Version 1\.3\.11\ (?:Internal )?Release Notes/m);
@@ -314,7 +314,7 @@ test("Diagnostic export excludes credentials and user file paths", async () => {
   const result = await backend.handleCommand("export-diagnostics", { outputDir });
   const reportText = fs.readFileSync(result.reportPath, "utf8");
   const report = JSON.parse(reportText);
-  assert.equal(report.appVersion, "1.5.3");
+  assert.equal(report.appVersion, "1.5.4");
   assert.equal(Object.prototype.hasOwnProperty.call(report.workflowPreferences, "inputDir"), false);
   assert.doesNotMatch(reportText, /password|ciphertext|connection_details/i);
 });
@@ -1427,8 +1427,8 @@ test("App info exposes one-time release announcement metadata", async () => {
     process.env.CCRS_USER_DATA_ROOT = settingsRoot;
 
     const initialInfo = await backend.handleCommand("info", {});
-    assert.equal(initialInfo.appVersion.version, "1.5.3");
-    assert.equal(initialInfo.appVersion.label, "Version 1.5.3");
+    assert.equal(initialInfo.appVersion.version, "1.5.4");
+    assert.equal(initialInfo.appVersion.label, "Version 1.5.4");
     assert.equal(Array.isArray(initialInfo.releaseAnnouncement.notes), true);
     assert.equal(initialInfo.releaseAnnouncement.notes.length > 0, true);
     assert.equal(initialInfo.releaseAnnouncement.shouldShow, true);

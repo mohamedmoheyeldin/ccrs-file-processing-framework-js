@@ -513,7 +513,11 @@ async function run() {
     const generatedReferrals = outputJsonPaths.flatMap(
       (filePath) => JSON.parse(fs.readFileSync(filePath, "utf8")).Referrals
     );
-    const specialSeocKeys = new Set(["67", "158", "191", "233", "268", "1160"]);
+    // Situational SEOCs are identified by the Number and ID pair. A regular SEOC may share a
+    // Number with a Situational one (several regular entries use 67), so compare the pair.
+    const appInfo = await window.evaluate(() => window.ccrs.getInfo());
+    const situationalSeocPairs = new Set(appInfo.situationalSeocOptions.map((option) => `${option.seocKey}::${option.seocId}`));
+    assert.equal(situationalSeocPairs.size > 0, true);
     assert.equal(generatedReferrals.length, 4);
     assert.equal(new Set(generatedReferrals.map((referral) => referral.Patient.SSN)).size, 4);
     for (const referral of generatedReferrals) {
@@ -521,7 +525,8 @@ async function run() {
       const seocKey = referral.ProgramAuthority?.SeocKey || referral.SeocKey;
       assert.match(referral.Patient.SSN, /^999-\d{2}-\d{4}$/);
       assert.equal(stationId, "508GS");
-      assert.equal(specialSeocKeys.has(String(seocKey)), false);
+      const seocId = referral.ProgramAuthority?.SeocID || referral.SeocID;
+      assert.equal(situationalSeocPairs.has(`${seocKey}::${seocId}`), false);
     }
 
     // Saved settings are restored after a reload.
