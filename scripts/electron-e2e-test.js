@@ -102,10 +102,17 @@ async function run() {
       await window.setViewportSize({ width: 800, height: 600 });
       for (const zoom of [1.5, 2, 3]) {
         await electronApp.evaluate(({ BrowserWindow }, factor) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(factor), zoom);
-        await releaseButton.scrollIntoViewIfNeeded();
-        assert.ok(await releaseButton.evaluate((element) => {
-          const rect = element.getBoundingClientRect(); return rect.top >= 0 && rect.bottom <= innerHeight;
-        }), `Release button reachable at ${zoom * 100}%`);
+        // Zoom changes are applied asynchronously, so re-check until the layout has settled
+        // instead of measuring once right after the zoom call.
+        let reachable = false;
+        for (let attempt = 0; attempt < 20 && !reachable; attempt += 1) {
+          await releaseButton.scrollIntoViewIfNeeded();
+          reachable = await releaseButton.evaluate((element) => {
+            const rect = element.getBoundingClientRect(); return rect.top >= 0 && rect.bottom <= innerHeight;
+          });
+          if (!reachable) await window.waitForTimeout(100);
+        }
+        assert.ok(reachable, `Release button reachable at ${zoom * 100}%`);
       }
       await releaseButton.click();
       await electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1));
