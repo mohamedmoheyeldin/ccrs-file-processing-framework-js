@@ -25,6 +25,7 @@ import {
   sanitizeIcnInput,
   sanitizeLeieFileNameInput,
   sanitizeReferralNumberInput,
+  cleanErrorMessage,
 } from "./logic";
 
 const { LEIE_DEFAULT_UPLOAD_DIRECTORY, REFERRAL_DEFAULT_UPLOAD_DIRECTORY, resolveUploadDirectoryForWorkflow } =
@@ -161,7 +162,7 @@ export function useController() {
   const setStatus = useCallback((label, message) => {
     setStatusState({
       label: String(label || "Ready").trim(),
-      message: String(message || "The app is ready.").trim(),
+      message: cleanErrorMessage(message) || "The app is ready.",
     });
   }, []);
 
@@ -386,7 +387,7 @@ export function useController() {
       return result;
     } catch (error) {
       if (requestId !== previewCacheRef.current.requestId) return null;
-      setPreviewError(error.message || "Unable to build the preview.");
+      setPreviewError(cleanErrorMessage(error.message) || "Unable to build the preview.");
       return null;
     }
   }, []);
@@ -496,7 +497,7 @@ export function useController() {
       if (requestId !== leieRef.current.requestId) return;
       updateLeie({
         inspection: null,
-        error: error.message || "Unknown error while scanning LEIE source.",
+        error: cleanErrorMessage(error.message) || "Unknown error while scanning LEIE source.",
         lastScannedInput: "",
         scanning: false,
       });
@@ -951,10 +952,14 @@ export function useController() {
     if (lastRunRef.current?.outputDir) window.ccrs.openPath(lastRunRef.current.outputDir);
   }, []);
 
-  const copyArchivePath = useCallback(() => {
+  const copyArchivePath = useCallback(async () => {
     if (!lastRunRef.current?.archivePath) return;
-    window.ccrs.copyText(lastRunRef.current.archivePath);
-    setStatus("Copied", "The archive path was copied to the clipboard.");
+    try {
+      await window.ccrs.copyText(lastRunRef.current.archivePath);
+      setStatus("Copied", "The archive path was copied to the clipboard.");
+    } catch (_error) {
+      setStatus("Copy Failed", `The path could not be copied. Copy it manually: ${lastRunRef.current.archivePath}`);
+    }
   }, [setStatus]);
 
   // ---------------------------------------------------------------------------------------------
@@ -963,7 +968,7 @@ export function useController() {
 
   const setTargetStatus = useCallback((name, message, tone) => {
     if (!name) return;
-    setUploadStatus((current) => ({ ...current, [name]: { message, tone } }));
+    setUploadStatus((current) => ({ ...current, [name]: { message: cleanErrorMessage(message), tone } }));
   }, []);
 
   const testUploadTarget = useCallback(async (name) => {
@@ -1057,8 +1062,7 @@ export function useController() {
   const copySql = useCallback(async (sqlText) => {
     let copied = false;
     try {
-      window.ccrs.copyText(sqlText);
-      copied = true;
+      copied = (await window.ccrs.copyText(sqlText)) !== false;
     } catch (_error) {
       copied = false;
     }
@@ -1267,6 +1271,7 @@ export function useController() {
     listDate,
     uploadStatus,
     uploadResults,
+    generatedSize: isGenerate ? preview?.generatedSize || null : null,
     uploadImportState,
     lastRun,
     manifestPending,

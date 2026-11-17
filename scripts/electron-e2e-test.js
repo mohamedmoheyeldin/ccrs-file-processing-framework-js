@@ -210,6 +210,18 @@ async function run() {
     await chooseRadio(window, "#referral-prefix-va");
     assert.match(await window.locator("#output-retention-card").textContent(), /Matching filenames are overwritten automatically/);
 
+    // A run over the combined size limit is flagged before it can start.
+    await window.locator("#file-count").fill("100");
+    await window.locator("#referrals-per-file").fill("800");
+    await waitForText(window, "#generated-size-estimate", "Too large");
+    assert.match(await window.locator("#generated-size-estimate").textContent(), /about 1\.\d\d GB of JSON\. The limit is 1\.00 GB/);
+    await window.locator("#run-generate").click();
+    await waitForText(window, "#status-message", "combined safety limit");
+    assert.equal(await window.locator("#pre-run-overlay").count(), 0);
+    await window.locator("#file-count").fill("2");
+    await window.locator("#referrals-per-file").fill("2");
+    await waitForText(window, "#generated-size-estimate", "Estimated size");
+
     // Generator counts
     await window.locator("#file-count").fill("3");
     await window.locator("#referrals-per-file").fill("4");
@@ -414,6 +426,21 @@ async function run() {
     // LEIE workflow
     await window.locator("[data-main-tab='leie']").click();
     assert.match(await window.locator("#workflow-title").textContent(), /LEIE Data Processing/);
+    // The guide is the first item on the module, ahead of the Source section.
+    const guideTop = (await window.locator("#leie-guide-banner").boundingBox()).y;
+    const sourceTop = (await window.locator("#source-card").boundingBox()).y;
+    assert.equal(guideTop < sourceTop, true);
+    assert.deepEqual(
+      await window.locator("#leie-environment-reference [data-leie-environment]").evaluateAll((rows) => rows.map((row) => [...row.children].map((cell) => cell.textContent.trim()).join(" "))),
+      ["SQA VAC10SQLCCN816.va.gov ccrsdb", "DEV VAC10SQLCCN802.va.gov ccrsdb", "PPD VAC10SQLCCN404.va.gov ccrsdb"]
+    );
+    await window.locator("#leie-validation-batch-id").fill("LEIE_E2E_BATCH");
+    await window.locator("#copy-leie-validation-sql").click();
+    await waitForText(window, "#leie-validation-copy-status", "SQL copied");
+    assert.match(await electronApp.evaluate(({ clipboard }) => clipboard.readText()), /where etl_batch_id = 'LEIE_E2E_BATCH'/);
+    await window.locator("#leie-validation-batch-id").fill("");
+    assert.equal(await window.locator("[data-main-tab]").count(), 3);
+    assert.equal(await window.locator("[data-main-tab='leie'][aria-selected='true']").count(), 1);
     assert.match(await uploadDirectoryNote.textContent(), /LEIE Data uploads default to \/in\/manual_process\//);
     assert.deepEqual(await visibleTargets(), ["SQA", "DEV", "PPD", "PROD"]);
     assert.equal(await window.locator("#output-help").count(), 0);

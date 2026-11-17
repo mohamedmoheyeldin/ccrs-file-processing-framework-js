@@ -1,11 +1,11 @@
-const { clipboard, contextBridge, ipcRenderer } = require("electron");
+const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("ccrs", {
   pickDirectory: () => ipcRenderer.invoke("dialog:pick-directory"),
   pickFile: (filters) => ipcRenderer.invoke("dialog:pick-file", filters),
   openPath: (targetPath) => ipcRenderer.invoke("shell:open-path", targetPath),
   openExternal: (url) => ipcRenderer.invoke("shell:open-external", url),
-  copyText: (value) => clipboard.writeText(String(value || "")),
+  copyText: (value) => ipcRenderer.invoke("clipboard:write-text", String(value || "")),
   getInfo: () => ipcRenderer.invoke("backend:info"),
   inspectSource: (inputDir) => ipcRenderer.invoke("backend:inspect-source", { inputDir }),
   inspectLeieSource: (inputDir, duplicateKey) =>

@@ -178,8 +178,51 @@ function buildGeneratedReferralSources(fileCount, referralsPerFile, overrides = 
   }
 }
 
+const templateSizeCache = new Map();
+
+function measureTemplate(templatePath) {
+  const stats = fs.statSync(templatePath);
+  const cacheKey = `${templatePath}:${stats.size}:${stats.mtimeMs}`;
+  if (templateSizeCache.has(cacheKey)) return templateSizeCache.get(cacheKey);
+  const templateData = JSON.parse(fs.readFileSync(templatePath, "utf8"));
+  const referrals = Array.isArray(templateData.Referrals) ? templateData.Referrals : [];
+  const currentDates = getCurrentReferralDates();
+  const sizeWith = (count) => {
+    const data = { ...templateData, Referrals: [] };
+    for (let index = 0; index < count; index += 1) {
+      data.Referrals.push({ ...referrals[index % Math.max(referrals.length, 1)], ...currentDates });
+    }
+    return Buffer.byteLength(JSON.stringify(data, null, 4), "utf8");
+  };
+  const cycle = Math.max(referrals.length, 1);
+  const baseBytes = sizeWith(0);
+  const measurement = { baseBytes, bytesPerReferral: (sizeWith(cycle) - baseBytes) / cycle };
+  templateSizeCache.set(cacheKey, measurement);
+  return measurement;
+}
+
+/**
+ * Estimates the combined size of the JSON files a generate run would create, without writing
+ * them. It mirrors buildGeneratedReferralSources, so the result is close to the real size.
+ */
+function estimateGeneratedSourceBytes(fileCount, referralsPerFile) {
+  const files = Math.max(Math.floor(Number(fileCount) || 0), 0);
+  const perFile = Math.max(Math.floor(Number(referralsPerFile) || 0), 0);
+  const templatePaths = getReferralTemplatePaths();
+  if (files === 0 || perFile === 0 || templatePaths.length === 0) return 0;
+  let totalBytes = 0;
+  for (let templateIndex = 0; templateIndex < Math.min(templatePaths.length, files); templateIndex += 1) {
+    // Files cycle through the templates, so count how many files use this template.
+    const filesUsingTemplate = Math.floor((files - templateIndex - 1) / templatePaths.length) + 1;
+    const { baseBytes, bytesPerReferral } = measureTemplate(templatePaths[templateIndex]);
+    totalBytes += filesUsingTemplate * (baseBytes + bytesPerReferral * perFile);
+  }
+  return Math.round(totalBytes);
+}
+
 module.exports = {
   buildGeneratedReferralSources,
+  estimateGeneratedSourceBytes,
   getGeneratorDefaults,
   getCurrentReferralDates,
   getSeocOptions,

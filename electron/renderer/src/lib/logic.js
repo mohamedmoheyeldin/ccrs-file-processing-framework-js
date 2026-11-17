@@ -476,6 +476,13 @@ export function formFromSettings(settings = {}, catalogs, baseForm = DEFAULT_FOR
   return form;
 }
 
+/** Database servers used to validate a LEIE load, in the required load order. */
+export const LEIE_DATABASE_ENVIRONMENTS = [
+  { environment: "SQA", server: "VAC10SQLCCN816.va.gov", database: "ccrsdb" },
+  { environment: "DEV", server: "VAC10SQLCCN802.va.gov", database: "ccrsdb" },
+  { environment: "PPD", server: "VAC10SQLCCN404.va.gov", database: "ccrsdb" },
+];
+
 export const UPLOAD_RESULT_LABELS = {
   pending: "Waiting",
   uploading: "Uploading",
@@ -518,4 +525,12 @@ export function summarizeUploadResults(results = []) {
     counts.pending ? `${counts.pending} waiting` : "",
   ].filter(Boolean).join(" · ");
   return { rows, summary };
+}
+
+/** Removes Electron's IPC wrapper so people see only the actual reason. */
+export function cleanErrorMessage(message) {
+  return String(message || "")
+    .replace(/^Error invoking remote method '[^']*':\s*/i, "")
+    .replace(/^(?:Error:\s*)+/i, "")
+    .trim();
 }

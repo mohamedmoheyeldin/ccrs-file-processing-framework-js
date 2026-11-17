@@ -2,7 +2,7 @@ const fs = require("fs");
 const os = require("os");
 const { randomUUID } = require("crypto");
 const { Worker } = require("worker_threads");
-const { app, BrowserWindow, dialog, ipcMain, session, shell } = require("electron");
+const { app, BrowserWindow, clipboard, dialog, ipcMain, session, shell } = require("electron");
 const path = require("path");
 const backend = require("./backend");
 
@@ -218,6 +218,12 @@ handle("shell:open-external", async (_event, targetUrl) => {
   const normalizedUrl = String(targetUrl || "").trim();
   if (!isAllowedExternalUrl(normalizedUrl)) throw new Error("Only trusted HTTPS links can be opened.");
   await shell.openExternal(normalizedUrl);
+  return true;
+});
+
+// The renderer is sandboxed, so its preload script cannot use the clipboard module directly.
+handle("clipboard:write-text", async (_event, value) => {
+  clipboard.writeText(String(value || ""));
   return true;
 });
 

@@ -26,7 +26,18 @@ function getProcessingLimits() {
 function formatBytes(bytes) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+}
+
+/** Message shown when a batch of source or generated JSON is larger than the combined limit. */
+function describeTotalSizeLimit(totalBytes, limitBytes, { generated = false, estimated = false } = {}) {
+  const size = `${estimated ? "about " : ""}${formatBytes(totalBytes)}`;
+  const subject = generated ? `This run would create ${size} of JSON files` : `The selected source files total ${size}`;
+  const advice = generated
+    ? "Lower the number of JSON files or the referrals per file, or split the work into several runs."
+    : "Split the files into smaller batches and run them one batch at a time.";
+  return `${subject}, which is over the ${formatBytes(limitBytes)} combined safety limit. ${advice}`;
 }
 
 function assertSourceFilesWithinLimits(filePaths) {
@@ -40,7 +51,7 @@ function assertSourceFilesWithinLimits(filePaths) {
     totalBytes += size;
   }
   if (totalBytes > limits.maxTotalSourceBytes) {
-    throw new Error(`Selected source files exceed the ${formatBytes(limits.maxTotalSourceBytes)} combined safety limit.`);
+    throw new Error(describeTotalSizeLimit(totalBytes, limits.maxTotalSourceBytes));
   }
   return totalBytes;
 }
@@ -48,6 +59,7 @@ function assertSourceFilesWithinLimits(filePaths) {
 module.exports = {
   DEFAULT_LIMITS,
   assertSourceFilesWithinLimits,
+  describeTotalSizeLimit,
   formatBytes,
   getProcessingLimits,
 };

@@ -1,4 +1,4 @@
-import { CheckCircle, Copy01, FolderSearch, LinkExternal01, Minus, Plus, RefreshCw01, UploadCloud01, Wifi } from "@untitledui/icons";
+import { AlertTriangle, BookOpen01, CheckCircle, Copy01, FolderSearch, LinkExternal01, Minus, Plus, RefreshCw01, UploadCloud01, Wifi } from "@untitledui/icons";
 import { Table } from "@/components/application/table/table";
 import { Badge, BadgeWithDot } from "@/components/base/badges/badges";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
@@ -9,6 +9,7 @@ import { cx } from "@/utils/cx";
 import {
   ARCHIVE_CUSTOM_VALUES,
   DATE_PARTS,
+  LEIE_DATABASE_ENVIRONMENTS,
   NETWORK_VALUES,
   SEOC_RESULT_LIMIT,
   STATION_RESULT_LIMIT,
@@ -51,6 +52,25 @@ const TABLE_VIEWER_LINKS = [
 // Source
 // -------------------------------------------------------------------------------------------------
 
+/** Shown first on the LEIE module so the guide is the first thing people see. */
+export function LeieGuideBanner({ app }) {
+  const { actions } = app;
+  return (
+    <div id="leie-guide-banner" className="flex flex-col gap-3 rounded-xl bg-brand-primary_alt p-4 ring-1 ring-brand_alt ring-inset sm:flex-row sm:items-center sm:justify-between md:px-6">
+      <div className="flex min-w-0 items-start gap-3">
+        <BookOpen01 aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-fg-brand-primary" />
+        <div className="min-w-0">
+          <p className="text-md font-semibold text-brand-secondary">LEIE Data Upload and Validation Guide</p>
+          <p className="text-sm text-brand-tertiary">Start here. The PDF covers the load order, upload steps, database validation, and the CCRS UI check.</p>
+        </div>
+      </div>
+      <Button id="open-leie-validation-guide" color="primary" size="md" iconLeading={BookOpen01} onClick={actions.openLeieGuide}>
+        Open PDF Guide
+      </Button>
+    </div>
+  );
+}
+
 export function SourceSection({ app }) {
   const { form, flags, sourceSummary, actions } = app;
   return (
@@ -63,17 +83,6 @@ export function SourceSection({ app }) {
         ? "Pick an incoming LEIE Excel file or a folder containing LEIE Excel files."
         : "Pick the folder that contains the incoming JSON files."}
     >
-      {flags.isLeie && (
-        <div id="leie-guide-banner" className="flex flex-col gap-3 rounded-xl bg-brand-primary_alt p-4 ring-1 ring-brand_alt ring-inset sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-brand-secondary">LEIE Data Upload and Validation Guide</p>
-            <p className="text-sm text-brand-tertiary">Open the PDF manual for upload steps and database validation checks.</p>
-          </div>
-          <Button id="open-leie-validation-guide" color="secondary" size="sm" onClick={actions.openLeieGuide}>
-            Open PDF Guide
-          </Button>
-        </div>
-      )}
       <div id="source-folder-field" className="flex flex-col gap-1.5">
         <div className="flex items-end gap-3">
           <TextInput
@@ -225,7 +234,7 @@ function StatCard({ id, label, value, copy, accent }) {
 }
 
 export function GeneratorSection({ app }) {
-  const { form, info, fieldErrors, actions } = app;
+  const { form, info, fieldErrors, generatedSize, actions } = app;
   const fileCount = Math.max(Number(form.fileCount || 1), 1);
   const referralsPerFile = Math.max(Number(form.referralsPerFile || 1), 1);
   const limits = info?.constants?.processingLimits || {};
@@ -266,6 +275,34 @@ export function GeneratorSection({ app }) {
             : "Set this to 1 for one referral in each file, or higher for multiple referrals."}
         />
       </div>
+      {generatedSize && (
+        <div
+          id="generated-size-estimate"
+          role={generatedSize.overLimit ? "alert" : undefined}
+          data-over-limit={generatedSize.overLimit || undefined}
+          className={cx(
+            "flex items-start gap-3 rounded-xl p-4 ring-1 ring-inset",
+            generatedSize.overLimit ? "bg-warning-primary ring-secondary" : "bg-secondary ring-secondary"
+          )}
+        >
+          <AlertTriangle
+            aria-hidden="true"
+            className={cx("mt-0.5 size-5 shrink-0", generatedSize.overLimit ? "text-fg-warning-primary" : "hidden")}
+          />
+          <div className="min-w-0">
+            <p className={cx("text-sm font-semibold", generatedSize.overLimit ? "text-warning-primary" : "text-secondary")}>
+              {generatedSize.overLimit
+                ? `Too large: this run would create about ${generatedSize.label} of JSON. The limit is ${generatedSize.limitLabel}.`
+                : `Estimated size: about ${generatedSize.label} of JSON (limit ${generatedSize.limitLabel}).`}
+            </p>
+            {generatedSize.overLimit && (
+              <p className="mt-0.5 text-sm text-tertiary">
+                Lower the number of JSON files or the referrals per file, or split the work into several runs. Generate Files stays blocked until the estimate is under the limit.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </Section>
   );
 }
@@ -979,10 +1016,31 @@ function LeieValidationPanel({ app }) {
   const { form, sqlCopy, actions } = app;
   const sqlText = buildLeieValidationSql(form.leieValidationBatchId);
   return (
-    <Panel id="leie-upload-validation-card" title="Validate the LEIE Load in the Database">
+    <Panel id="leie-upload-validation-card" title="Step 4: Validate the LEIE Load in the Database">
       <p className="-mt-3 text-sm text-tertiary">
-        After the LEIE file is loaded, paste your <code className="font-mono text-secondary">etl_batch_id</code>, copy the SQL below, and run it in <code className="font-mono text-secondary">ccrsdb</code>.
+        After the LEIE file is loaded, connect to the database server for the environment you loaded, paste your <code className="font-mono text-secondary">etl_batch_id</code>, copy the SQL below, and run it in <code className="font-mono text-secondary">ccrsdb</code>.
       </p>
+      <div id="leie-environment-reference" className="flex flex-col gap-1.5">
+        <FieldLabel>Environment Reference</FieldLabel>
+        <div className="overflow-hidden rounded-lg bg-primary ring-1 ring-secondary ring-inset">
+          <Table aria-label="LEIE database environments" size="sm">
+            <Table.Header>
+              <Table.Head id="environment" label="Environment" isRowHeader />
+              <Table.Head id="server" label="Database Server" />
+              <Table.Head id="database" label="Database" />
+            </Table.Header>
+            <Table.Body items={LEIE_DATABASE_ENVIRONMENTS.map((row) => ({ ...row, id: row.environment }))}>
+              {(row) => (
+                <Table.Row id={row.id} data-leie-environment={row.environment}>
+                  <Table.Cell className="font-semibold text-primary">{row.environment}</Table.Cell>
+                  <Table.Cell className="font-mono text-secondary select-all">{row.server}</Table.Cell>
+                  <Table.Cell className="font-mono text-secondary select-all">{row.database}</Table.Cell>
+                </Table.Row>
+              )}
+            </Table.Body>
+          </Table>
+        </div>
+      </div>
       <TextInput
         id="leie-validation-batch-id"
         label="ETL Batch ID"

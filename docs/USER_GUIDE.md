@@ -78,11 +78,13 @@ Prepare the items required for your workflow:
 
 ## Main Areas
 
-The app has three main tabs:
+The top of the window shows the `Application modules` as three large cards. Each card has an icon, the module name, and a one-line description. The selected module is highlighted in blue:
 
 - `Referral Files`
 - `LEIE Data Processing`
 - `More Features Coming Soon`
+
+Below the module cards, the form sections are on the left. The `Run` panel stays visible on the right and shows the workflow steps, the current status, progress, the per-server upload results, the run button, and the actions for the last run. Use `Light` or `Dark` in the header to switch themes.
 
 `Referral Files` contains two modes:
 
@@ -107,13 +109,13 @@ The Source hint confirms that source files are read without being changed. Proce
 
 ## Consistent Controls and Keyboard Use
 
-Text boxes, dropdowns, and date fields use the same 48-pixel control height throughout the application. Related fields share the available row width. Upload User remains compact beside the wider Remote Directory field on the same row, while narrow windows automatically stack them without changing their control height.
+Text boxes, dropdowns, and date fields use the same control height throughout the application. Related fields share the available row width. Upload User remains compact beside the wider Remote Directory field on the same row, while narrow windows automatically stack them without changing their control height.
 
 Use `Tab` and `Shift+Tab` to move between controls. In a dropdown, use `Arrow Up` or `Arrow Down` to open and move through choices, `Home` or `End` to jump to the first or last choice, `Enter` or `Space` to select, and `Escape` to close the list and return focus to the field. A visible focus outline identifies the active control.
 
 ## Workflow Progress and Large Files
 
-The workflow stepper shows `Select`, `Configure`, `Validate`, `Process`, and `Upload`. The status card remains visible near the bottom of the application and identifies the current action, the file or server being handled, and what happens next. When totals are known, it shows completed items and a percentage. Scanning, packaging, connection testing, configuration imports, and diagnostics show visible in-progress feedback even when a numeric percentage is not available.
+The workflow stepper shows `Select`, `Configure`, `Validate`, `Process`, and `Upload`. The status card remains visible in the `Run` panel on the right side of the application and identifies the current action, the file or server being handled, and what happens next. When totals are known, it shows completed items and a percentage. Scanning, packaging, connection testing, configuration imports, and diagnostics show visible in-progress feedback even when a numeric percentage is not available.
 
 File processing, LEIE work, gzip creation, upload tests, and uploads run in background workers so the window remains responsive. Select `Cancel` to stop a running process. Referral work is isolated in temporary staging, so cancellation does not alter completed output from earlier runs; stale app-created staging folders are cleaned automatically.
 
@@ -127,11 +129,15 @@ Before processing, the source summary reports available file size and row inform
 - referrals per generated file
 - total referrals in one generated batch
 
+The combined limit for one run is 1 GB of JSON. `Generate New Files` shows the estimated size of the files it will create under the two count fields, for example `Estimated size: about 637.5 MB of JSON (limit 1.00 GB)` for 50 files with 800 referrals each. If the estimate is over the limit, a `Too large` warning shows the estimated size and the limit, the `Number of referrals per file` field is marked, and `Generate Files` stays blocked until the counts are lowered. For example, 100 files with 800 referrals each is about 1.25 GB and must be split into two runs. When existing source files are over the limit, the message shows their combined size and the limit.
+
 If a source exceeds a safety limit, split it into smaller approved batches or ask the application maintainer to adjust the corresponding `CCRS_MAX_*` environment setting after reviewing available memory and disk space.
 
 ## LEIE Data Processing
 
 Use `LEIE Data Processing` to inspect, clean, save, upload, and validate LEIE Excel data.
+
+The `LEIE Data Upload and Validation Guide` is the first item on this module. Select `Open PDF Guide` to open it before you start.
 
 The `LEIE Data Upload and Validation Guide` button opens the separate detailed LEIE manual from the app.
 
@@ -218,9 +224,17 @@ Replace it with the actual batch ID for the environment and file being validated
 
 ### Step 7: Run the LEIE Validation SQL
 
-The LEIE Upload area contains an `ETL Batch ID` field and a `Validation SQL` box. Entering a batch ID updates all three batch-ID references automatically.
+The LEIE Upload area contains `Step 4: Validate the LEIE Load in the Database`. It starts with the `Environment Reference` table, so you can see which database server to connect to:
 
-The SQL box uses color-coded SQL keywords, quoted values, numbers, and comments. It remains selectable, and `Copy SQL` copies the complete plain-text query set.
+| Environment | Database Server | Database |
+|---|---|---|
+| `SQA` | `VAC10SQLCCN816.va.gov` | `ccrsdb` |
+| `DEV` | `VAC10SQLCCN802.va.gov` | `ccrsdb` |
+| `PPD` | `VAC10SQLCCN404.va.gov` | `ccrsdb` |
+
+Below the table are the `ETL Batch ID` field and the `Validation SQL` box. Entering a batch ID updates all three batch-ID references automatically.
+
+The SQL box uses color-coded SQL keywords, quoted values, numbers, and comments. It remains selectable, and `Copy SQL` copies the complete plain-text query set to the clipboard and confirms with `SQL copied`.
 
 The current query set is:
 
@@ -573,7 +587,7 @@ Check the individual server status. The app verifies the remote file and limits 
 
 ### A Large File Is Rejected
 
-Review the displayed file size or row count. Split the source into smaller approved batches. Do not raise a safety limit without confirming that the workstation has enough memory and disk space.
+Review the displayed file size or row count. The message shows the size of the selection and the limit, for example `This run would create about 1.25 GB of JSON files, which is over the 1.00 GB combined safety limit`. Lower the number of JSON files or referrals per file, or split the source into smaller approved batches. Do not raise a safety limit without confirming that the workstation has enough memory and disk space.
 
 ### A Job Was Cancelled
 

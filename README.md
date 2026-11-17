@@ -261,12 +261,12 @@ The Windows Playwright test in [scripts/electron-e2e-test.js](scripts/electron-e
 
 | Document | Read it for |
 |---|---|
+| [LEIE Upload Validation Guide](docs/LEIE_UPLOAD_VALIDATION_GUIDE.md) | Loading LEIE data and checking it in each environment |
 | [Project Vision](docs/PROJECT_VISION.md) | Why the app exists and how new workflows are proposed |
 | [Architecture](docs/ARCHITECTURE.md) | Process boundaries, safety design, data flow |
 | [Development](docs/DEVELOPMENT.md) | Setup, change rules, release metadata |
 | [Testing](docs/TESTING.md) | Test layers and when to run them |
 | [User Guide](docs/USER_GUIDE.md) | Step-by-step use of both workflows |
-| [LEIE Upload Validation Guide](docs/LEIE_UPLOAD_VALIDATION_GUIDE.md) | Checking LEIE uploads |
 | [Stakeholder Overview](docs/STAKEHOLDER_OVERVIEW.md) | A short introduction for managers and the team |
 | [Release Notes](docs/RELEASE_NOTES.md) | Every release, newest first |
 | [Team Sharing Checklist](docs/TEAM_SHARING_CHECKLIST.md) | Distributing a release to the team |

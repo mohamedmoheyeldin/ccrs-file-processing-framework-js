@@ -36,7 +36,7 @@ const {
   zipOutput,
 } = require("../electron/backend/zipper");
 const { writeFileAtomic } = require("../electron/backend/atomicFile");
-const { assertSourceFilesWithinLimits } = require("../electron/backend/limits");
+const { assertSourceFilesWithinLimits, describeTotalSizeLimit, formatBytes } = require("../electron/backend/limits");
 const { importCredentialFile, parseCredentialFile } = require("../electron/backend/secureCredentials");
 const {
   DEFAULT_UI_SETTINGS,
@@ -66,7 +66,7 @@ const { normalizeStations } = require("../electron/backend/stationCatalog");
 const { ensureRuntimeFiles } = require("../electron/backend/appPaths");
 const { normalizeCell } = require("./import-stations");
 const { convertWorksheet: convertSeocWorksheet, splitVersionedSeocId } = require("./import-seoc");
-const { getSituationalSeocOptions, resolveSeocSelection } = require("../electron/backend/referralGenerator");
+const { buildGeneratedReferralSources, estimateGeneratedSourceBytes, getSituationalSeocOptions, resolveSeocSelection } = require("../electron/backend/referralGenerator");
 const { assertSafeFolderRelationship, stripWindowsExtendedPathPrefix } = require("../electron/backend/batchSafety");
 const { validateReferralFile } = require("../electron/backend/referralValidator");
 const { allowedUploadTargets } = require("../electron/backend/workflowPolicy");
@@ -1590,6 +1590,61 @@ test("App info prefers the PDF user guide path", async () => {
   const info = await backend.handleCommand("info", {});
   assert.equal(typeof info.docs?.userGuidePath, "string");
   assert.match(info.docs.userGuidePath, /USER_GUIDE\.pdf$/);
+});
+
+test("Generate runs over the combined size limit are estimated and blocked before they start", async () => {
+  assert.equal(formatBytes(1024 ** 3), "1.00 GB");
+  assert.equal(formatBytes(512 * 1024 ** 2), "512.0 MB");
+  assert.match(describeTotalSizeLimit(1.5 * 1024 ** 3, 1024 ** 3), /source files total 1\.50 GB, which is over the 1\.00 GB combined safety limit/);
+
+  const generatedDir = buildGeneratedReferralSources(9, 7, {});
+  try {
+    const actualBytes = fs.readdirSync(generatedDir).reduce((total, name) => total + fs.statSync(path.join(generatedDir, name)).size, 0);
+    const estimatedBytes = estimateGeneratedSourceBytes(9, 7);
+    assert.equal(Math.abs(estimatedBytes - actualBytes) / actualBytes < 0.02, true, `estimate ${estimatedBytes} should be close to ${actualBytes}`);
+  } finally {
+    fs.rmSync(generatedDir, { recursive: true, force: true });
+  }
+
+  const smallPreview = await backend.handleCommand("preview", { fileCount: 2, referralsPerFile: 2 });
+  assert.equal(smallPreview.generatedSize.overLimit, false);
+  assert.equal(smallPreview.fieldErrors.referralsPerFile, undefined);
+
+  const largePreview = await backend.handleCommand("preview", { fileCount: 100, referralsPerFile: 800 });
+  assert.equal(largePreview.generatedSize.overLimit, true);
+  assert.match(largePreview.generatedSize.label, /GB$/);
+  assert.match(largePreview.fieldErrors.referralsPerFile, /would create about 1\.\d\d GB of JSON files, which is over the 1\.00 GB combined safety limit/);
+
+  const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-size-limit-"));
+  try {
+    await assert.rejects(
+      backend.handleCommand("generate", { fileCount: 100, referralsPerFile: 800, outputDir }),
+      /would create about 1\.\d\d GB of JSON files/
+    );
+    assert.deepEqual(fs.readdirSync(outputDir), []);
+  } finally {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  }
+});
+
+test("Clipboard copies go through the main process because the preload is sandboxed", () => {
+  const mainSource = fs.readFileSync(path.join(projectRoot, "electron", "main.js"), "utf8");
+  const preloadSource = fs.readFileSync(path.join(projectRoot, "electron", "preload.js"), "utf8");
+  assert.match(mainSource, /handle\("clipboard:write-text"/);
+  assert.match(preloadSource, /ipcRenderer\.invoke\("clipboard:write-text"/);
+  assert.doesNotMatch(preloadSource, /\bclipboard\b[^:]*require|\{[^}]*\bclipboard\b[^}]*\} = require/);
+});
+
+test("LEIE guide lists one PPD database server and the app shows the same reference", () => {
+  const guide = fs.readFileSync(path.join(projectRoot, "docs", "LEIE_UPLOAD_VALIDATION_GUIDE.md"), "utf8");
+  const logic = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "src", "lib", "logic.js"), "utf8");
+  assert.match(guide, /\| `PPD` \| `VAC10SQLCCN404\.va\.gov` \| `ccrsdb` \|/);
+  assert.doesNotMatch(guide, /New PPD|VAC10SQLCCN402/);
+  for (const server of ["VAC10SQLCCN816.va.gov", "VAC10SQLCCN802.va.gov", "VAC10SQLCCN404.va.gov"]) {
+    assert.equal(guide.includes(server), true);
+    assert.equal(logic.includes(server), true);
+  }
+  assert.doesNotMatch(logic, /VAC10SQLCCN402/);
 });
 
 test("Preview validation reports field-level errors without throwing", async () => {

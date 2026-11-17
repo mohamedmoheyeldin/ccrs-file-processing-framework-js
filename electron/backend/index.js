@@ -37,6 +37,7 @@ const { setupLogger } = require("./logger");
 const { processFiles } = require("./processor");
 const {
   buildGeneratedReferralSources,
+  estimateGeneratedSourceBytes,
   getGeneratorDefaults,
   getSeocOptions,
   getSituationalSeocOptions,
@@ -60,7 +61,7 @@ const {
 } = require("./uploader");
 const { sanitizeFilenameBase } = require("./renamer");
 const { buildArchiveBasename, buildMasterFileName, buildOutputFileNames, DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename } = require("./zipper");
-const { assertSourceFilesWithinLimits, getProcessingLimits } = require("./limits");
+const { assertSourceFilesWithinLimits, describeTotalSizeLimit, formatBytes, getProcessingLimits } = require("./limits");
 const { writeFileAtomic } = require("./atomicFile");
 const { assertSafeFolderRelationship, cleanupStaleRunStagingDirectories } = require("./batchSafety");
 const { getRun, saveRun } = require("./runHistory");
@@ -406,8 +407,22 @@ function buildPreview(payload) {
     icnPreview,
     referralNumber: normalizedReferral,
     optionalOverrides: normalizedOptionalOverrides,
+    generatedSize: describeGeneratedSize(payload),
     fieldErrors,
   };
+}
+
+/** Estimated size of the JSON a generate run would create, for the live summary in the UI. */
+function describeGeneratedSize(payload) {
+  if (payload.fileCount === undefined) return null;
+  try {
+    const bytes = estimateGeneratedSourceBytes(payload.fileCount, payload.referralsPerFile);
+    const limitBytes = getProcessingLimits().maxTotalSourceBytes;
+    if (bytes <= 0) return null;
+    return { bytes, label: formatBytes(bytes), limitBytes, limitLabel: formatBytes(limitBytes), overLimit: bytes > limitBytes };
+  } catch (_error) {
+    return null;
+  }
 }
 
 function collectFieldErrors(payload) {
@@ -516,6 +531,18 @@ function collectFieldErrors(payload) {
   }
   if (Number(payload.fileCount || 0) * Number(payload.referralsPerFile || 0) > processingLimits.maxGeneratedReferrals) {
     fieldErrors.referralsPerFile = `The generated batch cannot exceed ${processingLimits.maxGeneratedReferrals.toLocaleString()} referrals.`;
+  }
+  // Warn before the run starts when the generated JSON would be over the combined size limit.
+  let estimatedGeneratedBytes = 0;
+  if (payload.fileCount !== undefined && !fieldErrors.fileCount && !fieldErrors.referralsPerFile) {
+    try {
+      estimatedGeneratedBytes = estimateGeneratedSourceBytes(payload.fileCount, payload.referralsPerFile);
+    } catch (_error) {
+      estimatedGeneratedBytes = 0;
+    }
+    if (estimatedGeneratedBytes > processingLimits.maxTotalSourceBytes) {
+      fieldErrors.referralsPerFile = describeTotalSizeLimit(estimatedGeneratedBytes, processingLimits.maxTotalSourceBytes, { generated: true, estimated: true });
+    }
   }
 
   try {
@@ -734,6 +761,11 @@ async function runGenerate(payload, emitProgress) {
   }
   if (fileCount * referralsPerFile > limits.maxGeneratedReferrals) {
     throw new Error(`The generated batch cannot exceed ${limits.maxGeneratedReferrals.toLocaleString()} referrals.`);
+  }
+
+  const estimatedBytes = estimateGeneratedSourceBytes(fileCount, referralsPerFile);
+  if (estimatedBytes > limits.maxTotalSourceBytes) {
+    throw new Error(describeTotalSizeLimit(estimatedBytes, limits.maxTotalSourceBytes, { generated: true, estimated: true }));
   }
 
   const args = buildCommonArgs(payload, emitProgress);

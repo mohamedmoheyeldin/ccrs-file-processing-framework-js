@@ -4,6 +4,7 @@ import {
   BookOpen01,
   Check,
   Copy01,
+  Database01,
   Download01,
   File06,
   FolderSearch,
@@ -27,6 +28,7 @@ import { BusyContext, Button, HelpDisclosure, TextInput } from "./components/pri
 import {
   GeneratorSection,
   LeieDuplicateSection,
+  LeieGuideBanner,
   OutputSection,
   ReferralDetailsSection,
   SourceSection,
@@ -93,26 +95,56 @@ function Header({ app }) {
   );
 }
 
+const MODULES = [
+  { id: "referral", title: "Referral Files", description: "Edit or generate referral JSON files.", icon: File06 },
+  { id: "leie", title: "LEIE Data Processing", description: "Clean, save, upload and validate LEIE data.", icon: Database01 },
+  { id: "other", title: "More Features Coming Soon", description: "Future CCRS file types will appear here.", icon: Stars02 },
+];
+
 function WorkflowTabs({ app }) {
   const { form, flags, actions, busy } = app;
   return (
     <div className="flex flex-col gap-4">
+      <p id="module-heading" className="text-xs font-semibold tracking-wide text-quaternary uppercase">Application modules</p>
       <Tabs selectedKey={form.mainTab} onSelectionChange={(key) => actions.setMainTab(String(key))} isDisabled={busy}>
-        <div className="overflow-x-auto">
-        <TabList aria-label="Processing workflow" type="underline" size="md">
-          <Tab id="referral" data-main-tab="referral" label="Referral Files" />
-          <Tab id="leie" data-main-tab="leie" label="LEIE Data Processing" />
-          <Tab id="other" data-main-tab="other" label="More Features Coming Soon" />
+        <TabList aria-label="Application modules" type="button-minimal" size="md" className="grid gap-3 md:grid-cols-3">
+          {MODULES.map((module) => (
+            <Tab
+              key={module.id}
+              id={module.id}
+              data-main-tab={module.id}
+              className={({ isSelected, isHovered }) =>
+                cx(
+                  "h-full w-full justify-start gap-3 rounded-xl bg-primary p-4 text-left whitespace-normal shadow-xs ring-1 ring-secondary ring-inset",
+                  isHovered && !isSelected && "bg-primary_hover ring-primary",
+                  isSelected && "bg-brand-primary_alt ring-2 ring-brand"
+                )
+              }
+            >
+              {({ isSelected }) => (
+                <span className="flex items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className={cx(
+                      "flex size-10 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset",
+                      isSelected ? "bg-brand-solid text-white ring-transparent" : "bg-secondary text-fg-quaternary ring-secondary"
+                    )}
+                  >
+                    <module.icon className="size-5" />
+                  </span>
+                  <span className="flex min-w-0 flex-col">
+                    <span className={cx("text-md font-semibold", isSelected ? "text-brand-secondary" : "text-primary")}>{module.title}</span>
+                    <span className="text-sm font-normal text-tertiary">{module.description}</span>
+                  </span>
+                </span>
+              )}
+            </Tab>
+          ))}
         </TabList>
-        </div>
       </Tabs>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p id="main-tab-copy" className="text-sm text-tertiary">
-          {flags.isReferral
-            ? "Choose source files, apply targeted JSON updates, and export clean output in one pass."
-            : flags.isLeie
-              ? "Process LEIE Excel files, detect duplicates, save clean output, and upload."
-              : "Future CCRS file types will appear here."}
+          {flags.isReferral ? "Choose how you want to work with Referral Files:" : ""}
         </p>
         {flags.isReferral && (
           <div id="subtab-row">
@@ -492,6 +524,7 @@ export function App() {
             <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
               <div className="flex min-w-0 flex-col gap-6">
                 <WorkflowIntro app={app} />
+                {flags.isLeie && <LeieGuideBanner app={app} />}
                 {!flags.isGenerate && <SourceSection app={app} />}
                 {flags.isLeie && <LeieDuplicateSection app={app} />}
                 {flags.isGenerate && <GeneratorSection app={app} />}
