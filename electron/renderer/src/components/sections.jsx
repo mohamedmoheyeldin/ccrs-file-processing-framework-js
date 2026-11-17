@@ -1221,12 +1221,13 @@ export function UploadSection({ app }) {
           Import To Config
         </Button>
       </div>
-      {flags.isLeie && <LeieValidationPanel app={app} />}
       {targets.length > 0 && (
         <div id="upload-targets" className="flex flex-col gap-4">
           {targets.map((target) => <UploadTarget key={target.name} app={app} target={target} />)}
         </div>
       )}
+      {/* Validation happens after the upload, so it follows the server list. */}
+      {flags.isLeie && <LeieValidationPanel app={app} />}
     </Section>
   );
 }

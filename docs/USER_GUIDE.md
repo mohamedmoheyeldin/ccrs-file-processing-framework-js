@@ -224,7 +224,7 @@ Replace it with the actual batch ID for the environment and file being validated
 
 ### Step 7: Run the LEIE Validation SQL
 
-The LEIE Upload area contains `Step 4: Validate the LEIE Load in the Database`. It starts with the `Environment Reference` table, so you can see which database server to connect to:
+The LEIE Upload area shows the upload switch, the imported configuration, and the server list first. Below the server list is `Step 4: Validate the LEIE Load in the Database`. It starts with the `Environment Reference` table, so you can see which database server to connect to:
 
 | Environment | Database Server | Database |
 |---|---|---|

@@ -434,6 +434,10 @@ async function run() {
       await window.locator("#leie-environment-reference [data-leie-environment]").evaluateAll((rows) => rows.map((row) => [...row.children].map((cell) => cell.textContent.trim()).join(" "))),
       ["SQA VAC10SQLCCN816.va.gov ccrsdb", "DEV VAC10SQLCCN802.va.gov ccrsdb", "PPD VAC10SQLCCN404.va.gov ccrsdb"]
     );
+    // The server list sits directly under the upload switch and config; validation follows it.
+    const serverListTop = (await window.locator("#upload-targets").boundingBox()).y;
+    const validationTop = (await window.locator("#leie-upload-validation-card").boundingBox()).y;
+    assert.equal(serverListTop < validationTop, true);
     await window.locator("#leie-validation-batch-id").fill("LEIE_E2E_BATCH");
     await window.locator("#copy-leie-validation-sql").click();
     await waitForText(window, "#leie-validation-copy-status", "SQL copied");
