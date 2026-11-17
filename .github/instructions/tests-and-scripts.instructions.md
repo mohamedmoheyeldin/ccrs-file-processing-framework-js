@@ -16,3 +16,4 @@ applyTo: "scripts/**"
 - Write test output to temporary directories and clean it up; never write into the repository.
 - Release scripts must keep the Setup-only NSIS contract (no portable executable) and keep release output outside the repository.
 - `scripts/sync-agent-instructions.js` generates `.github/copilot-instructions.md` from `AGENTS.md`; `pnpm verify` fails when they differ.
+- `scripts/migrate-repo.js` repoints the project at a new GitHub repository; it must never push, tag, or publish. Its coverage is `scripts/migrate-repo-test.js`.
