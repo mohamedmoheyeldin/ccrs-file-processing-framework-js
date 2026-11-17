@@ -34,7 +34,7 @@ pnpm verify
 - Preserve native labels, accessible names, visible focus, disabled state, invalid state, and keyboard operation when enhancing a form control.
 - Keep source/output validation and staging in `batchSafety.js`; never delete output before the current run has successfully processed and packaged.
 - Keep upload-environment authorization in `workflowPolicy.js`; renderer filtering is a usability layer, not the security boundary.
-- Keep the upload order SQA, DEV, PPD, then PROD. Referral Files must exclude PROD; only LEIE may expose it. Test concurrent upload behavior with injected local test doubles rather than live environments.
+- Keep the upload order SQA, DEV, PPD, then PROD. Referral Files must exclude PROD; only LEIE may expose it. Test sequential upload behavior (including a failing middle destination) with injected local test doubles rather than live environments.
 - Keep Network assignment automatic when no values are selected. One selected value applies to every referral; multiple selected values are shuffled and cycled across referrals.
 - Referral Number bodies and Custom prefixes accept letters, numbers, hyphens, and underscores. Preserve these separators in generated Referral Numbers; Referral-derived ICNs remain alphanumeric and continue enforcing their fixed length.
 - Do not force user-entered text to uppercase or lowercase. Searches and fixed option matching may remain case-insensitive; generated constants such as `TEST` and canonical catalog values may retain their defined case.
@@ -48,7 +48,7 @@ From native Windows, run `pnpm run test:e2e` to launch the Electron UI. Use `pnp
 
 ## Local development candidate
 
-Use Node 24 and Corepack pnpm 11.22.0. Install with `corepack pnpm install --frozen-lockfile`, run `corepack pnpm start`, verify with `corepack pnpm verify`, and build with `corepack pnpm run dist`. The local working branch is `local/1.5-workflow-improvements`. No automatic remote upload or publishing is performed.
+Use Node 24 and Corepack pnpm 11.22.0. Install with `corepack pnpm install --frozen-lockfile`, run `corepack pnpm start`, verify with `corepack pnpm verify`, and build with `corepack pnpm run dist`. Work on a feature branch and open a pull request into `main`. No automatic remote upload or publishing is performed.
 
 
 ## Team announcement for every release
@@ -62,3 +62,13 @@ Maintain `STAKEHOLDER_OVERVIEW.md` when workflow scope, supported environments, 
 ## Expanding the framework
 
 LEIE and referrals are initial capabilities, not the permanent scope. Use PROJECT_VISION.md to capture a proposed team's workflow, manual baseline, expected testing benefit, allowed environments, and acceptance criteria. Reuse shared services where appropriate; preserve workflow-specific rules. Update architecture, user guidance, stakeholder overview, and regression coverage when an addition becomes available. Label ideas as proposed until delivered; do not imply an existing plugin mechanism.
+
+
+## Code map and project notes
+
+The project is maintained with Claude Code, a Graphify code map, and Obsidian notes (see "How this project is maintained" in the README).
+
+- Build the map once with `graphify extract . --code-only` (or `/graphify .` inside Claude Code), then `graphify hook install` so it is rebuilt after every commit, checkout, and merge.
+- Before a multi-file change, check impact with `graphify affected "<function>"` and `graphify query "<question>"`. The most connected functions (`setupEventHandlers`, `updatePreviews`, `applyUiSettings`, `processFiles`, `dataPath`, `writeFileAtomic`, `handleCommand`) have the widest effect.
+- `graphify-out/` is local output and is ignored by Git.
+- Keep README.md and the docs in this folder current in the same pull request as the behavior change. The map is for orientation; always read the real files before editing.

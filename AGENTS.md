@@ -24,3 +24,9 @@ This is a CommonJS Electron application that processes CCRS referral and LEIE fi
 - Start with `README.md`.
 - Keep `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT.md`, and `docs/TESTING.md` aligned with behavior.
 - Update `docs/USER_GUIDE.md` and generated PDF output when user-visible workflows change.
+
+## Code map (Graphify)
+
+- If `graphify-out/` exists, read `graphify-out/GRAPH_REPORT.md` or run `graphify query "..."` / `graphify affected "..."` before planning multi-file changes. Open the real files before editing.
+- Never commit `graphify-out/`.
+- Update README.md and the relevant `docs/` file in the same change when behavior, setup, or architecture changes.
