@@ -32,7 +32,7 @@ import {
   SourceSection,
   UploadSection,
 } from "./components/sections";
-import { plural, progressDisplay, statusTone, workflowProgress } from "./lib/logic";
+import { plural, progressDisplay, statusTone, summarizeUploadResults, workflowProgress } from "./lib/logic";
 import { useController } from "./lib/useController";
 
 const APP_ICON = "../../assets/icons/ccrs_app_icon.png";
@@ -216,8 +216,41 @@ function WorkflowStepper({ app }) {
   );
 }
 
+const UPLOAD_RESULT_COLORS = {
+  pending: "gray",
+  uploading: "brand",
+  completed: "success",
+  failed: "error",
+  skipped: "gray",
+};
+
+/** One row per selected server, so it is clear which uploads passed, failed or were skipped. */
+function UploadResults({ results }) {
+  const { rows, summary } = summarizeUploadResults(results);
+  if (rows.length === 0) return null;
+  return (
+    <div id="upload-results" aria-live="polite" className="flex flex-col gap-3 rounded-xl bg-secondary p-4 ring-1 ring-secondary ring-inset">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <p className="text-sm font-semibold text-primary">Upload results</p>
+        <p id="upload-results-summary" className="text-sm text-tertiary">{summary}</p>
+      </div>
+      <ul id="upload-results-list" className="flex flex-col gap-3">
+        {rows.map((row) => (
+          <li key={row.key} data-upload-result={row.status} className="flex flex-col gap-1">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-semibold text-secondary">{row.serverName}</span>
+              <BadgeWithDot type="pill-color" color={UPLOAD_RESULT_COLORS[row.status]} size="sm">{row.label}</BadgeWithDot>
+            </div>
+            {row.message && <p className="text-sm break-words text-tertiary">{row.message}</p>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function RunPanel({ app }) {
-  const { status, activityActive, progress, busy, cancellable, cancelRequested, flags, lastRun, manifestPending, leieBlocking, actions } = app;
+  const { status, activityActive, progress, busy, cancellable, cancelRequested, flags, lastRun, manifestPending, leieBlocking, uploadResults, actions } = app;
   const tone = statusTone(status.label, activityActive);
   const display = progressDisplay(progress.current, progress.total);
   const hasRun = Boolean(lastRun?.outputDir || lastRun?.archivePath || lastRun?.manifestPath);
@@ -284,6 +317,8 @@ function RunPanel({ app }) {
             </Button>
           )}
         </div>
+
+        <UploadResults results={uploadResults} />
 
         {hasRun && (
           <div id="result-actions" className="flex flex-col gap-2 border-t border-secondary pt-5">

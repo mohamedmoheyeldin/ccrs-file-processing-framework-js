@@ -108,6 +108,7 @@ export function useController() {
   const [previewError, setPreviewError] = useState("");
   const [listDate, setListDate] = useState(() => parseListDate(nowAsListDate()));
   const [uploadStatus, setUploadStatus] = useState({});
+  const [uploadResults, setUploadResultsState] = useState([]);
   const [uploadImportState, setUploadImportState] = useState("idle");
   const [lastRun, setLastRun] = useState(null);
   const [manifestPending, setManifestPending] = useState(false);
@@ -129,6 +130,7 @@ export function useController() {
   const lastSavedSignatureRef = useRef("");
   const acknowledgedReleaseKeyRef = useRef("");
   const lastRunRef = useRef(null);
+  const uploadResultsRef = useRef([]);
   const preRunResolverRef = useRef(null);
   const archivePreviewRef = useRef("");
 
@@ -162,6 +164,22 @@ export function useController() {
       message: String(message || "The app is ready.").trim(),
     });
   }, []);
+
+  /** Per-server upload results for the current run: [{ serverName, status, message, ... }]. */
+  const setUploadResults = useCallback((results) => {
+    const next = Array.isArray(results) ? results : [];
+    uploadResultsRef.current = next;
+    setUploadResultsState(next);
+  }, []);
+
+  const updateLiveUploadResult = useCallback((serverName, patch) => {
+    if (!serverName) return;
+    const results = [...uploadResultsRef.current];
+    const index = results.findIndex((item) => item.serverName === serverName && (item.status === "pending" || item.status === "uploading"));
+    if (index >= 0) results[index] = { ...results[index], ...patch };
+    else results.push({ serverName, ...patch });
+    setUploadResults(results);
+  }, [setUploadResults]);
 
   const setJobPhase = useCallback((value) => {
     phaseRef.current = value;
@@ -809,7 +827,9 @@ export function useController() {
         : "Reading the Referral Files, applying the selected changes, and preparing the final archive..."
     );
     try {
+      setUploadResults([]);
       const result = await window.ccrs.runJob(command, payload);
+      setUploadResults(result.uploadResults || []);
       setStatus(result.retryable ? "Upload Warning" : "Completed", result.message || `${label} completed.`);
       showResultActions({
         ...(result.run || {}),
@@ -824,7 +844,7 @@ export function useController() {
       setBusy(false);
       resumeLiveListDate();
     }
-  }, [confirmPreRun, resumeLiveListDate, setBusy, setStatus, showResultActions]);
+  }, [confirmPreRun, resumeLiveListDate, setBusy, setStatus, setUploadResults, showResultActions]);
 
   const runLeieProcess = useCallback(async () => {
     if (!(await validateCurrentForm())) return;
@@ -840,9 +860,11 @@ export function useController() {
     if (!(await confirmPreRun("process-leie", payload))) return;
 
     setBusy(true, true);
+    setUploadResults([]);
     setStatus("Processing LEIE", "Loading the selected workbook, checking duplicate handling, and preparing the processed output...");
     try {
       const result = await window.ccrs.runJob("process-leie", payload);
+      setUploadResults(result.uploadResults || []);
       if (payload.upload.enabled && payload.upload.targets.length > 0) {
         setStatus(result.retryable ? "Upload Warning" : "Upload Complete", result.message || "LEIE upload completed.");
       } else {
@@ -854,7 +876,7 @@ export function useController() {
     } finally {
       setBusy(false);
     }
-  }, [collectUploadSettings, confirmPreRun, setBusy, setStatus, showResultActions, validateCurrentForm]);
+  }, [collectUploadSettings, confirmPreRun, setBusy, setStatus, setUploadResults, showResultActions, validateCurrentForm]);
 
   const runProcess = useCallback(async () => {
     if (formRef.current.mainTab === "leie") {
@@ -883,6 +905,7 @@ export function useController() {
     setStatus("Retrying Uploads", "Using the existing archive to retry only the failed destinations...");
     try {
       const result = await window.ccrs.runJob("retry-upload", { runId: run.runId });
+      setUploadResults(result.uploadResults || []);
       showResultActions({
         ...(result.run || run),
         archivePath: result.archivePath,
@@ -896,7 +919,7 @@ export function useController() {
     } finally {
       setBusy(false);
     }
-  }, [setBusy, setJobPhase, setStatus, showResultActions]);
+  }, [setBusy, setJobPhase, setStatus, setUploadResults, showResultActions]);
 
   const cancelJob = useCallback(async () => {
     if (!cancellable || cancelRequested) return;
@@ -1115,27 +1138,41 @@ export function useController() {
           setStatus("Ready to Save", `${event.filename} was processed successfully and is ready in the selected output folder.`);
           return;
         case "upload-complete":
-          setStatus("Upload Complete", `${event.filename} reached every selected server.`);
+          if (Array.isArray(event.results)) setUploadResults(event.results);
+          setStatus("Upload Complete", `${event.filename} reached every selected server once, and each server confirmed it.`);
           return;
         case "upload-batch-start":
+          setUploadResults((event.targetNames || []).map((serverName) => ({
+            serverName,
+            status: "pending",
+            message: "Waiting for its turn.",
+          })));
           setStatus("Starting Uploads", event.message || `Uploading to ${event.total} selected ${plural(event.total, "environment")}, one at a time.`);
           return;
         case "upload-batch-warning":
+          if (Array.isArray(event.results)) setUploadResults(event.results);
           setStatus("Upload Warning", "All selected servers have responded. Your local file is safe; review the failed server messages and use Retry Failed Uploads when ready.");
           return;
+        case "upload-target-skipped":
+          if (event.result) setUploadResults([...uploadResultsRef.current, event.result]);
+          setTargetStatus(event.uploadTarget, event.detail || "Skipped: same endpoint as another selected server.", "neutral");
+          return;
         case "upload-target-complete": {
+          if (event.result) updateLiveUploadResult(event.uploadTarget, event.result);
           setTargetStatus(event.uploadTarget, `Upload complete — ${event.current} of ${event.total} servers finished.`, "success");
           const remaining = Math.max(event.total - event.current, 0);
           setStatus("Upload Verified", `${event.uploadTarget} is complete and verified. ${remaining ? `${remaining} selected ${remaining === 1 ? "server is" : "servers are"} still working.` : "All selected servers have finished."}`);
           return;
         }
         case "upload-target-error": {
+          updateLiveUploadResult(event.uploadTarget, event.result || { status: "failed", message: event.detail || "The server did not complete the upload." });
           setTargetStatus(event.uploadTarget, `Needs attention: ${event.detail || "The server did not complete the upload."}`, "error");
           const remaining = Math.max(event.total - event.current, 0);
           setStatus("Upload Warning", `${event.uploadTarget} did not complete: ${event.detail || "No additional details were returned."} Your local file is safe.${remaining ? ` ${remaining} remaining ${remaining === 1 ? "server will be tried" : "servers will be tried"} in order.` : " You can retry only the failed server."}`);
           return;
         }
         case "uploading":
+          updateLiveUploadResult(event.uploadTarget, { status: "uploading", message: "Sending and verifying the file..." });
           setTargetStatus(event.uploadTarget, `Uploading and verifying ${event.filename}...`, "working");
           setStatus("Uploading", `${event.uploadTarget} started. ${event.current} of ${event.total} selected servers have finished; uploads run one at a time. Keep the app open.`);
           return;
@@ -1160,7 +1197,7 @@ export function useController() {
       }
     });
     return typeof unsubscribe === "function" ? unsubscribe : undefined;
-  }, [setJobPhase, setStatus, setTargetStatus]);
+  }, [setJobPhase, setStatus, setTargetStatus, setUploadResults, updateLiveUploadResult]);
 
   // ---------------------------------------------------------------------------------------------
   // Derived display values
@@ -1229,6 +1266,7 @@ export function useController() {
     previews,
     listDate,
     uploadStatus,
+    uploadResults,
     uploadImportState,
     lastRun,
     manifestPending,

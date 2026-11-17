@@ -475,3 +475,47 @@ export function formFromSettings(settings = {}, catalogs, baseForm = DEFAULT_FOR
   form.icnCustomValue = form.icnMode === "custom-full" ? form.icnCustomValue : "";
   return form;
 }
+
+export const UPLOAD_RESULT_LABELS = {
+  pending: "Waiting",
+  uploading: "Uploading",
+  completed: "Passed",
+  failed: "Failed",
+  skipped: "Skipped",
+};
+
+export function formatUploadDuration(durationMs) {
+  const seconds = Number(durationMs) / 1000;
+  if (!Number.isFinite(seconds) || seconds <= 0) return "";
+  return seconds < 60 ? `${seconds.toFixed(1)}s` : `${Math.floor(seconds / 60)}m ${Math.round(seconds % 60)}s`;
+}
+
+/** Display rows and a one-line summary for the per-server upload results of a run. */
+export function summarizeUploadResults(results = []) {
+  const rows = (Array.isArray(results) ? results : []).map((result, index) => {
+    const status = UPLOAD_RESULT_LABELS[result.status] ? result.status : "pending";
+    const duration = formatUploadDuration(result.durationMs);
+    const location = result.remotePath || result.remoteDirectory || "";
+    return {
+      key: `${result.serverName || "server"}-${index}`,
+      serverName: result.serverName || "Server",
+      status,
+      label: UPLOAD_RESULT_LABELS[status],
+      message: [result.message, location && status !== "skipped" ? `(${location})` : "", duration ? `· ${duration}` : ""]
+        .filter(Boolean)
+        .join(" "),
+    };
+  });
+  const counts = rows.reduce((totals, row) => {
+    totals[row.status] = (totals[row.status] || 0) + 1;
+    return totals;
+  }, {});
+  const summary = [
+    counts.completed ? `${counts.completed} passed` : "",
+    counts.failed ? `${counts.failed} failed` : "",
+    counts.skipped ? `${counts.skipped} skipped` : "",
+    counts.uploading ? "1 in progress" : "",
+    counts.pending ? `${counts.pending} waiting` : "",
+  ].filter(Boolean).join(" · ");
+  return { rows, summary };
+}

@@ -45,7 +45,7 @@ flowchart LR
 
 - Electron handles the desktop window, dialogs, IPC, and Windows packaging.
 - The runtime logic lives under [electron/backend](electron/backend).
-- The UI lives under [electron/renderer](electron/renderer).
+- The UI lives under [electron/renderer](electron/renderer). It is a React application built from [Untitled UI React](https://www.untitledui.com/react) components; `pnpm start` bundles it automatically before the window opens.
 - The canonical application logo is [assets/icons/ccrs_app_icon.png](assets/icons/ccrs_app_icon.png); its multi-resolution Windows counterpart is [assets/icons/ccrs_app_icon.ico](assets/icons/ccrs_app_icon.ico). Both are used by the renderer, application window, executable, installer, and uninstaller.
 
 ## Versioning
