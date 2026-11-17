@@ -26,9 +26,9 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "electron": "^44.4.1",
-    "electron-builder": "^26.15.3",
-    "playwright": "^1.63.0"
+    "electron": "^45.3.3",
+    "electron-builder": "^26.18.1",
+    "playwright": "^1.65.1"
   },
   "build": {
     "appId": "com.ccrs.fileprocessingframework",

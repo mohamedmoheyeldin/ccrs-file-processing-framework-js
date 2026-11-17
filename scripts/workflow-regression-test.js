@@ -45,6 +45,27 @@ async function run() {
   assert.deepEqual(master.Referrals, individual.sort().flatMap((name) => JSON.parse(fs.readFileSync(path.join(payload.outputDir, name))).Referrals));
   assert.equal(master.Referrals.length, 1200);
   assert.equal(new Set(master.Referrals.map((item) => item.ReferralNumber)).size, 1200);
+  assert.equal(master.Referrals.every((item) => item.ReferralNumber.length === 12), true);
+  assert.equal(masterName, "VA1234500000_Master.json");
+  assert.equal(archiveName, "VA1234500000.gz");
+  assert.deepEqual(individual.sort(), ["VA1234500000_1.json", "VA1234500000_2.json", "VA1234500000_3.json"]);
+  for (const name of individual) {
+    const text = fs.readFileSync(path.join(payload.outputDir, name), "utf8");
+    assert.equal(text, JSON.stringify(JSON.parse(text), null, 4));
+    assert.equal(JSON.parse(text).Referrals.length, 400);
+  }
+  const namedDir = path.join(root, "named-output");
+  await backend.handleCommand("generate", { ...payload, outputDir: namedDir, fileCount: 3, referralsPerFile: 2,
+    replacementCode: "Team Batch", archiveNamingOptions: { mode: "referral-number", masterFileName: "Everything Combined" } });
+  const namedFiles = fs.readdirSync(namedDir).sort();
+  assert.deepEqual(namedFiles, ["Everything_Combined.json", "Team Batch_1.json", "Team Batch_2.json", "Team Batch_3.json", "VA1234500000.gz"]);
+  const namedMaster = JSON.parse(fs.readFileSync(path.join(namedDir, "Everything_Combined.json"), "utf8"));
+  assert.equal(namedMaster.Referrals.length, 6);
+  assert.deepEqual(namedMaster.Referrals, ["Team Batch_1.json", "Team Batch_2.json", "Team Batch_3.json"].flatMap((name) => JSON.parse(fs.readFileSync(path.join(namedDir, name), "utf8")).Referrals));
+  const clashDir = path.join(root, "clash-output");
+  await backend.handleCommand("generate", { ...payload, outputDir: clashDir, fileCount: 1, referralsPerFile: 2,
+    replacementCode: "Batch", archiveNamingOptions: { mode: "referral-number", masterFileName: "Batch" } });
+  assert.deepEqual(fs.readdirSync(clashDir).filter((name) => name.endsWith(".json")).sort(), ["Batch.json", "Batch_Master.json"]);
   for (const referral of master.Referrals) {
     assert.equal(referral.ReferralDate, currentDates.ReferralDate);
     for (const key of ["AllocatedDate", "TreatmentStartDate", "ClinicallyIndicatedDate", "AppointmentDate"]) assert.equal(referral[key], currentDates.ReferralDate);
