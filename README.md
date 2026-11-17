@@ -5,6 +5,7 @@
 ![Platform](https://img.shields.io/badge/platform-Windows%20x64-0078D4)
 ![Electron](https://img.shields.io/badge/Electron-45-47848F?logo=electron&logoColor=white)
 ![Node](https://img.shields.io/badge/Node.js-24-5FA04E?logo=nodedotjs&logoColor=white)
+![UI](https://img.shields.io/badge/UI-Untitled%20UI-7F56D9)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 > [!NOTE]
@@ -13,6 +14,8 @@
 ## Application tour
 
 A short walkthrough of the app, from generating referral files to validating a LEIE load. All data shown is test data.
+
+The interface is built with [Untitled UI](https://www.untitledui.com/), using its open-source React components.
 
 ![Animated tour of the CCRS File Processing app](docs/images/app-tour.gif)
 
