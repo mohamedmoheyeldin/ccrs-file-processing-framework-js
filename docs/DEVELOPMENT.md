@@ -52,13 +52,17 @@ The repository supports Claude Code and GitHub Copilot (including Copilot Enterp
 | `CLAUDE.md`, `.claude/` | Claude Code | Points to `AGENTS.md` and adds Claude-specific rules |
 | `.github/copilot-instructions.md` | Copilot Chat, code review, cloud agent | Generated from `AGENTS.md`; do not edit |
 | `.github/instructions/*.instructions.md` | Copilot | Rules applied by file path (backend, renderer, scripts, config, docs, workflows) |
-| `.github/prompts/*.prompt.md` | Copilot Chat in VS Code | Run with `/verify-change`, `/review-change`, `/add-regression-test`, `/update-docs`, `/prepare-release` |
+| `.github/prompts/*.prompt.md` | Copilot Chat in VS Code | Run with `/verify-change`, `/review-change`, `/add-regression-test`, `/update-docs`, `/prepare-release`, `/migrate-repo` |
 | `.github/workflows/copilot-setup-steps.yml` | Copilot cloud agent | Installs Node.js 24 and locked dependencies before the agent starts |
 | `.vscode/` | VS Code | Copilot settings, recommended extensions, and the GitHub MCP server |
 
 After changing `AGENTS.md`, run `pnpm run sync:instructions` and commit the regenerated file. `pnpm verify` runs `test:instructions`, which fails when the two differ. Keep the path-scoped instruction files short and consistent with the change rules above.
 
 The Copilot cloud agent runs on Linux, so it can run `pnpm verify` but not the Windows-only Electron UI test or Setup build; the Windows CI jobs cover those on its pull requests. MCP servers for the cloud agent are configured in the repository's Copilot settings on GitHub, not in a file. Organization Copilot policies may limit which models, MCP servers, and features are available.
+
+### Moving to another GitHub repository
+
+When the project moves to a new repository (for example a VA GitHub organization), run `pnpm run migrate:repo <new-repo-url>` or the `/migrate-repo` Copilot prompt. See [Repository Migration](REPOSITORY_MIGRATION.md) for the full checklist.
 
 ## Windows-only work
 

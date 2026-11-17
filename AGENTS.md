@@ -31,3 +31,8 @@ This is a CommonJS Electron application that processes CCRS referral and LEIE fi
 - This file is the single source of repository rules for every coding agent. `CLAUDE.md` points here, and `.github/copilot-instructions.md` is generated from it.
 - After editing this file, run `pnpm run sync:instructions` and commit the regenerated Copilot file; `pnpm verify` fails when they differ.
 - Path-scoped Copilot rules live in `.github/instructions/` and reusable prompts in `.github/prompts/`. Keep them consistent with `docs/DEVELOPMENT.md`.
+
+## Moving to another GitHub repository
+
+- When asked to connect or move this project to a new repository and given its URL, follow `docs/REPOSITORY_MIGRATION.md`: run `pnpm run migrate:repo <new-repo-url>`, then `pnpm verify`, commit, and push branches only.
+- Do not push tags during a move; a `v*` tag starts the release workflow. Do not copy secrets into files; list the secrets and settings the maintainer must add in the new repository.
