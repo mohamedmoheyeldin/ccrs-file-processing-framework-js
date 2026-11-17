@@ -5,6 +5,7 @@ const { once } = require("events");
 const { finished } = require("node:stream/promises");
 
 const DEFAULT_ARCHIVE_BASENAME = "referrals";
+const DEFAULT_MASTER_SUFFIX = "_Master";
 const IFAMS_FILENAME_PREFIX = "iFAMS";
 const VA_IFAMS_FILENAME_PREFIX = "VAiFAMS";
 const ARCHIVE_DATE_TIME_PATTERN = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
@@ -117,7 +118,7 @@ function normalizeArchiveCustomValues(values) {
 function buildCustomNamingPattern(archiveNamingOptions, tokens) {
   const hasCheckboxValues = Array.isArray(archiveNamingOptions.customValues);
   if (!hasCheckboxValues) {
-    return archiveNamingOptions.customPattern || "{customText}_{referralNumber}_Final";
+    return archiveNamingOptions.customPattern || "{customText}_{referralNumber}";
   }
 
   const selectedValues = normalizeArchiveCustomValues(archiveNamingOptions.customValues);
@@ -130,7 +131,7 @@ function buildCustomNamingPattern(archiveNamingOptions, tokens) {
   if (selectedValues.includes("customText") && !tokens.customText) {
     throw new Error("Enter Custom text or clear Custom text from Custom archive naming.");
   }
-  return `${selectedValues.map((value) => `{${value}}`).join("_")}_Final`;
+  return selectedValues.map((value) => `{${value}}`).join("_");
 }
 
 function buildArchiveBasename(payload = {}, now = new Date()) {
@@ -161,9 +162,9 @@ function buildArchiveBasename(payload = {}, now = new Date()) {
     throw new Error("Choose a Network before using Network Name archive naming.");
   }
   const patterns = {
-    [ARCHIVE_NAMING_MODES.REFERRAL_NUMBER]: "{referralNumber}_Final",
-    [ARCHIVE_NAMING_MODES.NETWORK]: "{networkName}_{referralNumber}_Final",
-    [ARCHIVE_NAMING_MODES.REFERRAL_DATE_TIME]: "{referralNumber}_{dateTime}_Final",
+    [ARCHIVE_NAMING_MODES.REFERRAL_NUMBER]: "{referralNumber}",
+    [ARCHIVE_NAMING_MODES.NETWORK]: "{networkName}_{referralNumber}",
+    [ARCHIVE_NAMING_MODES.REFERRAL_DATE_TIME]: "{referralNumber}_{dateTime}",
   };
   const pattern = requestedMode === ARCHIVE_NAMING_MODES.CUSTOM
     ? buildCustomNamingPattern(archiveNamingOptions, tokens)
@@ -175,9 +176,29 @@ function buildArchiveBasename(payload = {}, now = new Date()) {
   return basename;
 }
 
+// The combined JSON defaults to "<archive name>_Master.json". A user-entered name
+// is used as typed; if it would collide with the archive name or the processed
+// JSON name, the default ending is added so no generated file overwrites another.
+function buildMasterFileName(payload = {}, basename = DEFAULT_ARCHIVE_BASENAME, processedBase = "") {
+  const normalizedBase = sanitizeArchiveBasename(basename);
+  const requested = String(payload.archiveNamingOptions?.masterFileName || "").trim();
+  if (!requested) return `${normalizedBase}${DEFAULT_MASTER_SUFFIX}.json`;
+  const custom = sanitizeArchiveBasename(requested);
+  const reserved = [normalizedBase, sanitizeArchiveBasename(processedBase || normalizedBase)]
+    .map((name) => name.toLowerCase());
+  const collides = reserved.includes(custom.toLowerCase()) ||
+    reserved.some((name) => new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}_\\d+$`, "i").test(custom));
+  return `${custom}${collides ? DEFAULT_MASTER_SUFFIX : ""}.json`;
+}
+
 function buildOutputFileNames(payload = {}, now = new Date()) {
   const basename = buildArchiveBasename(payload, now);
-  return { basename, json: `${basename}.json`, gzip: `${basename}.gz` };
+  return {
+    basename,
+    json: `${basename}.json`,
+    gzip: `${basename}.gz`,
+    master: buildMasterFileName(payload, basename, payload.replacementCode),
+  };
 }
 
 async function writeChunk(stream, chunk) {
@@ -268,6 +289,7 @@ async function zipOutput(folder, archiveBasename = DEFAULT_ARCHIVE_BASENAME, mas
 module.exports = {
   ARCHIVE_NAMING_MODES,
   buildArchiveBasename,
+  buildMasterFileName,
   buildOutputFileNames,
   DEFAULT_ARCHIVE_BASENAME,
   IFAMS_FILENAME_PREFIX,

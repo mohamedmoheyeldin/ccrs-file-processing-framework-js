@@ -59,7 +59,7 @@ const {
   testUploadConnection,
 } = require("./uploader");
 const { sanitizeFilenameBase } = require("./renamer");
-const { buildArchiveBasename, buildOutputFileNames, DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename } = require("./zipper");
+const { buildArchiveBasename, buildMasterFileName, buildOutputFileNames, DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename } = require("./zipper");
 const { assertSourceFilesWithinLimits, getProcessingLimits } = require("./limits");
 const { writeFileAtomic } = require("./atomicFile");
 const { assertSafeFolderRelationship, cleanupStaleRunStagingDirectories } = require("./batchSafety");
@@ -397,6 +397,7 @@ function buildPreview(payload) {
   const outputFileNames = fieldErrors.archiveBasename
     ? { basename: archiveBasename, json: `${archiveBasename}.json`, gzip: `${archiveBasename}.gz` }
     : buildOutputFileNames(namingPayload);
+  outputFileNames.master = buildMasterFileName(payload, archiveBasename, replacementCode || archiveBasename);
 
   return {
     replacementCode: replacementCode || (payload.archiveNamingOptions?.mode ? archiveBasename : ""),
@@ -638,6 +639,11 @@ function buildCommonArgs(payload, progressCallback) {
   const archiveBasename = buildArchiveBasename(payload);
   const usesNamingMode = Boolean(payload.archiveNamingOptions?.mode);
   const useIfamsFilenamePrefix = Boolean(payload.archiveNamingOptions?.useIfamsPrefix);
+  identityOptions.masterFileName = buildMasterFileName(
+    payload,
+    archiveBasename,
+    sanitizeFilenameBase(payload.replacementCode || "") || archiveBasename
+  );
 
   return {
     outputDir: (payload.outputDir || "").trim(),
@@ -742,6 +748,11 @@ async function runGenerate(payload, emitProgress) {
     };
     args.archiveBasename = buildArchiveBasename(generatedNamingPayload);
     if (payload.archiveNamingOptions?.mode) args.replacementCode = args.archiveBasename;
+    args.identityOptions.masterFileName = buildMasterFileName(
+      payload,
+      args.archiveBasename,
+      sanitizeFilenameBase(args.replacementCode || "") || args.archiveBasename
+    );
   }
 
   let generatedInputDir = "";
