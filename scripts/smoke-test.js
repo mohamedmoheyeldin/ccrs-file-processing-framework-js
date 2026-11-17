@@ -1527,8 +1527,9 @@ test("SFTP upload verifies the remote file and does not hang when disconnect sta
     { connectTimeoutMs: 100, operationTimeoutMs: 100, closeTimeoutMs: 10 }
   );
 
-  assert.equal(remotePath, "/incoming/leie/verified-upload.xlsx");
-  assert.equal(uploadedRemotePath, remotePath);
+  assert.equal(remotePath.remotePath, "/incoming/leie/verified-upload.xlsx");
+  assert.equal(remotePath.verification, "size-match");
+  assert.equal(uploadedRemotePath, remotePath.remotePath);
   assert.equal(destroyed, true);
 });
 

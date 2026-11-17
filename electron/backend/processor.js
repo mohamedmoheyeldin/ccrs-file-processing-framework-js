@@ -14,7 +14,7 @@ const { writeFileAtomic } = require("./atomicFile");
 const { validateReferralSourceFiles } = require("./referralValidator");
 
 function emit(callback, event) {
-  callback?.({ phase: event.phase || "processing", state: event.state || "working", current: Number(event.current) || 0, total: Number(event.total) || 0, filename: String(event.filename || ""), uploadTarget: event.uploadTarget || null, detail: event.detail || null, message: event.message || null });
+  callback?.({ phase: event.phase || "processing", state: event.state || "working", current: Number(event.current) || 0, total: Number(event.total) || 0, filename: String(event.filename || ""), uploadTarget: event.uploadTarget || null, detail: event.detail || null, message: event.message || null, result: event.result || null, results: event.results || null });
 }
 
 function collectValues(node, acceptedKeys, values = []) {

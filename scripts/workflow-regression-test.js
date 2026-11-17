@@ -87,7 +87,7 @@ async function run() {
     calls.push(connection.host); if (connection.host === "DEV") throw new Error("connection failed"); return "/upload/test.gz";
   } });
   assert.deepEqual(calls, ["SQA", "DEV", "PPD"]);
-  assert.deepEqual(results.map((item) => item.status), ["completed", "failed", "completed"]);
+  assert.deepEqual(results.map((item) => item.status), ["completed", "failed", "completed", "skipped"]);
   const stage = path.join(root, "stage"); const dest = path.join(root, "dest");
   fs.mkdirSync(stage); fs.mkdirSync(dest);
   fs.writeFileSync(path.join(stage, "one.json"), "new"); fs.writeFileSync(path.join(stage, "two.json"), "new2");

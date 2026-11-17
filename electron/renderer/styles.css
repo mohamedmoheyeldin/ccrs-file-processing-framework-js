@@ -2119,6 +2119,69 @@ body.theme-dark .archive-options-panel {
   accent-color: var(--accent);
 }
 
+.upload-results {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle, rgba(127, 127, 127, 0.25));
+  border-radius: 12px;
+}
+
+.upload-results-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.upload-results-summary {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.upload-results-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.upload-result-item {
+  display: grid;
+  grid-template-columns: minmax(56px, auto) minmax(84px, auto) 1fr;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.upload-result-server {
+  font-weight: 600;
+}
+
+.upload-result-state {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+}
+
+.upload-result-item.is-completed .upload-result-state { color: #0f8a44; }
+.upload-result-item.is-failed .upload-result-state { color: #b42337; }
+.upload-result-item.is-skipped .upload-result-state,
+.upload-result-item.is-pending .upload-result-state { color: var(--text-secondary); }
+.upload-result-item.is-uploading .upload-result-state { color: #0b67d1; }
+body.theme-dark .upload-result-item.is-completed .upload-result-state { color: #7ee0a1; }
+body.theme-dark .upload-result-item.is-failed .upload-result-state { color: #ff9cad; }
+body.theme-dark .upload-result-item.is-uploading .upload-result-state { color: #8ab8ff; }
+
+.upload-result-message {
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
 .result-actions {
   display: flex;
   flex-wrap: wrap;
