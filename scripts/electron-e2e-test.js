@@ -212,6 +212,7 @@ async function run() {
       return { red, green, blue };
     });
     await window.locator("#generator-card").hover();
+    await window.waitForTimeout(400); // let the color transition finish before sampling
     const selectedMode = await modeColor("generate");
     const otherMode = await modeColor("edit");
     assert.equal(selectedMode.green > selectedMode.red + 40 && selectedMode.green > selectedMode.blue + 40, true, JSON.stringify(selectedMode));
