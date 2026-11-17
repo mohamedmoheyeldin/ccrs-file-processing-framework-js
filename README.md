@@ -268,6 +268,7 @@ The Windows Playwright test in [scripts/electron-e2e-test.js](scripts/electron-e
 | [Repository Migration](docs/REPOSITORY_MIGRATION.md) | Moving the project to another GitHub repository or organization |
 | [AGENTS.md](AGENTS.md) | Rules for Claude Code, GitHub Copilot, and other coding agents |
 | [Testing](docs/TESTING.md) | Test layers and when to run them |
+| [Improvement Recommendations](docs/IMPROVEMENT_RECOMMENDATIONS.md) | Proposed, not yet implemented hardening and upgrade ideas, ranked by priority |
 | [User Guide](docs/USER_GUIDE.md) | Step-by-step use of both workflows |
 | [LEIE Upload Validation Guide](docs/LEIE_UPLOAD_VALIDATION_GUIDE.md) | Checking LEIE uploads |
 | [Stakeholder Overview](docs/STAKEHOLDER_OVERVIEW.md) | A short introduction for managers and the team |
