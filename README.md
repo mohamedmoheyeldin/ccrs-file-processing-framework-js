@@ -164,6 +164,7 @@ Files that are kept in sync from the shipped app:
 - Send each file exactly once per server (same host, account, and folder is treated as one endpoint), verify it, and continue through every selected server even when one fails, stalls, or cannot be reached
 - Show a per-server Upload results list (Passed, Failed, or Skipped, with the reason and duration) after every run and retry
 - Retry Failed Uploads checks the server first and never re-sends a file that already arrived
+- Keep a plain-text upload log (`logs\uploads.log`, opened with Open Upload Log) recording each server, account, folder, method, result, and duration; passwords are never written
 - Default every LEIE server upload to `/in/manual_process/` while retaining `/CCRA_Uploads` for referral workflows
 - Automatically clean app-created temporary staging folders and upload helper files after a run or when the app closes
 - Process long-running work in background workers with progress and cancellation
