@@ -3,7 +3,7 @@
 [![Release](https://img.shields.io/github/v/release/mohamedmoheyeldin/ccrs-file-processing-framework-js?label=release)](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/releases)
 [![Smoke tests](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/actions/workflows/smoke-tests.yml/badge.svg)](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js/actions/workflows/smoke-tests.yml)
 ![Platform](https://img.shields.io/badge/platform-Windows%20x64-0078D4)
-![Electron](https://img.shields.io/badge/Electron-44-47848F?logo=electron&logoColor=white)
+![Electron](https://img.shields.io/badge/Electron-45-47848F?logo=electron&logoColor=white)
 ![Node](https://img.shields.io/badge/Node.js-24-5FA04E?logo=nodedotjs&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -15,6 +15,16 @@
 The CCRS File Processing Framework is an evolving team automation application. Its long-term purpose is to automate more repetitive team work, reduce manual effort, and give team members more time for meaningful testing, defect discovery, and prevention before production. LEIE and referral processing are the first two supported workflows, not the limit of the application. Additional capabilities can be prioritized and added as team needs evolve; they are not available until implemented and validated.
 
 See [Project Vision](docs/PROJECT_VISION.md) for the broader direction and how to propose new workflows.
+
+## Version 1.5.4
+
+Release highlights for Version 1.5.4.
+
+- Uploads: each file is sent exactly once per endpoint (server, account, and folder). A repeated endpoint is reported as Skipped. A stalled or unreachable server is stopped and the next server starts right away. A new Upload results list shows every server as Passed, Failed, or Skipped with the reason and duration.
+- LEIE uploads: a file picked up immediately by the server's inbound folder counts as delivered. Retry Failed Uploads checks the server first and never re-sends a file that already arrived.
+- Referral Number: every generated value is exactly 12 characters including the prefix and stays unique across the batch. Custom prefixes are limited to 8 characters.
+- Output names: archive names no longer end in `_Final`, and the combined JSON file name can be edited (default `<archive>_Master.json`).
+- Maintenance: Electron, electron-builder, Playwright, and several transitive dependencies were updated to patched releases.
 
 ## Version 1.5.3
 
@@ -54,9 +64,9 @@ The single source of truth for the app version is [config/app_version.json](conf
 Current structure:
 ```json
 {
-  "version": "1.5.3",
-  "releaseTag": "v1.5.3",
-  "label": "Version 1.5.3",
+  "version": "1.5.4",
+  "releaseTag": "v1.5.4",
+  "label": "Version 1.5.4",
   "releaseNotes": [
     "Short list of release changes shown in the app the first time a user opens that release."
   ]
@@ -69,7 +79,7 @@ How it works:
 - `label` is the user-facing release name shown in the app badge and window title.
 - `releaseNotes` powers the one-time What's New popup for each release. It appears after a fresh install and on the first launch after upgrading from an older release.
 - `announcementId` must be unique for every release. The app compares it with the last acknowledged release stored in the user's AppData, so older acknowledgements never suppress newer notes.
-- Current version: 1.5.3. Distribute the Setup installer and guides using the team-shared OneDrive folder. See [sharing checklist](docs/TEAM_SHARING_CHECKLIST.md).
+- Current version: 1.5.4. Distribute the Setup installer and guides using the team-shared OneDrive folder. See [sharing checklist](docs/TEAM_SHARING_CHECKLIST.md).
 - `pnpm start`, `pnpm test`, and `pnpm run dist` automatically synchronize package metadata from this file before running.
 
 ## Developer Run
@@ -101,7 +111,7 @@ The [Build and publish Windows release](.github/workflows/release.yml) workflow 
 Before publishing:
 1. Update `version`, `releaseTag`, `label`, `announcementId`, and `releaseNotes` in [config/app_version.json](config/app_version.json).
 2. Commit and push the release changes to `main`.
-3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.5.3` after approval.
+3. Run the workflow manually from GitHub Actions, or push the configured release tag such as `v1.5.4` after approval.
 
 The workflow requires the tag to match `releaseTag`. While a version remains the active release line, rerunning the workflow updates that same GitHub Release in place, replaces its two verified assets, and rebuilds the release body from the complete `releaseNotes` list so earlier highlights remain present. Start a newer version only after the release metadata is intentionally advanced.
 It also refuses to build a release when `releaseNotes` is empty.

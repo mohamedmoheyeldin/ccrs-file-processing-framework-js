@@ -2,9 +2,9 @@
 
 ## What to include in OneDrive
 
-Use a versioned folder such as `CCRS File Processing Framework/1.5.3` containing:
+Use a versioned folder such as `CCRS File Processing Framework/1.5.4` containing:
 
-- The Version 1.5.3 Windows Setup `.exe` (approximately 109 MB as displayed by Windows).
+- The Version 1.5.4 Windows Setup `.exe` (approximately 109 MB as displayed by Windows).
 - `STAKEHOLDER_OVERVIEW.pdf`: an introduction for project managers, Scrum Masters, and team members.
 - `USER_GUIDE.pdf`: installation and day-to-day instructions.
 - `LEIE_UPLOAD_VALIDATION_GUIDE.pdf`: checks after LEIE uploads.

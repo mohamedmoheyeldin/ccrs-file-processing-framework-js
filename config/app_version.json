@@ -1,9 +1,17 @@
 {
-  "version": "1.5.3",
-  "releaseTag": "v1.5.3",
-  "label": "Version 1.5.3",
-  "announcementId": "v1.5.3",
+  "version": "1.5.4",
+  "releaseTag": "v1.5.4",
+  "label": "Version 1.5.4",
+  "announcementId": "v1.5.4",
   "releaseNotes": [
+    "Uploads send each file exactly once per server. The same server, account, and folder selected twice is skipped, not sent again.",
+    "A new Upload results list shows every server as Passed, Failed, or Skipped with the reason and how long it took.",
+    "LEIE files picked up immediately by the server's inbound folder now count as delivered instead of failed.",
+    "A server that stalls or cannot be reached is stopped and the next server starts right away, so a run no longer waits on one server.",
+    "Retry Failed Uploads checks the server first and never re-sends a file that already arrived.",
+    "Every generated Referral Number is exactly 12 characters including the prefix and stays unique across the batch. Custom prefixes are limited to 8 characters.",
+    "Archive names no longer end in _Final, and the combined JSON file name can be edited.",
+    "Updated Electron, the installer builder, and other dependencies to patched releases.",
     "Smaller current-dates control with a short label and helper text.",
     "Manifest files are optional: use Generate Manifest after a completed job.",
     "Payment Authority Code dropdown options show only the numeric code.",
@@ -21,11 +29,11 @@
     "Updated Electron and Playwright; added output validation and batch regression coverage."
   ],
   "teamHighlights": [
-    "Correct dropdown values: Stations, Networks, and SEOC values follow your selections. Payment Authority Codes use the team’s 43 unique codes and no longer increment.",
-    "Simpler choices: Referral Number offers VA or Custom; ICN offers Default, Custom, or Referral Number. Payment codes use a searchable, numbers-only dropdown.",
-    "Flexible output: Keep individual JSON files, a combined master JSON, or just .gz. Matching filenames are overwritten after validation.",
-    "Current dates: New referrals use current dates; expiration follows Referral Period. Custom dates remain available.",
-    "Improved uploads: Servers are handled one at a time, duplicate destinations are avoided, and the queue continues if a server fails.",
-    "Easier to use: Compact date controls, scrollable dialogs at higher zoom, and automatic output validation. Generate Manifest is optional after completion."
+    "Reliable uploads: each file goes to each server exactly once, and a stalled or unreachable server no longer holds up the run.",
+    "Clear results: a new Upload results list shows every server as Passed, Failed, or Skipped with the reason.",
+    "LEIE uploads: a file picked up right away by the server's inbound folder now counts as delivered, and Retry Failed Uploads never sends a second copy.",
+    "Referral Numbers: always exactly 12 characters including the prefix, and unique across the batch. Custom prefixes can be up to 8 characters.",
+    "Simpler names: archive names no longer end in _Final, and the combined JSON file name can be edited.",
+    "Maintenance: Electron and other dependencies were updated to patched releases."
   ]
 }
