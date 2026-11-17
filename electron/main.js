@@ -11,6 +11,9 @@ const activeJobs = new Map();
 const APP_USER_MODEL_ID = "com.ccrs.fileprocessingframework";
 const BACKGROUND_COMMANDS = new Set(["inspect-source", "inspect-leie-source", "process", "process-leie", "generate", "generate-manifest", "retry-upload", "test-upload-target"]);
 const CANCELLABLE_COMMANDS = new Set(["process", "process-leie", "generate", "generate-manifest", "retry-upload", "test-upload-target"]);
+// Commands that send files to servers. Only one may run at a time so a double click or a
+// second window action can never start a parallel upload of the same file.
+const UPLOADING_COMMANDS = new Set(["process", "process-leie", "generate", "retry-upload"]);
 
 process.env.CCRS_IS_PACKAGED = app.isPackaged ? "1" : "0";
 process.env.CCRS_BUNDLE_ROOT = app.isPackaged ? process.resourcesPath : path.resolve(__dirname, "..");
@@ -119,6 +122,9 @@ function runBackendCommand(webContents, command, payload = {}) {
 }
 
 function runBackgroundCommand(webContents, command, payload = {}) {
+  if (UPLOADING_COMMANDS.has(command) && [...activeJobs.values()].some((job) => UPLOADING_COMMANDS.has(job.command))) {
+    return Promise.reject(new Error("Another run is still in progress. Wait for it to finish before starting a new one, so no file is uploaded twice."));
+  }
   const jobId = randomUUID();
   const preparedPayload = backend.prepareBackgroundPayload(command, payload);
   const workerPath = path.join(

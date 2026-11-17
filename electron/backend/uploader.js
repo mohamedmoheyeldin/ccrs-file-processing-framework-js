@@ -1,7 +1,8 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { spawnSync } = require("child_process");
+const { spawn } = require("child_process");
+const { Transform, pipeline } = require("stream");
 const SftpClient = require("ssh2-sftp-client");
 const { userDataPath } = require("./appPaths");
 const { writeFileAtomic } = require("./atomicFile");
@@ -20,7 +21,11 @@ const UPLOAD_SOURCE_MARKER_PATH = userDataPath("config", "upload_source_marker.j
 const SFTP_CONNECT_TIMEOUT_MS = 30_000;
 const SFTP_OPERATION_TIMEOUT_MS = 10 * 60_000;
 const SFTP_CLOSE_TIMEOUT_MS = 5_000;
-const DEFAULT_UPLOAD_ATTEMPTS = 1;
+const SFTP_STALL_TIMEOUT_MS = 60_000;
+const SFTP_KEEPALIVE_INTERVAL_MS = 10_000;
+const SFTP_KEEPALIVE_COUNT_MAX = 3;
+// Hard ceiling for one server: connect + folder prep + transfer + verification + close.
+const UPLOAD_TARGET_DEADLINE_MS = SFTP_OPERATION_TIMEOUT_MS + 4 * SFTP_CONNECT_TIMEOUT_MS + SFTP_CLOSE_TIMEOUT_MS;
 
 function summarizeUploadProfiles(profiles) {
   return {
@@ -773,16 +778,43 @@ async function ensureRemoteDirectory(client, remoteDirectory) {
   }
 }
 
-function withTimeout(promise, timeoutMs, description) {
+function withTimeout(promise, timeoutMs, description, onTimeout) {
   let timer;
   const timeout = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`${description} timed out after ${Math.ceil(timeoutMs / 1000)} seconds.`)), timeoutMs);
+    timer = setTimeout(() => {
+      try {
+        onTimeout?.();
+      } catch (_error) {
+        // A failed abort must not hide the timeout itself.
+      }
+      reject(new Error(`${description} timed out after ${Math.ceil(timeoutMs / 1000)} seconds.`));
+    }, timeoutMs);
   });
 
   return Promise.race([Promise.resolve(promise), timeout]).finally(() => clearTimeout(timer));
 }
 
-async function closeSftpClient(client, timeoutMs = SFTP_CLOSE_TIMEOUT_MS) {
+function forceDisconnect(client) {
+  try {
+    client?.client?.destroy?.();
+  } catch (_error) {
+    // Nothing else can be done; the caller has already recorded the outcome.
+  }
+}
+
+async function closeSftpClient(client, timeoutMs = SFTP_CLOSE_TIMEOUT_MS, options = {}) {
+  if (options.force) {
+    // After a failure or timeout, abort immediately so a half-finished transfer cannot
+    // keep writing to the server in the background while the next server starts.
+    forceDisconnect(client);
+    try {
+      Promise.resolve(client.end?.()).catch(() => {});
+    } catch (_error) {
+      // Already disconnected.
+    }
+    return;
+  }
+
   let closePromise;
   try {
     closePromise = Promise.resolve(client.end()).catch(() => {});
@@ -800,84 +832,125 @@ async function closeSftpClient(client, timeoutMs = SFTP_CLOSE_TIMEOUT_MS) {
   clearTimeout(timer);
 
   if (!closedNormally) {
+    forceDisconnect(client);
+  }
+}
+
+function buildSftpConnectOptions(connectionDetails, connectTimeoutMs) {
+  return {
+    host: connectionDetails.host,
+    port: connectionDetails.port,
+    username: connectionDetails.username,
+    password: connectionDetails.password,
+    readyTimeout: connectTimeoutMs,
+    keepaliveInterval: SFTP_KEEPALIVE_INTERVAL_MS,
+    keepaliveCountMax: SFTP_KEEPALIVE_COUNT_MAX,
+  };
+}
+
+function isMissingRemoteFileError(error) {
+  const code = String(error?.code ?? "");
+  return code === "2" || code === "ENOENT" || /no such file|not exist|not found/i.test(String(error?.message || ""));
+}
+
+function normalizeRemoteFilePath(remoteDirectory, localPath) {
+  return `${String(remoteDirectory || "").replace(/\/+$/, "")}/${path.basename(localPath)}`;
+}
+
+function runWinscp(winscpPath, args, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    let stdout = "";
+    let stderr = "";
+    let settled = false;
+    const child = spawn(winscpPath, args, { windowsHide: true });
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      try {
+        child.kill("SIGKILL");
+      } catch (_error) {
+        // Process already exited.
+      }
+      reject(new Error(`WinSCP did not finish within ${Math.ceil(timeoutMs / 1000)} seconds and was stopped.`));
+    }, timeoutMs);
+    child.stdout?.on("data", (chunk) => { stdout += chunk; });
+    child.stderr?.on("data", (chunk) => { stderr += chunk; });
+    child.on("error", (error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      reject(error);
+    });
+    child.on("close", (status) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve({ status, stdout, stderr });
+    });
+  });
+}
+
+function buildWinscpScript(sessionName, commands) {
+  return [
+    // Abort on the first error instead of prompting, never ask to overwrite, and never
+    // reconnect automatically: an automatic reconnect can send the same file twice.
+    "option batch abort",
+    "option confirm off",
+    "option reconnecttime off",
+    `open "${sessionName}"`,
+    ...commands,
+    "exit",
+  ].join("\n");
+}
+
+async function runWinscpScript(sessionName, winscpPath, commands, timeoutMs, label) {
+  const iniPath = getExistingWinscpIniPath();
+  if (!iniPath) {
+    throw new Error("WinSCP.ini was not found in the expected upload_import locations.");
+  }
+
+  const scriptPath = path.join(os.tmpdir(), `winscp_${label}_${Date.now()}_${Math.random().toString(16).slice(2)}.txt`);
+  fs.writeFileSync(scriptPath, buildWinscpScript(sessionName, commands), "utf8");
+  try {
+    let result;
     try {
-      client.client?.destroy?.();
-    } catch (_error) {
-      // The transfer is already complete; a failed forced disconnect must not block the next target.
+      result = await runWinscp(winscpPath, [`/ini=${iniPath}`, `/script=${scriptPath}`, "/nointeractiveinput"], timeoutMs);
+    } catch (error) {
+      throw new Error(`WinSCP ${label} failed for session ${sessionName}. ${error.message}`);
     }
+    if (result.status !== 0) {
+      const details = (result.stderr || result.stdout || "Unknown WinSCP error.").trim().split(/\r?\n/).slice(-6).join(" ");
+      throw new Error(`WinSCP ${label} failed for session ${sessionName}. ${details}`);
+    }
+    return result;
+  } finally {
+    fs.rmSync(scriptPath, { force: true });
   }
 }
 
-function uploadFileWithWinscp(localPath, remoteDirectory, sessionName, winscpPath) {
-  const iniPath = getExistingWinscpIniPath();
-  if (!iniPath) {
-    throw new Error("WinSCP.ini was not found in the expected upload_import locations.");
-  }
-
-  const scriptPath = path.join(os.tmpdir(), `winscp_upload_${Date.now()}.txt`);
-  fs.writeFileSync(
-    scriptPath,
-    [`open "${sessionName}"`, `put "${localPath}" "${remoteDirectory.replace(/\/+$/, "")}/"`, "exit"].join("\n"),
-    "utf8"
+async function uploadFileWithWinscp(localPath, remoteDirectory, sessionName, winscpPath) {
+  const remotePath = normalizeRemoteFilePath(remoteDirectory, localPath);
+  await runWinscpScript(
+    sessionName,
+    winscpPath,
+    [`put "${localPath}" "${remoteDirectory.replace(/\/+$/, "")}/"`],
+    SFTP_OPERATION_TIMEOUT_MS,
+    "upload"
   );
-
-  try {
-    const result = spawnSync(winscpPath, [`/ini=${iniPath}`, `/script=${scriptPath}`, "/nointeractiveinput"], {
-      encoding: "utf8",
-      windowsHide: true,
-      timeout: SFTP_OPERATION_TIMEOUT_MS,
-      killSignal: "SIGKILL",
-    });
-    if (result.error) {
-      throw new Error(`WinSCP upload failed for session ${sessionName}. ${result.error.message}`);
-    }
-    if (result.status !== 0) {
-      const details = (result.stderr || result.stdout || "Unknown WinSCP error.").trim();
-      throw new Error(`WinSCP upload failed for session ${sessionName}. ${details}`);
-    }
-    return `${remoteDirectory.replace(/\/+$/, "")}/${path.basename(localPath)}`;
-  } finally {
-    fs.rmSync(scriptPath, { force: true });
-  }
+  return {
+    remotePath,
+    verification: "winscp",
+    message: "WinSCP reported a successful transfer.",
+  };
 }
 
-function testConnectionWithWinscp(remoteDirectory, sessionName, winscpPath) {
-  const iniPath = getExistingWinscpIniPath();
-  if (!iniPath) {
-    throw new Error("WinSCP.ini was not found in the expected upload_import locations.");
-  }
-
+async function testConnectionWithWinscp(remoteDirectory, sessionName, winscpPath) {
   const normalizedRemoteDirectory = (remoteDirectory || "").trim();
-  const scriptLines = [`open "${sessionName}"`];
-  if (normalizedRemoteDirectory) {
-    scriptLines.push(`cd "${normalizedRemoteDirectory}"`);
-    scriptLines.push("pwd");
-  }
-  scriptLines.push("exit");
-
-  const scriptPath = path.join(os.tmpdir(), `winscp_test_${Date.now()}.txt`);
-  fs.writeFileSync(scriptPath, scriptLines.join("\n"), "utf8");
-
-  try {
-    const result = spawnSync(winscpPath, [`/ini=${iniPath}`, `/script=${scriptPath}`, "/nointeractiveinput"], {
-      encoding: "utf8",
-      windowsHide: true,
-      timeout: SFTP_CONNECT_TIMEOUT_MS,
-      killSignal: "SIGKILL",
-    });
-    if (result.error) {
-      throw new Error(`WinSCP connection test failed for session ${sessionName}. ${result.error.message}`);
-    }
-    if (result.status !== 0) {
-      const details = (result.stderr || result.stdout || "Unknown WinSCP error.").trim();
-      throw new Error(`WinSCP connection test failed for session ${sessionName}. ${details}`);
-    }
-    return normalizedRemoteDirectory
-      ? `Connected successfully and confirmed ${normalizedRemoteDirectory}.`
-      : "Connected successfully.";
-  } finally {
-    fs.rmSync(scriptPath, { force: true });
-  }
+  const commands = normalizedRemoteDirectory ? [`cd "${normalizedRemoteDirectory}"`, "pwd"] : [];
+  await runWinscpScript(sessionName, winscpPath, commands, SFTP_CONNECT_TIMEOUT_MS, "connection test");
+  return normalizedRemoteDirectory
+    ? `Connected successfully and confirmed ${normalizedRemoteDirectory}.`
+    : "Connected successfully.";
 }
 
 async function testUploadConnection(connectionDetails, remoteDirectory) {
@@ -895,60 +968,150 @@ async function testUploadConnection(connectionDetails, remoteDirectory) {
   }
 
   const client = new SftpClient();
+  let failed = false;
   try {
-    await withTimeout(client.connect({
-      host: connectionDetails.host,
-      port: connectionDetails.port,
-      username: connectionDetails.username,
-      password: connectionDetails.password,
-    }), SFTP_CONNECT_TIMEOUT_MS, "SFTP connection");
+    await withTimeout(
+      client.connect(buildSftpConnectOptions(connectionDetails, SFTP_CONNECT_TIMEOUT_MS)),
+      SFTP_CONNECT_TIMEOUT_MS,
+      "SFTP connection"
+    );
     await withTimeout(client.list(normalizedRemoteDirectory), SFTP_CONNECT_TIMEOUT_MS, "Remote directory check");
     return `Connected successfully and confirmed ${normalizedRemoteDirectory}.`;
+  } catch (error) {
+    failed = true;
+    throw error;
   } finally {
-    await closeSftpClient(client);
+    await closeSftpClient(client, SFTP_CLOSE_TIMEOUT_MS, { force: failed });
   }
 }
 
+async function putWithStallGuard(client, localPath, remotePath, operationTimeoutMs, stallTimeoutMs) {
+  const reader = fs.createReadStream(localPath);
+  let stallTimer;
+  let rejectStall;
+  const stalled = new Promise((_, reject) => {
+    rejectStall = reject;
+  });
+  const arm = () => {
+    clearTimeout(stallTimer);
+    stallTimer = setTimeout(() => {
+      forceDisconnect(client);
+      rejectStall(new Error(`SFTP upload stalled: the server accepted no data for ${Math.ceil(stallTimeoutMs / 1000)} seconds.`));
+    }, stallTimeoutMs);
+  };
+  // Count bytes as the server pulls them. Backpressure pauses this stream when the server
+  // stops accepting data, so a silent connection is caught by the stall timer.
+  const counter = new Transform({
+    transform(chunk, _encoding, callback) {
+      arm();
+      callback(null, chunk);
+    },
+  });
+  pipeline(reader, counter, (error) => {
+    if (error) counter.destroy(error);
+  });
+  arm();
+
+  try {
+    await withTimeout(
+      Promise.race([client.put(counter, remotePath), stalled]),
+      operationTimeoutMs,
+      "SFTP upload",
+      () => forceDisconnect(client)
+    );
+  } finally {
+    clearTimeout(stallTimer);
+    reader.destroy();
+    counter.destroy();
+  }
+}
+
+/**
+ * Uploads one file to one SFTP endpoint exactly once.
+ *
+ * The file is sent a single time. Afterwards the remote size is checked. A missing file after a
+ * successful transfer means the server's inbound job already picked it up, which counts as
+ * delivered: reporting it as failed would invite a second, duplicate upload.
+ */
 async function uploadFileWithSftp(
   localPath,
   remoteDirectory,
   connectionDetails,
   client = new SftpClient(),
-  timeouts = {}
+  timeouts = {},
+  options = {}
 ) {
   const connectTimeoutMs = timeouts.connectTimeoutMs || SFTP_CONNECT_TIMEOUT_MS;
   const operationTimeoutMs = timeouts.operationTimeoutMs || SFTP_OPERATION_TIMEOUT_MS;
   const closeTimeoutMs = timeouts.closeTimeoutMs || SFTP_CLOSE_TIMEOUT_MS;
+  const stallTimeoutMs = timeouts.stallTimeoutMs || SFTP_STALL_TIMEOUT_MS;
+  const localSize = fs.statSync(localPath).size;
+  const remotePath = normalizeRemoteFilePath(remoteDirectory, localPath);
+  let failed = false;
 
   try {
-    await withTimeout(client.connect({
-      host: connectionDetails.host,
-      port: connectionDetails.port,
-      username: connectionDetails.username,
-      password: connectionDetails.password,
-    }), connectTimeoutMs, "SFTP connection");
+    await withTimeout(
+      client.connect(buildSftpConnectOptions(connectionDetails, connectTimeoutMs)),
+      connectTimeoutMs,
+      "SFTP connection",
+      () => forceDisconnect(client)
+    );
     await withTimeout(
       ensureRemoteDirectory(client, remoteDirectory),
-      operationTimeoutMs,
-      "Remote directory preparation"
+      connectTimeoutMs,
+      "Remote directory preparation",
+      () => forceDisconnect(client)
     );
-    const remotePath = `${remoteDirectory.replace(/\/+$/, "")}/${path.basename(localPath)}`;
-    await withTimeout(client.put(localPath, remotePath), operationTimeoutMs, "SFTP upload");
 
-    const remoteStats = await withTimeout(client.stat(remotePath), connectTimeoutMs, "Uploaded file verification");
-    const localSize = fs.statSync(localPath).size;
+    if (options.skipIfPresent) {
+      const existing = await withTimeout(client.stat(remotePath), connectTimeoutMs, "Remote file check").catch(() => null);
+      if (existing && Number(existing.size) === localSize) {
+        return {
+          remotePath,
+          verification: "already-present",
+          message: `${path.basename(localPath)} is already on the server with the same size (${localSize} bytes), so it was not sent again.`,
+        };
+      }
+    }
+
+    await putWithStallGuard(client, localPath, remotePath, operationTimeoutMs, stallTimeoutMs);
+
+    let remoteStats;
+    try {
+      remoteStats = await withTimeout(client.stat(remotePath), connectTimeoutMs, "Uploaded file verification");
+    } catch (error) {
+      if (isMissingRemoteFileError(error)) {
+        return {
+          remotePath,
+          verification: "picked-up",
+          message: `The server accepted all ${localSize} bytes and its inbound job picked the file up right away.`,
+        };
+      }
+      return {
+        remotePath,
+        verification: "unconfirmed",
+        message: `The server accepted all ${localSize} bytes, but the size check could not run (${error.message}). Do not re-send; check the server if needed.`,
+      };
+    }
     if (Number(remoteStats?.size) !== localSize) {
       throw new Error(
         `Upload verification failed for ${path.basename(localPath)}: expected ${localSize} bytes, found ${remoteStats?.size ?? "unknown"}.`
       );
     }
-    return remotePath;
+    return {
+      remotePath,
+      verification: "size-match",
+      message: `Verified ${localSize} bytes on the server.`,
+    };
+  } catch (error) {
+    failed = true;
+    throw error;
   } finally {
-    await closeSftpClient(client, closeTimeoutMs);
+    await closeSftpClient(client, closeTimeoutMs, { force: failed });
   }
 }
 
-async function uploadFile(localPath, remoteDirectory, connectionDetails) {
+async function uploadFile(localPath, remoteDirectory, connectionDetails, options = {}) {
   const normalizedRemoteDirectory = (remoteDirectory || "").trim();
   if (!normalizedRemoteDirectory) {
     throw new Error("Please enter the remote upload location.");
@@ -963,105 +1126,155 @@ async function uploadFile(localPath, remoteDirectory, connectionDetails) {
     );
   }
 
-  return uploadFileWithSftp(localPath, normalizedRemoteDirectory, connectionDetails);
+  return uploadFileWithSftp(localPath, normalizedRemoteDirectory, connectionDetails, new SftpClient(), {}, options);
 }
 
-async function uploadFileWithRetry(localPath, remoteDirectory, connectionDetails, options = {}) {
-  const attempts = Math.max(1, Number(options.attempts || DEFAULT_UPLOAD_ATTEMPTS));
-  const baseDelayMs = Math.max(0, Number(options.baseDelayMs ?? 750));
-  let lastError;
-  for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    try {
-      return await uploadFile(localPath, remoteDirectory, connectionDetails);
-    } catch (error) {
-      lastError = error;
-      if (attempt >= attempts) break;
-      await new Promise((resolve) => setTimeout(resolve, baseDelayMs * 2 ** (attempt - 1)));
-    }
+function buildUploadEndpointKey(target) {
+  const c = target.connection_details || {};
+  return [
+    String(c.host || c.session_name || target.server_name || "").trim().toLowerCase(),
+    Number(c.port || 22),
+    String(c.username || c.session_name || target.user_name || "").trim().toLowerCase(),
+    String(target.remote_directory || "").trim().replace(/\/+$/, ""),
+  ].join("|");
+}
+
+function normalizeUploadOutcome(outcome) {
+  if (typeof outcome === "string") {
+    return { remotePath: outcome, verification: "", message: "" };
   }
-  throw new Error(`Upload failed after ${attempts} attempts: ${lastError?.message || "Unknown upload error."}`);
+  return {
+    remotePath: String(outcome?.remotePath || ""),
+    verification: String(outcome?.verification || ""),
+    message: String(outcome?.message || ""),
+  };
 }
 
+/**
+ * Sends one file to each selected server, one server at a time.
+ *
+ * - Each distinct endpoint (host, port, account, folder) receives the file exactly once.
+ *   Repeated selections of the same endpoint are reported as "skipped" instead of re-sent.
+ * - A failure or timeout on one server is recorded and the next server starts right away.
+ * - Every server gets a hard deadline so the batch always finishes with a result per server.
+ */
 async function uploadTargetsSequentially(localPath, targets = [], options = {}) {
-  const seen = new Set();
-  const selectedTargets = (Array.isArray(targets) ? targets : []).filter((target) => {
-    const c = target.connection_details || {};
-    const key = [String(c.host || c.session_name || target.server_name).toLowerCase(), c.port || 22, String(target.remote_directory || "").replace(/\/+$/, "")].join("|");
-    if (seen.has(key)) return false;
-    seen.add(key); return true;
-  });
   const upload = typeof options.upload === "function" ? options.upload : uploadFile;
   const onProgress = typeof options.onProgress === "function" ? options.onProgress : () => {};
+  const targetTimeoutMs = Math.max(1, Number(options.targetTimeoutMs || UPLOAD_TARGET_DEADLINE_MS));
+  const uploadOptions = { skipIfPresent: Boolean(options.skipIfPresent) };
+  const allTargets = Array.isArray(targets) ? targets : [];
+
+  const firstTargetByKey = new Map();
+  const plan = allTargets.map((target) => {
+    const key = buildUploadEndpointKey(target);
+    const duplicateOf = firstTargetByKey.get(key) || null;
+    if (!duplicateOf) firstTargetByKey.set(key, target);
+    return { target, duplicateOf };
+  });
+  const uploadCount = plan.filter((item) => !item.duplicateOf).length;
   let completedCount = 0;
 
   onProgress({
     state: "upload-batch-start",
     current: 0,
-    total: selectedTargets.length,
-    targetNames: selectedTargets.map((target) => target.server_name),
+    total: uploadCount,
+    targetNames: plan.filter((item) => !item.duplicateOf).map((item) => item.target.server_name),
   });
 
   const results = [];
-  for (const target of selectedTargets) {
-    results.push(await (async () => {
+  for (const { target, duplicateOf } of plan) {
+    const baseResult = {
+      serverName: target.server_name,
+      userName: target.user_name || "",
+      remoteDirectory: target.remote_directory,
+    };
+
+    if (duplicateOf) {
+      const result = {
+        ...baseResult,
+        remotePath: "",
+        status: "skipped",
+        verification: "duplicate-endpoint",
+        durationMs: 0,
+        message: `Skipped ${target.server_name}: it is the same server, account, and folder as ${duplicateOf.server_name}, which already received the file once.`,
+      };
+      results.push(result);
+      onProgress({
+        state: "upload-target-skipped",
+        current: completedCount,
+        total: uploadCount,
+        uploadTarget: target.server_name,
+        detail: result.message,
+        result,
+      });
+      continue;
+    }
+
     onProgress({
       state: "uploading",
       current: completedCount,
-      total: selectedTargets.length,
+      total: uploadCount,
       uploadTarget: target.server_name,
     });
+    const startedAt = Date.now();
     try {
-      const remotePath = await upload(localPath, target.remote_directory, target.connection_details);
+      const outcome = normalizeUploadOutcome(await withTimeout(
+        upload(localPath, target.remote_directory, target.connection_details, uploadOptions),
+        targetTimeoutMs,
+        `Upload to ${target.server_name}`
+      ));
       completedCount += 1;
       const result = {
-        serverName: target.server_name,
-        userName: target.user_name || "",
-        remoteDirectory: target.remote_directory,
-        remotePath,
+        ...baseResult,
+        remotePath: outcome.remotePath,
         status: "completed",
-        message: `Upload to ${target.server_name} completed.`,
+        verification: outcome.verification,
+        durationMs: Date.now() - startedAt,
+        message: `Upload to ${target.server_name} completed.${outcome.message ? ` ${outcome.message}` : ""}`,
       };
+      results.push(result);
       onProgress({
         state: "upload-target-complete",
         current: completedCount,
-        total: selectedTargets.length,
+        total: uploadCount,
         uploadTarget: target.server_name,
+        detail: result.message,
         result,
       });
-      return result;
     } catch (error) {
       completedCount += 1;
       const result = {
-        serverName: target.server_name,
-        userName: target.user_name || "",
-        remoteDirectory: target.remote_directory,
+        ...baseResult,
         remotePath: "",
         status: "failed",
-        message: error.message,
+        verification: "",
+        durationMs: Date.now() - startedAt,
+        message: error?.message || "The server did not complete the upload.",
       };
+      results.push(result);
       onProgress({
         state: "upload-target-error",
         current: completedCount,
-        total: selectedTargets.length,
+        total: uploadCount,
         uploadTarget: target.server_name,
-        detail: error.message,
+        detail: result.message,
         result,
       });
-      return result;
     }
-    })());
   }
 
   onProgress({
     state: results.some((result) => result.status === "failed") ? "upload-batch-warning" : "upload-complete",
     current: completedCount,
-    total: selectedTargets.length,
+    total: uploadCount,
     results,
   });
   return results;
 }
 
 module.exports = {
+  buildUploadEndpointKey,
   getServerDisplayForTarget,
   getUploadProfileSourcePath,
   getUploadTargetNames,
@@ -1073,7 +1286,6 @@ module.exports = {
   testUploadConnection,
   closeSftpClient,
   uploadFile,
-  uploadFileWithRetry,
   uploadFileWithSftp,
   uploadTargetsSequentially,
   withTimeout,

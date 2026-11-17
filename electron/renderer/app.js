@@ -43,6 +43,7 @@ const state = {
   optionalFieldsVisible: false,
   liveListDateTimer: null,
   uploadImportState: "idle",
+  uploadResults: [],
   uiSettingsSaveTimer: null,
   acknowledgedReleaseKey: "",
   releaseAnnouncementOpen: false,
@@ -141,6 +142,67 @@ function setUploadTargetStatus(row, message = "", stateName = "") {
   statusElement.classList.toggle("is-error", stateName === "error");
   statusElement.classList.toggle("is-success", stateName === "success");
   statusElement.classList.toggle("is-working", stateName === "working");
+}
+
+const UPLOAD_RESULT_LABELS = {
+  pending: "Waiting",
+  uploading: "Uploading",
+  completed: "Passed",
+  failed: "Failed",
+  skipped: "Skipped",
+};
+
+function formatUploadDuration(durationMs) {
+  const seconds = Number(durationMs) / 1000;
+  if (!Number.isFinite(seconds) || seconds <= 0) return "";
+  return seconds < 60 ? `${seconds.toFixed(1)}s` : `${Math.floor(seconds / 60)}m ${Math.round(seconds % 60)}s`;
+}
+
+function renderUploadResults(results = []) {
+  state.uploadResults = Array.isArray(results) ? results : [];
+  if (!elements.uploadResults) return;
+  elements.uploadResults.classList.toggle("hidden", state.uploadResults.length === 0);
+  elements.uploadResultsList.innerHTML = "";
+  for (const result of state.uploadResults) {
+    const status = UPLOAD_RESULT_LABELS[result.status] ? result.status : "pending";
+    const item = document.createElement("li");
+    item.className = `upload-result-item is-${status}`;
+    const server = document.createElement("span");
+    server.className = "upload-result-server";
+    server.textContent = result.serverName || "Server";
+    const badge = document.createElement("span");
+    badge.className = "upload-result-state";
+    badge.textContent = UPLOAD_RESULT_LABELS[status];
+    const message = document.createElement("span");
+    message.className = "upload-result-message";
+    const duration = formatUploadDuration(result.durationMs);
+    const location = result.remotePath || result.remoteDirectory || "";
+    message.textContent = [result.message, location && status !== "skipped" ? `(${location})` : "", duration ? `· ${duration}` : ""]
+      .filter(Boolean)
+      .join(" ");
+    item.append(server, badge, message);
+    elements.uploadResultsList.appendChild(item);
+  }
+  const counts = state.uploadResults.reduce((totals, result) => {
+    totals[result.status] = (totals[result.status] || 0) + 1;
+    return totals;
+  }, {});
+  elements.uploadResultsSummary.textContent = [
+    counts.completed ? `${counts.completed} passed` : "",
+    counts.failed ? `${counts.failed} failed` : "",
+    counts.skipped ? `${counts.skipped} skipped` : "",
+    counts.uploading ? "1 in progress" : "",
+    counts.pending ? `${counts.pending} waiting` : "",
+  ].filter(Boolean).join(" · ");
+}
+
+function updateLiveUploadResult(serverName, patch) {
+  if (!serverName) return;
+  const results = [...(state.uploadResults || [])];
+  const index = results.findIndex((item) => item.serverName === serverName && (item.status === "pending" || item.status === "uploading"));
+  if (index >= 0) results[index] = { ...results[index], ...patch };
+  else results.push({ serverName, ...patch });
+  renderUploadResults(results);
 }
 
 function setStatus(label, message) {
@@ -2380,9 +2442,11 @@ async function runLeieProcess() {
   if (!(await confirmPreRun("process-leie", payload))) return;
 
   setBusy(true, true);
+  renderUploadResults([]);
   setStatus("Processing LEIE", "Loading the selected workbook, checking duplicate handling, and preparing the processed output...");
   try {
     const result = await window.ccrs.runJob("process-leie", payload);
+    renderUploadResults(result.uploadResults || []);
     if (payload.upload.enabled && payload.upload.targets.length > 0) {
       setStatus(result.retryable ? "Upload Warning" : "Upload Complete", result.message || "LEIE upload completed.");
     } else {
@@ -2438,7 +2502,9 @@ async function runJob(command, payload, label) {
   );
 
   try {
+    renderUploadResults([]);
     const result = await window.ccrs.runJob(command, payload);
+    renderUploadResults(result.uploadResults || []);
     setStatus(result.retryable ? "Upload Warning" : "Completed", result.message || `${label} completed.`);
     const run = { ...(result.run || {}), archivePath: result.archivePath, manifestPath: result.manifestPath, outputDir: result.outputDir, retryable: result.retryable };
     showResultActions(run);
@@ -2457,6 +2523,7 @@ async function retryFailedUploads() {
   setStatus("Retrying Uploads", "Using the existing archive to retry only the failed destinations...");
   try {
     const result = await window.ccrs.runJob("retry-upload", { runId: state.lastRun.runId });
+    renderUploadResults(result.uploadResults || []);
     const run = { ...(result.run || state.lastRun), archivePath: result.archivePath, manifestPath: result.manifestPath, outputDir: result.outputDir, retryable: result.retryable };
     showResultActions(run);
     setStatus(result.retryable ? "Upload Warning" : "Upload Complete", result.message);
@@ -2868,11 +2935,17 @@ function setupEventHandlers() {
     }
 
     if (event.state === "upload-complete") {
-      setStatus("Upload Complete", `${event.filename} reached every selected server.`);
+      if (Array.isArray(event.results)) renderUploadResults(event.results);
+      setStatus("Upload Complete", `${event.filename} reached every selected server once, and each server confirmed it.`);
       return;
     }
 
     if (event.state === "upload-batch-start") {
+      renderUploadResults((event.targetNames || []).map((serverName) => ({
+        serverName,
+        status: "pending",
+        message: "Waiting for its turn.",
+      })));
       setStatus(
         "Starting Uploads",
         event.message || `Uploading to ${event.total} selected environment${event.total === 1 ? "" : "s"}, one at a time.`
@@ -2881,6 +2954,7 @@ function setupEventHandlers() {
     }
 
     if (event.state === "upload-batch-warning") {
+      if (Array.isArray(event.results)) renderUploadResults(event.results);
       setStatus("Upload Warning", "All selected servers have responded. Your local file is safe; review the failed server messages and use Retry Failed Uploads when ready.");
       return;
     }
@@ -2888,7 +2962,14 @@ function setupEventHandlers() {
     const uploadRow = [...document.querySelectorAll(".upload-target")]
       .find((row) => row.dataset.target === event.uploadTarget);
 
+    if (event.state === "upload-target-skipped") {
+      if (event.result) renderUploadResults([...(state.uploadResults || []), event.result]);
+      setUploadTargetStatus(uploadRow, event.detail || "Skipped: same endpoint as another selected server.", "");
+      return;
+    }
+
     if (event.state === "upload-target-complete") {
+      if (event.result) updateLiveUploadResult(event.uploadTarget, event.result);
       setUploadTargetStatus(uploadRow, `Upload complete — ${event.current} of ${event.total} servers finished.`, "success");
       const remaining = Math.max(event.total - event.current, 0);
       setStatus("Upload Verified", `${event.uploadTarget} is complete and verified. ${remaining ? `${remaining} selected server${remaining === 1 ? " is" : "s are"} still working.` : "All selected servers have finished."}`);
@@ -2896,6 +2977,7 @@ function setupEventHandlers() {
     }
 
     if (event.state === "upload-target-error") {
+      updateLiveUploadResult(event.uploadTarget, event.result || { status: "failed", message: event.detail || "The server did not complete the upload." });
       setUploadTargetStatus(uploadRow, `Needs attention: ${event.detail || "The server did not complete the upload."}`, "error");
       const remaining = Math.max(event.total - event.current, 0);
       setStatus("Upload Warning", `${event.uploadTarget} did not complete: ${event.detail || "No additional details were returned."} Your local file is safe.${remaining ? ` ${remaining} remaining server${remaining === 1 ? " will be tried" : "s will be tried"} in order.` : " You can retry only the failed server."}`);
@@ -2903,6 +2985,7 @@ function setupEventHandlers() {
     }
 
     if (event.state === "uploading") {
+      updateLiveUploadResult(event.uploadTarget, { status: "uploading", message: "Sending and verifying the file..." });
       setUploadTargetStatus(uploadRow, `Uploading and verifying ${event.filename}...`, "working");
       setStatus("Uploading", `${event.uploadTarget} started. ${event.current} of ${event.total} selected servers have finished; uploads run one at a time. Keep the app open.`);
       return;
@@ -3038,6 +3121,9 @@ function cacheElements() {
     openBatchManifest: $("open-batch-manifest"),
     copyArchivePath: $("copy-archive-path"),
     retryFailedUploads: $("retry-failed-uploads"),
+    uploadResults: $("upload-results"),
+    uploadResultsList: $("upload-results-list"),
+    uploadResultsSummary: $("upload-results-summary"),
     sourceCard: $("source-card"),
     sourceFileCount: $("source-file-count"),
     sourceSubtitle: $("source-subtitle"),

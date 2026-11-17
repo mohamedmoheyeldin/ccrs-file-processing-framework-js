@@ -797,6 +797,9 @@ async function retryFailedUploads(payload, emitProgress) {
   const resolved = resolveUploadTargets(loadUploadProfiles(), requested);
   const results = [...run.uploadResults.filter((item) => item.status !== "failed")];
   results.push(...await require("./uploader").uploadTargetsSequentially(run.archivePath, resolved, {
+    // A retry first checks whether the file already reached the server (for example when the
+    // earlier attempt timed out after the transfer finished) so it is never sent twice.
+    skipIfPresent: true,
     onProgress: (event) => emitProgress?.({
       phase: "upload",
       filename: path.basename(run.archivePath),
