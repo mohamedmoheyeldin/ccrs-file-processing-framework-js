@@ -49,6 +49,7 @@ const { inspectLeieSource, processLeieFiles } = require("./leieProcessor");
 const { loadReleaseTracker, saveReleaseTracker } = require("./releaseTracker");
 const {
   getServerDisplayForTarget,
+  getUploadLogPath,
   getUploadProfileSourcePath,
   getUploadTargetNames,
   getUserNamesForServer,
@@ -240,6 +241,7 @@ function getInfo() {
     },
     docs: {
       userGuidePath,
+      uploadLogPath: getUploadLogPath(),
       leieValidationGuidePath,
     },
     userConfig: {

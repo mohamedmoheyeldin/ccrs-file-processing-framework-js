@@ -2135,6 +2135,14 @@ body.theme-dark .archive-options-panel {
   margin-bottom: 8px;
 }
 
+.upload-results-header {
+  align-items: center;
+}
+
+.upload-results-header .toolbar-button {
+  margin-left: auto;
+}
+
 .upload-results-summary {
   font-size: 0.85rem;
   color: var(--text-secondary);

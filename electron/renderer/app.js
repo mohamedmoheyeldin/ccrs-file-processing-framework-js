@@ -2623,6 +2623,15 @@ function setupEventHandlers() {
     setStatus("Copied", "The archive path was copied to the clipboard.");
   });
   elements.retryFailedUploads?.addEventListener("click", retryFailedUploads);
+  $("open-upload-log")?.addEventListener("click", async () => {
+    const logPath = state.info?.docs?.uploadLogPath;
+    try {
+      if (!logPath) throw new Error("missing");
+      await window.ccrs.openPath(logPath);
+    } catch (_error) {
+      setStatus("Upload Log", "No upload log is available yet. It is created the first time a file is uploaded.");
+    }
+  });
   for (const button of document.querySelectorAll("[data-theme]")) {
     button.addEventListener("click", () => {
       setTheme(button.dataset.theme);
