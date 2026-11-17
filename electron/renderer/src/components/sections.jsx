@@ -625,6 +625,17 @@ function AdditionalFields({ app }) {
           onChange: (value) => actions.setField("useAllSituationalSeocs", value),
           label: "Use all available Situational SEOC values instead of a selected subset",
         }}
+        warning={hasSituationalChoice && (
+          <p id="situational-seoc-warning" role="alert" className="flex items-start gap-1.5 text-xs font-medium text-error-primary">
+            <AlertTriangle aria-hidden="true" className="mt-px size-3.5 shrink-0" />
+            <span>
+              {form.useAllSituationalSeocs
+                ? "Warning: every Situational SEOC will be used in this run."
+                : "Warning: a Situational SEOC is selected for this run."}
+              {" "}Use Situational SEOC only when specifically instructed.
+            </span>
+          </p>
+        )}
       />
 
       {hasSituationalChoice && (

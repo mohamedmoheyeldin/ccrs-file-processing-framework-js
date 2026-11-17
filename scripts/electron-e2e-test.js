@@ -355,6 +355,7 @@ async function run() {
     await primarySeoc.click();
     assert.equal(await chips(window, "selected-seocs").filter({ hasText: "PMR_ACUPUNCTURE INITIAL" }).count(), 1);
     assert.equal(await window.locator("#seoc-override-warning").count(), 0);
+    assert.equal(await window.locator("#situational-seoc-warning").count(), 0);
     await window.locator("#seoc-search").press("Escape");
     await removeChip(window, "selected-seocs", "PMR_ACUPUNCTURE INITIAL");
     assert.equal(await chips(window, "selected-seocs").count(), 0);
@@ -367,12 +368,20 @@ async function run() {
     await situationalSeoc.click();
     assert.equal(await chips(window, "selected-situational-seocs").filter({ hasText: "EUC_EMERGENCY CARE" }).count(), 1);
     assert.match(await window.locator("#seoc-override-warning").textContent(), /Most referrals use regular SEOC only/);
+    // A small red warning sits directly under the Situational field whenever it is in use.
+    const situationalWarning = window.locator("#situational-seoc-warning");
+    assert.match(await situationalWarning.textContent(), /a Situational SEOC is selected/);
+    const warningColor = await situationalWarning.evaluate((element) => getComputedStyle(element).color);
+    const hintColor = await window.locator("#situational-seoc-match").evaluate((element) => getComputedStyle(element).color);
+    assert.notEqual(warningColor, hintColor);
     await window.locator("#situational-seoc-search").press("Escape");
     await setChecked(window, "use-all-situational-seocs", true);
     assert.equal(await chips(window, "selected-situational-seocs").count(), 0);
     assert.equal(await window.locator("#situational-seoc-search").isDisabled(), false);
     assert.match(await window.locator("#situational-seoc-match").textContent(), /All 9 available Situational SEOC values/);
+    assert.match(await window.locator("#situational-seoc-warning").textContent(), /every Situational SEOC will be used/);
     await setChecked(window, "use-all-situational-seocs", false);
+    assert.equal(await window.locator("#situational-seoc-warning").count(), 0);
     assert.equal(await window.locator("#seoc-override-warning").count(), 0);
 
     // Network and archive naming
@@ -502,6 +511,34 @@ async function run() {
     if (process.env.CCRS_E2E_SCREENSHOT) {
       await window.screenshot({ path: process.env.CCRS_E2E_SCREENSHOT, fullPage: true });
     }
+
+    // The layout follows the window: it fills wide windows, grows on very large ones, and keeps
+    // the Run panel beside the form until the window gets narrow.
+    const layoutAt = async (width, height) => {
+      await window.setViewportSize({ width, height });
+      return window.evaluate(() => {
+        const main = document.querySelector("main").getBoundingClientRect();
+        const run = document.querySelector("#run-card").getBoundingClientRect();
+        const form = document.querySelector("#generator-card").getBoundingClientRect();
+        return {
+          overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+          fillsWindow: main.width >= document.documentElement.clientWidth - 1,
+          runBeside: run.left >= form.right,
+          rootFontSize: parseFloat(getComputedStyle(document.documentElement).fontSize),
+        };
+      });
+    };
+    for (const [width, height] of [[1024, 768], [1366, 768], [1920, 1080], [2560, 1440], [3840, 2160]]) {
+      const layout = await layoutAt(width, height);
+      assert.deepEqual(
+        { overflow: layout.overflow, fillsWindow: layout.fillsWindow, runBeside: layout.runBeside },
+        { overflow: false, fillsWindow: true, runBeside: true },
+        `layout at ${width}x${height}`
+      );
+      assert.equal(width <= 1920 ? layout.rootFontSize < 16.5 : layout.rootFontSize > 18, true, `text size at ${width}x${height}`);
+    }
+    const smallLayout = await layoutAt(640, 480);
+    assert.deepEqual({ overflow: smallLayout.overflow, runBeside: smallLayout.runBeside }, { overflow: false, runBeside: false });
 
     // Narrow window: no horizontal scrolling and single-column option cards.
     await window.setViewportSize({ width: 800, height: 700 });

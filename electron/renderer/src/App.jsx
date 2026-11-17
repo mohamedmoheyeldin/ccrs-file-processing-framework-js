@@ -52,8 +52,8 @@ const STATUS_COLORS = { idle: "gray", working: "brand", completed: "success", fa
 function Header({ app }) {
   const { form, info, actions, busy } = app;
   return (
-    <header className="sticky top-0 z-40 border-b border-secondary bg-primary">
-      <div className="mx-auto flex w-full max-w-360 flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-8">
+    <header className="z-40 border-b border-secondary bg-primary [@media(min-height:600px)]:sticky [@media(min-height:600px)]:top-0">
+      <div className="flex w-full flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-8 2xl:px-12">
         <div className="flex min-w-0 items-center gap-3">
           <img src={APP_ICON} alt="CCRS FPF logo" className="size-10 shrink-0 rounded-lg" />
           <div className="min-w-0">
@@ -294,7 +294,7 @@ function RunPanel({ app }) {
   const canRetry = Boolean(lastRun?.retryable || lastRun?.status === "upload-failed");
 
   return (
-    <aside id="run-card" className="rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset lg:sticky lg:top-24">
+    <aside id="run-card" className="rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset min-[900px]:sticky min-[900px]:top-32 min-[900px]:max-h-[calc(100dvh-9rem)] min-[900px]:overflow-y-auto xl:top-24 xl:max-h-[calc(100dvh-7rem)]">
       <div className="border-b border-secondary px-5 py-4">
         <p className="text-md font-semibold text-primary">Run</p>
         <p className="text-sm text-tertiary">Progress and status for this workflow.</p>
@@ -563,12 +563,12 @@ export function App() {
     <BusyContext.Provider value={app.busy}>
       <div className="min-h-dvh bg-secondary">
         <Header app={app} />
-        <main className="mx-auto flex w-full max-w-360 flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
+        <main className="flex w-full flex-col gap-6 px-4 py-6 md:px-8 md:py-8 2xl:px-12">
           <WorkflowTabs app={app} />
           {flags.isOther ? (
             <FutureCard />
           ) : (
-            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="grid items-start gap-6 min-[900px]:grid-cols-[minmax(0,1fr)_18rem] xl:grid-cols-[minmax(0,1fr)_20rem] 2xl:grid-cols-[minmax(0,1fr)_24rem]">
               <div className="flex min-w-0 flex-col gap-6">
                 <WorkflowIntro app={app} />
                 {flags.isLeie && <LeieGuideBanner app={app} />}

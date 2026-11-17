@@ -113,6 +113,8 @@ The Source hint confirms that source files are read without being changed. Proce
 
 Text boxes, dropdowns, and date fields use the same control height throughout the application. Related fields share the available row width. Upload User remains compact beside the wider Remote Directory field on the same row, while narrow windows automatically stack them without changing their control height.
 
+The layout follows the window size. It uses the full window width, the Run panel sits beside the form on windows about 900 pixels wide or more and moves below the form on narrower ones, and on windows wider than 1920 pixels the text and controls grow with the window so a maximized 1440p or 4K window stays easy to read. The window can be made as small as 640 by 480.
+
 Use `Tab` and `Shift+Tab` to move between controls. In a dropdown, use `Arrow Up` or `Arrow Down` to open and move through choices, `Home` or `End` to jump to the first or last choice, `Enter` or `Space` to select, and `Escape` to close the list and return focus to the field. A visible focus outline identifies the active control.
 
 ## Workflow Progress and Large Files
@@ -424,7 +426,7 @@ Rules:
 
 The regular and red-labeled `Situational SEOC Number - SEOC ID` controls share the Stations selector's search, menu, chip, focus, and scroll behavior, but they serve different purposes. Regular SEOC automatically mixes approved pairs from the current catalog. Select specific pairs to restrict the batch to those choices.
 
-Situational SEOC is manual-only. The app does not select a Situational value automatically. Use it only when a referral specifically requires one. Selecting a Situational value—or choosing all Situational values—displays a reminder because most referrals use regular SEOC only. A regular SEOC override does not display this reminder.
+Situational SEOC is manual-only. The app does not select a Situational value automatically. Use it only when a referral specifically requires one. Selecting a Situational value—or choosing all Situational values—displays a reminder because most referrals use regular SEOC only. A regular SEOC override does not display this reminder. A small red warning also appears directly under the Situational field for as long as a Situational value, or all Situational values, is in use.
 
 Each dropdown option shows a clean SEOC ID without its trailing version number as the main name and `SEOC Number: ...` directly underneath. The complete source ID remains paired behind the scenes; the app never combines the Number from one record with the ID from another. The confirmation reminder appears only when a Situational SEOC choice is active.
 

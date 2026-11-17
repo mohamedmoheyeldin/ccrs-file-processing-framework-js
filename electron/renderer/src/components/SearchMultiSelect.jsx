@@ -36,6 +36,7 @@ export function SearchMultiSelect({
   useAll,
   preview,
   error,
+  warning,
   onQueryChange,
 }) {
   const busy = useBusy();
@@ -202,6 +203,8 @@ export function SearchMultiSelect({
       </div>
 
       <Hint id={matchId} tone={matchTone}>{matchText}</Hint>
+
+      {warning}
 
       {selectedKeys.length > 0 && (
         <div id={selectedId} aria-live="polite">

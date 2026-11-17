@@ -27,7 +27,7 @@ The renderer is a React application built from [Untitled UI React](https://www.u
 
 The sandboxed preload script cannot use Electron's clipboard module, so `Copy SQL` and `Copy Output Path` send the text to the main process through the `clipboard:write-text` IPC channel. `referralGenerator.estimateGeneratedSourceBytes` estimates the size of a generate run without writing files; the preview returns it as `generatedSize` with a warning when it is over `maxTotalSourceBytes`. Generate runs over that size are allowed after the Safety Review shows the warning, because generated files, the combined JSON, and the gzip archive are written as streams; `processFiles` skips the combined-size check only for generated batches. Existing source folders keep the combined limit.
 
-Text inputs share one height, upload-target rows keep the Upload User field narrower than the Remote Directory field and stack on narrow windows, and option grids collapse to one column without horizontal overflow. Existing element ids are preserved so the end-to-end test and the user guide keep referring to the same controls.
+Text inputs share one height, upload-target rows keep the Upload User field narrower than the Remote Directory field and stack on narrow windows, and option grids collapse to one column without horizontal overflow. The page is fluid with no maximum width: the Run panel column appears from 900px, and `app.css` scales the root font size above 1920px so the rem-based layout grows on 1440p and 4K windows. `main.js` fits the first window to the display work area with a 640 by 480 minimum. Existing element ids are preserved so the end-to-end test and the user guide keep referring to the same controls.
 
 ## Data and security boundary
 

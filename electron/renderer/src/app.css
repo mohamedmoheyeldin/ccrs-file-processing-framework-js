@@ -49,6 +49,15 @@
   transition-timing-function: inherit;
 }
 
+/*
+ * Everything is sized in rem, so the root font size scales the whole interface. It stays at
+ * 16px up to a 1920px wide window and grows with wider windows, so a maximized window on a
+ * 1440p or 4K display fills the screen with readable controls instead of tiny ones.
+ */
+html {
+  font-size: clamp(16px, calc(8px + 0.42vw), 24px);
+}
+
 html,
 body {
   font-family: var(--font-body);
