@@ -270,7 +270,7 @@ export function progressDisplay(current = 0, total = 0) {
 }
 
 /** Builds the label/value rows shown in the pre-run safety review. */
-export function buildReviewItems(command, payload, sourceInspection, archivePreviewText) {
+export function buildReviewItems(command, payload, sourceInspection, archivePreviewText, generatedSize = null) {
   const uploads = (payload.upload?.enabled ? payload.upload.targets : []) || [];
   const total = command === "generate"
     ? Number(payload.fileCount || 0) * Number(payload.referralsPerFile || 0)
@@ -298,6 +298,9 @@ export function buildReviewItems(command, payload, sourceInspection, archivePrev
     ["Stations", isLeie ? "Not applicable" : stations],
     ["Upload destinations", uploads.length ? uploads.map((item) => `${item.server_name}: ${item.remote_directory}`).join("; ") : "Local output only"],
   ];
+  if (command === "generate" && generatedSize?.overLimit) {
+    items.push(["Large run warning", `${generatedSize.warning} Select Start Safely to continue, or Go Back to lower the counts.`]);
+  }
   const situationalSeocCount = payload.identityOptions?.useAllSituationalSeocs
     ? "All Situational values"
     : (payload.identityOptions?.selectedSituationalSeocKeys || []).length;

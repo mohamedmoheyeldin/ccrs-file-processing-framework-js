@@ -114,6 +114,8 @@ export function useController() {
   const [lastRun, setLastRun] = useState(null);
   const [manifestPending, setManifestPending] = useState(false);
   const [releaseOpen, setReleaseOpen] = useState(false);
+  // "announce" is the one-time notice after an update; "view" is opened from the header link.
+  const [releaseMode, setReleaseMode] = useState("announce");
   const [preRun, setPreRun] = useState(null);
   const [sqlCopy, setSqlCopy] = useState({ tone: "neutral", message: "Copy this SQL and run it in SQL Server for the selected environment." });
   const [stationQuery, setStationQuery] = useState("");
@@ -577,6 +579,7 @@ export function useController() {
 
   const syncReleaseAnnouncement = useCallback((nextInfo) => {
     const announcement = nextInfo?.releaseAnnouncement || null;
+    setReleaseMode("announce");
     setReleaseOpen(Boolean(
       announcement?.releaseKey &&
         (announcement?.shouldShow === true || acknowledgedReleaseKeyRef.current !== announcement.releaseKey)
@@ -783,7 +786,7 @@ export function useController() {
     return new Promise((resolve) => {
       preRunResolverRef.current = resolve;
       setPreRun({
-        items: buildReviewItems(command, payload, sourceInspectionRef.current, archivePreviewRef.current),
+        items: buildReviewItems(command, payload, sourceInspectionRef.current, archivePreviewRef.current, previewCacheRef.current.result?.generatedSize),
         needsProd,
       });
     });
@@ -1079,6 +1082,16 @@ export function useController() {
       : { tone: "error", message: "Unable to copy automatically. Select the SQL and copy it manually." });
   }, []);
 
+  const openReleaseNotes = useCallback(() => {
+    if (!infoRef.current?.releaseAnnouncement) return;
+    setReleaseMode("view");
+    setReleaseOpen(true);
+  }, []);
+
+  const closeReleaseNotes = useCallback(() => {
+    setReleaseOpen(false);
+  }, []);
+
   const acknowledgeRelease = useCallback(async () => {
     const announcement = infoRef.current?.releaseAnnouncement;
     if (!announcement?.releaseKey) {
@@ -1276,6 +1289,7 @@ export function useController() {
     lastRun,
     manifestPending,
     releaseOpen,
+    releaseMode,
     preRun,
     sqlCopy,
     stationQuery,
@@ -1309,6 +1323,8 @@ export function useController() {
       openLeieGuide,
       openExternal,
       copySql,
+      openReleaseNotes,
+      closeReleaseNotes,
       acknowledgeRelease,
       closePreRun,
       rescanLeie,

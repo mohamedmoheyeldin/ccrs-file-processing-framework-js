@@ -278,7 +278,7 @@ export function GeneratorSection({ app }) {
       {generatedSize && (
         <div
           id="generated-size-estimate"
-          role={generatedSize.overLimit ? "alert" : undefined}
+          role={generatedSize.overLimit ? "status" : undefined}
           data-over-limit={generatedSize.overLimit || undefined}
           className={cx(
             "flex items-start gap-3 rounded-xl p-4 ring-1 ring-inset",
@@ -292,12 +292,12 @@ export function GeneratorSection({ app }) {
           <div className="min-w-0">
             <p className={cx("text-sm font-semibold", generatedSize.overLimit ? "text-warning-primary" : "text-secondary")}>
               {generatedSize.overLimit
-                ? `Too large: this run would create about ${generatedSize.label} of JSON. The limit is ${generatedSize.limitLabel}.`
-                : `Estimated size: about ${generatedSize.label} of JSON (limit ${generatedSize.limitLabel}).`}
+                ? `Large run: about ${generatedSize.label} of JSON, more than the recommended ${generatedSize.limitLabel}.`
+                : `Estimated size: about ${generatedSize.label} of JSON (recommended up to ${generatedSize.limitLabel}).`}
             </p>
             {generatedSize.overLimit && (
               <p className="mt-0.5 text-sm text-tertiary">
-                Lower the number of JSON files or the referrals per file, or split the work into several runs. Generate Files stays blocked until the estimate is under the limit.
+                {generatedSize.warning} You will be asked to confirm before it starts.
               </p>
             )}
           </div>

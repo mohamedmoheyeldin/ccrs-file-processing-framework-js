@@ -61,7 +61,7 @@ const {
 } = require("./uploader");
 const { sanitizeFilenameBase } = require("./renamer");
 const { buildArchiveBasename, buildMasterFileName, buildOutputFileNames, DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename } = require("./zipper");
-const { assertSourceFilesWithinLimits, describeTotalSizeLimit, formatBytes, getProcessingLimits } = require("./limits");
+const { assertSourceFilesWithinLimits, describeLargeGeneratedRun, formatBytes, getProcessingLimits } = require("./limits");
 const { writeFileAtomic } = require("./atomicFile");
 const { assertSafeFolderRelationship, cleanupStaleRunStagingDirectories } = require("./batchSafety");
 const { getRun, saveRun } = require("./runHistory");
@@ -105,6 +105,7 @@ function loadAppVersionInfo() {
           displayLabel,
           releaseKey,
           releaseNotes: normalizeReleaseNotes(parsed.releaseNotes || parsed.release_notes),
+          teamHighlights: normalizeReleaseNotes(parsed.teamHighlights),
         };
       }
     } catch (_error) {
@@ -119,6 +120,7 @@ function loadAppVersionInfo() {
     displayLabel: "",
     releaseKey: "",
     releaseNotes: [],
+    teamHighlights: [],
   };
 }
 
@@ -206,6 +208,7 @@ function getInfo() {
       version: appVersion.version,
       label: appVersion.label || appVersion.displayLabel,
       notes: appVersion.releaseNotes,
+      highlights: appVersion.teamHighlights || [],
       shouldShow: Boolean(
         appVersion.releaseKey &&
           acknowledgedReleaseKey !== appVersion.releaseKey
@@ -419,7 +422,15 @@ function describeGeneratedSize(payload) {
     const bytes = estimateGeneratedSourceBytes(payload.fileCount, payload.referralsPerFile);
     const limitBytes = getProcessingLimits().maxTotalSourceBytes;
     if (bytes <= 0) return null;
-    return { bytes, label: formatBytes(bytes), limitBytes, limitLabel: formatBytes(limitBytes), overLimit: bytes > limitBytes };
+    const overLimit = bytes > limitBytes;
+    return {
+      bytes,
+      label: formatBytes(bytes),
+      limitBytes,
+      limitLabel: formatBytes(limitBytes),
+      overLimit,
+      warning: overLimit ? describeLargeGeneratedRun(bytes, limitBytes) : "",
+    };
   } catch (_error) {
     return null;
   }
@@ -532,19 +543,6 @@ function collectFieldErrors(payload) {
   if (Number(payload.fileCount || 0) * Number(payload.referralsPerFile || 0) > processingLimits.maxGeneratedReferrals) {
     fieldErrors.referralsPerFile = `The generated batch cannot exceed ${processingLimits.maxGeneratedReferrals.toLocaleString()} referrals.`;
   }
-  // Warn before the run starts when the generated JSON would be over the combined size limit.
-  let estimatedGeneratedBytes = 0;
-  if (payload.fileCount !== undefined && !fieldErrors.fileCount && !fieldErrors.referralsPerFile) {
-    try {
-      estimatedGeneratedBytes = estimateGeneratedSourceBytes(payload.fileCount, payload.referralsPerFile);
-    } catch (_error) {
-      estimatedGeneratedBytes = 0;
-    }
-    if (estimatedGeneratedBytes > processingLimits.maxTotalSourceBytes) {
-      fieldErrors.referralsPerFile = describeTotalSizeLimit(estimatedGeneratedBytes, processingLimits.maxTotalSourceBytes, { generated: true, estimated: true });
-    }
-  }
-
   try {
     validateIcnSettings(icnSettings);
   } catch (error) {
@@ -763,11 +761,6 @@ async function runGenerate(payload, emitProgress) {
     throw new Error(`The generated batch cannot exceed ${limits.maxGeneratedReferrals.toLocaleString()} referrals.`);
   }
 
-  const estimatedBytes = estimateGeneratedSourceBytes(fileCount, referralsPerFile);
-  if (estimatedBytes > limits.maxTotalSourceBytes) {
-    throw new Error(describeTotalSizeLimit(estimatedBytes, limits.maxTotalSourceBytes, { generated: true, estimated: true }));
-  }
-
   const args = buildCommonArgs(payload, emitProgress);
   if (!args.outputDir) {
     throw new Error("Please select an output folder.");
@@ -805,7 +798,7 @@ async function runGenerate(payload, emitProgress) {
       args.uploadOptions,
       args.archiveBasename,
       args.identityOptions,
-      { appVersion: loadAppVersionInfo().version }
+      { appVersion: loadAppVersionInfo().version, generated: true }
     );
   } finally {
     removePath(generatedInputDir);

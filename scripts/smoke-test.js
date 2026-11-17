@@ -36,7 +36,7 @@ const {
   zipOutput,
 } = require("../electron/backend/zipper");
 const { writeFileAtomic } = require("../electron/backend/atomicFile");
-const { assertSourceFilesWithinLimits, describeTotalSizeLimit, formatBytes } = require("../electron/backend/limits");
+const { assertSourceFilesWithinLimits, describeLargeGeneratedRun, describeTotalSizeLimit, formatBytes } = require("../electron/backend/limits");
 const { importCredentialFile, parseCredentialFile } = require("../electron/backend/secureCredentials");
 const {
   DEFAULT_UI_SETTINGS,
@@ -1592,37 +1592,64 @@ test("App info prefers the PDF user guide path", async () => {
   assert.match(info.docs.userGuidePath, /USER_GUIDE\.pdf$/);
 });
 
-test("Generate runs over the combined size limit are estimated and blocked before they start", async () => {
+test("Generate runs over the recommended size are estimated and warned about, not blocked", async () => {
   assert.equal(formatBytes(1024 ** 3), "1.00 GB");
   assert.equal(formatBytes(512 * 1024 ** 2), "512.0 MB");
   assert.match(describeTotalSizeLimit(1.5 * 1024 ** 3, 1024 ** 3), /source files total 1\.50 GB, which is over the 1\.00 GB combined safety limit/);
+  assert.match(describeLargeGeneratedRun(1.25 * 1024 ** 3, 1024 ** 3), /will create about 1\.25 GB of JSON files, which is more than the recommended 1\.00 GB\. You can still run it\./);
 
   const generatedDir = buildGeneratedReferralSources(9, 7, {});
   try {
-    const actualBytes = fs.readdirSync(generatedDir).reduce((total, name) => total + fs.statSync(path.join(generatedDir, name)).size, 0);
+    const generatedFiles = fs.readdirSync(generatedDir).map((name) => path.join(generatedDir, name));
+    const actualBytes = generatedFiles.reduce((total, filePath) => total + fs.statSync(filePath).size, 0);
     const estimatedBytes = estimateGeneratedSourceBytes(9, 7);
     assert.equal(Math.abs(estimatedBytes - actualBytes) / actualBytes < 0.02, true, `estimate ${estimatedBytes} should be close to ${actualBytes}`);
+
+    // Existing source folders keep the combined limit; generated batches may exceed it.
+    const previousLimit = process.env.CCRS_MAX_TOTAL_SOURCE_BYTES;
+    process.env.CCRS_MAX_TOTAL_SOURCE_BYTES = String(Math.floor(actualBytes / 2));
+    try {
+      assert.throws(() => assertSourceFilesWithinLimits(generatedFiles), /combined safety limit/);
+      assert.equal(assertSourceFilesWithinLimits(generatedFiles, { allowLargeTotal: true }), actualBytes);
+    } finally {
+      if (previousLimit === undefined) delete process.env.CCRS_MAX_TOTAL_SOURCE_BYTES;
+      else process.env.CCRS_MAX_TOTAL_SOURCE_BYTES = previousLimit;
+    }
   } finally {
     fs.rmSync(generatedDir, { recursive: true, force: true });
   }
 
   const smallPreview = await backend.handleCommand("preview", { fileCount: 2, referralsPerFile: 2 });
   assert.equal(smallPreview.generatedSize.overLimit, false);
-  assert.equal(smallPreview.fieldErrors.referralsPerFile, undefined);
+  assert.equal(smallPreview.generatedSize.warning, "");
 
   const largePreview = await backend.handleCommand("preview", { fileCount: 100, referralsPerFile: 800 });
   assert.equal(largePreview.generatedSize.overLimit, true);
   assert.match(largePreview.generatedSize.label, /GB$/);
-  assert.match(largePreview.fieldErrors.referralsPerFile, /would create about 1\.\d\d GB of JSON files, which is over the 1\.00 GB combined safety limit/);
+  assert.match(largePreview.generatedSize.warning, /You can still run it/);
+  assert.equal(largePreview.fieldErrors.referralsPerFile, undefined);
+  assert.equal(largePreview.fieldErrors.fileCount, undefined);
 
+  // A generate run over the limit completes instead of being rejected.
   const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-size-limit-"));
+  const previousLimit = process.env.CCRS_MAX_TOTAL_SOURCE_BYTES;
+  process.env.CCRS_MAX_TOTAL_SOURCE_BYTES = "1024";
   try {
-    await assert.rejects(
-      backend.handleCommand("generate", { fileCount: 100, referralsPerFile: 800, outputDir }),
-      /would create about 1\.\d\d GB of JSON files/
-    );
-    assert.deepEqual(fs.readdirSync(outputDir), []);
+    const result = await backend.handleCommand("generate", {
+      outputDir,
+      fileCount: 2,
+      referralsPerFile: 2,
+      referralReplacementCode: "26S600001",
+      archiveBasename: "large_run",
+      icnSettings: { mode: ICN_MODES.REFERRAL_MATCH },
+      identityOptions: {},
+      upload: { enabled: false },
+    });
+    assert.match(result.message, /Processed 2 files/);
+    assert.equal(fs.readdirSync(outputDir).some((name) => name.endsWith(".gz")), true);
   } finally {
+    if (previousLimit === undefined) delete process.env.CCRS_MAX_TOTAL_SOURCE_BYTES;
+    else process.env.CCRS_MAX_TOTAL_SOURCE_BYTES = previousLimit;
     fs.rmSync(outputDir, { recursive: true, force: true });
   }
 });

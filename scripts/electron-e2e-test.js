@@ -163,6 +163,20 @@ async function run() {
     assert.equal(await window.locator("#pre-run-overlay").count(), 0);
     assert.equal(await window.locator("meta[http-equiv='Content-Security-Policy']").count(), 1);
 
+    // What's new can be reopened at any time from the header and closed freely.
+    await window.locator("#open-release-notes").click();
+    await window.locator("#release-announcement-close").waitFor({ state: "visible" });
+    assert.match(await window.locator("#release-announcement-title").textContent(), /What's new in Version/);
+    assert.equal(await window.locator("#release-highlights-list li").count() > 0, true);
+    assert.equal(await window.locator("#release-announcement-list li").count() > 0, true);
+    assert.equal(await window.locator("#release-announcement-accept").count(), 0);
+    await window.locator("#release-announcement-close").click();
+    await window.locator("#release-announcement-overlay").waitFor({ state: "detached" });
+    await window.locator("#open-release-notes").click();
+    await window.locator("#release-announcement-close").waitFor({ state: "visible" });
+    await window.keyboard.press("Escape");
+    await window.locator("#release-announcement-overlay").waitFor({ state: "detached" });
+
     // Contextual help
     assert.equal(await window.locator("[data-context-help]").count(), 4);
     assert.equal(await window.locator("[data-context-help][data-open]").count(), 0);
@@ -210,14 +224,21 @@ async function run() {
     await chooseRadio(window, "#referral-prefix-va");
     assert.match(await window.locator("#output-retention-card").textContent(), /Matching filenames are overwritten automatically/);
 
-    // A run over the combined size limit is flagged before it can start.
+    // A run over the recommended size shows a warning but is still allowed after confirmation.
     await window.locator("#file-count").fill("100");
     await window.locator("#referrals-per-file").fill("800");
-    await waitForText(window, "#generated-size-estimate", "Too large");
-    assert.match(await window.locator("#generated-size-estimate").textContent(), /about 1\.\d\d GB of JSON\. The limit is 1\.00 GB/);
+    await waitForText(window, "#generated-size-estimate", "Large run");
+    assert.match(await window.locator("#generated-size-estimate").textContent(), /about 1\.\d\d GB of JSON, more than the recommended 1\.00 GB/);
+    assert.match(await window.locator("#generated-size-estimate").textContent(), /You can still run it/);
+    assert.equal(await window.locator("#referrals-per-file").getAttribute("aria-invalid"), null);
+    await window.locator("#output-dir").fill(outputDir);
     await window.locator("#run-generate").click();
-    await waitForText(window, "#status-message", "combined safety limit");
-    assert.equal(await window.locator("#pre-run-overlay").count(), 0);
+    await window.locator("#pre-run-confirm").waitFor({ state: "visible" });
+    assert.match(await window.locator("#pre-run-summary [data-review-warning]").first().textContent(), /Large run warning.*will create about 1\.\d\d GB/);
+    assert.equal(await window.locator("#pre-run-confirm").isDisabled(), false);
+    await window.locator("#pre-run-cancel").click();
+    await window.locator("#pre-run-confirm").waitFor({ state: "detached" });
+    await window.locator("#output-dir").fill("");
     await window.locator("#file-count").fill("2");
     await window.locator("#referrals-per-file").fill("2");
     await waitForText(window, "#generated-size-estimate", "Estimated size");

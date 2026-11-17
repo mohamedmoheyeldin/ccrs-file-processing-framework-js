@@ -62,6 +62,11 @@ function Header({ app }) {
               {info?.appVersionLabel && (
                 <span id="app-version-badge"><Badge type="pill-color" color="brand" size="sm">{info.appVersionLabel}</Badge></span>
               )}
+              {info?.releaseAnnouncement?.releaseKey && (
+                <Button id="open-release-notes" allowWhileBusy color="link-color" size="sm" iconLeading={Stars02} onClick={actions.openReleaseNotes}>
+                  What's new
+                </Button>
+              )}
             </div>
             <p id="hero-subtitle" className="hidden text-sm text-tertiary lg:block">
               Use the tabs below to work with referral files and related CCRS processing workflows.
@@ -400,8 +405,13 @@ function PreRunModal({ app }) {
             </div>
             <dl id="pre-run-summary" className="mx-6 mt-5 min-h-0 flex-1 divide-y divide-secondary overflow-y-auto rounded-xl ring-1 ring-secondary ring-inset">
               {(preRun?.items || []).map(([label, value]) => (
-                <div key={label} data-review-item className="grid gap-1 px-4 py-3 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-4">
-                  <dt className="text-sm font-semibold text-secondary">{label}</dt>
+                <div
+                  key={label}
+                  data-review-item
+                  data-review-warning={/warning|caution/i.test(label) || undefined}
+                  className={cx("grid gap-1 px-4 py-3 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-4", /warning/i.test(label) && "bg-warning-primary")}
+                >
+                  <dt className={cx("text-sm font-semibold", /warning/i.test(label) ? "text-warning-primary" : "text-secondary")}>{label}</dt>
                   <dd className="text-sm break-all text-tertiary">{value}</dd>
                 </div>
               ))}
@@ -433,12 +443,33 @@ function PreRunModal({ app }) {
   );
 }
 
+function ReleaseNoteList({ id, notes }) {
+  return (
+    <ul id={id} className="flex flex-col gap-3">
+      {notes.map((note) => (
+        <li key={note} className="flex gap-3 text-sm text-secondary">
+          <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-fg-brand-primary" />
+          <span>{note}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function ReleaseModal({ app }) {
-  const { info, releaseOpen, actions } = app;
+  const { info, releaseOpen, releaseMode, actions } = app;
   const announcement = info?.releaseAnnouncement || null;
   const notes = Array.isArray(announcement?.notes) ? announcement.notes : [];
+  const highlights = Array.isArray(announcement?.highlights) ? announcement.highlights : [];
+  // Opened from the header link, the dialog can be closed freely and opened again at any time.
+  const isView = releaseMode === "view";
   return (
-    <ModalOverlay isOpen={releaseOpen} isDismissable={false} isKeyboardDismissDisabled>
+    <ModalOverlay
+      isOpen={releaseOpen}
+      isDismissable={isView}
+      isKeyboardDismissDisabled={!isView}
+      onOpenChange={(open) => { if (!open && isView) actions.closeReleaseNotes(); }}
+    >
       <Modal className="max-w-180">
         <Dialog id="release-announcement-overlay" aria-labelledby="release-announcement-title" aria-describedby="release-announcement-copy">
           <div id="release-announcement-panel" className="grid max-h-[inherit] grid-rows-[auto_minmax(0,1fr)_auto]">
@@ -454,25 +485,41 @@ function ReleaseModal({ app }) {
                 </h2>
                 <p id="release-announcement-version" className="sr-only">{announcement?.label || ""}</p>
                 <p id="release-announcement-copy" className="mt-0.5 text-sm text-tertiary">
-                  Review the changes below. Scroll through the updates, then start using the app when you are ready.
+                  {isView
+                    ? "What this version changed, followed by the full list of changes including earlier versions."
+                    : "Review the changes below. Scroll through the updates, then start using the app when you are ready."}
                 </p>
               </div>
             </div>
-            <div data-release-scroll tabIndex={0} aria-label="Release notes" className="mx-6 mt-5 overflow-y-auto rounded-xl bg-secondary p-4 ring-1 ring-secondary outline-focus-ring ring-inset focus-visible:outline-2">
-              <ul id="release-announcement-list" className="flex flex-col gap-3">
-                {notes.map((note) => (
-                  <li key={note} className="flex gap-3 text-sm text-secondary">
-                    <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-fg-brand-primary" />
-                    <span>{note}</span>
-                  </li>
-                ))}
-              </ul>
+            <div data-release-scroll tabIndex={0} aria-label="Release notes" className="mx-6 mt-5 flex flex-col gap-5 overflow-y-auto rounded-xl bg-secondary p-4 ring-1 ring-secondary outline-focus-ring ring-inset focus-visible:outline-2">
+              {highlights.length > 0 && (
+                <section id="release-highlights">
+                  <h3 className="mb-3 text-sm font-semibold text-primary">New in this version</h3>
+                  <ReleaseNoteList id="release-highlights-list" notes={highlights} />
+                </section>
+              )}
+              <section>
+                {highlights.length > 0 && (
+                  <h3 className="mb-3 text-sm font-semibold text-primary">All changes, including earlier versions</h3>
+                )}
+                <ReleaseNoteList id="release-announcement-list" notes={notes} />
+              </section>
             </div>
             <div className="flex flex-col gap-3 px-6 pt-5 pb-6 sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-sm text-tertiary">The release notes are shown once for this version.</span>
-              <Button id="release-announcement-accept" allowWhileBusy color="primary" size="lg" autoFocus onClick={actions.acknowledgeRelease}>
-                Start Using The App
-              </Button>
+              <span className="text-sm text-tertiary">
+                {isView
+                  ? "Open this anytime from What's new next to the version."
+                  : "You can reopen these notes anytime from What's new next to the version."}
+              </span>
+              {isView ? (
+                <Button key="release-close" id="release-announcement-close" allowWhileBusy color="primary" size="lg" autoFocus onClick={actions.closeReleaseNotes}>
+                  Close
+                </Button>
+              ) : (
+                <Button key="release-accept" id="release-announcement-accept" allowWhileBusy color="primary" size="lg" autoFocus onClick={actions.acknowledgeRelease}>
+                  Start Using The App
+                </Button>
+              )}
             </div>
           </div>
         </Dialog>

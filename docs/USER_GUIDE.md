@@ -65,6 +65,8 @@ The app automatically displays the current release notes:
 
 Select `Start Using The App` to acknowledge the notes. The same release notes will not open again on later launches, but a future release with a new release identifier will display its own notes once. This acknowledgement is stored in the current user's AppData so reinstalling or changing the installation folder does not confuse an older release with a newer one.
 
+To read the notes again at any time, select `What's new` next to the version number at the top of the window. It shows `New in this version` first, then `All changes, including earlier versions`. Select `Close` or press `Escape` to return to the app.
+
 Complete current and historical notes are available in RELEASE_NOTES.md in the shared documentation package.
 
 ## Before You Begin
@@ -129,7 +131,9 @@ Before processing, the source summary reports available file size and row inform
 - referrals per generated file
 - total referrals in one generated batch
 
-The combined limit for one run is 1 GB of JSON. `Generate New Files` shows the estimated size of the files it will create under the two count fields, for example `Estimated size: about 637.5 MB of JSON (limit 1.00 GB)` for 50 files with 800 referrals each. If the estimate is over the limit, a `Too large` warning shows the estimated size and the limit, the `Number of referrals per file` field is marked, and `Generate Files` stays blocked until the counts are lowered. For example, 100 files with 800 referrals each is about 1.25 GB and must be split into two runs. When existing source files are over the limit, the message shows their combined size and the limit.
+`Generate New Files` shows the estimated size of the files it will create under the two count fields, for example `Estimated size: about 637.5 MB of JSON (recommended up to 1.00 GB)` for 50 files with 800 referrals each. Runs larger than 1 GB are allowed. When the estimate is over 1 GB, a yellow `Large run` warning shows the estimated size, explains that the run will take longer, and states how much free disk space the computer needs. The same warning appears in the Safety Review, where `Start Safely` continues and `Go Back` returns to the form. For example, 100 files with 800 referrals each is about 1.25 GB, needs about 3.75 GB of free disk space, and takes roughly one to two minutes.
+
+Existing source folders in `Edit Existing Files` keep the 1 GB combined limit. When the selected source files are over it, the message shows their combined size and the limit.
 
 If a source exceeds a safety limit, split it into smaller approved batches or ask the application maintainer to adjust the corresponding `CCRS_MAX_*` environment setting after reviewing available memory and disk space.
 
@@ -587,7 +591,7 @@ Check the individual server status. The app verifies the remote file and limits 
 
 ### A Large File Is Rejected
 
-Review the displayed file size or row count. The message shows the size of the selection and the limit, for example `This run would create about 1.25 GB of JSON files, which is over the 1.00 GB combined safety limit`. Lower the number of JSON files or referrals per file, or split the source into smaller approved batches. Do not raise a safety limit without confirming that the workstation has enough memory and disk space.
+Review the displayed file size or row count. The message shows the size of the selection and the limit, for example `The selected source files total 1.50 GB, which is over the 1.00 GB combined safety limit`. Split the source into smaller approved batches. This limit applies to existing source files; `Generate New Files` only warns about runs over 1 GB and lets you continue.
 
 ### A Job Was Cancelled
 
