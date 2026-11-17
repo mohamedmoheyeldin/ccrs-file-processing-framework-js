@@ -2,7 +2,7 @@ const fs = require("fs");
 const os = require("os");
 const { randomUUID } = require("crypto");
 const { Worker } = require("worker_threads");
-const { app, BrowserWindow, dialog, ipcMain, session, shell } = require("electron");
+const { app, BrowserWindow, clipboard, dialog, ipcMain, screen, session, shell } = require("electron");
 const path = require("path");
 const backend = require("./backend");
 
@@ -41,11 +41,13 @@ function getWindowsIconPath() {
 }
 
 function createWindow() {
+  // Fit the first window to the display so it also opens fully visible on low-resolution screens.
+  const workArea = screen.getPrimaryDisplay().workAreaSize;
   mainWindow = new BrowserWindow({
-    width: 1360,
-    height: 900,
-    minWidth: 760,
-    minHeight: 640,
+    width: Math.min(1360, workArea.width),
+    height: Math.min(900, workArea.height),
+    minWidth: Math.min(640, workArea.width),
+    minHeight: Math.min(480, workArea.height),
     backgroundColor: "#ececec",
     icon: getWindowsIconPath(),
     autoHideMenuBar: true,
@@ -218,6 +220,12 @@ handle("shell:open-external", async (_event, targetUrl) => {
   const normalizedUrl = String(targetUrl || "").trim();
   if (!isAllowedExternalUrl(normalizedUrl)) throw new Error("Only trusted HTTPS links can be opened.");
   await shell.openExternal(normalizedUrl);
+  return true;
+});
+
+// The renderer is sandboxed, so its preload script cannot use the clipboard module directly.
+handle("clipboard:write-text", async (_event, value) => {
+  clipboard.writeText(String(value || ""));
   return true;
 });
 

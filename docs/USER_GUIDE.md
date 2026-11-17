@@ -65,6 +65,8 @@ The app automatically displays the current release notes:
 
 Select `Start Using The App` to acknowledge the notes. The same release notes will not open again on later launches, but a future release with a new release identifier will display its own notes once. This acknowledgement is stored in the current user's AppData so reinstalling or changing the installation folder does not confuse an older release with a newer one.
 
+To read the notes again at any time, select `What's new` next to the version number at the top of the window. It shows `New in this version` first, then `All changes, including earlier versions`. Select `Close` or press `Escape` to return to the app.
+
 Complete current and historical notes are available in RELEASE_NOTES.md in the shared documentation package.
 
 ## Before You Begin
@@ -78,16 +80,20 @@ Prepare the items required for your workflow:
 
 ## Main Areas
 
-The app has three main tabs:
+The top of the window shows the `Application modules` as three large cards. Each card has an icon, the module name, and a one-line description. The selected module is highlighted in blue:
 
 - `Referral Files`
 - `LEIE Data Processing`
 - `More Features Coming Soon`
 
+Below the module cards, the form sections are on the left. The `Run` panel stays visible on the right and shows the workflow steps, the current status, progress, the per-server upload results, the run button, and the actions for the last run. Use `Light` or `Dark` in the header to switch themes. After an upload, `Open Upload Log` in the upload results opens `logs\uploads.log`, which records every upload attempt without passwords.
+
 `Referral Files` contains two modes:
 
 - `Edit Existing Files`
 - `Generate New Files`
+
+The selected mode is shown in green, so it is always clear which one is active.
 
 ## In-App Help and Live Previews
 
@@ -107,13 +113,15 @@ The Source hint confirms that source files are read without being changed. Proce
 
 ## Consistent Controls and Keyboard Use
 
-Text boxes, dropdowns, and date fields use the same 48-pixel control height throughout the application. Related fields share the available row width. Upload User remains compact beside the wider Remote Directory field on the same row, while narrow windows automatically stack them without changing their control height.
+Text boxes, dropdowns, and date fields use the same control height throughout the application. Related fields share the available row width. Upload User remains compact beside the wider Remote Directory field on the same row, while narrow windows automatically stack them without changing their control height.
+
+The layout follows the window size. It uses the full window width, the Run panel sits beside the form on windows about 900 pixels wide or more and moves below the form on narrower ones, and on windows wider than 1920 pixels the text and controls grow with the window so a maximized 1440p or 4K window stays easy to read. The window can be made as small as 640 by 480.
 
 Use `Tab` and `Shift+Tab` to move between controls. In a dropdown, use `Arrow Up` or `Arrow Down` to open and move through choices, `Home` or `End` to jump to the first or last choice, `Enter` or `Space` to select, and `Escape` to close the list and return focus to the field. A visible focus outline identifies the active control.
 
 ## Workflow Progress and Large Files
 
-The workflow stepper shows `Select`, `Configure`, `Validate`, `Process`, and `Upload`. The status card remains visible near the bottom of the application and identifies the current action, the file or server being handled, and what happens next. When totals are known, it shows completed items and a percentage. Scanning, packaging, connection testing, configuration imports, and diagnostics show visible in-progress feedback even when a numeric percentage is not available.
+The workflow stepper shows `Select`, `Configure`, `Validate`, `Process`, and `Upload`. The status card remains visible in the `Run` panel on the right side of the application and identifies the current action, the file or server being handled, and what happens next. When totals are known, it shows completed items and a percentage. Scanning, packaging, connection testing, configuration imports, and diagnostics show visible in-progress feedback even when a numeric percentage is not available.
 
 File processing, LEIE work, gzip creation, upload tests, and uploads run in background workers so the window remains responsive. Select `Cancel` to stop a running process. Referral work is isolated in temporary staging, so cancellation does not alter completed output from earlier runs; stale app-created staging folders are cleaned automatically.
 
@@ -127,11 +135,17 @@ Before processing, the source summary reports available file size and row inform
 - referrals per generated file
 - total referrals in one generated batch
 
+`Generate New Files` shows the estimated size of the files it will create under the two count fields, for example `Estimated size: about 637.5 MB of JSON (recommended up to 1.00 GB)` for 50 files with 800 referrals each. Runs larger than 1 GB are allowed. When the estimate is over 1 GB, a yellow `Large run` warning shows the estimated size, explains that the run will take longer, and states how much free disk space the computer needs. The same warning appears in the Safety Review, where `Start Safely` continues and `Go Back` returns to the form. For example, 100 files with 800 referrals each is about 1.25 GB, needs about 3.75 GB of free disk space, and takes roughly one to two minutes.
+
+Existing source folders in `Edit Existing Files` keep the 1 GB combined limit. When the selected source files are over it, the message shows their combined size and the limit.
+
 If a source exceeds a safety limit, split it into smaller approved batches or ask the application maintainer to adjust the corresponding `CCRS_MAX_*` environment setting after reviewing available memory and disk space.
 
 ## LEIE Data Processing
 
 Use `LEIE Data Processing` to inspect, clean, save, upload, and validate LEIE Excel data.
+
+The `LEIE Data Upload and Validation Guide` is the first item on this module. Select `Open PDF Guide` to open it before you start.
 
 The `LEIE Data Upload and Validation Guide` button opens the separate detailed LEIE manual from the app.
 
@@ -218,9 +232,17 @@ Replace it with the actual batch ID for the environment and file being validated
 
 ### Step 7: Run the LEIE Validation SQL
 
-The LEIE Upload area contains an `ETL Batch ID` field and a `Validation SQL` box. Entering a batch ID updates all three batch-ID references automatically.
+The LEIE Upload area shows the upload switch, the imported configuration, and the server list first. Below the server list is `Step 4: Validate the LEIE Load in the Database`. It starts with the `Environment Reference` table, so you can see which database server to connect to:
 
-The SQL box uses color-coded SQL keywords, quoted values, numbers, and comments. It remains selectable, and `Copy SQL` copies the complete plain-text query set.
+| Environment | Database Server | Database |
+|---|---|---|
+| `SQA` | `VAC10SQLCCN816.va.gov` | `ccrsdb` |
+| `DEV` | `VAC10SQLCCN802.va.gov` | `ccrsdb` |
+| `PPD` | `VAC10SQLCCN404.va.gov` | `ccrsdb` |
+
+Below the table are the `ETL Batch ID` field and the `Validation SQL` box. Entering a batch ID updates all three batch-ID references automatically.
+
+The SQL box uses color-coded SQL keywords, quoted values, numbers, and comments. It remains selectable, and `Copy SQL` copies the complete plain-text query set to the clipboard and confirms with `SQL copied`.
 
 The current query set is:
 
@@ -406,7 +428,7 @@ Rules:
 
 The regular and red-labeled `Situational SEOC Number - SEOC ID` controls share the Stations selector's search, menu, chip, focus, and scroll behavior, but they serve different purposes. Regular SEOC automatically mixes approved pairs from the current catalog. Select specific pairs to restrict the batch to those choices.
 
-Situational SEOC is manual-only. The app does not select a Situational value automatically. Use it only when a referral specifically requires one. Selecting a Situational value—or choosing all Situational values—displays a reminder because most referrals use regular SEOC only. A regular SEOC override does not display this reminder.
+Situational SEOC is manual-only. The app does not select a Situational value automatically. Use it only when a referral specifically requires one. Selecting a Situational value—or choosing all Situational values—displays a reminder because most referrals use regular SEOC only. A regular SEOC override does not display this reminder. A small red warning also appears directly under the Situational field for as long as a Situational value, or all Situational values, is in use.
 
 Each dropdown option shows a clean SEOC ID without its trailing version number as the main name and `SEOC Number: ...` directly underneath. The complete source ID remains paired behind the scenes; the app never combines the Number from one record with the ID from another. The confirmation reminder appears only when a Situational SEOC choice is active.
 
@@ -573,7 +595,7 @@ Check the individual server status. The app verifies the remote file and limits 
 
 ### A Large File Is Rejected
 
-Review the displayed file size or row count. Split the source into smaller approved batches. Do not raise a safety limit without confirming that the workstation has enough memory and disk space.
+Review the displayed file size or row count. The message shows the size of the selection and the limit, for example `The selected source files total 1.50 GB, which is over the 1.00 GB combined safety limit`. Split the source into smaller approved batches. This limit applies to existing source files; `Generate New Files` only warns about runs over 1 GB and lets you continue.
 
 ### A Job Was Cancelled
 

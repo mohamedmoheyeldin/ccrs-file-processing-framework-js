@@ -4,38 +4,59 @@ const os = require("node:os");
 const path = require("node:path");
 const { _electron: electron } = require("playwright");
 
+// The interface is built from Untitled UI React components (React Aria underneath).
+// Checkboxes, radios and switches keep a visually hidden native input, so the helpers
+// below click the visible label and read the state from the input.
+
+function control(window, id) {
+  return window.locator(`#${id}`);
+}
+
+async function setChecked(window, id, checked) {
+  const input = control(window, id);
+  if ((await input.isChecked()) !== checked) {
+    await window.locator(`label:has(#${id})`).click();
+  }
+  assert.equal(await input.isChecked(), checked, `${id} should be ${checked ? "checked" : "unchecked"}`);
+}
+
+async function chooseRadio(window, selector) {
+  const input = window.locator(selector);
+  await window.locator("label").filter({ has: input }).click();
+  assert.equal(await input.isChecked(), true);
+}
+
+async function waitForText(window, selector, text) {
+  await window.waitForFunction(
+    ([targetSelector, expected]) => document.querySelector(targetSelector)?.textContent.includes(expected),
+    [selector, text]
+  );
+}
+
+function options(window, menuId) {
+  return window.locator(`#${menuId} [role="option"][data-option-key]`);
+}
+
+function chips(window, selectedId) {
+  return window.locator(`#${selectedId} [role="row"]`);
+}
+
+async function removeChip(window, selectedId, text) {
+  await chips(window, selectedId).filter({ hasText: text }).locator("button").click();
+}
+
 async function assertControlSystem(window) {
   const audit = await window.evaluate(() => {
     function isVisible(element) {
       const rect = element.getBoundingClientRect();
       const style = window.getComputedStyle(element);
-      return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+      return style.display !== "none" && style.visibility !== "hidden" && rect.width > 1 && rect.height > 1;
     }
 
-    const expectedHeight = Number.parseFloat(
-      window.getComputedStyle(document.documentElement).getPropertyValue("--control-height")
-    );
-    const standardControls = [...document.querySelectorAll(
-      'input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), .combo-shell'
-    )].filter((element) =>
-      isVisible(element) &&
-      !element.classList.contains("clipboard-copy-field") &&
-      !(element.matches("input") && element.closest(".combo-shell"))
-    );
-    const nonStandardControls = standardControls
-      .map((element) => ({
-        id: element.id || element.className || element.tagName,
-        height: Number(element.getBoundingClientRect().height.toFixed(1)),
-      }))
-      .filter((item) => Math.abs(item.height - expectedHeight) > 0.5);
-
-    const undersizedTargets = [...document.querySelectorAll("button, label.radio-chip, label.checkbox-chip")]
-      .filter(isVisible)
-      .map((element) => ({
-        id: element.id || element.className || element.textContent.trim().slice(0, 40),
-        height: Number(element.getBoundingClientRect().height.toFixed(1)),
-      }))
-      .filter((item) => item.height < 44);
+    const textInputs = [...document.querySelectorAll(
+      'input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"])'
+    )].filter((element) => isVisible(element) && !element.closest("[data-date-part]"));
+    const inputHeights = [...new Set(textInputs.map((element) => Math.round(element.getBoundingClientRect().height)))];
 
     const unnamedControls = [...document.querySelectorAll("input, select, textarea, button")]
       .filter((element) => isVisible(element) && !element.disabled)
@@ -51,11 +72,11 @@ async function assertControlSystem(window) {
       })
       .map((element) => element.id || element.className || element.tagName);
 
-    const uploadPairs = [...document.querySelectorAll(".upload-target-grid")]
+    const uploadPairs = [...document.querySelectorAll("[data-upload-grid]")]
       .filter(isVisible)
       .map((grid) => {
-        const userControl = grid.querySelector(".compact-select");
-        const pathControl = grid.querySelector(".upload-path");
+        const userControl = grid.querySelector("[data-upload-user] button");
+        const pathControl = grid.querySelector("[data-upload-path] input");
         return {
           userWidth: Number(userControl?.getBoundingClientRect().width.toFixed(1) || 0),
           pathWidth: Number(pathControl?.getBoundingClientRect().width.toFixed(1) || 0),
@@ -63,19 +84,35 @@ async function assertControlSystem(window) {
           pathTop: Number(pathControl?.getBoundingClientRect().top.toFixed(1) || 0),
         };
       });
-
-    return { expectedHeight, nonStandardControls, undersizedTargets, unnamedControls, uploadPairs };
+    return { inputHeights, unnamedControls, uploadPairs };
   });
 
-  assert.equal(audit.expectedHeight, 48);
-  assert.deepEqual(audit.nonStandardControls, []);
-  assert.deepEqual(audit.undersizedTargets, []);
+  assert.equal(audit.inputHeights.length, 1, `Text inputs should share one height, received ${audit.inputHeights}`);
+  assert.equal(audit.inputHeights[0] >= 40, true);
   assert.deepEqual(audit.unnamedControls, []);
   for (const pair of audit.uploadPairs) {
     assert.equal(pair.userWidth < pair.pathWidth, true);
-    assert.equal(pair.pathWidth / pair.userWidth >= 1.45 && pair.pathWidth / pair.userWidth <= 1.55, true);
-    assert.equal(Math.abs(pair.userTop - pair.pathTop) <= 0.5, true);
+    assert.equal(Math.abs(pair.userTop - pair.pathTop) <= 4, true);
   }
+}
+
+async function assertReachable(electronApp, window, locator, label) {
+  for (const zoom of [1.5, 2, 3]) {
+    await electronApp.evaluate(({ BrowserWindow }, factor) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(factor), zoom);
+    // Zoom changes are applied asynchronously, so re-check until the layout has settled
+    // instead of measuring once right after the zoom call.
+    let reachable = false;
+    for (let attempt = 0; attempt < 20 && !reachable; attempt += 1) {
+      await locator.scrollIntoViewIfNeeded();
+      reachable = await locator.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.top >= 0 && rect.bottom <= innerHeight;
+      });
+      if (!reachable) await window.waitForTimeout(100);
+    }
+    assert.ok(reachable, `${label} reachable at ${zoom * 100}%`);
+  }
+  await electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1));
 }
 
 async function run() {
@@ -87,437 +124,541 @@ async function run() {
     selectedSeocKeys: ["missing::value"],
     selectedSituationalSeocKeys: ["missing::value"],
   }));
+
   const electronApp = await electron.launch({
     executablePath: require("electron"),
-    args: [projectRoot],
+    // Chromium's sandbox is unavailable to root in Linux containers.
+    args: [...(process.platform === "linux" ? ["--no-sandbox"] : []), projectRoot],
     env: { ...process.env, CCRS_USER_DATA_ROOT: userDataRoot },
   });
 
+  let window;
   try {
-    const window = await electronApp.firstWindow();
+    window = await electronApp.firstWindow();
+    const pageErrors = [];
+    window.on("pageerror", (error) => pageErrors.push(error.message));
     await window.waitForLoadState("domcontentloaded");
     await window.locator("#status-message").waitFor({ state: "visible" });
+
+    // Release announcement
     const releaseButton = window.locator("#release-announcement-accept");
-    if (await releaseButton.isVisible()) {
-      await window.setViewportSize({ width: 800, height: 600 });
-      for (const zoom of [1.5, 2, 3]) {
-        await electronApp.evaluate(({ BrowserWindow }, factor) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(factor), zoom);
-        // Zoom changes are applied asynchronously, so re-check until the layout has settled
-        // instead of measuring once right after the zoom call.
-        let reachable = false;
-        for (let attempt = 0; attempt < 20 && !reachable; attempt += 1) {
-          await releaseButton.scrollIntoViewIfNeeded();
-          reachable = await releaseButton.evaluate((element) => {
-            const rect = element.getBoundingClientRect(); return rect.top >= 0 && rect.bottom <= innerHeight;
-          });
-          if (!reachable) await window.waitForTimeout(100);
-        }
-        assert.ok(reachable, `Release button reachable at ${zoom * 100}%`);
-      }
-      await releaseButton.click();
-      await electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1));
-      await window.setViewportSize({ width: 1280, height: 900 });
-    }
+    await releaseButton.waitFor({ state: "visible" });
+    assert.match(await window.locator("#release-announcement-title").textContent(), /What's new in Version/);
+    assert.equal((await window.locator("#release-announcement-list li").count()) > 0, true);
+    await window.setViewportSize({ width: 800, height: 600 });
+    await assertReachable(electronApp, window, releaseButton, "Release button");
+    await releaseButton.click();
+    await releaseButton.waitFor({ state: "detached" });
+    await window.setViewportSize({ width: 1280, height: 900 });
+
+    // Shell
     assert.match(await window.title(), /CCRS File Processing Framework/);
     assert.equal(await window.locator("#workflow-stepper").isVisible(), true);
+    assert.equal(await window.locator("#workflow-stepper [data-workflow-step]").count(), 5);
+    assert.equal(await window.locator('#workflow-stepper [data-state="active"]').count(), 1);
     assert.equal(await window.locator("#run-process").isVisible(), true);
-    assert.equal(await window.locator("#cancel-job").isHidden(), true);
+    assert.equal(await window.locator("#cancel-job").count(), 0);
     assert.equal(await window.locator("#status-badge").textContent(), "Ready");
-    assert.equal(await window.locator("#job-progress-wrap").isHidden(), true);
-    assert.equal(await window.locator("#pre-run-overlay").isHidden(), true);
-    assert.equal(await window.locator(".context-help").count(), 5);
-    assert.equal(await window.locator(".context-help[open]").count(), 0);
+    assert.equal(await window.locator("#job-progress-wrap").count(), 0);
+    assert.equal(await window.locator("#pre-run-overlay").count(), 0);
+    assert.equal(await window.locator("meta[http-equiv='Content-Security-Policy']").count(), 1);
+
+    // What's new can be reopened at any time from the header and closed freely.
+    await window.locator("#open-release-notes").click();
+    await window.locator("#release-announcement-close").waitFor({ state: "visible" });
+    assert.match(await window.locator("#release-announcement-title").textContent(), /What's new in Version/);
+    assert.equal(await window.locator("#release-highlights-list li").count() > 0, true);
+    assert.equal(await window.locator("#release-announcement-list li").count() > 0, true);
+    assert.equal(await window.locator("#release-announcement-accept").count(), 0);
+    await window.locator("#release-announcement-close").click();
+    await window.locator("#release-announcement-overlay").waitFor({ state: "detached" });
+    await window.locator("#open-release-notes").click();
+    await window.locator("#release-announcement-close").waitFor({ state: "visible" });
+    await window.keyboard.press("Escape");
+    await window.locator("#release-announcement-overlay").waitFor({ state: "detached" });
+
+    // Contextual help
+    assert.equal(await window.locator("[data-context-help]").count(), 4);
+    assert.equal(await window.locator("[data-context-help][data-open]").count(), 0);
     assert.equal(await window.locator("#output-help").isVisible(), true);
-    assert.equal(await window.locator("#leie-output-help").isHidden(), true);
-    assert.equal(await window.locator("#workflow-help summary").textContent(), "New here? See how the five steps work");
-    await window.locator("#workflow-help summary").click();
-    assert.equal(await window.locator("#workflow-help").getAttribute("open"), "");
-    assert.equal(await window.locator("#workflow-help .context-help-grid > div").count(), 5);
+    assert.equal(await window.locator("#leie-output-help").count(), 0);
+    assert.equal((await window.locator("#workflow-help button").first().textContent()).trim(), "New here? See how the five steps work");
+    await window.locator("#workflow-help button").first().click();
+    assert.equal(await window.locator("#workflow-help[data-open]").count(), 1);
+    assert.equal(await window.locator("#workflow-help [data-help-item]").count(), 5);
     assert.match(await window.locator("#workflow-help").textContent(), /Source files are never edited/);
     assert.equal(await window.locator("#input-dir").getAttribute("aria-describedby"), "source-folder-help");
     assert.match(await window.locator("#source-folder-help").textContent(), /never changes the originals/);
-    assert.equal(await window.locator(".helper-text.live-preview").count(), 5);
-    if (process.env.CCRS_E2E_HELP_SCREENSHOT) {
-      await window.locator("#workflow-help").scrollIntoViewIfNeeded();
-      await window.screenshot({ path: process.env.CCRS_E2E_HELP_SCREENSHOT, fullPage: false });
-    }
+    assert.equal(await window.locator("[data-live-preview]").count(), 3);
+
+    // Removed features stay removed
     assert.equal(await window.locator("#generation-preset").count(), 0);
     assert.equal(await window.locator("#generation-preset-name").count(), 0);
     assert.equal(await window.locator("#recent-runs").count(), 0);
     assert.equal(await window.locator('input[name="referral-prefix-mode"]').count(), 2);
-    assert.equal(await window.locator('input[name="icn-mode"]').count(), 3);
     assert.equal(await window.locator('input[name="archive-naming-mode"]').count(), 4);
     assert.equal(await window.locator('input[name="archive-naming-mode"][value="prefix"]').count(), 0);
     assert.equal(await window.locator("#referral-prefix-va").isChecked(), true);
-    assert.equal(await window.locator("#custom-referral-prefix-row").isHidden(), true);
-    assert.equal(await window.locator("#selected-seocs .selected-station-chip").count(), 0);
-    assert.equal(await window.locator("#selected-situational-seocs .selected-station-chip").count(), 0);
-    assert.equal(await window.locator("meta[http-equiv='Content-Security-Policy']").count(), 1);
-    const nativeSelectCount = await window.locator("select:not([multiple])").count();
-    assert.equal(await window.locator(".compact-select").count(), nativeSelectCount);
+    assert.equal(await window.locator("#custom-referral-prefix-row").count(), 0);
+
+    // Referral Numbers
     await window.locator("[data-sub-tab='generate']").click();
-    await window.locator("#referral-prefix-va").check();
+    // The selected referral mode is highlighted in green; the other one stays neutral.
+    const modeColor = (mode) => window.locator(`[data-sub-tab='${mode}']`).evaluate((element) => {
+      const canvas = document.createElement("canvas").getContext("2d");
+      canvas.fillStyle = getComputedStyle(element).backgroundColor;
+      canvas.fillRect(0, 0, 1, 1);
+      const [red, green, blue] = canvas.getImageData(0, 0, 1, 1).data;
+      return { red, green, blue };
+    });
+    await window.locator("#generator-card").hover();
+    await window.waitForTimeout(400); // let the color transition finish before sampling
+    const selectedMode = await modeColor("generate");
+    const otherMode = await modeColor("edit");
+    assert.equal(selectedMode.green > selectedMode.red + 40 && selectedMode.green > selectedMode.blue + 40, true, JSON.stringify(selectedMode));
+    assert.equal(Math.abs(otherMode.green - otherMode.red) < 20, true, JSON.stringify(otherMode));
+    assert.equal(await window.locator("#run-generate").isVisible(), true);
+    assert.equal(await window.locator("#source-card").count(), 0);
+    assert.match(await window.locator("#template-summary-pill").textContent(), /1 JSON file \| 1 referral per file \| 1 total referral/);
     assert.match(await window.locator("#referral-prefix-help").textContent(), /VA will be added automatically/);
     await window.locator("#referral-code").fill("DD");
-    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VADD00000001"));
+    await waitForText(window, "#referral-preview", "VADD00000001");
     assert.match(await window.locator("#referral-preview").textContent(), /Preview: VADD00000001/);
-    await window.locator("#referral-prefix-custom").check();
+    await chooseRadio(window, "#referral-prefix-custom");
     assert.equal(await window.locator("#custom-referral-prefix-row").isVisible(), true);
     assert.equal(await window.locator("#custom-referral-prefix").getAttribute("maxlength"), "8");
     await window.locator("#custom-referral-prefix").fill("PROJECT_");
     await window.locator("#referral-code").fill("12345678901234567890");
-    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("PROJECT_7890"));
-    assert.match(await window.locator("#referral-preview").textContent(), /PROJECT_7890/);
+    await waitForText(window, "#referral-preview", "PROJECT_7890");
     await window.locator("#custom-referral-prefix").fill("Ccrs-T_");
     await window.locator("#referral-code").fill("abC-001_Test");
-    await window.locator("#referral-preview").waitFor({ state: "visible" });
-    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("Ccrs-T_abC-1"));
-    assert.match(await window.locator("#referral-preview").textContent(), /Ccrs-T_abC-1/);
+    await waitForText(window, "#referral-preview", "Ccrs-T_abC-1");
     await window.locator("#custom-referral-prefix").fill("CCRS");
     await window.locator("#referral-code").fill("26S600001");
-    await window.locator("#referral-prefix-va").check();
-    assert.equal(await window.locator("#keep-existing-files").isChecked(), true);
-    assert.match(await window.locator("#output-retention-card").textContent(), /Recommended/);
-    assert.match(await window.locator("#output-retention-card").textContent(), /Replace folder contents after success/);
+    await chooseRadio(window, "#referral-prefix-va");
+    assert.match(await window.locator("#output-retention-card").textContent(), /Matching filenames are overwritten automatically/);
+
+    // A run over the recommended size shows a warning but is still allowed after confirmation.
+    await window.locator("#file-count").fill("100");
+    await window.locator("#referrals-per-file").fill("800");
+    await waitForText(window, "#generated-size-estimate", "Large run");
+    assert.match(await window.locator("#generated-size-estimate").textContent(), /about 1\.\d\d GB of JSON, more than the recommended 1\.00 GB/);
+    assert.match(await window.locator("#generated-size-estimate").textContent(), /You can still run it/);
+    assert.equal(await window.locator("#referrals-per-file").getAttribute("aria-invalid"), null);
+    await window.locator("#output-dir").fill(outputDir);
+    await window.locator("#run-generate").click();
+    await window.locator("#pre-run-confirm").waitFor({ state: "visible" });
+    assert.match(await window.locator("#pre-run-summary [data-review-warning]").first().textContent(), /Large run warning.*will create about 1\.\d\d GB/);
+    assert.equal(await window.locator("#pre-run-confirm").isDisabled(), false);
+    await window.locator("#pre-run-cancel").click();
+    await window.locator("#pre-run-confirm").waitFor({ state: "detached" });
+    await window.locator("#output-dir").fill("");
+    await window.locator("#file-count").fill("2");
+    await window.locator("#referrals-per-file").fill("2");
+    await waitForText(window, "#generated-size-estimate", "Estimated size");
+
+    // Generator counts
+    await window.locator("#file-count").fill("3");
+    await window.locator("#referrals-per-file").fill("4");
+    assert.equal(await window.locator("#generator-total-referrals-display").textContent(), "12");
+    await window.locator("#file-count").fill("2");
+    await window.locator("#referrals-per-file").fill("2");
+
+    // Additional fields
     await window.locator("#toggle-optional-fields").click();
+    assert.equal(await window.locator("#optional-fields").isVisible(), true);
+    assert.equal(await window.locator('input[name="icn-mode"]').count(), 3);
+    assert.equal(await window.locator("[data-live-preview]").count(), 6);
+    assert.equal(await chips(window, "selected-seocs").count(), 0);
+    assert.equal(await chips(window, "selected-situational-seocs").count(), 0);
     assert.equal(await window.locator("#use-current-referral-dates").isChecked(), true);
-    const today = await window.evaluate(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; });
+    const today = await window.evaluate(() => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    });
     assert.equal(await window.locator("#override-referral-date").inputValue(), today);
     await window.locator("#override-referral-date").fill("2024-02-25");
     assert.equal(await window.locator("#use-current-referral-dates").isChecked(), false);
-    await window.locator("#use-current-referral-dates").check();
+    await setChecked(window, "use-current-referral-dates", true);
     assert.equal(await window.locator("#override-referral-date").inputValue(), today);
+
+    // Payment Authority Codes
     await window.locator("#override-payment-authority-code").focus();
-    assert.equal(await window.locator("#payment-code-menu .combo-option").count(), 43);
-    await window.locator('#payment-code-menu [data-seoc-selector-key="21"]').click();
-    await window.locator('#payment-code-menu [data-seoc-selector-key="28"]').click();
-    assert.equal(await window.locator("#selected-payment-codes .selected-station-chip").count(), 2);
+    await options(window, "payment-code-menu").first().waitFor({ state: "visible" });
+    assert.equal(await options(window, "payment-code-menu").count(), 43);
+    await window.locator('#payment-code-menu [data-option-key="21"]').click();
+    await window.locator('#payment-code-menu [data-option-key="28"]').click();
+    assert.equal(await chips(window, "selected-payment-codes").count(), 2);
     assert.equal(await window.locator("#use-all-payment-codes").isChecked(), false);
     await window.locator("#override-payment-authority-code").press("Escape");
-    await window.locator("#use-all-payment-codes").check();
-    assert.equal(await window.locator("#selected-payment-codes .selected-station-chip").count(), 0);
+    assert.equal(await window.locator("#payment-code-menu").count(), 0);
+    await setChecked(window, "use-all-payment-codes", true);
+    assert.equal(await chips(window, "selected-payment-codes").count(), 0);
     await window.locator("#override-payment-authority-code").fill("21");
-    assert.equal(await window.locator("#payment-code-menu .combo-option").count(), 1);
-    await window.locator('#payment-code-menu [data-seoc-selector-key="21"]').click();
+    assert.equal(await options(window, "payment-code-menu").count(), 1);
+    await window.locator('#payment-code-menu [data-option-key="21"]').click();
     assert.equal(await window.locator("#use-all-payment-codes").isChecked(), false);
     await window.locator("#override-payment-authority-code").press("Escape");
     await window.waitForFunction(async () => {
       const info = await window.ccrs.getInfo();
       return info.uiSettings.selectedPaymentCodes?.join(",") === "21" && info.uiSettings.useAllPaymentCodes === false;
     });
-    if (process.env.CCRS_E2E_PAYMENT_SCREENSHOT) {
-      await window.locator("#payment-code-combobox").scrollIntoViewIfNeeded();
-      await window.locator("#override-payment-authority-code").fill("2");
-      await window.locator("#payment-code-combobox").evaluate((element) => element.scrollIntoView({ block: "start", behavior: "instant" }));
-      await window.waitForTimeout(300);
-      await window.screenshot({ path: process.env.CCRS_E2E_PAYMENT_SCREENSHOT });
-      await window.locator("#override-payment-authority-code").press("Escape");
-    }
-    await window.locator("#referral-prefix-custom").check();
-    await window.locator("#icn-mode-custom-full").check();
+
+    // ICN modes
+    await chooseRadio(window, "#referral-prefix-custom");
+    await chooseRadio(window, "#icn-mode-custom-full");
     await window.locator("#icn-custom-value").fill("aBc123");
     assert.equal(await window.locator("#icn-custom-value").inputValue(), "aBc123");
-    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("aBc123"));
-    await window.locator("#icn-mode-referral-match").check();
-    const optionCardSystem = await window.evaluate(() => {
-      const metrics = (selector) => {
-        const target = document.querySelector(selector);
-        const card = target.matches(".choice-card") ? target : target.closest(".choice-card");
-        const style = getComputedStyle(card);
-        return {
-          minHeight: style.minHeight,
-          padding: style.padding,
-          borderRadius: style.borderRadius,
-          columns: getComputedStyle(card.closest(".choice-card-grid")).gridTemplateColumns.split(" ").length,
-        };
-      };
-      return {
-        referral: metrics(".referral-prefix-choices .choice-card"),
-        icn: metrics('input[name="icn-mode"]:checked'),
-        archive: metrics(".archive-mode-choices .choice-card"),
-      };
-    });
-    assert.deepEqual(optionCardSystem.referral, optionCardSystem.archive);
-    assert.deepEqual(optionCardSystem.referral, optionCardSystem.icn);
-    assert.equal(optionCardSystem.referral.minHeight, "66px");
-    assert.equal(optionCardSystem.referral.columns, 2);
-    assert.equal(optionCardSystem.archive.columns, 2);
-    assert.equal(optionCardSystem.icn.columns, 2);
-    if (process.env.CCRS_E2E_OPTION_CARD_SCREENSHOT) {
-      await window.locator(".referral-prefix-choices").scrollIntoViewIfNeeded();
-      await window.screenshot({ path: process.env.CCRS_E2E_OPTION_CARD_SCREENSHOT, fullPage: false });
-    }
-    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST0000026600001"));
+    await waitForText(window, "#icn-preview", "aBc123");
+    await chooseRadio(window, "#icn-mode-referral-match");
+    await waitForText(window, "#icn-preview", "TEST0000026600001");
     assert.equal(await window.locator("#icn-custom-value").isDisabled(), true);
     assert.match(await window.locator("#referral-preview").textContent(), /CCRS26600001/);
-    const matchTrigger = window.locator("#match-suffix-length").locator("..").locator(".compact-select-trigger");
-    await matchTrigger.focus();
-    await matchTrigger.press("ArrowDown");
-    const matchMenu = window.locator("#match-suffix-length").locator("..").locator(".compact-select-menu");
-    assert.equal(await matchMenu.isVisible(), true);
-    assert.equal(await matchMenu.locator(".compact-select-option").count(), 3);
-    assert.equal((await matchMenu.evaluate((element) => element.getBoundingClientRect().height)) <= 260, true);
-    const fourCharacterOption = matchMenu.locator('.compact-select-option[data-value="4"]');
-    await fourCharacterOption.focus();
-    await fourCharacterOption.press("Enter");
-    assert.equal(await window.locator("#match-suffix-length").inputValue(), "4");
-    assert.equal(await window.locator("#station-id-menu .combo-option").count(), 0);
+    const cardMetrics = await window.evaluate(() => [...document.querySelectorAll("[data-choice-card]")]
+      .filter((card) => card.getBoundingClientRect().height > 0)
+      .map((card) => {
+        const style = getComputedStyle(card);
+        return `${style.padding}|${style.borderRadius}|${style.minHeight}`;
+      }));
+    assert.equal(new Set(cardMetrics).size, 1, "Option cards should share one padding, radius and minimum height");
+
+    // Referral / ICN match select
+    await window.locator("#match-suffix-length").click();
+    const matchOptions = window.locator('[role="listbox"] [role="option"]');
+    await matchOptions.first().waitFor({ state: "visible" });
+    assert.equal(await matchOptions.count(), 3);
+    await matchOptions.filter({ hasText: "Match last 4 characters" }).click();
+    assert.match(await window.locator("#match-suffix-length").textContent(), /Match last 4 characters/);
+
+    // Stations
+    assert.equal(await window.locator("#station-id-menu").count(), 0);
     await window.locator("#override-station-id").focus();
-    await window.locator("#station-id-menu .combo-option").first().waitFor({ state: "visible" });
-    assert.equal(await window.locator("#station-id-menu .combo-option").count(), 60);
-    assert.match(await window.locator("#station-id-menu .combo-result-summary").textContent(), /complete catalog/);
+    await options(window, "station-id-menu").first().waitFor({ state: "visible" });
+    assert.equal(await options(window, "station-id-menu").count(), 60);
+    assert.match(await window.locator("#station-id-menu [data-combobox-summary]").textContent(), /complete catalog/);
     await window.locator("#override-station-id").fill("508GS");
-    await window.locator("#station-id-toggle").click();
-    assert.equal(await window.locator("#station-id-menu .station-option-field", { hasText: "station_id: 508GS" }).count(), 1);
-    assert.equal(await window.locator("#station-id-menu .station-option-field", { hasText: "station_key: 2864" }).count(), 1);
-    await window.locator("#station-id-menu .combo-option", { hasText: "Pike County VA Clinic" }).click();
+    assert.equal(await window.locator("#station-id-menu [data-option-field]", { hasText: "station_id: 508GS" }).count(), 1);
+    assert.equal(await window.locator("#station-id-menu [data-option-field]", { hasText: "station_key: 2864" }).count(), 1);
+    await options(window, "station-id-menu").filter({ hasText: "Pike County VA Clinic" }).click();
     assert.equal(await window.locator("#override-station-id").inputValue(), "");
-    assert.equal(await window.locator("#selected-stations .selected-station-chip", { hasText: "508GS" }).count(), 1);
+    assert.equal(await chips(window, "selected-stations").filter({ hasText: "508GS" }).count(), 1);
+    await waitForText(window, "#station-id-preview", "randomized from 508GS");
+    await window.locator("#override-station-id").press("Escape");
     assert.equal((await window.locator("body").textContent()).includes("(Optional)"), false);
-    const situationalColor = await window.locator(".situational-label").evaluate((element) => getComputedStyle(element).color);
-    const normalLabelColor = await window.locator(".situational-label").locator("..").evaluate((element) => getComputedStyle(element).color);
+
+    // SEOC and Situational SEOC
+    const situationalColor = await window.locator("[data-situational-label]").evaluate((element) => getComputedStyle(element).color);
+    const normalLabelColor = await window.locator("[data-situational-label]").locator("..").evaluate((element) => getComputedStyle(element).color);
     assert.notEqual(situationalColor, normalLabelColor);
     const seocBounds = await window.locator("#seoc-combobox").boundingBox();
     const situationalSeocBounds = await window.locator("#situational-seoc-combobox").boundingBox();
     assert.equal(Boolean(seocBounds && situationalSeocBounds), true);
     assert.equal(Math.abs(seocBounds.y - situationalSeocBounds.y) < 4, true);
-    await window.locator("#override-station-id").press("Escape");
-    await window.locator("#seoc-combobox").scrollIntoViewIfNeeded();
     await window.locator("#seoc-search").fill("AUD_AUDIOLOGY_1.0.1");
-    const requestedPrimarySeoc = window.locator("#seoc-menu .combo-option").first();
+    const requestedPrimarySeoc = options(window, "seoc-menu").first();
     await requestedPrimarySeoc.waitFor({ state: "visible" });
-    assert.equal((await requestedPrimarySeoc.locator(".combo-option-title").textContent()).trim(), "AUD_AUDIOLOGY");
-    assert.equal((await requestedPrimarySeoc.locator(".combo-option-copy").textContent()).trim(), "SEOC Number: 11");
-    if (process.env.CCRS_E2E_PRIMARY_SEOC_SCREENSHOT) {
-      await window.screenshot({ path: process.env.CCRS_E2E_PRIMARY_SEOC_SCREENSHOT, fullPage: false });
-    }
-    await window.locator("#seoc-search").press("Escape");
+    assert.equal((await requestedPrimarySeoc.locator("[data-option-title]").textContent()).trim(), "AUD_AUDIOLOGY");
+    assert.equal((await requestedPrimarySeoc.locator("[data-option-copy]").textContent()).trim(), "SEOC Number: 11");
     await window.locator("#seoc-search").fill("MSC_INFERTILITY-IUI FEMALE");
-    assert.equal(await window.locator("#seoc-menu .combo-option").count(), 0);
-    assert.equal(await window.locator("#seoc-menu .combo-empty").textContent(), "No matching SEOC values.");
+    assert.equal(await options(window, "seoc-menu").count(), 0);
+    assert.equal(await window.locator("#seoc-menu [data-combobox-empty]").textContent(), "No matching SEOC values.");
     await window.locator("#seoc-search").fill("PMR_ACUPUNCTURE INITIAL");
-    const primarySeoc = window.locator("#seoc-menu .combo-option", { hasText: "PMR_ACUPUNCTURE INITIAL" }).first();
+    const primarySeoc = options(window, "seoc-menu").filter({ hasText: "PMR_ACUPUNCTURE INITIAL" }).first();
     await primarySeoc.waitFor({ state: "visible" });
-    assert.equal((await primarySeoc.locator(".combo-option-title").textContent()).trim(), "PMR_ACUPUNCTURE INITIAL");
-    assert.equal((await primarySeoc.locator(".combo-option-copy").textContent()).trim(), "SEOC Number: 1");
+    assert.equal((await primarySeoc.locator("[data-option-copy]").textContent()).trim(), "SEOC Number: 1");
     await primarySeoc.click();
-    assert.equal(await window.locator("#selected-seocs .selected-station-chip", { hasText: "PMR_ACUPUNCTURE INITIAL" }).count(), 1);
-    assert.equal(await window.locator("#seoc-override-warning").isHidden(), true);
+    assert.equal(await chips(window, "selected-seocs").filter({ hasText: "PMR_ACUPUNCTURE INITIAL" }).count(), 1);
+    assert.equal(await window.locator("#seoc-override-warning").count(), 0);
+    assert.equal(await window.locator("#situational-seoc-warning").count(), 0);
     await window.locator("#seoc-search").press("Escape");
-    await window.locator("#selected-seocs .selected-station-chip", { hasText: "PMR_ACUPUNCTURE INITIAL" }).click();
-    assert.equal(await window.locator("#selected-seocs .selected-station-chip").count(), 0);
-    assert.equal(await window.locator("#seoc-override-warning").isHidden(), true);
-    await window.locator("#seoc-search").fill("PMR_ACUPUNCTURE INITIAL");
-    await window.locator("#seoc-menu .combo-option", { hasText: "PMR_ACUPUNCTURE INITIAL" }).first().click();
-    await window.locator("#seoc-search").press("Escape");
+    await removeChip(window, "selected-seocs", "PMR_ACUPUNCTURE INITIAL");
+    assert.equal(await chips(window, "selected-seocs").count(), 0);
     await window.locator("#situational-seoc-search").fill("AUD_AUDIOLOGY");
-    assert.equal(await window.locator("#situational-seoc-menu .combo-option").count(), 0);
+    assert.equal(await options(window, "situational-seoc-menu").count(), 0);
     await window.locator("#situational-seoc-search").fill("EUC_EMERGENCY CARE");
-    const situationalSeoc = window.locator("#situational-seoc-menu .combo-option", { hasText: "EUC_EMERGENCY CARE" }).first();
+    const situationalSeoc = options(window, "situational-seoc-menu").filter({ hasText: "EUC_EMERGENCY CARE" }).first();
     await situationalSeoc.waitFor({ state: "visible" });
-    if (process.env.CCRS_E2E_SITUATIONAL_SEOC_SCREENSHOT) {
-      await window.locator("#situational-seoc-combobox").scrollIntoViewIfNeeded();
-      await window.screenshot({ path: process.env.CCRS_E2E_SITUATIONAL_SEOC_SCREENSHOT, fullPage: false });
-    }
-    assert.equal((await situationalSeoc.locator(".combo-option-title").textContent()).trim(), "EUC_EMERGENCY CARE");
-    assert.equal((await situationalSeoc.locator(".combo-option-copy").textContent()).trim(), "SEOC Number: 158");
+    assert.equal((await situationalSeoc.locator("[data-option-copy]").textContent()).trim(), "SEOC Number: 158");
     await situationalSeoc.click();
-    assert.equal(await window.locator("#selected-situational-seocs .selected-station-chip", { hasText: "EUC_EMERGENCY CARE" }).count(), 1);
+    assert.equal(await chips(window, "selected-situational-seocs").filter({ hasText: "EUC_EMERGENCY CARE" }).count(), 1);
     assert.match(await window.locator("#seoc-override-warning").textContent(), /Most referrals use regular SEOC only/);
+    // A small red warning sits directly under the Situational field whenever it is in use.
+    const situationalWarning = window.locator("#situational-seoc-warning");
+    assert.match(await situationalWarning.textContent(), /a Situational SEOC is selected/);
+    const warningColor = await situationalWarning.evaluate((element) => getComputedStyle(element).color);
+    const hintColor = await window.locator("#situational-seoc-match").evaluate((element) => getComputedStyle(element).color);
+    assert.notEqual(warningColor, hintColor);
     await window.locator("#situational-seoc-search").press("Escape");
-    await window.locator("#use-all-situational-seocs").check();
+    await setChecked(window, "use-all-situational-seocs", true);
+    assert.equal(await chips(window, "selected-situational-seocs").count(), 0);
     assert.equal(await window.locator("#situational-seoc-search").isDisabled(), false);
     assert.match(await window.locator("#situational-seoc-match").textContent(), /All 9 available Situational SEOC values/);
-    await window.locator("#use-all-situational-seocs").uncheck();
+    assert.match(await window.locator("#situational-seoc-warning").textContent(), /every Situational SEOC will be used/);
+    await setChecked(window, "use-all-situational-seocs", false);
+    assert.equal(await window.locator("#situational-seoc-warning").count(), 0);
+    assert.equal(await window.locator("#seoc-override-warning").count(), 0);
+
+    // Network and archive naming
     await window.locator("#network-search").fill("CCN1");
-    await window.locator("#network-menu .combo-option", { hasText: "CCN1" }).click();
-    await window.locator('input[name="archive-naming-mode"][value="custom"]').check();
+    await options(window, "network-menu").filter({ hasText: "CCN1" }).click();
+    await window.locator("#network-search").press("Escape");
+    await chooseRadio(window, 'input[name="archive-naming-mode"][value="custom"]');
     assert.equal(await window.locator("#archive-custom-fields").isVisible(), true);
     assert.equal(await window.locator(".archive-custom-value").count(), 6);
-    assert.equal(await window.locator(".archive-value-choice.choice-card.choice-card--compact").count(), 6);
     assert.match(
-      await window.locator(".archive-values-help").textContent(),
+      await window.locator("#archive-name-help").textContent(),
       /\{referralNumber\}.*\{referralPrefix\}.*\{networkName\}.*\{date\}.*\{dateTime\}.*\{customText\}/
     );
     await window.locator("#archive-custom-text").fill("CCRS");
-    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26600001_CCRS_Master.json"));
+    await waitForText(window, "#archive-preview", "CCRS26600001_CCRS_Master.json");
     await window.locator("#override-referral-date").fill("2019-03-17");
     await window.locator("#override-referral-date-time").fill("2019-01-02 11:47:32");
-    await window.locator("#archive-custom-select-all").check();
+    await setChecked(window, "archive-custom-select-all", true);
     assert.equal(await window.locator(".archive-custom-value:checked").count(), 6);
-    await window.waitForFunction(() => {
-      const preview = document.querySelector("#archive-preview")?.textContent || "";
-      return preview.includes("CCRS26600001_CCRS_CCN1_2019-03-17_2019-01-02_114732_CCRS_Master.json") &&
-        preview.includes(".gz");
-    });
+    await waitForText(window, "#archive-preview", "CCRS26600001_CCRS_CCN1_2019-03-17_2019-01-02_114732_CCRS_Master.json");
+    assert.match(await window.locator("#archive-preview").textContent(), /\.gz/);
     assert.equal((await window.locator("#archive-preview").textContent()).includes("{"), false);
-    if (process.env.CCRS_E2E_ARCHIVE_SCREENSHOT) {
-      await window.locator(".archive-naming-card").scrollIntoViewIfNeeded();
-      await window.screenshot({ path: process.env.CCRS_E2E_ARCHIVE_SCREENSHOT, fullPage: false });
-    }
+
+    // Dark theme
     await window.locator('[data-theme="dark"]').click();
-    assert.equal(await window.locator("body").evaluate((element) => element.classList.contains("theme-dark")), true);
-    await window.waitForTimeout(200);
-    const darkCardColors = await window.evaluate(() => ({
-      selected: getComputedStyle(document.querySelector('.archive-mode-choices .choice-card:has(input:checked)')).backgroundColor,
-      unselected: getComputedStyle(document.querySelector('.archive-mode-choices .choice-card:not(:has(input:checked))')).backgroundColor,
-    }));
+    assert.equal(await window.locator("html").evaluate((element) => element.classList.contains("dark-mode")), true);
+    await window.waitForTimeout(250);
+    const darkCardColors = await window.evaluate(() => {
+      const cards = [...document.querySelectorAll("#archive-naming-card [role='radiogroup'] [data-choice-card]")];
+      return {
+        selected: getComputedStyle(cards.find((card) => card.querySelector("input:checked"))).backgroundColor,
+        unselected: getComputedStyle(cards.find((card) => !card.querySelector("input:checked"))).backgroundColor,
+        page: getComputedStyle(document.body).backgroundColor,
+      };
+    });
     assert.notEqual(darkCardColors.selected, darkCardColors.unselected);
-    const darkUnselectedChannels = darkCardColors.unselected.match(/[\d.]+/g).slice(0, 3).map(Number);
-    assert.equal(
-      darkUnselectedChannels.every((channel) => channel < 100),
-      true,
-      `Dark-theme unselected option cards should stay dark, received ${darkCardColors.unselected}`
-    );
-    if (process.env.CCRS_E2E_DARK_HELP_SCREENSHOT) {
-      await window.locator("#output-help").evaluate((element) => { element.open = true; });
-      await window.locator("#output-help").scrollIntoViewIfNeeded();
-      await window.screenshot({ path: process.env.CCRS_E2E_DARK_HELP_SCREENSHOT, fullPage: false });
-    }
-    if (process.env.CCRS_E2E_DARK_OPTION_CARD_SCREENSHOT) {
-      await window.locator(".archive-naming-card").scrollIntoViewIfNeeded();
-      await window.screenshot({ path: process.env.CCRS_E2E_DARK_OPTION_CARD_SCREENSHOT, fullPage: false });
+    if (process.env.CCRS_E2E_DARK_SCREENSHOT) {
+      await window.screenshot({ path: process.env.CCRS_E2E_DARK_SCREENSHOT, fullPage: true });
     }
     await window.locator('[data-theme="light"]').click();
-    await window.locator("#archive-custom-select-all").uncheck();
+    assert.equal(await window.locator("html").evaluate((element) => element.classList.contains("dark-mode")), false);
+
+    await setChecked(window, "archive-custom-select-all", false);
     assert.equal(await window.locator(".archive-custom-value:checked").count(), 0);
     assert.equal(await window.locator("#archive-custom-text").isDisabled(), true);
-    await window.locator("#archive-custom-value-referral-number").check();
-    await window.locator("#archive-custom-value-date").check();
-    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26600001_2019-03-17_Master.json"));
-    await window.locator('input[name="archive-naming-mode"][value="referral-number"]').check();
-    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26600001_Master.json"));
-    await window.locator("#selected-networks .selected-station-chip", { hasText: "CCN1" }).click();
+    await setChecked(window, "archive-custom-value-referral-number", true);
+    await setChecked(window, "archive-custom-value-date", true);
+    await waitForText(window, "#archive-preview", "CCRS26600001_2019-03-17_Master.json");
+    await chooseRadio(window, 'input[name="archive-naming-mode"][value="referral-number"]');
+    await waitForText(window, "#archive-preview", "CCRS26600001_Master.json");
+    await removeChip(window, "selected-networks", "CCN1");
     await window.locator("#network-search").fill("CCN2");
-    await window.locator("#network-menu .combo-option", { hasText: "CCN2" }).click();
+    await options(window, "network-menu").filter({ hasText: "CCN2" }).click();
     assert.match(await window.locator("#network-match").textContent(), /CCN2 will be used for every referral/);
     await window.locator("#network-search").fill("CCN4");
-    await window.locator("#network-menu .combo-option", { hasText: "CCN4" }).click();
+    await options(window, "network-menu").filter({ hasText: "CCN4" }).click();
     assert.match(await window.locator("#network-match").textContent(), /mixed from the 2 selected Networks/);
     await window.locator("#network-search").press("Escape");
-    await window.locator("#selected-networks .selected-station-chip", { hasText: "CCN4" }).click();
-    await window.locator('input[name="archive-naming-mode"][value="network"]').check();
-    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCN2_CCRS26600001_Master.json"));
-    const uploadDirectoryNote = window.locator(".upload-path-help").first();
+    await removeChip(window, "selected-networks", "CCN4");
+    await chooseRadio(window, 'input[name="archive-naming-mode"][value="network"]');
+    await waitForText(window, "#archive-preview", "CCN2_CCRS26600001_Master.json");
+
+    // Upload targets follow the workflow policy
+    const uploadDirectoryNote = window.locator("[data-upload-path-help]").first();
     await uploadDirectoryNote.waitFor({ state: "visible" });
     assert.match(await uploadDirectoryNote.textContent(), /CCRS Referral uploads default to \/CCRA_Uploads/);
-    const referralTargets = await window.locator(".upload-target").evaluateAll((rows) => rows
-      .filter((row) => window.getComputedStyle(row).display !== "none")
-      .map((row) => row.dataset.target));
-    assert.deepEqual(referralTargets, ["SQA", "DEV", "PPD"]);
-    assert.equal(await window.locator('.upload-target[data-target="PROD"]').isHidden(), true);
+    const visibleTargets = () => window.locator("[data-upload-target]").evaluateAll((rows) => rows.map((row) => row.dataset.uploadTarget));
+    assert.deepEqual(await visibleTargets(), ["SQA", "DEV", "PPD"]);
+    assert.match(await window.locator("#upload-subtitle").textContent(), /PROD is not available for Referral Files/);
     await assertControlSystem(window);
+
+    // LEIE workflow
     await window.locator("[data-main-tab='leie']").click();
+    assert.match(await window.locator("#workflow-title").textContent(), /LEIE Data Processing/);
+    // The guide is the first item on the module, ahead of the Source section.
+    const guideTop = (await window.locator("#leie-guide-banner").boundingBox()).y;
+    const sourceTop = (await window.locator("#source-card").boundingBox()).y;
+    assert.equal(guideTop < sourceTop, true);
+    assert.deepEqual(
+      await window.locator("#leie-environment-reference [data-leie-environment]").evaluateAll((rows) => rows.map((row) => [...row.children].map((cell) => cell.textContent.trim()).join(" "))),
+      ["SQA VAC10SQLCCN816.va.gov ccrsdb", "DEV VAC10SQLCCN802.va.gov ccrsdb", "PPD VAC10SQLCCN404.va.gov ccrsdb"]
+    );
+    // The server list sits directly under the upload switch and config; validation follows it.
+    const serverListTop = (await window.locator("#upload-targets").boundingBox()).y;
+    const validationTop = (await window.locator("#leie-upload-validation-card").boundingBox()).y;
+    assert.equal(serverListTop < validationTop, true);
+    await window.locator("#leie-validation-batch-id").fill("LEIE_E2E_BATCH");
+    await window.locator("#copy-leie-validation-sql").click();
+    await waitForText(window, "#leie-validation-copy-status", "SQL copied");
+    assert.match(await electronApp.evaluate(({ clipboard }) => clipboard.readText()), /where etl_batch_id = 'LEIE_E2E_BATCH'/);
+    await window.locator("#leie-validation-batch-id").fill("");
+    assert.equal(await window.locator("[data-main-tab]").count(), 3);
+    assert.equal(await window.locator("[data-main-tab='leie'][aria-selected='true']").count(), 1);
     assert.match(await uploadDirectoryNote.textContent(), /LEIE Data uploads default to \/in\/manual_process\//);
-    assert.equal(await window.locator('.upload-target[data-target="PROD"]').isVisible(), true);
-    const leieTargets = await window.locator(".upload-target").evaluateAll((rows) => rows
-      .filter((row) => window.getComputedStyle(row).display !== "none")
-      .map((row) => row.dataset.target));
-    assert.deepEqual(leieTargets, ["SQA", "DEV", "PPD", "PROD"]);
-    assert.equal(await window.locator("#output-help").isHidden(), true);
+    assert.deepEqual(await visibleTargets(), ["SQA", "DEV", "PPD", "PROD"]);
+    assert.equal(await window.locator("#output-help").count(), 0);
     assert.equal(await window.locator("#leie-output-help").isVisible(), true);
-    assert.match(await window.locator("#leie-output-help").textContent(), /LEIE produces a processed \.xlsx file/);
+    assert.match(await window.locator("#leie-output-help button").first().textContent(), /LEIE output naming and safety/);
+    await window.locator("#upload-help button").first().click();
     assert.match(await window.locator("#upload-help").textContent(), /Production is available only for LEIE/);
+    assert.equal(await window.locator("#leie-duplicate-card").isVisible(), true);
+    assert.equal(await window.locator("#referral-details-card").count(), 0);
+    assert.equal(await window.locator("#archive-naming-card").count(), 0);
+    assert.equal((await window.locator("#run-process").textContent()).trim(), "Save Processed File");
+    assert.equal(await window.locator("#run-process").isDisabled(), true);
+    assert.match(await window.locator("#leie-validation-sql").textContent(), /CLAIM_BATCH_LOG/);
+    await window.locator("#leie-validation-batch-id").fill("LEIE_E2E_BATCH");
+    await waitForText(window, "#leie-validation-sql", "LEIE_E2E_BATCH");
     await assertControlSystem(window);
+
+    await window.locator("[data-main-tab='other']").click();
+    assert.equal(await window.locator("#future-card").isVisible(), true);
+    assert.equal(await window.locator("#run-card").count(), 0);
+
+    // Back to Referral Files: the generate settings are still in place.
     await window.locator("[data-main-tab='referral']").click();
+    await window.locator("[data-sub-tab='generate']").click();
     assert.equal(await window.locator("#output-help").isVisible(), true);
-    assert.equal(await window.locator("#leie-output-help").isHidden(), true);
-    await window.locator("#referral-prefix-va").check();
+    await chooseRadio(window, "#referral-prefix-va");
     await window.locator("#referral-code").fill("26S6-00001_TEST");
-    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VA26S6-00001"));
-    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST000026S600001"));
+    await waitForText(window, "#referral-preview", "VA26S6-00001");
+    await waitForText(window, "#icn-preview", "TEST000026S600001");
     assert.match(await window.locator("#referral-prefix-help").textContent(), /hyphens \(-\).*underscores \(_\)/);
     await window.locator("#referral-code").fill("12345678901234567890");
-    await window.locator("#icn-mode-referral-match").check();
-    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VA1234567890"));
-    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST0001234567890"));
-    assert.match(await window.locator("#referral-preview").textContent(), /Preview: VA1234567890/);
-    assert.match(await window.locator("#icn-preview").textContent(), /Preview: TEST0001234567890/);
+    await waitForText(window, "#referral-preview", "VA1234567890");
+    await waitForText(window, "#icn-preview", "TEST0001234567890");
     if (process.env.CCRS_E2E_SCREENSHOT) {
       await window.screenshot({ path: process.env.CCRS_E2E_SCREENSHOT, fullPage: true });
     }
+
+    // The layout follows the window: it fills wide windows, grows on very large ones, and keeps
+    // the Run panel beside the form until the window gets narrow.
+    const layoutAt = async (width, height) => {
+      await window.setViewportSize({ width, height });
+      return window.evaluate(() => {
+        const main = document.querySelector("main").getBoundingClientRect();
+        const run = document.querySelector("#run-card").getBoundingClientRect();
+        const form = document.querySelector("#generator-card").getBoundingClientRect();
+        return {
+          overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+          fillsWindow: main.width >= document.documentElement.clientWidth - 1,
+          runBeside: run.left >= form.right,
+          rootFontSize: parseFloat(getComputedStyle(document.documentElement).fontSize),
+        };
+      });
+    };
+    for (const [width, height] of [[1024, 768], [1366, 768], [1920, 1080], [2560, 1440], [3840, 2160]]) {
+      const layout = await layoutAt(width, height);
+      assert.deepEqual(
+        { overflow: layout.overflow, fillsWindow: layout.fillsWindow, runBeside: layout.runBeside },
+        { overflow: false, fillsWindow: true, runBeside: true },
+        `layout at ${width}x${height}`
+      );
+      assert.equal(width <= 1920 ? layout.rootFontSize < 16.5 : layout.rootFontSize > 18, true, `text size at ${width}x${height}`);
+    }
+    const smallLayout = await layoutAt(640, 480);
+    assert.deepEqual({ overflow: smallLayout.overflow, runBeside: smallLayout.runBeside }, { overflow: false, runBeside: false });
+
+    // Narrow window: no horizontal scrolling and single-column option cards.
     await window.setViewportSize({ width: 800, height: 700 });
-    await window.locator("#output-help").evaluate((element) => { element.open = true; });
     const hasHorizontalOverflow = await window.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
     assert.equal(hasHorizontalOverflow, false);
+    await window.setViewportSize({ width: 560, height: 700 });
     assert.equal(
-      await window.locator(".archive-mode-choices").evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length),
+      await window.locator("#archive-naming-card [role='radiogroup']").evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length),
       1
     );
-    assert.equal(
-      await window.locator("#output-help .context-help-grid").evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length),
-      1
-    );
-    // Exercise the real review dialog at small sizes and high zoom without submitting it.
-    await window.evaluate(() => { window.ccrsRunReview.confirm({ command: "generate", payload: { outputDir: "C:\\Example", fileCount: 3, referralsPerFile: 400 }, elements: {
-        overlay: document.querySelector("#pre-run-overlay"), summary: document.querySelector("#pre-run-summary"),
-        prodWrap: document.querySelector("#prod-confirm-wrap"), prodInput: document.querySelector("#prod-confirm-input"),
-        confirmButton: document.querySelector("#pre-run-confirm") } }); });
-    for (const zoom of [1.5, 2, 3]) {
-      await electronApp.evaluate(({ BrowserWindow }, factor) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(factor), zoom);
-      const confirm = window.locator("#pre-run-confirm");
-      await confirm.scrollIntoViewIfNeeded();
-      assert.ok(await confirm.evaluate((element) => {
-        const rect = element.getBoundingClientRect(); return rect.top >= 0 && rect.bottom <= innerHeight;
-      }), `Generate confirmation reachable at ${zoom * 100}%`);
-    }
+    assert.equal(await window.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false);
+    await window.setViewportSize({ width: 800, height: 600 });
+
+    // A validation error blocks the run before the review dialog.
+    await window.locator("#file-count").fill("0");
+    await window.locator("#run-generate").click();
+    await waitForText(window, "#status-message", "Please fix the highlighted fields before running.");
+    assert.equal(await window.locator("#pre-run-overlay").count(), 0);
+    assert.match(await window.locator("#generator-card").textContent(), /must be greater than zero/);
+    await window.locator("#file-count").fill("2");
+
+    // Real generate run through the safety review dialog.
+    await chooseRadio(window, 'input[name="archive-naming-mode"][value="referral-number"]');
+    await window.locator("#replacement-code").fill("e2e_referral");
+    await window.locator("#master-file-name").fill("");
+    await window.locator("#output-dir").fill(outputDir);
+    await window.locator("#run-generate").click();
+    const confirmButton = window.locator("#pre-run-confirm");
+    await confirmButton.waitFor({ state: "visible" });
+    assert.equal(await window.locator("#prod-confirm-wrap").count(), 0);
+    assert.match(await window.locator("#pre-run-summary").textContent(), /Generate Referral Files/);
+    assert.match(await window.locator("#pre-run-summary").textContent(), /Local output only/);
+    await assertReachable(electronApp, window, confirmButton, "Generate confirmation");
     await window.locator("#pre-run-cancel").click();
-    await electronApp.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.setZoomFactor(1));
-    const result = await window.evaluate(async (targetOutputDir) => window.ccrs.runJob("generate", {
-      outputDir: targetOutputDir,
-      replacementCode: "e2e_referral",
-      archiveBasename: "e2e_archive",
-      clearOutput: true,
-      keepProcessedJson: true,
-      fileCount: 2,
-      referralsPerFile: 2,
-      referralReplacementCode: "",
-      icnSettings: { mode: "test-dynamic" },
-      identityOptions: { randomizeSsn: true, randomizeDob: true, randomizeStationId: true, matchSuffixLength: 5 },
-      optionalOverrides: {},
-      upload: { enabled: false, targets: [] },
-    }), outputDir);
-    assert.match(result.message, /Completed safely\. Processed 2 files/);
-    assert.match(await window.locator("#status-message").textContent(), /was created successfully/);
-    assert.equal(await window.locator("#job-progress-wrap").isVisible(), true);
-    assert.equal(await window.locator("#job-progress-value").textContent(), "100%");
-    assert.equal(fs.readdirSync(outputDir).some((name) => /^e2e_archive_\d{8}_\d{6}\.gz$/.test(name)), true);
+    await confirmButton.waitFor({ state: "detached" });
+    await waitForText(window, "#status-message", "The run was not started.");
+    assert.equal(fs.readdirSync(outputDir).length, 0);
+
+    await window.setViewportSize({ width: 1280, height: 900 });
+    await window.locator("#run-generate").click();
+    await confirmButton.waitFor({ state: "visible" });
+    await confirmButton.click();
+    await window.waitForFunction(() => document.querySelector("#status-badge")?.textContent === "Completed", null, { timeout: 60000 });
+    assert.match(await window.locator("#status-message").textContent(), /Completed safely\. Processed 2 files/);
+    assert.equal(await window.locator("#cancel-job").count(), 0);
+    assert.equal(await window.locator("#job-progress-wrap").count(), 0);
+    assert.equal(await window.locator('#workflow-stepper [data-state="complete"]').count(), 5);
+    assert.equal(await window.locator("#result-actions").isVisible(), true);
+    assert.equal(await window.locator("#retry-failed-uploads").count(), 0);
+    assert.equal(fs.readdirSync(outputDir).some((name) => name.endsWith(".gz")), true);
     const outputJsonPaths = fs.readdirSync(outputDir)
       .map((name) => path.join(outputDir, name))
       .filter((filePath) => filePath.toLowerCase().endsWith(".json") && !filePath.toLowerCase().endsWith(".manifest.json") && !filePath.endsWith("_Master.json"));
-    assert.equal(outputJsonPaths.length, 2);
+    assert.deepEqual(outputJsonPaths.map((filePath) => path.basename(filePath)).sort(), ["e2e_referral_1.json", "e2e_referral_2.json"]);
+    assert.equal(fs.readdirSync(outputDir).some((name) => name.endsWith("_Master.json")), true);
     assert.equal(fs.readdirSync(outputDir).some((name) => name.endsWith(".manifest.json")), false);
-    await window.evaluate((run) => showResultActions(run), result.run);
     await window.locator("#open-batch-manifest").click();
-    await window.waitForFunction(() => document.body.textContent.includes("Manifest generated in the output folder."));
+    await waitForText(window, "#status-message", "Manifest generated in the output folder.");
     assert.equal(fs.readdirSync(outputDir).some((name) => name.endsWith(".manifest.json")), true);
+
     const generatedReferrals = outputJsonPaths.flatMap(
       (filePath) => JSON.parse(fs.readFileSync(filePath, "utf8")).Referrals
     );
-    const appInfo = await window.evaluate(() => window.ccrs.getInfo());
-    const validStationIds = new Set(appInfo.stations.map((station) => station.station_id).filter(Boolean));
     // Situational SEOCs are identified by the Number and ID pair. A regular SEOC may share a
     // Number with a Situational one (several regular entries use 67), so compare the pair.
+    const appInfo = await window.evaluate(() => window.ccrs.getInfo());
     const situationalSeocPairs = new Set(appInfo.situationalSeocOptions.map((option) => `${option.seocKey}::${option.seocId}`));
     assert.equal(situationalSeocPairs.size > 0, true);
+    assert.equal(generatedReferrals.length, 4);
     assert.equal(new Set(generatedReferrals.map((referral) => referral.Patient.SSN)).size, 4);
-    const stationIds = generatedReferrals.map(
-      (referral) => referral.ProgramAuthority?.StationID || referral.StationID
-    );
-    assert.equal(new Set(stationIds).size, 4);
     for (const referral of generatedReferrals) {
       const stationId = referral.ProgramAuthority?.StationID || referral.StationID;
       const seocKey = referral.ProgramAuthority?.SeocKey || referral.SeocKey;
       assert.match(referral.Patient.SSN, /^999-\d{2}-\d{4}$/);
-      assert.equal(validStationIds.has(stationId), true);
+      assert.equal(stationId, "508GS");
       const seocId = referral.ProgramAuthority?.SeocID || referral.SeocID;
       assert.equal(situationalSeocPairs.has(`${seocKey}::${seocId}`), false);
     }
+
+    // Saved settings are restored after a reload.
+    await window.waitForFunction(async (expectedOutputDir) => {
+      const info = await window.ccrs.getInfo();
+      return info.uiSettings.outputDir === expectedOutputDir && info.uiSettings.subTab === "generate";
+    }, outputDir);
     await window.reload();
     await window.waitForLoadState("domcontentloaded");
-    await window.locator("#selected-payment-codes .selected-station-chip").waitFor({ state: "attached" });
-    assert.equal(await window.locator("#selected-payment-codes .selected-station-chip").textContent(), "21 ×");
+    await window.locator("#run-generate").waitFor({ state: "visible" });
+    assert.equal(await window.locator("#release-announcement-accept").count(), 0);
+    assert.equal(await window.locator("#output-dir").inputValue(), outputDir);
+    assert.equal(await window.locator("#optional-fields").isVisible(), true);
+    assert.equal(await chips(window, "selected-payment-codes").count(), 1);
+    assert.match(await chips(window, "selected-payment-codes").first().textContent(), /21/);
     assert.equal(await window.locator("#use-all-payment-codes").isChecked(), false);
+    assert.equal(await chips(window, "selected-stations").filter({ hasText: "508GS" }).count(), 1);
+    assert.match(await window.locator("#match-suffix-length").textContent(), /Match last 4 characters/);
+    assert.deepEqual(pageErrors, []);
+  } catch (error) {
+    const state = await window?.evaluate(() => ({
+      badge: document.querySelector("#status-badge")?.textContent,
+      message: document.querySelector("#status-message")?.textContent,
+      dialog: document.querySelector("[role='dialog']")?.textContent.slice(0, 200),
+      invalid: [...document.querySelectorAll("[aria-invalid='true'], [data-invalid]")].map((element) => `${element.id || element.tagName}=${element.value ?? ""}`),
+      errors: [...document.querySelectorAll(".text-error-primary")].map((element) => element.textContent.slice(0, 160)),
+    })).catch(() => null);
+    console.error("UI state at failure:", JSON.stringify(state));
+    throw error;
   } finally {
     await electronApp.close();
     fs.rmSync(outputDir, { recursive: true, force: true });

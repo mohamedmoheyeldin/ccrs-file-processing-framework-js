@@ -87,7 +87,8 @@ async function processFiles(inputDir, outputDir, replacementCode, clearOutput, r
   assertSafeFolderRelationship(inputDir, outputDir);
   const files = getFiles(inputDir);
   if (files.length === 0) throw new Error("No JSON files were found in the selected source folder.");
-  assertSourceFilesWithinLimits(files);
+  // Generated batches may be larger than the combined limit; the user is warned before the run.
+  assertSourceFilesWithinLimits(files, { allowLargeTotal: runContext.generated === true });
   const preflight = validateReferralSourceFiles(files);
 
   const runId = createRunId();

@@ -37,9 +37,10 @@ Load LEIE data in this order:
 | Environment | Database Server | Database |
 |---|---|---|
 | `SQA` | `VAC10SQLCCN816.va.gov` | `ccrsdb` |
-| `PPD` | `VAC10SQLCCN402.va.gov` | `ccrsdb` |
-| `New PPD` | `VAC10SQLCCN404.va.gov` | `ccrsdb` |
 | `DEV` | `VAC10SQLCCN802.va.gov` | `ccrsdb` |
+| `PPD` | `VAC10SQLCCN404.va.gov` | `ccrsdb` |
+
+The application shows this same table in the LEIE Data Processing module, inside `Step 4: Validate the LEIE Load in the Database`, so the database server for each environment is visible while you run the validation SQL.
 
 ## CCRS Table Viewer URLs
 
@@ -88,7 +89,9 @@ LEIE0731202606153013
 
 ## Step 4: Validate the LEIE Load in the Database
 
-Use the `etl_batch_id` from Step 3 and run the following SQL. Replace the example batch ID with the batch ID for the file you loaded.
+Connect to the database server listed in the Environment Reference for the environment you loaded. Use the `etl_batch_id` from Step 3 and run the following SQL. Replace the example batch ID with the batch ID for the file you loaded.
+
+In the application, enter the batch ID in `ETL Batch ID` and select `Copy SQL`. The complete query set is copied to the clipboard with your batch ID already filled in.
 
 ```sql
 Use ccrsdb;

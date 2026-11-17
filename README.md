@@ -5,10 +5,19 @@
 ![Platform](https://img.shields.io/badge/platform-Windows%20x64-0078D4)
 ![Electron](https://img.shields.io/badge/Electron-45-47848F?logo=electron&logoColor=white)
 ![Node](https://img.shields.io/badge/Node.js-24-5FA04E?logo=nodedotjs&logoColor=white)
+![UI](https://img.shields.io/badge/UI-Untitled%20UI-7F56D9)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 > [!NOTE]
 > A Windows desktop app that automates repetitive CCRS test-data work: it edits and generates referral files, prepares LEIE data, packages the results, and uploads them to approved test environments.
+
+## Application tour
+
+A short walkthrough of the app, from generating referral files to validating a LEIE load. All data shown is test data.
+
+The interface is built with [Untitled UI](https://www.untitledui.com/), using its open-source React components.
+
+![Animated tour of the CCRS File Processing app](docs/images/application-tour.gif)
 
 ## Project mission
 
@@ -26,36 +35,60 @@ Release highlights for Version 1.5.4.
 - Output names: archive names no longer end in `_Final`, and the combined JSON file name can be edited (default `<archive>_Master.json`).
 - Maintenance: Electron, electron-builder, Playwright, and several transitive dependencies were updated to patched releases.
 
-## Version 1.5.3
-
-Release highlights for Version 1.5.3.
-
-- Payment Authority Code: 43 unique values imported from the team PACodes.xlsx (Sheet1); pipe-separated cells are split and duplicates removed.
-- Referral Number: VA or Custom. ICN: Default, Custom, or Referral Number.
-- Output: individual formatted JSON and combined `_Master.json` can be retained independently. Gzip contains the same combined data; the manifest is generated only when requested. Matching names are overwritten after validation; unrelated files are preserved.
-- Selections: one value stays fixed; subsets use only selected values; all clears the selected subset and selecting a value turns all off. Stations must be in the approved catalog and fit the five-character contract. Automatic regular SEOC uses approved Number/ID pairs; Situational SEOC remains optional.
-- Uploads: one shared sequential queue for referrals and LEIE, retaining their separate remote-directory defaults. Each destination is attempted once per run; failure proceeds to the next server. Explicit retry handles only failed servers. Status shows the active server and completed-server count, not a simulated transfer-byte percentage. SFTP completion checks the remote file size; WinSCP reports its own transfer completion.
-- Dialogs scroll at high zoom and on small displays. Setup distinguishes Install from Upgrade using the selected installation folder.
-
+Earlier versions are in the [Release Notes](docs/RELEASE_NOTES.md).
 
 This project is a pure JavaScript Electron desktop app for working with CCRS referral files. It supports editing existing referral JSON files, generating new referral files, building final `.gz` packages, importing WinSCP upload settings, and uploading the finished archive to configured targets.
 
 ## Architecture
 
 ```mermaid
-flowchart LR
-  UI["Renderer<br/>electron/renderer"] -- "preload bridge + IPC" --> Main["Main process<br/>electron/main.js"]
-  Main --> Backend["Backend<br/>electron/backend"]
-  Main -- "worker threads" --> Jobs["Background jobs<br/>progress + cancel"]
-  Jobs --> Backend
-  Backend --> Staging["Isolated run staging<br/>validate → package → promote"]
-  Staging --> Output["Output folder<br/>JSON · _Master.json · .gz"]
-  Output --> Queue["Sequential upload queue<br/>SQA → DEV → PPD (→ PROD for LEIE)"]
+flowchart TB
+  subgraph APP["Desktop app (Electron)"]
+    direction LR
+    UI["<b>Renderer</b><br/>React and Untitled UI<br/>electron/renderer"]
+    PRE["<b>Preload bridge</b><br/>safe window.ccrs API<br/>electron/preload.js"]
+    MAIN["<b>Main process</b><br/>window, dialogs, IPC<br/>electron/main.js"]
+    UI <-->|"requests and progress"| PRE
+    PRE <-->|"IPC"| MAIN
+  end
+
+  subgraph WORK["Processing"]
+    direction LR
+    JOBS["<b>Background jobs</b><br/>worker threads<br/>progress and cancel"]
+    BACK["<b>Backend</b><br/>referral and LEIE logic<br/>electron/backend"]
+    STAGE["<b>Isolated run staging</b><br/>validate, package, promote"]
+    JOBS --> BACK
+    BACK --> STAGE
+  end
+
+  subgraph RESULTS["Results"]
+    direction LR
+    FILES["<b>Output folder</b><br/>JSON, _Master.json, .gz<br/>processed .xlsx"]
+    QUEUE["<b>Sequential upload queue</b><br/>each file once per server"]
+    ENV["<b>Test environments</b><br/>SQA, DEV, PPD<br/>PROD for LEIE only"]
+    FILES --> QUEUE
+    QUEUE --> ENV
+  end
+
+  APP -->|"starts a run"| WORK
+  WORK -->|"only after validation passes"| RESULTS
+
+  classDef app fill:#EFF8FF,stroke:#1570EF,stroke-width:2px,color:#102A56
+  classDef work fill:#F4F3FF,stroke:#6938EF,stroke-width:2px,color:#27115F
+  classDef results fill:#ECFDF3,stroke:#079455,stroke-width:2px,color:#053321
+  class UI,PRE,MAIN app
+  class JOBS,BACK,STAGE work
+  class FILES,QUEUE,ENV results
+  style APP fill:none,stroke:#1570EF,stroke-dasharray:5 4
+  style WORK fill:none,stroke:#6938EF,stroke-dasharray:5 4
+  style RESULTS fill:none,stroke:#079455,stroke-dasharray:5 4
 ```
+
+The app has three layers. The desktop app collects the settings, processing does the work in the background so the window stays responsive, and results are written and uploaded only after validation passes.
 
 - Electron handles the desktop window, dialogs, IPC, and Windows packaging.
 - The runtime logic lives under [electron/backend](electron/backend).
-- The UI lives under [electron/renderer](electron/renderer).
+- The UI lives under [electron/renderer](electron/renderer). It is a React application built from [Untitled UI React](https://www.untitledui.com/react) components; `pnpm start` bundles it automatically before the window opens.
 - The canonical application logo is [assets/icons/ccrs_app_icon.png](assets/icons/ccrs_app_icon.png); its multi-resolution Windows counterpart is [assets/icons/ccrs_app_icon.ico](assets/icons/ccrs_app_icon.ico). Both are used by the renderer, application window, executable, installer, and uninstaller.
 
 ## Versioning
@@ -198,41 +231,6 @@ pnpm data:seoc -- /path/to/SEOC.xlsx
 pnpm verify
 ```
 
-## Version 1.5.3 Highlights
-
-- Keeps the complete Version 1.4.1 experience and adds cleaner SEOC labels, Network assignment choices, a sequential upload queue that continues past a failed server, clearer recovery guidance, and calmer option-card highlighting.
-- Accepts hyphens and underscores in Referral Number bodies and Custom prefixes while preserving live previews and unique generated values.
-- Accepts lowercase, uppercase, and mixed-case text across user-entered fields without silently changing the user's capitalization.
-
-## Version 1.4.1 Highlights
-- Includes every Version 1.4 improvement listed in the historical notes.
-- Keeps regular and Situational SEOC choices in separate, non-overlapping catalogs.
-- Limits Situational SEOC to nine approved manual-only choices.
-- Displays the complete SEOC ID with its matching Number directly underneath.
-- Uses regular source SEOC values automatically and warns whenever a manual override is active.
-- Expandable help makes the five-step workflow and its most important choices easier to understand.
-- Live previews make it easier to confirm names, Station values, and other choices before creating files.
-- Referral Number, ICN, Archive naming, and similar choices share one compact, professional design.
-- Station, SEOC, and Situational SEOC selection is clearer, searchable, and reliable across different window sizes.
-- Archive naming offers ready-made choices and an easy Custom checkbox builder.
-- Referral and LEIE guidance now matches the selected task, including the upload destinations available to each workflow.
-- User naming and selection choices return after restarting the app.
-- Full current and historical notes are maintained in [docs/RELEASE_NOTES.md](docs/RELEASE_NOTES.md).
-
-Previous release notes:
-
-- Version 1.4
-- Version 1.3.11
-- Version 1.3.10
-- Version 1.3.9
-- Version 1.3.8
-- Version 1.3.7 — internal release included in Version 1.3.8
-- Version 1.3.6
-- Version 1.3.5
-- Version 1.3.4
-- Version 1.3.3
-- Version 1.3.2
-
 ## Validation And Testing
 Developer setup, architecture, and test-layer details are maintained in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and [docs/TESTING.md](docs/TESTING.md).
 
@@ -262,6 +260,7 @@ The Windows Playwright test in [scripts/electron-e2e-test.js](scripts/electron-e
 
 | Document | Read it for |
 |---|---|
+| [LEIE Upload Validation Guide](docs/LEIE_UPLOAD_VALIDATION_GUIDE.md) | Loading LEIE data and checking it in each environment |
 | [Project Vision](docs/PROJECT_VISION.md) | Why the app exists and how new workflows are proposed |
 | [Architecture](docs/ARCHITECTURE.md) | Process boundaries, safety design, data flow |
 | [Development](docs/DEVELOPMENT.md) | Setup, change rules, release metadata, AI coding assistant setup |
@@ -270,7 +269,6 @@ The Windows Playwright test in [scripts/electron-e2e-test.js](scripts/electron-e
 | [Testing](docs/TESTING.md) | Test layers and when to run them |
 | [Improvement Recommendations](docs/IMPROVEMENT_RECOMMENDATIONS.md) | Proposed, not yet implemented hardening and upgrade ideas, ranked by priority |
 | [User Guide](docs/USER_GUIDE.md) | Step-by-step use of both workflows |
-| [LEIE Upload Validation Guide](docs/LEIE_UPLOAD_VALIDATION_GUIDE.md) | Checking LEIE uploads |
 | [Stakeholder Overview](docs/STAKEHOLDER_OVERVIEW.md) | A short introduction for managers and the team |
 | [Release Notes](docs/RELEASE_NOTES.md) | Every release, newest first |
 | [Team Sharing Checklist](docs/TEAM_SHARING_CHECKLIST.md) | Distributing a release to the team |

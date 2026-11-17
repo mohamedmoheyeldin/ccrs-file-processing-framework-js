@@ -36,7 +36,7 @@ const {
   zipOutput,
 } = require("../electron/backend/zipper");
 const { writeFileAtomic } = require("../electron/backend/atomicFile");
-const { assertSourceFilesWithinLimits } = require("../electron/backend/limits");
+const { assertSourceFilesWithinLimits, describeLargeGeneratedRun, describeTotalSizeLimit, formatBytes } = require("../electron/backend/limits");
 const { importCredentialFile, parseCredentialFile } = require("../electron/backend/secureCredentials");
 const {
   DEFAULT_UI_SETTINGS,
@@ -66,7 +66,7 @@ const { normalizeStations } = require("../electron/backend/stationCatalog");
 const { ensureRuntimeFiles } = require("../electron/backend/appPaths");
 const { normalizeCell } = require("./import-stations");
 const { convertWorksheet: convertSeocWorksheet, splitVersionedSeocId } = require("./import-seoc");
-const { getSituationalSeocOptions, resolveSeocSelection } = require("../electron/backend/referralGenerator");
+const { buildGeneratedReferralSources, estimateGeneratedSourceBytes, getSituationalSeocOptions, resolveSeocSelection } = require("../electron/backend/referralGenerator");
 const { assertSafeFolderRelationship, stripWindowsExtendedPathPrefix } = require("../electron/backend/batchSafety");
 const { validateReferralFile } = require("../electron/backend/referralValidator");
 const { allowedUploadTargets } = require("../electron/backend/workflowPolicy");
@@ -123,11 +123,15 @@ test("Version 1.5.4 metadata, combined user release notes, safety controls, and 
   const smokeWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "smoke-tests.yml"), "utf8");
   const buildReleaseScript = fs.readFileSync(path.join(projectRoot, "scripts", "build-release.js"), "utf8");
   const rendererHtml = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "index.html"), "utf8");
-  const rendererStyles = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "styles.css"), "utf8");
-  const rendererApp = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "app.js"), "utf8");
+  const rendererSourceDir = path.join(projectRoot, "electron", "renderer", "src");
+  const readRendererSource = (...parts) => fs.readFileSync(path.join(rendererSourceDir, ...parts), "utf8");
+  const rendererStyles = readRendererSource("app.css");
+  const rendererApp = readRendererSource("App.jsx");
+  const rendererSections = readRendererSource("components", "sections.jsx");
+  const rendererController = readRendererSource("lib", "useController.js");
+  const rendererLogic = readRendererSource("lib", "logic.js");
+  const rendererBuild = fs.readFileSync(path.join(projectRoot, "scripts", "build-renderer.js"), "utf8");
   const workflowPolicy = fs.readFileSync(path.join(projectRoot, "electron", "backend", "workflowPolicy.js"), "utf8");
-  const jobUi = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "jobUi.js"), "utf8");
-  const compactSelect = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "compactSelect.js"), "utf8");
   const mainProcess = fs.readFileSync(path.join(projectRoot, "electron", "main.js"), "utf8");
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
@@ -166,33 +170,37 @@ test("Version 1.5.4 metadata, combined user release notes, safety controls, and 
   assert.equal(packageConfig.build.nsis.uninstallerIcon, "assets/icons/ccrs_app_icon.ico");
   assert.equal(packageConfig.build.nsis.installerHeaderIcon, "assets/icons/ccrs_app_icon.ico");
   assert.match(rendererHtml, /ccrs_app_icon\.ico/);
-  assert.equal((rendererHtml.match(/ccrs_app_icon\.png/g) || []).length, 2);
-  assert.match(rendererHtml, /class="release-announcement-scroll"/);
-  assert.match(rendererHtml, />Start Using The App</);
   assert.match(rendererHtml, /Content-Security-Policy/);
-  assert.match(rendererHtml, /id="cancel-job"/);
-  assert.match(rendererHtml, /id="job-progress-wrap"/);
-  assert.match(rendererHtml, /id="job-progress-label"/);
-  assert.match(rendererHtml, /id="job-progress-value"/);
-  assert.match(rendererHtml, /aria-live="polite"/);
-  assert.match(rendererHtml, /compactSelect\.js/);
-  assert.match(rendererStyles, /\.compact-select-menu\s*\{[^}]*max-height:\s*260px/s);
-  assert.match(rendererStyles, /--control-height:\s*48px/);
-  assert.match(rendererStyles, /--control-touch-target:\s*44px/);
-  assert.match(rendererStyles, /\.field-block\s*\{[^}]*align-content:\s*start/s);
-  assert.match(rendererStyles, /\.upload-target-grid\s*\{[^}]*minmax\(0, 2fr\) minmax\(0, 3fr\)/s);
-  assert.match(rendererStyles, /\.upload-target-grid\s*\{[^}]*align-items:\s*start/s);
-  assert.doesNotMatch(rendererStyles, /\.upload-target-grid\s*\{[^}]*180px/s);
-  assert.match(rendererApp, /stationIdCombobox\.contains\(document\.activeElement\)/);
+  assert.match(rendererHtml, /style-src 'self' 'sha256-/);
+  assert.doesNotMatch(rendererHtml, /unsafe-inline|unsafe-eval/);
+  assert.match(rendererHtml, /<div id="root"><\/div>/);
+  assert.match(rendererHtml, /\.\/dist\/renderer\.css/);
+  assert.match(rendererHtml, /\.\/dist\/renderer\.js/);
+  assert.match(rendererApp, /ccrs_app_icon\.png/);
+  assert.match(rendererApp, />\s*Start Using The App\s*</);
+  assert.match(rendererApp, /id="cancel-job"/);
+  assert.match(rendererApp, /id="job-progress-wrap"/);
+  assert.match(rendererApp, /id="job-progress-label"/);
+  assert.match(rendererApp, /id="job-progress-value"/);
+  assert.match(rendererApp, /aria-live="polite"/);
+  assert.match(rendererApp, /@\/components\/application\/modals\/modal/);
+  assert.match(rendererSections, /@\/components\/application\/table\/table/);
+  assert.match(rendererStyles, /@import "tailwindcss"/);
+  assert.match(rendererStyles, /\.\/ui\/styles\/theme\.css/);
+  assert.match(rendererBuild, /alias:\s*\{[^}]*"@"/s);
+  assert.match(packageConfig.scripts.prestart, /build-renderer\.js/);
+  assert.match(packageConfig.scripts.pretest, /build-renderer\.js/);
+  assert.match(packageConfig.scripts.predist, /build-renderer\.js/);
+  assert.equal(packageConfig.build.files.includes("!electron/renderer/src/**/*"), true);
+  for (const removedFile of ["app.js", "styles.css", "jobUi.js", "runReview.js", "compactSelect.js"]) {
+    assert.equal(fs.existsSync(path.join(projectRoot, "electron", "renderer", removedFile)), false, `${removedFile} was replaced by the React renderer`);
+  }
   assert.match(workflowPolicy, /REFERRAL_UPLOAD_TARGET_NAMES = Object\.freeze\(\["SQA", "DEV", "PPD"\]\)/);
-  assert.match(rendererApp, /PROD is not available for Referral Files/);
-  assert.match(jobUi, /progressElement\.removeAttribute\("value"\)/);
-  assert.match(jobUi, /percent/);
-  assert.match(compactSelect, /aria-controls/);
-  assert.match(compactSelect, /event\.key === "Home" \|\| event\.key === "End"/);
-  assert.match(compactSelect, /aria-invalid/);
-  assert.match(rendererStyles, /grid-template-rows:\s*auto minmax\(0, 1fr\) auto/);
-  assert.match(rendererStyles, /\.release-announcement-scroll\s*\{[^}]*overflow-y:\s*auto/s);
+  assert.match(rendererSections, /PROD is not available for Referral Files/);
+  assert.match(rendererLogic, /export function progressDisplay/);
+  assert.match(rendererApp, /id="open-upload-log"/);
+  assert.match(rendererController, /docs\?\.uploadLogPath/);
+  assert.match(rendererLogic, /percent/);
   assert.match(mainProcess, /ccrs_app_icon\.ico/);
   assert.equal(fs.existsSync(path.join(projectRoot, ".github", "release.yml")), false);
   assert.match(releaseWorkflow, /\$config\.releaseTag/);
@@ -214,13 +222,13 @@ test("Version 1.5.4 metadata, combined user release notes, safety controls, and 
   assert.match(mainProcess, /jobWorker\.js/);
   assert.match(mainProcess, /backend:cancel/);
   assert.match(mainProcess, /Background generation must return an archive without an automatic manifest/);
-  assert.match(rendererHtml, /id="pre-run-overlay"/);
-  assert.match(rendererHtml, /id="retry-failed-uploads"/);
-  assert.doesNotMatch(rendererHtml, /id="recent-runs"/);
-  assert.doesNotMatch(rendererHtml, /id="generation-preset"/);
-  assert.doesNotMatch(rendererHtml, /id="generation-preset-name"/);
-  assert.doesNotMatch(rendererApp, /renderRecentRuns|GenerationPreset/);
-  assert.match(jobUi, /normalizedPhase/);
+  assert.match(rendererApp, /id="pre-run-overlay"/);
+  assert.match(rendererApp, /id="retry-failed-uploads"/);
+  for (const source of [rendererApp, rendererSections, rendererController]) {
+    assert.doesNotMatch(source, /id="recent-runs"|id="generation-preset"|id="generation-preset-name"/);
+    assert.doesNotMatch(source, /renderRecentRuns|GenerationPreset/);
+  }
+  assert.match(rendererLogic, /export function workflowProgress/);
 });
 
 test("Workflow policy is authoritative for Referral and LEIE upload environments", () => {
@@ -346,7 +354,7 @@ test("LEIE upload targets use the manual-processing directory without replacing 
 });
 
 test("Referral and LEIE upload notes identify their separate default directories", () => {
-  const rendererSource = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "app.js"), "utf8");
+  const rendererSource = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "src", "components", "sections.jsx"), "utf8");
   assert.match(rendererSource, /CCRS Referral uploads default to/);
   assert.match(rendererSource, /separate from the LEIE Data default/);
   assert.match(rendererSource, /LEIE Data uploads default to/);
@@ -1584,6 +1592,88 @@ test("App info prefers the PDF user guide path", async () => {
   const info = await backend.handleCommand("info", {});
   assert.equal(typeof info.docs?.userGuidePath, "string");
   assert.match(info.docs.userGuidePath, /USER_GUIDE\.pdf$/);
+});
+
+test("Generate runs over the recommended size are estimated and warned about, not blocked", async () => {
+  assert.equal(formatBytes(1024 ** 3), "1.00 GB");
+  assert.equal(formatBytes(512 * 1024 ** 2), "512.0 MB");
+  assert.match(describeTotalSizeLimit(1.5 * 1024 ** 3, 1024 ** 3), /source files total 1\.50 GB, which is over the 1\.00 GB combined safety limit/);
+  assert.match(describeLargeGeneratedRun(1.25 * 1024 ** 3, 1024 ** 3), /will create about 1\.25 GB of JSON files, which is more than the recommended 1\.00 GB\. You can still run it\./);
+
+  const generatedDir = buildGeneratedReferralSources(9, 7, {});
+  try {
+    const generatedFiles = fs.readdirSync(generatedDir).map((name) => path.join(generatedDir, name));
+    const actualBytes = generatedFiles.reduce((total, filePath) => total + fs.statSync(filePath).size, 0);
+    const estimatedBytes = estimateGeneratedSourceBytes(9, 7);
+    assert.equal(Math.abs(estimatedBytes - actualBytes) / actualBytes < 0.02, true, `estimate ${estimatedBytes} should be close to ${actualBytes}`);
+
+    // Existing source folders keep the combined limit; generated batches may exceed it.
+    const previousLimit = process.env.CCRS_MAX_TOTAL_SOURCE_BYTES;
+    process.env.CCRS_MAX_TOTAL_SOURCE_BYTES = String(Math.floor(actualBytes / 2));
+    try {
+      assert.throws(() => assertSourceFilesWithinLimits(generatedFiles), /combined safety limit/);
+      assert.equal(assertSourceFilesWithinLimits(generatedFiles, { allowLargeTotal: true }), actualBytes);
+    } finally {
+      if (previousLimit === undefined) delete process.env.CCRS_MAX_TOTAL_SOURCE_BYTES;
+      else process.env.CCRS_MAX_TOTAL_SOURCE_BYTES = previousLimit;
+    }
+  } finally {
+    fs.rmSync(generatedDir, { recursive: true, force: true });
+  }
+
+  const smallPreview = await backend.handleCommand("preview", { fileCount: 2, referralsPerFile: 2 });
+  assert.equal(smallPreview.generatedSize.overLimit, false);
+  assert.equal(smallPreview.generatedSize.warning, "");
+
+  const largePreview = await backend.handleCommand("preview", { fileCount: 100, referralsPerFile: 800 });
+  assert.equal(largePreview.generatedSize.overLimit, true);
+  assert.match(largePreview.generatedSize.label, /GB$/);
+  assert.match(largePreview.generatedSize.warning, /You can still run it/);
+  assert.equal(largePreview.fieldErrors.referralsPerFile, undefined);
+  assert.equal(largePreview.fieldErrors.fileCount, undefined);
+
+  // A generate run over the limit completes instead of being rejected.
+  const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "ccrs-size-limit-"));
+  const previousLimit = process.env.CCRS_MAX_TOTAL_SOURCE_BYTES;
+  process.env.CCRS_MAX_TOTAL_SOURCE_BYTES = "1024";
+  try {
+    const result = await backend.handleCommand("generate", {
+      outputDir,
+      fileCount: 2,
+      referralsPerFile: 2,
+      referralReplacementCode: "26S600001",
+      archiveBasename: "large_run",
+      icnSettings: { mode: ICN_MODES.REFERRAL_MATCH },
+      identityOptions: {},
+      upload: { enabled: false },
+    });
+    assert.match(result.message, /Processed 2 files/);
+    assert.equal(fs.readdirSync(outputDir).some((name) => name.endsWith(".gz")), true);
+  } finally {
+    if (previousLimit === undefined) delete process.env.CCRS_MAX_TOTAL_SOURCE_BYTES;
+    else process.env.CCRS_MAX_TOTAL_SOURCE_BYTES = previousLimit;
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  }
+});
+
+test("Clipboard copies go through the main process because the preload is sandboxed", () => {
+  const mainSource = fs.readFileSync(path.join(projectRoot, "electron", "main.js"), "utf8");
+  const preloadSource = fs.readFileSync(path.join(projectRoot, "electron", "preload.js"), "utf8");
+  assert.match(mainSource, /handle\("clipboard:write-text"/);
+  assert.match(preloadSource, /ipcRenderer\.invoke\("clipboard:write-text"/);
+  assert.doesNotMatch(preloadSource, /\bclipboard\b[^:]*require|\{[^}]*\bclipboard\b[^}]*\} = require/);
+});
+
+test("LEIE guide lists one PPD database server and the app shows the same reference", () => {
+  const guide = fs.readFileSync(path.join(projectRoot, "docs", "LEIE_UPLOAD_VALIDATION_GUIDE.md"), "utf8");
+  const logic = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "src", "lib", "logic.js"), "utf8");
+  assert.match(guide, /\| `PPD` \| `VAC10SQLCCN404\.va\.gov` \| `ccrsdb` \|/);
+  assert.doesNotMatch(guide, /New PPD|VAC10SQLCCN402/);
+  for (const server of ["VAC10SQLCCN816.va.gov", "VAC10SQLCCN802.va.gov", "VAC10SQLCCN404.va.gov"]) {
+    assert.equal(guide.includes(server), true);
+    assert.equal(logic.includes(server), true);
+  }
+  assert.doesNotMatch(logic, /VAC10SQLCCN402/);
 });
 
 test("Preview validation reports field-level errors without throwing", async () => {

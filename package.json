@@ -6,9 +6,9 @@
   "author": "Mohamed Moheyeldin (Eldin)",
   "license": "MIT",
   "scripts": {
-    "prestart": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
+    "prestart": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js && node scripts/build-renderer.js",
     "start": "electron .",
-    "pretest": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
+    "pretest": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js && node scripts/build-renderer.js",
     "test": "pnpm run test:instructions && pnpm run test:migrate && pnpm run test:syntax && pnpm run test:smoke && pnpm run test:regression && pnpm run test:upload",
     "test:upload": "node scripts/upload-sftp-test.js",
     "verify": "pnpm test",
@@ -18,10 +18,11 @@
     "migrate:repo": "node scripts/migrate-repo.js",
     "test:syntax": "node scripts/syntax-check.js",
     "test:smoke": "node scripts/smoke-test.js",
-    "test:e2e": "node scripts/electron-e2e-test.js",
+    "test:e2e": "node scripts/build-renderer.js && node scripts/electron-e2e-test.js",
+    "build:renderer": "node scripts/build-renderer.js",
     "data:stations": "node scripts/import-stations.js",
     "data:seoc": "node scripts/import-seoc.js",
-    "predist": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js",
+    "predist": "node scripts/generate-user-guide-pdf.js && node scripts/sync-build-version.js && node scripts/build-renderer.js",
     "dist": "node scripts/build-release.js",
     "test:regression": "node scripts/workflow-regression-test.js"
   },
@@ -30,15 +31,28 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@tailwindcss/cli": "^4.3.5",
+    "@untitledui/icons": "^0.0.23",
     "electron": "^45.3.3",
     "electron-builder": "^26.18.1",
-    "playwright": "^1.65.1"
+    "esbuild": "^0.28.2",
+    "playwright": "^1.65.1",
+    "react": "^19.3.1",
+    "react-aria": "^3.53.1",
+    "react-aria-components": "^1.22.1",
+    "react-dom": "^19.3.1",
+    "tailwind-merge": "^3.7.0",
+    "tailwindcss": "^4.3.5",
+    "tailwindcss-animate": "^1.0.7",
+    "tailwindcss-react-aria-components": "^2.2.0"
   },
   "build": {
     "appId": "com.ccrs.fileprocessingframework",
     "productName": "CCRS File Processing Framework",
     "files": [
       "electron/**/*",
+      "!electron/renderer/src/**/*",
       "assets/icons/ccrs_app_icon.ico",
       "assets/icons/ccrs_app_icon.png",
       "package.json"
@@ -53,7 +67,11 @@
       },
       {
         "from": "docs",
-        "to": "docs"
+        "to": "docs",
+        "filter": [
+          "**/*",
+          "!images/**"
+        ]
       },
       {
         "from": "assets",
@@ -75,7 +93,11 @@
       },
       {
         "from": "docs",
-        "to": "docs"
+        "to": "docs",
+        "filter": [
+          "**/*",
+          "!images/**"
+        ]
       },
       {
         "from": "assets",

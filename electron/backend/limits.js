@@ -26,10 +26,26 @@ function getProcessingLimits() {
 function formatBytes(bytes) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
 }
 
-function assertSourceFilesWithinLimits(filePaths) {
+/** Message shown when the selected source files are larger than the combined limit. */
+function describeTotalSizeLimit(totalBytes, limitBytes) {
+  return `The selected source files total ${formatBytes(totalBytes)}, which is over the ${formatBytes(limitBytes)} combined safety limit. Split the files into smaller batches and run them one batch at a time.`;
+}
+
+/**
+ * Warning for a generate run that is larger than the recommended size. Large generate runs are
+ * allowed: files are written and packaged as streams, so the run needs disk space, not memory.
+ */
+function describeLargeGeneratedRun(estimatedBytes, limitBytes) {
+  // The run holds the generated sources, the processed JSON, the combined JSON and the archive.
+  const diskBytes = estimatedBytes * 3;
+  return `This run will create about ${formatBytes(estimatedBytes)} of JSON files, which is more than the recommended ${formatBytes(limitBytes)}. You can still run it. It will take longer, and the computer needs about ${formatBytes(diskBytes)} of free disk space.`;
+}
+
+function assertSourceFilesWithinLimits(filePaths, { allowLargeTotal = false } = {}) {
   const limits = getProcessingLimits();
   let totalBytes = 0;
   for (const filePath of filePaths) {
@@ -39,8 +55,8 @@ function assertSourceFilesWithinLimits(filePaths) {
     }
     totalBytes += size;
   }
-  if (totalBytes > limits.maxTotalSourceBytes) {
-    throw new Error(`Selected source files exceed the ${formatBytes(limits.maxTotalSourceBytes)} combined safety limit.`);
+  if (!allowLargeTotal && totalBytes > limits.maxTotalSourceBytes) {
+    throw new Error(describeTotalSizeLimit(totalBytes, limits.maxTotalSourceBytes));
   }
   return totalBytes;
 }
@@ -48,6 +64,8 @@ function assertSourceFilesWithinLimits(filePaths) {
 module.exports = {
   DEFAULT_LIMITS,
   assertSourceFilesWithinLimits,
+  describeLargeGeneratedRun,
+  describeTotalSizeLimit,
   formatBytes,
   getProcessingLimits,
 };

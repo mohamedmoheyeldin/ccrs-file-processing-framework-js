@@ -37,6 +37,7 @@ const { setupLogger } = require("./logger");
 const { processFiles } = require("./processor");
 const {
   buildGeneratedReferralSources,
+  estimateGeneratedSourceBytes,
   getGeneratorDefaults,
   getSeocOptions,
   getSituationalSeocOptions,
@@ -61,7 +62,7 @@ const {
 } = require("./uploader");
 const { sanitizeFilenameBase } = require("./renamer");
 const { buildArchiveBasename, buildMasterFileName, buildOutputFileNames, DEFAULT_ARCHIVE_BASENAME, sanitizeArchiveBasename } = require("./zipper");
-const { assertSourceFilesWithinLimits, getProcessingLimits } = require("./limits");
+const { assertSourceFilesWithinLimits, describeLargeGeneratedRun, formatBytes, getProcessingLimits } = require("./limits");
 const { writeFileAtomic } = require("./atomicFile");
 const { assertSafeFolderRelationship, cleanupStaleRunStagingDirectories } = require("./batchSafety");
 const { getRun, saveRun } = require("./runHistory");
@@ -105,6 +106,7 @@ function loadAppVersionInfo() {
           displayLabel,
           releaseKey,
           releaseNotes: normalizeReleaseNotes(parsed.releaseNotes || parsed.release_notes),
+          teamHighlights: normalizeReleaseNotes(parsed.teamHighlights),
         };
       }
     } catch (_error) {
@@ -119,6 +121,7 @@ function loadAppVersionInfo() {
     displayLabel: "",
     releaseKey: "",
     releaseNotes: [],
+    teamHighlights: [],
   };
 }
 
@@ -206,6 +209,7 @@ function getInfo() {
       version: appVersion.version,
       label: appVersion.label || appVersion.displayLabel,
       notes: appVersion.releaseNotes,
+      highlights: appVersion.teamHighlights || [],
       shouldShow: Boolean(
         appVersion.releaseKey &&
           acknowledgedReleaseKey !== appVersion.releaseKey
@@ -408,8 +412,30 @@ function buildPreview(payload) {
     icnPreview,
     referralNumber: normalizedReferral,
     optionalOverrides: normalizedOptionalOverrides,
+    generatedSize: describeGeneratedSize(payload),
     fieldErrors,
   };
+}
+
+/** Estimated size of the JSON a generate run would create, for the live summary in the UI. */
+function describeGeneratedSize(payload) {
+  if (payload.fileCount === undefined) return null;
+  try {
+    const bytes = estimateGeneratedSourceBytes(payload.fileCount, payload.referralsPerFile);
+    const limitBytes = getProcessingLimits().maxTotalSourceBytes;
+    if (bytes <= 0) return null;
+    const overLimit = bytes > limitBytes;
+    return {
+      bytes,
+      label: formatBytes(bytes),
+      limitBytes,
+      limitLabel: formatBytes(limitBytes),
+      overLimit,
+      warning: overLimit ? describeLargeGeneratedRun(bytes, limitBytes) : "",
+    };
+  } catch (_error) {
+    return null;
+  }
 }
 
 function collectFieldErrors(payload) {
@@ -519,7 +545,6 @@ function collectFieldErrors(payload) {
   if (Number(payload.fileCount || 0) * Number(payload.referralsPerFile || 0) > processingLimits.maxGeneratedReferrals) {
     fieldErrors.referralsPerFile = `The generated batch cannot exceed ${processingLimits.maxGeneratedReferrals.toLocaleString()} referrals.`;
   }
-
   try {
     validateIcnSettings(icnSettings);
   } catch (error) {
@@ -775,7 +800,7 @@ async function runGenerate(payload, emitProgress) {
       args.uploadOptions,
       args.archiveBasename,
       args.identityOptions,
-      { appVersion: loadAppVersionInfo().version }
+      { appVersion: loadAppVersionInfo().version, generated: true }
     );
   } finally {
     removePath(generatedInputDir);
