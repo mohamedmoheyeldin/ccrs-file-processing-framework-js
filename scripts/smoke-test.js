@@ -123,11 +123,15 @@ test("Version 1.5.3 metadata, combined user release notes, safety controls, and 
   const smokeWorkflow = fs.readFileSync(path.join(projectRoot, ".github", "workflows", "smoke-tests.yml"), "utf8");
   const buildReleaseScript = fs.readFileSync(path.join(projectRoot, "scripts", "build-release.js"), "utf8");
   const rendererHtml = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "index.html"), "utf8");
-  const rendererStyles = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "styles.css"), "utf8");
-  const rendererApp = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "app.js"), "utf8");
+  const rendererSourceDir = path.join(projectRoot, "electron", "renderer", "src");
+  const readRendererSource = (...parts) => fs.readFileSync(path.join(rendererSourceDir, ...parts), "utf8");
+  const rendererStyles = readRendererSource("app.css");
+  const rendererApp = readRendererSource("App.jsx");
+  const rendererSections = readRendererSource("components", "sections.jsx");
+  const rendererController = readRendererSource("lib", "useController.js");
+  const rendererLogic = readRendererSource("lib", "logic.js");
+  const rendererBuild = fs.readFileSync(path.join(projectRoot, "scripts", "build-renderer.js"), "utf8");
   const workflowPolicy = fs.readFileSync(path.join(projectRoot, "electron", "backend", "workflowPolicy.js"), "utf8");
-  const jobUi = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "jobUi.js"), "utf8");
-  const compactSelect = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "compactSelect.js"), "utf8");
   const mainProcess = fs.readFileSync(path.join(projectRoot, "electron", "main.js"), "utf8");
   const iconPng = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.png"));
   const iconIco = fs.readFileSync(path.join(projectRoot, "assets", "icons", "ccrs_app_icon.ico"));
@@ -166,33 +170,35 @@ test("Version 1.5.3 metadata, combined user release notes, safety controls, and 
   assert.equal(packageConfig.build.nsis.uninstallerIcon, "assets/icons/ccrs_app_icon.ico");
   assert.equal(packageConfig.build.nsis.installerHeaderIcon, "assets/icons/ccrs_app_icon.ico");
   assert.match(rendererHtml, /ccrs_app_icon\.ico/);
-  assert.equal((rendererHtml.match(/ccrs_app_icon\.png/g) || []).length, 2);
-  assert.match(rendererHtml, /class="release-announcement-scroll"/);
-  assert.match(rendererHtml, />Start Using The App</);
   assert.match(rendererHtml, /Content-Security-Policy/);
-  assert.match(rendererHtml, /id="cancel-job"/);
-  assert.match(rendererHtml, /id="job-progress-wrap"/);
-  assert.match(rendererHtml, /id="job-progress-label"/);
-  assert.match(rendererHtml, /id="job-progress-value"/);
-  assert.match(rendererHtml, /aria-live="polite"/);
-  assert.match(rendererHtml, /compactSelect\.js/);
-  assert.match(rendererStyles, /\.compact-select-menu\s*\{[^}]*max-height:\s*260px/s);
-  assert.match(rendererStyles, /--control-height:\s*48px/);
-  assert.match(rendererStyles, /--control-touch-target:\s*44px/);
-  assert.match(rendererStyles, /\.field-block\s*\{[^}]*align-content:\s*start/s);
-  assert.match(rendererStyles, /\.upload-target-grid\s*\{[^}]*minmax\(0, 2fr\) minmax\(0, 3fr\)/s);
-  assert.match(rendererStyles, /\.upload-target-grid\s*\{[^}]*align-items:\s*start/s);
-  assert.doesNotMatch(rendererStyles, /\.upload-target-grid\s*\{[^}]*180px/s);
-  assert.match(rendererApp, /stationIdCombobox\.contains\(document\.activeElement\)/);
+  assert.match(rendererHtml, /style-src 'self' 'sha256-/);
+  assert.doesNotMatch(rendererHtml, /unsafe-inline|unsafe-eval/);
+  assert.match(rendererHtml, /<div id="root"><\/div>/);
+  assert.match(rendererHtml, /\.\/dist\/renderer\.css/);
+  assert.match(rendererHtml, /\.\/dist\/renderer\.js/);
+  assert.match(rendererApp, /ccrs_app_icon\.png/);
+  assert.match(rendererApp, />\s*Start Using The App\s*</);
+  assert.match(rendererApp, /id="cancel-job"/);
+  assert.match(rendererApp, /id="job-progress-wrap"/);
+  assert.match(rendererApp, /id="job-progress-label"/);
+  assert.match(rendererApp, /id="job-progress-value"/);
+  assert.match(rendererApp, /aria-live="polite"/);
+  assert.match(rendererApp, /@\/components\/application\/modals\/modal/);
+  assert.match(rendererSections, /@\/components\/application\/table\/table/);
+  assert.match(rendererStyles, /@import "tailwindcss"/);
+  assert.match(rendererStyles, /\.\/ui\/styles\/theme\.css/);
+  assert.match(rendererBuild, /alias:\s*\{[^}]*"@"/s);
+  assert.match(packageConfig.scripts.prestart, /build-renderer\.js/);
+  assert.match(packageConfig.scripts.pretest, /build-renderer\.js/);
+  assert.match(packageConfig.scripts.predist, /build-renderer\.js/);
+  assert.equal(packageConfig.build.files.includes("!electron/renderer/src/**/*"), true);
+  for (const removedFile of ["app.js", "styles.css", "jobUi.js", "runReview.js", "compactSelect.js"]) {
+    assert.equal(fs.existsSync(path.join(projectRoot, "electron", "renderer", removedFile)), false, `${removedFile} was replaced by the React renderer`);
+  }
   assert.match(workflowPolicy, /REFERRAL_UPLOAD_TARGET_NAMES = Object\.freeze\(\["SQA", "DEV", "PPD"\]\)/);
-  assert.match(rendererApp, /PROD is not available for Referral Files/);
-  assert.match(jobUi, /progressElement\.removeAttribute\("value"\)/);
-  assert.match(jobUi, /percent/);
-  assert.match(compactSelect, /aria-controls/);
-  assert.match(compactSelect, /event\.key === "Home" \|\| event\.key === "End"/);
-  assert.match(compactSelect, /aria-invalid/);
-  assert.match(rendererStyles, /grid-template-rows:\s*auto minmax\(0, 1fr\) auto/);
-  assert.match(rendererStyles, /\.release-announcement-scroll\s*\{[^}]*overflow-y:\s*auto/s);
+  assert.match(rendererSections, /PROD is not available for Referral Files/);
+  assert.match(rendererLogic, /export function progressDisplay/);
+  assert.match(rendererLogic, /percent/);
   assert.match(mainProcess, /ccrs_app_icon\.ico/);
   assert.equal(fs.existsSync(path.join(projectRoot, ".github", "release.yml")), false);
   assert.match(releaseWorkflow, /\$config\.releaseTag/);
@@ -214,13 +220,13 @@ test("Version 1.5.3 metadata, combined user release notes, safety controls, and 
   assert.match(mainProcess, /jobWorker\.js/);
   assert.match(mainProcess, /backend:cancel/);
   assert.match(mainProcess, /Background generation must return an archive without an automatic manifest/);
-  assert.match(rendererHtml, /id="pre-run-overlay"/);
-  assert.match(rendererHtml, /id="retry-failed-uploads"/);
-  assert.doesNotMatch(rendererHtml, /id="recent-runs"/);
-  assert.doesNotMatch(rendererHtml, /id="generation-preset"/);
-  assert.doesNotMatch(rendererHtml, /id="generation-preset-name"/);
-  assert.doesNotMatch(rendererApp, /renderRecentRuns|GenerationPreset/);
-  assert.match(jobUi, /normalizedPhase/);
+  assert.match(rendererApp, /id="pre-run-overlay"/);
+  assert.match(rendererApp, /id="retry-failed-uploads"/);
+  for (const source of [rendererApp, rendererSections, rendererController]) {
+    assert.doesNotMatch(source, /id="recent-runs"|id="generation-preset"|id="generation-preset-name"/);
+    assert.doesNotMatch(source, /renderRecentRuns|GenerationPreset/);
+  }
+  assert.match(rendererLogic, /export function workflowProgress/);
 });
 
 test("Workflow policy is authoritative for Referral and LEIE upload environments", () => {
@@ -346,7 +352,7 @@ test("LEIE upload targets use the manual-processing directory without replacing 
 });
 
 test("Referral and LEIE upload notes identify their separate default directories", () => {
-  const rendererSource = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "app.js"), "utf8");
+  const rendererSource = fs.readFileSync(path.join(projectRoot, "electron", "renderer", "src", "components", "sections.jsx"), "utf8");
   assert.match(rendererSource, /CCRS Referral uploads default to/);
   assert.match(rendererSource, /separate from the LEIE Data default/);
   assert.match(rendererSource, /LEIE Data uploads default to/);
