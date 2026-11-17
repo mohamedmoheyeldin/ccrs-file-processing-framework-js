@@ -6,7 +6,6 @@
 ![Electron](https://img.shields.io/badge/Electron-44-47848F?logo=electron&logoColor=white)
 ![Node](https://img.shields.io/badge/Node.js-24-5FA04E?logo=nodedotjs&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Docs](https://img.shields.io/badge/docs-Claude%20Code%20%C2%B7%20Graphify%20%C2%B7%20Obsidian-7C3AED)
 
 > [!NOTE]
 > A Windows desktop app that automates repetitive CCRS test-data work: it edits and generates referral files, prepares LEIE data, packages the results, and uploads them to approved test environments.
@@ -245,30 +244,6 @@ Smoke coverage lives in [scripts/smoke-test.js](scripts/smoke-test.js). The curr
 - secure credential imports, atomic settings writes, source limits, and streaming gzip output
 
 The Windows Playwright test in [scripts/electron-e2e-test.js](scripts/electron-e2e-test.js) launches the actual Electron UI and verifies a background referral generation job.
-
-## How this project is maintained
-
-Documentation is treated as part of the code. The project is developed with an AI-assisted workflow that keeps the code, the repository docs, and the maintainer's notes in step.
-
-```mermaid
-flowchart LR
-  Code["Code change"] --> Hook["Git hook"]
-  Hook --> Map["Graphify code map<br/>(local, not committed)"]
-  Map --> Claude["Claude Code"]
-  Claude --> Docs["Repository docs<br/>README · docs/"]
-  Claude --> Notes["Obsidian project notes<br/>architecture · decisions · todo"]
-  Docs --> GitHub["GitHub<br/>PR checks · releases"]
-```
-
-| Tool | Role in this project |
-|---|---|
-| [Claude Code](https://claude.com/claude-code) | Development, reviews, and documentation updates, following [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md). |
-| [Graphify](https://pypi.org/project/graphifyy/) | Builds a knowledge graph of the codebase (functions, modules, and how they connect). It is rebuilt by git hooks on every commit and used to check the impact of a change before editing. Output lives in `graphify-out/`, which is ignored by Git. |
-| [Obsidian](https://obsidian.md) | The maintainer's linked project notes: architecture summary, workflows, decisions with their reasons, and an open todo list. |
-| [GitHub](https://github.com/mohamedmoheyeldin/ccrs-file-processing-framework-js) | Pull-request smoke tests, Windows end-to-end tests, and the release workflow that publishes the verified Setup installer. |
-
-> [!TIP]
-> To explore the code map locally: install Graphify (`uv tool install graphifyy`), then run `graphify extract . --code-only` and open `graphify-out/graph.html`. `graphify query "how does upload retry work"` answers questions from the map.
 
 ## Documentation map
 
