@@ -10,6 +10,62 @@
 > [!NOTE]
 > A Windows desktop app that automates repetitive CCRS test-data work: it edits and generates referral files, prepares LEIE data, packages the results, and uploads them to approved test environments.
 
+## Application tour
+
+A short walkthrough of the app, from generating referral files to validating a LEIE load. All data shown is test data.
+
+![Animated tour of the CCRS File Processing app](docs/images/app-tour.gif)
+
+### Screenshots
+
+**Modules and modes.** The three module cards switch between Referral Files, LEIE Data Processing, and future workflows. Inside Referral Files, the selected mode (Edit Existing Files or Generate New Files) is shown in green. The Run panel on the right always shows the steps, the status, and the run button.
+
+![Modules and modes](docs/images/01-generate-overview.png)
+
+**Referral Details.** Set the Referral Number prefix and starting number, the test SSN behavior, the ListDate, and how ICNs are built. Live previews show the exact values the run will produce.
+
+![Referral Details](docs/images/02-referral-details.png)
+
+**Additional fields.** Optional overrides for Stations, Payment Authority Code, Network, regular SEOC, Situational SEOC, DOB, and referral dates. Each selector is searchable, and Situational SEOC shows a red warning when it is in use.
+
+![Additional fields](docs/images/03-additional-fields.png)
+
+**Output and archive naming.** Choose the output folder, name the processed JSON files, and pick how the `.gz` archive is named. The preview lists the file names before anything is written.
+
+![Output and archive naming](docs/images/04-output-archive-naming.png)
+
+**Safety Review.** Every run stops at a review of the workflow, source, output, totals, archive name, and upload destinations. Nothing is written or uploaded until you select Start Safely.
+
+![Safety Review](docs/images/05-safety-review.png)
+
+**Run panel and last run.** When a run finishes, all five steps are checked and the status summarizes what was created. Last run actions open the output folder, generate a manifest, or copy the output path.
+
+![Run panel and last run](docs/images/06-run-completed.png)
+
+**Edit Existing Files.** Point the app at a folder of existing referral JSON files. It reports how many files were found and applies the same Referral Details and Output settings without changing the originals.
+
+![Edit Existing Files](docs/images/07-edit-existing-files.png)
+
+**LEIE Data Processing.** The LEIE guide is the first thing on the page. Choose an Excel file or folder, scan it for duplicate rows, resolve them, and save the processed workbook.
+
+![LEIE Data Processing](docs/images/08-leie-processing.png)
+
+**Upload servers.** Turn on upload to send the processed file to one or more environments. Each server card has its own switch, account, remote directory, and Test Connection button, and the Run panel lists the result for every server.
+
+![Upload servers](docs/images/09-leie-upload-servers.png)
+
+**Database validation.** Step 4 lists the database server for each environment and builds the validation SQL from the ETL batch ID, ready to copy.
+
+![Database validation](docs/images/10-leie-database-validation.png)
+
+**What's new.** The What's new link beside the version opens the changes in this version, followed by the full list from earlier versions, at any time.
+
+![What's new](docs/images/11-whats-new.png)
+
+**Dark theme.** Light and Dark are one click apart in the header, and the choice is remembered.
+
+![Dark theme](docs/images/12-dark-theme.png)
+
 ## Project mission
 
 The CCRS File Processing Framework is an evolving team automation application. Its long-term purpose is to automate more repetitive team work, reduce manual effort, and give team members more time for meaningful testing, defect discovery, and prevention before production. LEIE and referral processing are the first two supported workflows, not the limit of the application. Additional capabilities can be prioritized and added as team needs evolve; they are not available until implemented and validated.
