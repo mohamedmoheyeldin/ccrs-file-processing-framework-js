@@ -42,15 +42,49 @@ This project is a pure JavaScript Electron desktop app for working with CCRS ref
 ## Architecture
 
 ```mermaid
-flowchart LR
-  UI["Renderer<br/>electron/renderer"] -- "preload bridge + IPC" --> Main["Main process<br/>electron/main.js"]
-  Main --> Backend["Backend<br/>electron/backend"]
-  Main -- "worker threads" --> Jobs["Background jobs<br/>progress + cancel"]
-  Jobs --> Backend
-  Backend --> Staging["Isolated run staging<br/>validate → package → promote"]
-  Staging --> Output["Output folder<br/>JSON · _Master.json · .gz"]
-  Output --> Queue["Sequential upload queue<br/>SQA → DEV → PPD (→ PROD for LEIE)"]
+flowchart TB
+  subgraph APP["Desktop app (Electron)"]
+    direction LR
+    UI["<b>Renderer</b><br/>React and Untitled UI<br/>electron/renderer"]
+    PRE["<b>Preload bridge</b><br/>safe window.ccrs API<br/>electron/preload.js"]
+    MAIN["<b>Main process</b><br/>window, dialogs, IPC<br/>electron/main.js"]
+    UI <-->|"requests and progress"| PRE
+    PRE <-->|"IPC"| MAIN
+  end
+
+  subgraph WORK["Processing"]
+    direction LR
+    JOBS["<b>Background jobs</b><br/>worker threads<br/>progress and cancel"]
+    BACK["<b>Backend</b><br/>referral and LEIE logic<br/>electron/backend"]
+    STAGE["<b>Isolated run staging</b><br/>validate, package, promote"]
+    JOBS --> BACK
+    BACK --> STAGE
+  end
+
+  subgraph RESULTS["Results"]
+    direction LR
+    FILES["<b>Output folder</b><br/>JSON, _Master.json, .gz<br/>processed .xlsx"]
+    QUEUE["<b>Sequential upload queue</b><br/>each file once per server"]
+    ENV["<b>Test environments</b><br/>SQA, DEV, PPD<br/>PROD for LEIE only"]
+    FILES --> QUEUE
+    QUEUE --> ENV
+  end
+
+  APP -->|"starts a run"| WORK
+  WORK -->|"only after validation passes"| RESULTS
+
+  classDef app fill:#EFF8FF,stroke:#1570EF,stroke-width:2px,color:#102A56
+  classDef work fill:#F4F3FF,stroke:#6938EF,stroke-width:2px,color:#27115F
+  classDef results fill:#ECFDF3,stroke:#079455,stroke-width:2px,color:#053321
+  class UI,PRE,MAIN app
+  class JOBS,BACK,STAGE work
+  class FILES,QUEUE,ENV results
+  style APP fill:none,stroke:#1570EF,stroke-dasharray:5 4
+  style WORK fill:none,stroke:#6938EF,stroke-dasharray:5 4
+  style RESULTS fill:none,stroke:#079455,stroke-dasharray:5 4
 ```
+
+The app has three layers. The desktop app collects the settings, processing does the work in the background so the window stays responsive, and results are written and uploaded only after validation passes.
 
 - Electron handles the desktop window, dialogs, IPC, and Windows packaging.
 - The runtime logic lives under [electron/backend](electron/backend).
