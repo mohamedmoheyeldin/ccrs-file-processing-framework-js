@@ -63,7 +63,11 @@
       },
       {
         "from": "docs",
-        "to": "docs"
+        "to": "docs",
+        "filter": [
+          "**/*",
+          "!images/**"
+        ]
       },
       {
         "from": "assets",
@@ -85,7 +89,11 @@
       },
       {
         "from": "docs",
-        "to": "docs"
+        "to": "docs",
+        "filter": [
+          "**/*",
+          "!images/**"
+        ]
       },
       {
         "from": "assets",
