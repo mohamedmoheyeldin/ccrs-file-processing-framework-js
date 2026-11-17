@@ -19,6 +19,10 @@ This is a CommonJS Electron application that processes CCRS referral and LEIE fi
 - `pnpm verify` is the safe cross-platform gate: generated documentation/version sync, syntax checks, and smoke tests.
 - The real Electron UI test and Setup build require native Windows: run `pnpm run test:e2e` and `pnpm run dist` there or rely on the Windows CI jobs.
 
+## Open work
+
+- The LEIE upload live check against real CCRS servers is pending. Read `docs/LEIE_UPLOAD_LIVE_TEST.md` before changing `electron/backend/uploader.js` or diagnosing an upload problem.
+
 ## Documentation
 
 - Start with `README.md`.
