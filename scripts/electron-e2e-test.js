@@ -152,20 +152,20 @@ async function run() {
     await window.locator("#referral-prefix-va").check();
     assert.match(await window.locator("#referral-prefix-help").textContent(), /VA will be added automatically/);
     await window.locator("#referral-code").fill("DD");
-    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VADD"));
-    assert.match(await window.locator("#referral-preview").textContent(), /Preview: VADD/);
+    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VADD00000001"));
+    assert.match(await window.locator("#referral-preview").textContent(), /Preview: VADD00000001/);
     await window.locator("#referral-prefix-custom").check();
     assert.equal(await window.locator("#custom-referral-prefix-row").isVisible(), true);
-    assert.equal(await window.locator("#custom-referral-prefix").getAttribute("maxlength"), null);
-    await window.locator("#custom-referral-prefix").fill("CUSTOM_PREFIX_WITHOUT_A_LIMIT_");
+    assert.equal(await window.locator("#custom-referral-prefix").getAttribute("maxlength"), "8");
+    await window.locator("#custom-referral-prefix").fill("PROJECT_");
     await window.locator("#referral-code").fill("12345678901234567890");
-    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("CUSTOM_PREFIX_WITHOUT_A_LIMIT_12345678901234567890"));
-    assert.match(await window.locator("#referral-preview").textContent(), /CUSTOM_PREFIX_WITHOUT_A_LIMIT_12345678901234567890/);
-    await window.locator("#custom-referral-prefix").fill("Ccrs-Test_");
+    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("PROJECT_7890"));
+    assert.match(await window.locator("#referral-preview").textContent(), /PROJECT_7890/);
+    await window.locator("#custom-referral-prefix").fill("Ccrs-T_");
     await window.locator("#referral-code").fill("abC-001_Test");
     await window.locator("#referral-preview").waitFor({ state: "visible" });
-    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("Ccrs-Test_abC-001_Test"));
-    assert.match(await window.locator("#referral-preview").textContent(), /Ccrs-Test_abC-001_Test/);
+    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("Ccrs-T_abC-1"));
+    assert.match(await window.locator("#referral-preview").textContent(), /Ccrs-T_abC-1/);
     await window.locator("#custom-referral-prefix").fill("CCRS");
     await window.locator("#referral-code").fill("26S600001");
     await window.locator("#referral-prefix-va").check();
@@ -240,9 +240,9 @@ async function run() {
       await window.locator(".referral-prefix-choices").scrollIntoViewIfNeeded();
       await window.screenshot({ path: process.env.CCRS_E2E_OPTION_CARD_SCREENSHOT, fullPage: false });
     }
-    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST000026S600001"));
+    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST0000026600001"));
     assert.equal(await window.locator("#icn-custom-value").isDisabled(), true);
-    assert.match(await window.locator("#referral-preview").textContent(), /CCRS26S600001/);
+    assert.match(await window.locator("#referral-preview").textContent(), /CCRS26600001/);
     const matchTrigger = window.locator("#match-suffix-length").locator("..").locator(".compact-select-trigger");
     await matchTrigger.focus();
     await matchTrigger.press("ArrowDown");
@@ -333,14 +333,14 @@ async function run() {
       /\{referralNumber\}.*\{referralPrefix\}.*\{networkName\}.*\{date\}.*\{dateTime\}.*\{customText\}/
     );
     await window.locator("#archive-custom-text").fill("CCRS");
-    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_CCRS_Final_Master.json"));
+    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26600001_CCRS_Master.json"));
     await window.locator("#override-referral-date").fill("2019-03-17");
     await window.locator("#override-referral-date-time").fill("2019-01-02 11:47:32");
     await window.locator("#archive-custom-select-all").check();
     assert.equal(await window.locator(".archive-custom-value:checked").count(), 6);
     await window.waitForFunction(() => {
       const preview = document.querySelector("#archive-preview")?.textContent || "";
-      return preview.includes("CCRS26S600001_CCRS_CCN1_2019-03-17_2019-01-02_114732_CCRS_Final_Master.json") &&
+      return preview.includes("CCRS26600001_CCRS_CCN1_2019-03-17_2019-01-02_114732_CCRS_Master.json") &&
         preview.includes(".gz");
     });
     assert.equal((await window.locator("#archive-preview").textContent()).includes("{"), false);
@@ -377,9 +377,9 @@ async function run() {
     assert.equal(await window.locator("#archive-custom-text").isDisabled(), true);
     await window.locator("#archive-custom-value-referral-number").check();
     await window.locator("#archive-custom-value-date").check();
-    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_2019-03-17_Final_Master.json"));
+    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26600001_2019-03-17_Master.json"));
     await window.locator('input[name="archive-naming-mode"][value="referral-number"]').check();
-    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26S600001_Final_Master.json"));
+    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCRS26600001_Master.json"));
     await window.locator("#selected-networks .selected-station-chip", { hasText: "CCN1" }).click();
     await window.locator("#network-search").fill("CCN2");
     await window.locator("#network-menu .combo-option", { hasText: "CCN2" }).click();
@@ -390,7 +390,7 @@ async function run() {
     await window.locator("#network-search").press("Escape");
     await window.locator("#selected-networks .selected-station-chip", { hasText: "CCN4" }).click();
     await window.locator('input[name="archive-naming-mode"][value="network"]').check();
-    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCN2_CCRS26S600001_Final_Master.json"));
+    await window.waitForFunction(() => document.querySelector("#archive-preview")?.textContent.includes("CCN2_CCRS26600001_Master.json"));
     const uploadDirectoryNote = window.locator(".upload-path-help").first();
     await uploadDirectoryNote.waitFor({ state: "visible" });
     assert.match(await uploadDirectoryNote.textContent(), /CCRS Referral uploads default to \/CCRA_Uploads/);
@@ -417,15 +417,15 @@ async function run() {
     assert.equal(await window.locator("#leie-output-help").isHidden(), true);
     await window.locator("#referral-prefix-va").check();
     await window.locator("#referral-code").fill("26S6-00001_TEST");
-    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VA26S6-00001_TEST"));
-    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST26S600001TEST"));
+    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VA26S6-00001"));
+    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST000026S600001"));
     assert.match(await window.locator("#referral-prefix-help").textContent(), /hyphens \(-\).*underscores \(_\)/);
     await window.locator("#referral-code").fill("12345678901234567890");
     await window.locator("#icn-mode-referral-match").check();
-    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VA12345678901234567890"));
-    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST1234567890121"));
-    assert.match(await window.locator("#referral-preview").textContent(), /Preview: VA12345678901234567890/);
-    assert.match(await window.locator("#icn-preview").textContent(), /Preview: TEST1234567890121/);
+    await window.waitForFunction(() => document.querySelector("#referral-preview")?.textContent.includes("VA1234567890"));
+    await window.waitForFunction(() => document.querySelector("#icn-preview")?.textContent.includes("TEST0001234567890"));
+    assert.match(await window.locator("#referral-preview").textContent(), /Preview: VA1234567890/);
+    assert.match(await window.locator("#icn-preview").textContent(), /Preview: TEST0001234567890/);
     if (process.env.CCRS_E2E_SCREENSHOT) {
       await window.screenshot({ path: process.env.CCRS_E2E_SCREENSHOT, fullPage: true });
     }

@@ -36,7 +36,7 @@ pnpm verify
 - Keep upload-environment authorization in `workflowPolicy.js`; renderer filtering is a usability layer, not the security boundary.
 - Keep the upload order SQA, DEV, PPD, then PROD. Referral Files must exclude PROD; only LEIE may expose it. Test concurrent upload behavior with injected local test doubles rather than live environments.
 - Keep Network assignment automatic when no values are selected. One selected value applies to every referral; multiple selected values are shuffled and cycled across referrals.
-- Referral Number bodies and Custom prefixes accept letters, numbers, hyphens, and underscores. Preserve these separators in generated Referral Numbers; Referral-derived ICNs remain alphanumeric and continue enforcing their fixed length.
+- Referral Number bodies and Custom prefixes accept letters, numbers, hyphens, and underscores. Generated Referral Numbers are always exactly 12 characters and unique within a run; Custom prefixes are limited to 8 characters. Archive names no longer end in `_Final`, and the combined JSON name is user-editable with `<archive name>_Master.json` as the default. Referral-derived ICNs remain alphanumeric and continue enforcing their fixed length.
 - Do not force user-entered text to uppercase or lowercase. Searches and fixed option matching may remain case-insensitive; generated constants such as `TEST` and canonical catalog values may retain their defined case.
 - Treat a referral file error as a batch failure. Do not add partial referral archives or uploads without an explicit approved business requirement.
 - Keep run history and manifests free of credentials and source contents. Hashes, names, counts, destinations, and outcomes are allowed.

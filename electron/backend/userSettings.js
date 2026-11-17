@@ -20,6 +20,7 @@ const DEFAULT_UI_SETTINGS = {
   archiveNamingMode: "referral-number",
   archiveCustomValues: ["referralNumber", "customText"],
   archiveCustomText: "CCRS",
+  masterFileName: "",
   useIfamsReferralPrefix: false,
   referralPrefixMode: "va",
   customReferralPrefix: "",
@@ -140,6 +141,7 @@ function normalizeUiSettings(rawValue = {}) {
       : DEFAULT_UI_SETTINGS.archiveNamingMode,
     archiveCustomValues: normalizeArchiveCustomValues(rawValue),
     archiveCustomText: String(rawValue.archiveCustomText || DEFAULT_UI_SETTINGS.archiveCustomText).trim().slice(0, 48),
+    masterFileName: String(rawValue.masterFileName || "").trim().slice(0, 120),
     useIfamsReferralPrefix: toBoolean(rawValue.useIfamsReferralPrefix, DEFAULT_UI_SETTINGS.useIfamsReferralPrefix),
     referralPrefixMode: ["va", "ifams", "mixed", "custom"].includes(String(rawValue.referralPrefixMode || "").trim().toLowerCase())
       ? String(rawValue.referralPrefixMode).trim().toLowerCase()
