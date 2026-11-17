@@ -197,6 +197,7 @@ Files that are kept in sync from the shipped app:
 - Send each file exactly once per server (same host, account, and folder is treated as one endpoint), verify it, and continue through every selected server even when one fails, stalls, or cannot be reached
 - Show a per-server Upload results list (Passed, Failed, or Skipped, with the reason and duration) after every run and retry
 - Retry Failed Uploads checks the server first and never re-sends a file that already arrived
+- Keep a plain-text upload log (`logs\uploads.log`, opened with Open Upload Log) recording each server, account, folder, method, result, and duration; passwords are never written
 - Default every LEIE server upload to `/in/manual_process/` while retaining `/CCRA_Uploads` for referral workflows
 - Automatically clean app-created temporary staging folders and upload helper files after a run or when the app closes
 - Process long-running work in background workers with progress and cancellation
@@ -262,8 +263,11 @@ The Windows Playwright test in [scripts/electron-e2e-test.js](scripts/electron-e
 | [LEIE Upload Validation Guide](docs/LEIE_UPLOAD_VALIDATION_GUIDE.md) | Loading LEIE data and checking it in each environment |
 | [Project Vision](docs/PROJECT_VISION.md) | Why the app exists and how new workflows are proposed |
 | [Architecture](docs/ARCHITECTURE.md) | Process boundaries, safety design, data flow |
-| [Development](docs/DEVELOPMENT.md) | Setup, change rules, release metadata |
+| [Development](docs/DEVELOPMENT.md) | Setup, change rules, release metadata, AI coding assistant setup |
+| [Repository Migration](docs/REPOSITORY_MIGRATION.md) | Moving the project to another GitHub repository or organization |
+| [AGENTS.md](AGENTS.md) | Rules for Claude Code, GitHub Copilot, and other coding agents |
 | [Testing](docs/TESTING.md) | Test layers and when to run them |
+| [Improvement Recommendations](docs/IMPROVEMENT_RECOMMENDATIONS.md) | Proposed, not yet implemented hardening and upgrade ideas, ranked by priority |
 | [User Guide](docs/USER_GUIDE.md) | Step-by-step use of both workflows |
 | [Stakeholder Overview](docs/STAKEHOLDER_OVERVIEW.md) | A short introduction for managers and the team |
 | [Release Notes](docs/RELEASE_NOTES.md) | Every release, newest first |

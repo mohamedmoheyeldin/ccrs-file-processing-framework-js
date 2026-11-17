@@ -86,7 +86,7 @@ The top of the window shows the `Application modules` as three large cards. Each
 - `LEIE Data Processing`
 - `More Features Coming Soon`
 
-Below the module cards, the form sections are on the left. The `Run` panel stays visible on the right and shows the workflow steps, the current status, progress, the per-server upload results, the run button, and the actions for the last run. Use `Light` or `Dark` in the header to switch themes.
+Below the module cards, the form sections are on the left. The `Run` panel stays visible on the right and shows the workflow steps, the current status, progress, the per-server upload results, the run button, and the actions for the last run. Use `Light` or `Dark` in the header to switch themes. After an upload, `Open Upload Log` in the upload results opens `logs\uploads.log`, which records every upload attempt without passwords.
 
 `Referral Files` contains two modes:
 

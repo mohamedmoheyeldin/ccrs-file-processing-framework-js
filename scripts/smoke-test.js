@@ -198,6 +198,8 @@ test("Version 1.5.4 metadata, combined user release notes, safety controls, and 
   assert.match(workflowPolicy, /REFERRAL_UPLOAD_TARGET_NAMES = Object\.freeze\(\["SQA", "DEV", "PPD"\]\)/);
   assert.match(rendererSections, /PROD is not available for Referral Files/);
   assert.match(rendererLogic, /export function progressDisplay/);
+  assert.match(rendererApp, /id="open-upload-log"/);
+  assert.match(rendererController, /docs\?\.uploadLogPath/);
   assert.match(rendererLogic, /percent/);
   assert.match(mainProcess, /ccrs_app_icon\.ico/);
   assert.equal(fs.existsSync(path.join(projectRoot, ".github", "release.yml")), false);

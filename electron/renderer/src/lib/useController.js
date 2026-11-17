@@ -1048,6 +1048,16 @@ export function useController() {
     if (guidePath) window.ccrs.openPath(guidePath);
   }, []);
 
+  const openUploadLog = useCallback(async () => {
+    const logPath = infoRef.current?.docs?.uploadLogPath;
+    try {
+      if (!logPath) throw new Error("missing");
+      await window.ccrs.openPath(logPath);
+    } catch (_error) {
+      setStatus("Upload Log", "No upload log is available yet. It is created the first time a file is uploaded.");
+    }
+  }, [setStatus]);
+
   const openLeieGuide = useCallback(() => {
     const guidePath = infoRef.current?.docs?.leieValidationGuidePath;
     if (guidePath) window.ccrs.openPath(guidePath);
@@ -1320,6 +1330,7 @@ export function useController() {
       importUploadSource,
       exportDiagnostics,
       openUserGuide,
+      openUploadLog,
       openLeieGuide,
       openExternal,
       copySql,

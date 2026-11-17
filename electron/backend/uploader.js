@@ -4,7 +4,7 @@ const path = require("path");
 const { spawn } = require("child_process");
 const { Transform, pipeline } = require("stream");
 const SftpClient = require("ssh2-sftp-client");
-const { userDataPath } = require("./appPaths");
+const { dataPath, userDataPath } = require("./appPaths");
 const { writeFileAtomic } = require("./atomicFile");
 const {
   importCredentialFile,
@@ -778,6 +778,36 @@ async function ensureRemoteDirectory(client, remoteDirectory) {
   }
 }
 
+const UPLOAD_LOG_MAX_BYTES = 2 * 1024 * 1024;
+
+function getUploadLogPath() {
+  return dataPath("logs", "uploads.log");
+}
+
+function describeUploadMethod(connectionDetails = {}) {
+  return connectionDetails.winscp_path && connectionDetails.session_name && !connectionDetails.password
+    ? "WinSCP session"
+    : "SFTP";
+}
+
+/**
+ * Appends plain-text lines to logs/uploads.log so every upload leaves a record of what was
+ * sent where and how the server answered. Passwords are never written. Logging must never
+ * break an upload, so every failure here is ignored.
+ */
+function writeUploadLog(lines, logPath = getUploadLogPath()) {
+  try {
+    fs.mkdirSync(path.dirname(logPath), { recursive: true });
+    if (fs.existsSync(logPath) && fs.statSync(logPath).size > UPLOAD_LOG_MAX_BYTES) {
+      fs.renameSync(logPath, `${logPath}.1`);
+    }
+    const stamp = new Date().toISOString();
+    fs.appendFileSync(logPath, (Array.isArray(lines) ? lines : [lines]).map((line) => `${stamp}  ${line}\n`).join(""), "utf8");
+  } catch (_error) {
+    // The upload result is what matters; a missing log line is acceptable.
+  }
+}
+
 function withTimeout(promise, timeoutMs, description, onTimeout) {
   let timer;
   const timeout = new Promise((_, reject) => {
@@ -903,7 +933,7 @@ function buildWinscpScript(sessionName, commands) {
   ].join("\n");
 }
 
-async function runWinscpScript(sessionName, winscpPath, commands, timeoutMs, label) {
+async function runWinscpScript(sessionName, winscpPath, commands, timeoutMs, label, argsPrefix = []) {
   const iniPath = getExistingWinscpIniPath();
   if (!iniPath) {
     throw new Error("WinSCP.ini was not found in the expected upload_import locations.");
@@ -914,7 +944,7 @@ async function runWinscpScript(sessionName, winscpPath, commands, timeoutMs, lab
   try {
     let result;
     try {
-      result = await runWinscp(winscpPath, [`/ini=${iniPath}`, `/script=${scriptPath}`, "/nointeractiveinput"], timeoutMs);
+      result = await runWinscp(winscpPath, [...argsPrefix, `/ini=${iniPath}`, `/script=${scriptPath}`, "/nointeractiveinput"], timeoutMs);
     } catch (error) {
       throw new Error(`WinSCP ${label} failed for session ${sessionName}. ${error.message}`);
     }
@@ -928,14 +958,15 @@ async function runWinscpScript(sessionName, winscpPath, commands, timeoutMs, lab
   }
 }
 
-async function uploadFileWithWinscp(localPath, remoteDirectory, sessionName, winscpPath) {
+async function uploadFileWithWinscp(localPath, remoteDirectory, sessionName, winscpPath, options = {}) {
   const remotePath = normalizeRemoteFilePath(remoteDirectory, localPath);
   await runWinscpScript(
     sessionName,
     winscpPath,
     [`put "${localPath}" "${remoteDirectory.replace(/\/+$/, "")}/"`],
-    SFTP_OPERATION_TIMEOUT_MS,
-    "upload"
+    options.timeoutMs || SFTP_OPERATION_TIMEOUT_MS,
+    "upload",
+    options.argsPrefix || []
   );
   return {
     remotePath,
@@ -1175,6 +1206,23 @@ async function uploadTargetsSequentially(localPath, targets = [], options = {}) 
   const uploadCount = plan.filter((item) => !item.duplicateOf).length;
   let completedCount = 0;
 
+  const log = options.log === false ? () => {} : (lines) => writeUploadLog(lines, options.logPath);
+  const fileName = path.basename(String(localPath || ""));
+  let fileSize = "unknown";
+  try {
+    fileSize = `${fs.statSync(localPath).size} bytes`;
+  } catch (_error) {
+    // Size is informational only.
+  }
+  log([
+    `=== Upload run started: ${fileName} (${fileSize}) to ${uploadCount} server${uploadCount === 1 ? "" : "s"}${uploadOptions.skipIfPresent ? " [retry: checks the server before sending]" : ""}`,
+    `    Local file: ${localPath}`,
+  ]);
+  const describeTarget = (target) => {
+    const c = target.connection_details || {};
+    return `${target.server_name} | host ${c.host || "(from WinSCP session)"}:${c.port || 22} | account ${c.username || c.session_name || target.user_name || "unknown"} | folder ${target.remote_directory} | ${describeUploadMethod(c)}`;
+  };
+
   onProgress({
     state: "upload-batch-start",
     current: 0,
@@ -1200,6 +1248,7 @@ async function uploadTargetsSequentially(localPath, targets = [], options = {}) 
         message: `Skipped ${target.server_name}: it is the same server, account, and folder as ${duplicateOf.server_name}, which already received the file once.`,
       };
       results.push(result);
+      log(`SKIPPED  ${describeTarget(target)} | ${result.message}`);
       onProgress({
         state: "upload-target-skipped",
         current: completedCount,
@@ -1218,6 +1267,7 @@ async function uploadTargetsSequentially(localPath, targets = [], options = {}) 
       uploadTarget: target.server_name,
     });
     const startedAt = Date.now();
+    log(`START    ${describeTarget(target)}`);
     try {
       const outcome = normalizeUploadOutcome(await withTimeout(
         upload(localPath, target.remote_directory, target.connection_details, uploadOptions),
@@ -1234,6 +1284,7 @@ async function uploadTargetsSequentially(localPath, targets = [], options = {}) 
         message: `Upload to ${target.server_name} completed.${outcome.message ? ` ${outcome.message}` : ""}`,
       };
       results.push(result);
+      log(`PASSED   ${target.server_name} | ${result.remotePath} | check: ${result.verification || "none"} | ${result.durationMs} ms | ${outcome.message}`);
       onProgress({
         state: "upload-target-complete",
         current: completedCount,
@@ -1253,6 +1304,7 @@ async function uploadTargetsSequentially(localPath, targets = [], options = {}) 
         message: error?.message || "The server did not complete the upload.",
       };
       results.push(result);
+      log(`FAILED   ${target.server_name} | ${result.durationMs} ms | ${result.message}`);
       onProgress({
         state: "upload-target-error",
         current: completedCount,
@@ -1263,6 +1315,9 @@ async function uploadTargetsSequentially(localPath, targets = [], options = {}) 
       });
     }
   }
+
+  const count = (status) => results.filter((result) => result.status === status).length;
+  log(`=== Upload run finished: ${count("completed")} passed, ${count("failed")} failed, ${count("skipped")} skipped`);
 
   onProgress({
     state: results.some((result) => result.status === "failed") ? "upload-batch-warning" : "upload-complete",
@@ -1276,6 +1331,9 @@ async function uploadTargetsSequentially(localPath, targets = [], options = {}) 
 module.exports = {
   buildUploadEndpointKey,
   getServerDisplayForTarget,
+  getUploadLogPath,
+  uploadFileWithWinscp,
+  writeUploadLog,
   getUploadProfileSourcePath,
   getUploadTargetNames,
   getUserNamesForServer,

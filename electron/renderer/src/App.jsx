@@ -266,7 +266,7 @@ const UPLOAD_RESULT_COLORS = {
 };
 
 /** One row per selected server, so it is clear which uploads passed, failed or were skipped. */
-function UploadResults({ results }) {
+function UploadResults({ results, onOpenLog }) {
   const { rows, summary } = summarizeUploadResults(results);
   if (rows.length === 0) return null;
   return (
@@ -275,6 +275,9 @@ function UploadResults({ results }) {
         <p className="text-sm font-semibold text-primary">Upload results</p>
         <p id="upload-results-summary" className="text-sm text-tertiary">{summary}</p>
       </div>
+      <Button id="open-upload-log" allowWhileBusy color="secondary" size="sm" iconLeading={File06} onClick={onOpenLog}>
+        Open Upload Log
+      </Button>
       <ul id="upload-results-list" className="flex flex-col gap-3">
         {rows.map((row) => (
           <li key={row.key} data-upload-result={row.status} className="flex flex-col gap-1">
@@ -359,7 +362,7 @@ function RunPanel({ app }) {
           )}
         </div>
 
-        <UploadResults results={uploadResults} />
+        <UploadResults results={uploadResults} onOpenLog={actions.openUploadLog} />
 
         {hasRun && (
           <div id="result-actions" className="flex flex-col gap-2 border-t border-secondary pt-5">
