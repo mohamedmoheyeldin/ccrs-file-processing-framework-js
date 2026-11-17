@@ -17,7 +17,7 @@ A short walkthrough of the app, from generating referral files to validating a L
 
 The interface is built with [Untitled UI](https://www.untitledui.com/), using its open-source React components.
 
-![Animated tour of the CCRS File Processing app](docs/images/app-tour.gif)
+![Animated tour of the CCRS File Processing app](docs/images/application-tour.gif)
 
 ### Screenshots
 
