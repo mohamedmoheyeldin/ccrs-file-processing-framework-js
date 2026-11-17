@@ -203,6 +203,19 @@ async function run() {
 
     // Referral Numbers
     await window.locator("[data-sub-tab='generate']").click();
+    // The selected referral mode is highlighted in green; the other one stays neutral.
+    const modeColor = (mode) => window.locator(`[data-sub-tab='${mode}']`).evaluate((element) => {
+      const canvas = document.createElement("canvas").getContext("2d");
+      canvas.fillStyle = getComputedStyle(element).backgroundColor;
+      canvas.fillRect(0, 0, 1, 1);
+      const [red, green, blue] = canvas.getImageData(0, 0, 1, 1).data;
+      return { red, green, blue };
+    });
+    await window.locator("#generator-card").hover();
+    const selectedMode = await modeColor("generate");
+    const otherMode = await modeColor("edit");
+    assert.equal(selectedMode.green > selectedMode.red + 40 && selectedMode.green > selectedMode.blue + 40, true, JSON.stringify(selectedMode));
+    assert.equal(Math.abs(otherMode.green - otherMode.red) < 20, true, JSON.stringify(otherMode));
     assert.equal(await window.locator("#run-generate").isVisible(), true);
     assert.equal(await window.locator("#source-card").count(), 0);
     assert.match(await window.locator("#template-summary-pill").textContent(), /1 JSON file \| 1 referral per file \| 1 total referral/);

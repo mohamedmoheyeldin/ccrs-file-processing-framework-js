@@ -93,6 +93,8 @@ Below the module cards, the form sections are on the left. The `Run` panel stays
 - `Edit Existing Files`
 - `Generate New Files`
 
+The selected mode is shown in green, so it is always clear which one is active.
+
 ## In-App Help and Live Previews
 
 The app provides short, expandable help where several settings work together. Select any help heading to open it, then select the heading again to close it. The main form remains compact while the explanation is closed.

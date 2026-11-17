@@ -49,6 +49,10 @@ const WORKFLOW_STEPS = [
 
 const STATUS_COLORS = { idle: "gray", working: "brand", completed: "success", failed: "error" };
 
+// The selected referral mode is solid green so it is obvious which mode is active.
+const SELECTED_MODE_CLASS =
+  "selected:z-10 selected:bg-success-solid selected:font-semibold selected:text-white selected:ring-success-600 selected:hover:bg-success-solid selected:hover:text-white selected:[&_svg]:text-white";
+
 function Header({ app }) {
   const { form, info, actions, busy } = app;
   return (
@@ -155,7 +159,7 @@ function WorkflowTabs({ app }) {
           <div id="subtab-row">
             <ButtonGroup
               aria-label="Referral workflow mode"
-              size="sm"
+              size="md"
               disallowEmptySelection
               isDisabled={busy}
               selectedKeys={[form.subTab]}
@@ -164,8 +168,8 @@ function WorkflowTabs({ app }) {
                 if (subTab) actions.setSubTab(subTab);
               }}
             >
-              <ButtonGroupItem id="edit" data-sub-tab="edit" iconLeading={File06}>Edit Existing Files</ButtonGroupItem>
-              <ButtonGroupItem id="generate" data-sub-tab="generate" iconLeading={Zap}>Generate New Files</ButtonGroupItem>
+              <ButtonGroupItem id="edit" data-sub-tab="edit" iconLeading={File06} className={SELECTED_MODE_CLASS}>Edit Existing Files</ButtonGroupItem>
+              <ButtonGroupItem id="generate" data-sub-tab="generate" iconLeading={Zap} className={SELECTED_MODE_CLASS}>Generate New Files</ButtonGroupItem>
             </ButtonGroup>
           </div>
         )}
