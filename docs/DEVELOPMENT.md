@@ -64,11 +64,6 @@ Maintain `STAKEHOLDER_OVERVIEW.md` when workflow scope, supported environments, 
 LEIE and referrals are initial capabilities, not the permanent scope. Use PROJECT_VISION.md to capture a proposed team's workflow, manual baseline, expected testing benefit, allowed environments, and acceptance criteria. Reuse shared services where appropriate; preserve workflow-specific rules. Update architecture, user guidance, stakeholder overview, and regression coverage when an addition becomes available. Label ideas as proposed until delivered; do not imply an existing plugin mechanism.
 
 
-## Code map and project notes
+## Keeping documentation current
 
-The project is maintained with Claude Code, a Graphify code map, and Obsidian notes (see "How this project is maintained" in the README).
-
-- Build the map once with `graphify extract . --code-only` (or `/graphify .` inside Claude Code), then `graphify hook install` so it is rebuilt after every commit, checkout, and merge.
-- Before a multi-file change, check impact with `graphify affected "<function>"` and `graphify query "<question>"`. The most connected functions (`setupEventHandlers`, `updatePreviews`, `applyUiSettings`, `processFiles`, `dataPath`, `writeFileAtomic`, `handleCommand`) have the widest effect.
-- `graphify-out/` is local output and is ignored by Git.
-- Keep README.md and the docs in this folder current in the same pull request as the behavior change. The map is for orientation; always read the real files before editing.
+Keep README.md and the docs in this folder current in the same pull request as the behavior change.
