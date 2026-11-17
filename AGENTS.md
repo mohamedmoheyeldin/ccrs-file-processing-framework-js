@@ -25,3 +25,9 @@ This is a CommonJS Electron application that processes CCRS referral and LEIE fi
 - Keep `docs/ARCHITECTURE.md`, `docs/DEVELOPMENT.md`, and `docs/TESTING.md` aligned with behavior.
 - Update `docs/USER_GUIDE.md` and generated PDF output when user-visible workflows change.
 - Update README.md and the relevant `docs/` file in the same change when behavior, setup, or architecture changes.
+
+## Agent instruction files
+
+- This file is the single source of repository rules for every coding agent. `CLAUDE.md` points here, and `.github/copilot-instructions.md` is generated from it.
+- After editing this file, run `pnpm run sync:instructions` and commit the regenerated Copilot file; `pnpm verify` fails when they differ.
+- Path-scoped Copilot rules live in `.github/instructions/` and reusable prompts in `.github/prompts/`. Keep them consistent with `docs/DEVELOPMENT.md`.

@@ -42,6 +42,24 @@ pnpm verify
 - Keep run history and manifests free of credentials and source contents. Hashes, names, counts, destinations, and outcomes are allowed.
 - Emit structured progress events for new work using `phase`, `state`, `current`, `total`, and `message`.
 
+## AI coding assistants
+
+The repository supports Claude Code and GitHub Copilot (including Copilot Enterprise) side by side. `AGENTS.md` is the single source of repository rules.
+
+| File | Used by | Notes |
+|---|---|---|
+| `AGENTS.md` | Claude Code, Copilot, other agents | Edit rules here |
+| `CLAUDE.md`, `.claude/` | Claude Code | Points to `AGENTS.md` and adds Claude-specific rules |
+| `.github/copilot-instructions.md` | Copilot Chat, code review, cloud agent | Generated from `AGENTS.md`; do not edit |
+| `.github/instructions/*.instructions.md` | Copilot | Rules applied by file path (backend, renderer, scripts, config, docs, workflows) |
+| `.github/prompts/*.prompt.md` | Copilot Chat in VS Code | Run with `/verify-change`, `/review-change`, `/add-regression-test`, `/update-docs`, `/prepare-release` |
+| `.github/workflows/copilot-setup-steps.yml` | Copilot cloud agent | Installs Node.js 24 and locked dependencies before the agent starts |
+| `.vscode/` | VS Code | Copilot settings, recommended extensions, and the GitHub MCP server |
+
+After changing `AGENTS.md`, run `pnpm run sync:instructions` and commit the regenerated file. `pnpm verify` runs `test:instructions`, which fails when the two differ. Keep the path-scoped instruction files short and consistent with the change rules above.
+
+The Copilot cloud agent runs on Linux, so it can run `pnpm verify` but not the Windows-only Electron UI test or Setup build; the Windows CI jobs cover those on its pull requests. MCP servers for the cloud agent are configured in the repository's Copilot settings on GitHub, not in a file. Organization Copilot policies may limit which models, MCP servers, and features are available.
+
 ## Windows-only work
 
 From native Windows, run `pnpm run test:e2e` to launch the Electron UI. Use `pnpm run dist` only when validating the Setup build. The GitHub release workflow is the authoritative publishing path.
