@@ -1,3 +1,14 @@
 {
-    "chatgpt.openOnStartup": true
+    "chatgpt.openOnStartup": true,
+    "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+    "github.copilot.chat.commitMessageGeneration.instructions": [
+        {
+            "text": "Use a Conventional Commits subject (feat:, fix:, test:, docs:, chore:, ci:, refactor:) in the imperative mood, under 72 characters. Add a short body only when the reason is not obvious. Never mention credentials, hostnames, or patient data."
+        }
+    ],
+    "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
+        {
+            "text": "Summarize what changed and why, list the checks that were run (pnpm verify, and test:e2e or dist on Windows when relevant), and call out any change that still needs the Windows CI jobs."
+        }
+    ]
 }
