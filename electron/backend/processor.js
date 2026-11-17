@@ -5,7 +5,7 @@ const { assertSafeFolderRelationship, createRunId, createRunStagingDirectory, li
 const { clearDirectory, getFiles, saveFile } = require("./fileHandler");
 const { log } = require("./logger");
 const { renameFile } = require("./renamer");
-const { modifyContent } = require("./contentEditor");
+const { modifyContent, REFERRAL_NUMBER_TOTAL_LENGTH } = require("./contentEditor");
 const { uploadTargetsSequentially } = require("./uploader");
 const { zipOutput } = require("./zipper");
 const { assertSourceFilesWithinLimits } = require("./limits");
@@ -48,7 +48,7 @@ function summarizeProcessedJson(stagingDir) {
   for (const stationId of stationIds) stationDistribution[stationId] = (stationDistribution[stationId] || 0) + 1;
   return {
     referralCount: referralCount || referralNumbers.length,
-    referralNumbers: { first: referralNumbers[0] || "", last: referralNumbers.at(-1) || "", count: referralNumbers.length, unique: new Set(referralNumbers).size === referralNumbers.length },
+    referralNumbers: { first: referralNumbers[0] || "", last: referralNumbers.at(-1) || "", count: referralNumbers.length, unique: new Set(referralNumbers).size === referralNumbers.length, invalidLength: referralNumbers.filter((value) => String(value).length !== REFERRAL_NUMBER_TOTAL_LENGTH).length },
     icnCount: icnNumbers.length,
     stationDistribution,
   };
@@ -97,6 +97,7 @@ async function processFiles(inputDir, outputDir, replacementCode, clearOutput, r
   let referralSequenceIndex = 1;
   let icnSequenceIndex = 1;
   const failures = [];
+  const referralRunOptions = { ...identityOptions, expectedReferralCount: preflight.referralCount, usedReferralNumbers: new Set() };
 
   try {
     emit(progressCallback, { phase: "preflight", state: "preflight-complete", current: preflight.referralCount, total: preflight.referralCount, message: `${files.length} source file${files.length === 1 ? "" : "s"} and ${preflight.referralCount.toLocaleString()} referral${preflight.referralCount === 1 ? "" : "s"} passed schema, path, and size validation.` });
@@ -104,7 +105,7 @@ async function processFiles(inputDir, outputDir, replacementCode, clearOutput, r
       const file = files[index];
       try {
         const newName = renameFile(file, replacementCode, index + 1, files.length);
-        const result = modifyContent(file, referralReplacementCode, listDateOverride, ssnValue, index + 1, files.length, optionalOverrides, referralSequenceIndex, icnSettings, icnSequenceIndex, identityOptions);
+        const result = modifyContent(file, referralReplacementCode, listDateOverride, ssnValue, index + 1, files.length, optionalOverrides, referralSequenceIndex, icnSettings, icnSequenceIndex, referralRunOptions);
         saveFile(stagingDir, newName, result.content);
         referralSequenceIndex += result.referralNumbersUsed || 0;
         icnSequenceIndex += result.patientIdentitiesUsed || 0;
@@ -127,8 +128,12 @@ async function processFiles(inputDir, outputDir, replacementCode, clearOutput, r
     validateOutputFiles(getFiles(stagingDir), identityOptions, optionalOverrides);
     const batchSummary = summarizeProcessedJson(stagingDir);
     if (!batchSummary.referralNumbers.unique) throw new Error("The batch contains duplicate Referral Numbers. No archive was created or uploaded.");
+    if (batchSummary.referralNumbers.invalidLength > 0) throw new Error(`The batch contains ${batchSummary.referralNumbers.invalidLength} Referral Number${batchSummary.referralNumbers.invalidLength === 1 ? "" : "s"} that ${batchSummary.referralNumbers.invalidLength === 1 ? "is" : "are"} not exactly ${REFERRAL_NUMBER_TOTAL_LENGTH} characters. No archive was created or uploaded.`);
     emit(progressCallback, { phase: "packaging", state: "packaging", filename: archiveBasename || "referrals", message: "Creating the gzip archive from this run's isolated staging folder." });
-    const masterName = `${archiveBasename || "referrals"}_Master.json`;
+    const masterName = identityOptions?.masterFileName || `${archiveBasename || "referrals"}_Master.json`;
+    if (getFiles(stagingDir).some((filePath) => path.basename(filePath).toLowerCase() === masterName.toLowerCase())) {
+      throw new Error(`The combined JSON name ${masterName} is already used by a processed file in this run. Choose a different combined JSON name. No archive was created or uploaded.`);
+    }
     const stagedArchivePath = await zipOutput(stagingDir, archiveBasename, identityOptions?.keepMasterJson === false ? "" : masterName);
     if (!stagedArchivePath) throw new Error("No .gz archive could be created from the processed files.");
     const archiveName = path.basename(stagedArchivePath);

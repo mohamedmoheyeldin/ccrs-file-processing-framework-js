@@ -17,6 +17,7 @@ const {
   generateReferralNumber,
   modifyContent,
   prepareIcnSettings,
+  validateCustomReferralPrefix,
   validatePaymentAuthorityCode,
   validateSsn,
 } = require("../electron/backend/contentEditor");
@@ -617,20 +618,55 @@ test("Optional date overrides reject invalid formats", () => {
 test("Referral number generation preserves the VA prefix and increments", () => {
   assert.equal(generateReferralNumber("123", 1), "VA0000000123");
   assert.equal(generateReferralNumber("123", 2), "VA0000000124");
-  assert.equal(generateReferralNumber("ABC123", 2), "VAABC124");
-  assert.equal(
-    generateReferralNumber("123456789012345678901234567890", 2),
-    "VA123456789012345678901234567891"
-  );
-  assert.equal(
-    generateReferralNumber("ALPHABETICREFERRALBODY", 2),
-    "VAALPHABETICREFERRALBODY2"
-  );
-  assert.equal(generateReferralNumber("26S6-00001_TEST", 1), "VA26S6-00001_TEST");
-  assert.equal(generateReferralNumber("26S6_TEST-00001", 2), "VA26S6_TEST-00002");
+  assert.equal(generateReferralNumber("ABC123", 2), "VAABC0000124");
+  assert.equal(generateReferralNumber("123456789012345678901234567890", 2), "VA1234567891");
+  assert.equal(generateReferralNumber("ALPHABETICREFERRALBODY", 2), "VAALPHABETI2");
+  assert.equal(generateReferralNumber("26S6-00001_TEST", 1), "VA26S6-00001");
+  assert.equal(generateReferralNumber("26S6_TEST-00001", 2), "VA26S6_00002");
   assert.equal(generateReferralNumber("BODY_TEST", 2), "VABODY_TEST2");
-  assert.equal(generateReferralNumber("26S6_TEST-00001", 1, "VA-TEST_"), "VA-TEST_26S6_TEST-00001");
+  assert.equal(generateReferralNumber("26S6_TEST-00001", 1, "VA-TEST_"), "VA-TEST_0001");
   assert.equal(generateIcnFromReferralNumber("VA26S6_TEST-00001"), "TEST26S6TEST00001");
+});
+
+test("Referral Numbers are always exactly 12 characters and unique", () => {
+  const inputs = ["1", "123", "ABC", "ABC123", "26S6-00001_TEST", "BODY_TEST", "12345678901234567890", "A".repeat(40), "VA", "va25s2jjp006"];
+  const prefixes = ["VA", "iFAMS", "VAiFAMS", "CCRS", "VA-TEST_"];
+  for (const prefix of prefixes) {
+    for (const input of inputs) {
+      const generated = Array.from({ length: 250 }, (_, index) => generateReferralNumber(input, index + 1, prefix, 250));
+      for (const value of generated) {
+        assert.equal(value.length, 12, `${prefix} + ${input} produced ${value}`);
+        assert.equal(value.startsWith(prefix), true);
+      }
+      assert.equal(new Set(generated).size, generated.length, `${prefix} + ${input} produced duplicates`);
+    }
+  }
+  // Entering only the prefix lets the app fill in the rest.
+  assert.match(generateReferralNumber("VA", 1), /^VA\d{10}$/);
+  assert.match(generateReferralNumber("iFAMS", 1, "iFAMS"), /^iFAMS\d{7}$/);
+  // The counter wraps inside its space instead of growing past 12 characters.
+  assert.equal(generateReferralNumber("9999999999", 2), "VA0000000000");
+  // A run that cannot stay unique within 12 characters stops with a clear message.
+  assert.throws(() => generateReferralNumber("1", 100001, "VAiFAMS", 100001), /cannot hold/);
+  assert.throws(() => validateCustomReferralPrefix("TOOLONGPREFIX"), /at most 8 characters/);
+});
+
+test("Source Referral Numbers are completed or shortened to 12 characters when no start value is entered", () => {
+  const filePath = writeJsonFixture("existing-referral-lengths.json", {
+    Referrals: [
+      { ReferralNumber: "VA25S2JJP006", Patient: { ICN: "1", FirstName: "A", LastName: "B", SSN: "999-99-0001" } },
+      { ReferralNumber: "VA1", Patient: { ICN: "2", FirstName: "A", LastName: "B", SSN: "999-99-0001" } },
+      { ReferralNumber: "VA12345678901234567890", Patient: { ICN: "3", FirstName: "A", LastName: "B", SSN: "999-99-0001" } },
+      { ReferralNumber: "VA25S2JJP006", Patient: { ICN: "4", FirstName: "A", LastName: "B", SSN: "999-99-0001" } },
+      { ReferralNumber: "iFAMS77", Patient: { ICN: "5", FirstName: "A", LastName: "B", SSN: "999-99-0001" } },
+    ],
+  });
+  const result = modifyContent(filePath, "", null, "999-99-0001", 1, 1, {}, 1, prepareIcnSettings(), 1, {});
+  const numbers = JSON.parse(result.content).Referrals.map((item) => item.ReferralNumber);
+  assert.deepEqual(numbers.slice(0, 3), ["VA25S2JJP006", "VA0000000001", "VA1234567890"]);
+  assert.equal(numbers[4], "iFAMS0000077");
+  assert.equal(numbers.every((value) => value.length === 12), true);
+  assert.equal(new Set(numbers).size, numbers.length);
 });
 
 test("Referral uploads reject PROD while preserving it for the separate LEIE workflow", () => {
@@ -650,17 +686,17 @@ test("Referral uploads reject PROD while preserving it for the separate LEIE wor
 });
 
 test("Referral numbers can use iFAMS and map directly to matching TEST ICNs", () => {
-  assert.equal(generateReferralNumber("26S600001", 1, "iFAMS"), "iFAMS26S600001");
-  assert.equal(generateReferralNumber("26S600001", 2, "iFAMS"), "iFAMS26S600002");
+  assert.equal(generateReferralNumber("26S600001", 1, "iFAMS"), "iFAMS2600001");
+  assert.equal(generateReferralNumber("26S600001", 2, "iFAMS"), "iFAMS2600002");
   assert.equal(generateIcnFromReferralNumber("VA26S600001"), "TEST000026S600001");
   assert.equal(generateIcnFromReferralNumber("iFAMS26S600001"), "TEST000026S600001");
-  assert.equal(generateReferralNumber("26S600001", 1, "CCRS"), "CCRS26S600001");
+  assert.equal(generateReferralNumber("26S600001", 1, "CCRS"), "CCRS26600001");
   assert.equal(generateIcnFromReferralNumber("CCRS26S600001", ["CCRS"]), "TEST000026S600001");
   assert.equal(generateIcnFromReferralNumber("CCRS26S600001", ["CCRS"]).length, 17);
-  assert.equal(generateReferralNumber("12345", 1, "VA_TEST_"), "VA_TEST_0000012345");
-  assert.equal(
-    generateReferralNumber("UNLIMITEDBODY", 1, "CUSTOM_PREFIX_WITHOUT_A_CHARACTER_LIMIT_"),
-    "CUSTOM_PREFIX_WITHOUT_A_CHARACTER_LIMIT_UNLIMITEDBODY"
+  assert.equal(generateReferralNumber("12345", 1, "VA_TEST_"), "VA_TEST_2345");
+  assert.throws(
+    () => generateReferralNumber("UNLIMITEDBODY", 1, "CUSTOM_PREFIX_WITHOUT_A_CHARACTER_LIMIT_"),
+    /leaves no room/
   );
   const longIcnOne = generateIcnFromReferralNumber("VA12345678901234567890", [], 1);
   const longIcnTwo = generateIcnFromReferralNumber("VA12345678901234567891", [], 2);
@@ -745,7 +781,7 @@ test("modifyContent derives ICNs from unique referral numbers and mixes only sel
   assert.equal(new Set(referrals.map((item) => item.ProgramAuthority.StationID)).size, 3);
 });
 
-test("Long Referral Numbers stay complete while Referral-derived ICNs remain unique and 17 characters", () => {
+test("Long Referral Numbers are shortened to 12 characters while Referral-derived ICNs remain unique and 17 characters", () => {
   const filePath = writeJsonFixture("long-matched-referrals.json", {
     Referrals: Array.from({ length: 3 }, (_, index) => ({
       ReferralNumber: `VA${index + 1}`,
@@ -769,16 +805,16 @@ test("Long Referral Numbers stay complete while Referral-derived ICNs remain uni
   assert.deepEqual(
     referrals.map((item) => item.ReferralNumber),
     [
-      "VAiFAMS12345678901234567890",
-      "VAiFAMS12345678901234567891",
-      "VAiFAMS12345678901234567892",
+      "VAiFAMS67890",
+      "VAiFAMS67891",
+      "VAiFAMS67892",
     ]
   );
   assert.equal(new Set(referrals.map((item) => item.Patient.ICN)).size, referrals.length);
   assert.equal(referrals.every((item) => item.Patient.ICN.length === 17), true);
   assert.deepEqual(
     referrals.map((item) => item.Patient.ICN),
-    ["TEST1234567890121", "TEST1234567890122", "TEST1234567890123"]
+    ["TEST0000000067890", "TEST0000000067891", "TEST0000000067892"]
   );
 });
 
@@ -1209,9 +1245,9 @@ test("Archive naming modes share safe JSON and gzip filenames", () => {
     optionalOverrides: { Network: "Network1", ReferralDateTime: "2026-08-31 16:25:00" },
   };
   const scenarios = [
-    ["referral-number", "VA12345_Final"],
-    ["network", "Network1_VA12345_Final"],
-    ["referral-date-time", "VA12345_2026-08-31_162500_Final"],
+    ["referral-number", "VA12345"],
+    ["network", "Network1_VA12345"],
+    ["referral-date-time", "VA12345_2026-08-31_162500"],
   ];
   for (const [mode, expected] of scenarios) {
     assert.equal(buildArchiveBasename({ ...basePayload, archiveNamingOptions: { mode } }, now), expected);
@@ -1225,13 +1261,24 @@ test("Archive naming modes share safe JSON and gzip filenames", () => {
     },
   }, now);
   assert.deepEqual(custom, {
-    basename: "VA12345_DEV_CCRS_Final",
-    json: "VA12345_DEV_CCRS_Final.json",
-    gzip: "VA12345_DEV_CCRS_Final.gz",
+    basename: "VA12345_DEV_CCRS",
+    json: "VA12345_DEV_CCRS.json",
+    gzip: "VA12345_DEV_CCRS.gz",
+    master: "VA12345_DEV_CCRS_Master.json",
   });
+  const namedMaster = { ...basePayload, archiveNamingOptions: { mode: "referral-number", masterFileName: "Team Combined.json" } };
+  assert.equal(buildOutputFileNames(namedMaster, now).master, "Team_Combined.json");
+  assert.equal(
+    buildOutputFileNames({ ...namedMaster, archiveNamingOptions: { mode: "referral-number", masterFileName: "VA12345" } }, now).master,
+    "VA12345_Master.json"
+  );
+  assert.equal(
+    buildOutputFileNames({ ...namedMaster, archiveNamingOptions: { mode: "referral-number", masterFileName: "va12345_2" } }, now).master,
+    "va12345_2_Master.json"
+  );
   assert.equal(
     buildArchiveBasename({ ...basePayload, archiveNamingOptions: { mode: "prefix" } }, now),
-    "VA12345_Final"
+    "VA12345"
   );
   assert.equal(
     buildArchiveBasename({
@@ -1247,7 +1294,7 @@ test("Archive naming modes share safe JSON and gzip filenames", () => {
         customValues: ["customText", "dateTime", "date", "networkName", "referralPrefix", "referralNumber"],
       },
     }, now),
-    "VA12345_VA_Network1_2026-08-30_2026-08-31_162500_DEV_Final"
+    "VA12345_VA_Network1_2026-08-30_2026-08-31_162500_DEV"
   );
   assert.throws(
     () => buildArchiveBasename({ ...basePayload, archiveNamingOptions: { mode: "custom", customValues: [] } }, now),
@@ -1587,10 +1634,11 @@ test("Live preview resolves Referral Number, formatted ICN, and archive tokens t
     referralsPerFile: 1,
   });
 
-  assert.equal(preview.referralNumber, "CCRS26S600001");
-  assert.equal(preview.icnPreview, "Preview: TEST000026S600001");
-  assert.equal(preview.outputFileNames.json, "CCRS26S600001_CCRS_DEV_Final.json");
-  assert.equal(preview.outputFileNames.gzip, "CCRS26S600001_CCRS_DEV_Final.gz");
+  assert.equal(preview.referralNumber, "CCRS26600001");
+  assert.equal(preview.icnPreview, "Preview: TEST0000026600001");
+  assert.equal(preview.outputFileNames.json, "CCRS26600001_CCRS_DEV.json");
+  assert.equal(preview.outputFileNames.gzip, "CCRS26600001_CCRS_DEV.gz");
+  assert.equal(preview.outputFileNames.master, "CCRS26600001_CCRS_DEV_Master.json");
 });
 
 test("Preview validation requires archive naming fields when append options are enabled", async () => {

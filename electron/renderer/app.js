@@ -956,6 +956,7 @@ function collectArchiveNamingOptions() {
     customValues: [...document.querySelectorAll(".archive-custom-value:checked")]
       .map((input) => input.value),
     customText: readValue("archive-custom-text"),
+    masterFileName: readValue("master-file-name"),
   };
 }
 
@@ -988,7 +989,7 @@ function syncReferralPrefixState() {
     elements.referralCode.placeholder = `Enter the part after ${prefix}`;
   }
   if (elements.referralPrefixHelp) {
-    elements.referralPrefixHelp.textContent = `${prefix} will be added automatically. The body can include letters, numbers, hyphens (-), and underscores (_).`;
+    elements.referralPrefixHelp.textContent = `${prefix} will be added automatically. Every Referral Number is exactly 12 characters: the app completes short bodies, shortens long ones, and keeps each number unique. The body can include letters, numbers, hyphens (-), and underscores (_).`;
   }
 }
 
@@ -1075,6 +1076,7 @@ function collectUiSettings() {
     archiveNamingMode: collectArchiveNamingOptions().mode,
     archiveCustomValues: collectArchiveNamingOptions().customValues,
     archiveCustomText: readValue("archive-custom-text"),
+    masterFileName: readValue("master-file-name"),
     referralPrefixMode: getReferralPrefixMode(),
     customReferralPrefix: readValue("custom-referral-prefix"),
     referralCode: readValue("referral-code"),
@@ -1197,6 +1199,7 @@ async function applyUiSettings(settings = {}) {
     "replacement-code": settings.replacementCode,
     "archive-basename": settings.archiveBasename,
     "archive-custom-text": settings.archiveCustomText,
+    "master-file-name": settings.masterFileName,
     "referral-code": settings.referralCode,
     "ssn-value": settings.ssnValue,
     "icn-custom-value": settings.icnCustomValue,
@@ -2004,7 +2007,7 @@ async function updatePreviews() {
       preview.replacementCode,
       getPreviewFileCount()
     );
-    elements.archivePreview.textContent = `${preview.outputFileNames.basename}_Master.json · ${preview.outputFileNames.gzip}`;
+    elements.archivePreview.textContent = `${preview.outputFileNames.master || `${preview.outputFileNames.basename}_Master.json`} · ${preview.outputFileNames.gzip}`;
     elements.referralPreview.textContent = preview.referralNumber
       ? `Preview: ${preview.referralNumber}`
       : "Preview: default referral numbers from source files";
@@ -2144,7 +2147,7 @@ function syncWorkflowText() {
     : "Name for the processed JSON files";
   elements.outputNameHelp.textContent = isLeie
     ? "Defaults to the original source file name. You can enter a different base name; the app saves as .xlsx automatically."
-    : "Leave blank to keep original JSON names.";
+    : "Type any name. When a run creates more than one file, the app adds _1, _2, _3 and so on, so every file has its own name. Leave blank to use the archive name.";
   elements.outputJsonPreview.classList.toggle("hidden", false);
   elements.inputDir.placeholder = isLeie
     ? "Choose a LEIE Excel file (.xlsx, .xls, .xlsm, .xlsb) or a source folder"
@@ -2572,6 +2575,7 @@ function setupEventHandlers() {
     "archive-append-referral-date-time",
     "use-ifams-filename-prefix",
     "archive-custom-text",
+    "master-file-name",
     "referral-code",
     "referral-prefix-va",
     "referral-prefix-custom",

@@ -265,14 +265,20 @@ Set the starting referral number, `ListDate`, and any optional overrides. Previe
 
 Choose the output folder and, when needed, a processed JSON base name. Archive naming uses the same compact two-column option cards as Referral Number and ICN:
 
-- `Referral Number` creates `<ReferralNumber>_Final`.
-- `Network Name` creates `<Network>_<ReferralNumber>_Final`.
+- `Referral Number` creates `<ReferralNumber>`.
+- `Network Name` creates `<Network>_<ReferralNumber>`.
 - `Referral DateTime` adds a filesystem-safe referral date and time.
 - `Custom` lets you build the name by selecting any combination of available values.
 
-In `Custom`, choose individual values or use `Select all`. The available values are Referral Number, Referral Prefix, Network Name, Date, Date and Time, and Custom Text. They appear in that order, are separated with underscores, and receive `_Final` automatically. `Custom Text` is enabled only when its checkbox is selected. If Network Name or Custom Text is selected but empty, the preview explains what must be entered.
+In `Custom`, choose individual values or use `Select all`. The available values are Referral Number, Referral Prefix, Network Name, Date, Date and Time, and Custom Text. They appear in that order, are separated with underscores. `Custom Text` is enabled only when its checkbox is selected. If Network Name or Custom Text is selected but empty, the preview explains what must be entered.
 
-The live preview shows both `.json` and `.gz` names. The app removes illegal Windows filename characters, trailing spaces and periods, and repeated extensions, then adds exactly one extension matching each output format.
+Every generated name can be changed:
+
+- `Name for the processed JSON files` sets the individual files. Type any name; when a run creates more than one file the app adds `_1`, `_2`, `_3` and so on. Leave it blank to use the archive name.
+- `Name for the combined JSON file` sets the single file that holds every referral. Leave it blank to use the archive name followed by `_Master`. If the name you type is already used by another generated file, the app adds `_Master` so nothing is overwritten.
+- The archive (`.gz`) name comes from the selected naming card. Choose `Custom` with only `Custom Text` selected to use exactly the text you type.
+
+The live preview shows the combined `.json` and `.gz` names. The app removes illegal Windows filename characters, trailing spaces and periods, and repeated extensions, then adds exactly one extension matching each output format.
 
 The source and output folders must be separate and cannot be nested. Matching output filenames are overwritten automatically after validation. Unrelated files are preserved. If copying fails, the previous matching files are restored.
 
@@ -280,10 +286,10 @@ Examples:
 
 - `batch101` becomes `batch101.json`
 - multiple files become `batch101_1.json`, `batch101_2.json`, and so on
-- Referral Number mode produces `VA12345_Final.json` and `VA12345_Final.gz`.
-- Network Name mode can produce `CCN1_VA12345_Final.json`.
-- Referral DateTime mode can produce `VA12345_2026-08-31_162500_Final.gz`.
-- A Custom selection can produce `VA12345_VA_CCN1_2026-08-31_CCRS_Final.json`.
+- Referral Number mode produces `VA0000012345_1.json`, `VA0000012345_2.json`, `VA0000012345_Master.json`, and `VA0000012345.gz`.
+- Network Name mode can produce `CCN1_VA0000012345.json`.
+- Referral DateTime mode can produce `VA0000012345_2026-08-31_162500.gz`.
+- A Custom selection can produce `VA0000012345_VA_CCN1_2026-08-31_CCRS.json`.
 
 ### Run
 
@@ -313,24 +319,30 @@ This mode does not require a source folder. It can optionally upload the complet
 Choose how generated Referral Numbers should start, then enter the starting number or body once:
 
 - `VA` uses `VA` for every referral.
-- `Custom` uses a user-entered prefix containing letters, numbers, hyphens, or underscores, with no character limit.
+- `Custom` uses a user-entered prefix of up to 8 letters, numbers, hyphens, or underscores.
 
-Numeric bodies are zero-padded. Bodies containing letters, hyphens, or underscores keep the characters and letter case the user entered. When a body ends in digits, later Referral Numbers increment those digits while preserving the separators; otherwise the sequence number is added at the end. The live preview shows the first result, and the pre-run review confirms the selected prefix behavior.
+Every Referral Number is exactly 12 characters, including the prefix. The app does this automatically:
+
+- a short body is completed with zero-padded digits
+- a long body is shortened, keeping the number at the end so the sequence still counts up
+- if only the prefix is entered or supplied, the app generates the rest
+- when no starting value is entered, Referral Numbers already in the source files are kept if they are 12 characters and unique, and are otherwise completed, shortened, or renumbered
+- every Referral Number in a run is unique; a run stops with a clear message if the prefix leaves too little room for that many unique numbers
 
 Rules:
 
 - letters, numbers, hyphens (`-`), and underscores (`_`) are allowed in the starting body and a custom prefix
 - the live preview shows the first value
-- generated referral numbers remain unique within the run
 
 Examples:
 
 - `1` becomes `VA0000000001`
-- `26S600001` becomes `VA26S600001`
-- with the custom prefix `CCRS`, `26S600001` becomes `CCRS26S600001`
-- with the custom prefix `VA_TEST_`, `12345` begins with `VA_TEST_`
-- `26S6-00001_TEST` becomes `VA26S6-00001_TEST`
-- `26S6_TEST-00001` continues as `VA26S6_TEST-00002`, preserving both separators
+- `26S600001` becomes `VA26S0600001`
+- `ABC123` becomes `VAABC0000123`, then `VAABC0000124`
+- `26S6_TEST-00001` becomes `VA26S6_00001`, then `VA26S6_00002`
+- `12345678901234567890` becomes `VA1234567890`
+- with the custom prefix `CCRS`, `26S600001` becomes `CCRS26600001`
+- with the custom prefix `VA_TEST_`, `12345` becomes `VA_TEST_2345`
 
 ### ICN
 

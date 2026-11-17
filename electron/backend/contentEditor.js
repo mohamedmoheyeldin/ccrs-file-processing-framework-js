@@ -39,6 +39,8 @@ const REFERRAL_PREFIX_MODES = {
 };
 const REFERRAL_NUMBER_TOTAL_LENGTH = 12;
 const REFERRAL_NUMBER_DIGIT_COUNT = REFERRAL_NUMBER_TOTAL_LENGTH - REFERRAL_NUMBER_PREFIX.length;
+// Custom prefixes leave at least four body characters so a batch still has room for unique sequence numbers.
+const CUSTOM_REFERRAL_PREFIX_MAX_LENGTH = 8;
 const ICN_TEST_PREFIX = "TEST";
 const ICN_TOTAL_LENGTH = 17;
 const ICN_TEST_SUFFIX_LENGTH = ICN_TOTAL_LENGTH - ICN_TEST_PREFIX.length;
@@ -460,6 +462,11 @@ function validateCustomReferralPrefix(value) {
   if (normalized !== rawValue) {
     throw new Error("Custom Referral Number prefix must use only letters, numbers, hyphens, or underscores.");
   }
+  if (normalized.length > CUSTOM_REFERRAL_PREFIX_MAX_LENGTH) {
+    throw new Error(
+      `Custom Referral Number prefix can be at most ${CUSTOM_REFERRAL_PREFIX_MAX_LENGTH} characters so every Referral Number stays ${REFERRAL_NUMBER_TOTAL_LENGTH} characters and unique.`
+    );
+  }
   return normalized;
 }
 
@@ -508,26 +515,92 @@ function generateIcnFromReferralNumber(referralNumber, referralPrefixes = [], se
   return `${ICN_TEST_PREFIX}${formattedBody}`;
 }
 
-function normalizeReferralNumberStart(value, requestedPrefix = REFERRAL_NUMBER_PREFIX) {
-  const prefix = normalizeReferralPrefix(requestedPrefix);
-  let normalized = (value || "").trim();
-  if (!normalized) {
-    return "";
-  }
-
-  normalized = stripReferralPrefix(normalized, [prefix]);
-
-  normalized = ((normalized || "").match(/[A-Za-z0-9_-]/g) || []).join("");
-  if (!normalized) {
-    return "";
-  }
-
-  return `${prefix}${/^\d+$/.test(normalized) ? normalized.padStart(REFERRAL_NUMBER_DIGIT_COUNT, "0") : normalized}`;
+function generateReferralSeed(length, now = new Date()) {
+  return String(now.getTime()).slice(-length).padStart(length, "0");
 }
 
-function validateReferralNumberStart(value, requestedPrefix = REFERRAL_NUMBER_PREFIX) {
+// Returns the usable body of a Referral Number start value. When the user enters
+// only a prefix (for example "VA"), the app fills the rest with a time-based
+// number so the result is still a complete, likely-new Referral Number.
+function cleanReferralBody(value, prefix) {
+  const rawValue = String(value || "").trim();
+  const withoutPrefix = stripReferralPrefix(rawValue, [prefix]);
+  const body = (withoutPrefix.match(/[A-Za-z0-9_-]/g) || []).join("");
+  if (!body && rawValue && withoutPrefix.length === 0) {
+    return generateReferralSeed(getReferralBodyLength(prefix));
+  }
+  return body;
+}
+
+function getReferralBodyLength(prefix) {
+  const bodyLength = REFERRAL_NUMBER_TOTAL_LENGTH - prefix.length;
+  if (bodyLength < 1) {
+    throw new Error(
+      `The Referral Number prefix ${prefix} leaves no room for a unique number within ${REFERRAL_NUMBER_TOTAL_LENGTH} characters.`
+    );
+  }
+  return bodyLength;
+}
+
+function digitsNeededFor(count) {
+  return Math.max(String(Math.max(Number(count) || 1, 1) - 1).length, 1);
+}
+
+// Splits a body into fixed text plus a numeric counter that exactly fills the
+// space left after the prefix. Every number in a run shares one layout, so the
+// counter alone keeps them unique until its capacity is used up.
+function buildReferralLayout(body, prefix, expectedCount = 1) {
+  const bodyLength = getReferralBodyLength(prefix);
+  const neededDigits = digitsNeededFor(expectedCount);
+  if (neededDigits > bodyLength) {
+    throw new Error(
+      `The prefix ${prefix} leaves ${bodyLength} character${bodyLength === 1 ? "" : "s"} for the number, which cannot hold ${Number(expectedCount).toLocaleString("en-US")} unique ${REFERRAL_NUMBER_TOTAL_LENGTH}-character Referral Numbers. Use a shorter prefix.`
+    );
+  }
+  const [, rawStem, rawDigits] = body.match(/^(.*?)(\d*)$/);
+  let stem = rawStem;
+  let digits = rawDigits;
+  if (digits.length > bodyLength) {
+    digits = digits.slice(-bodyLength);
+    stem = "";
+  }
+  let width = Math.max(digits.length, neededDigits);
+  if (stem.length + width < bodyLength) {
+    width = bodyLength - stem.length;
+  }
+  width = Math.min(width, bodyLength);
+  stem = stem.slice(0, bodyLength - width);
+  return {
+    stem,
+    width,
+    start: digits ? BigInt(digits) : 1n,
+    capacity: 10n ** BigInt(width),
+  };
+}
+
+function formatReferralFromLayout(prefix, layout, sequenceIndex) {
+  const index = Math.max(Number(sequenceIndex) || 1, 1);
+  if (BigInt(index) > layout.capacity) {
+    throw new Error(
+      `Only ${layout.capacity.toLocaleString("en-US")} unique ${REFERRAL_NUMBER_TOTAL_LENGTH}-character Referral Numbers fit after ${prefix}${layout.stem}. Use a shorter prefix or starting body, or fewer referrals.`
+    );
+  }
+  const value = (layout.start + BigInt(index - 1)) % layout.capacity;
+  return `${prefix}${layout.stem}${String(value).padStart(layout.width, "0")}`;
+}
+
+function normalizeReferralNumberStart(value, requestedPrefix = REFERRAL_NUMBER_PREFIX, expectedCount = 1) {
   const prefix = normalizeReferralPrefix(requestedPrefix);
-  const normalized = normalizeReferralNumberStart(value, prefix);
+  const body = cleanReferralBody(value, prefix);
+  if (!body) {
+    return "";
+  }
+  return formatReferralFromLayout(prefix, buildReferralLayout(body, prefix, expectedCount), 1);
+}
+
+function validateReferralNumberStart(value, requestedPrefix = REFERRAL_NUMBER_PREFIX, expectedCount = 1) {
+  const prefix = normalizeReferralPrefix(requestedPrefix);
+  const normalized = normalizeReferralNumberStart(value, prefix, expectedCount);
   if (!normalized) {
     throw new Error("Enter a Referral Number body using letters, numbers, hyphens, or underscores.");
   }
@@ -535,30 +608,74 @@ function validateReferralNumberStart(value, requestedPrefix = REFERRAL_NUMBER_PR
   return normalized;
 }
 
-function generateReferralNumber(startValue, sequenceIndex, requestedPrefix = REFERRAL_NUMBER_PREFIX) {
+// Always returns exactly REFERRAL_NUMBER_TOTAL_LENGTH characters. Short bodies are
+// completed with zero-padded digits, long bodies are shortened while keeping
+// their ending number, and each sequence index maps to a distinct value.
+function generateReferralNumber(startValue, sequenceIndex, requestedPrefix = REFERRAL_NUMBER_PREFIX, expectedCount = 1) {
   const prefix = normalizeReferralPrefix(requestedPrefix);
-  const normalizedStart = validateReferralNumberStart(startValue, prefix);
-  const normalizedBody = normalizedStart.slice(prefix.length);
-  const offset = BigInt(Math.max((sequenceIndex || 1) - 1, 0));
+  const body = cleanReferralBody(startValue, prefix);
+  if (!body) {
+    throw new Error("Enter a Referral Number body using letters, numbers, hyphens, or underscores.");
+  }
+  const layout = buildReferralLayout(body, prefix, expectedCount);
+  return formatReferralFromLayout(prefix, layout, sequenceIndex);
+}
 
-  if (/^\d+$/.test(normalizedBody)) {
-    const generatedNumber = BigInt(normalizedBody) + offset;
-    return `${prefix}${String(generatedNumber).padStart(normalizedBody.length, "0")}`;
+function detectReferralPrefix(value, options = {}) {
+  const normalized = String(value || "").trim();
+  const candidates = [
+    options.referralPrefixMode === REFERRAL_PREFIX_MODES.CUSTOM ? String(options.customReferralPrefix || "").trim() : "",
+    VA_IFAMS_PREFIX,
+    IFAMS_PREFIX,
+    REFERRAL_NUMBER_PREFIX,
+  ].filter(Boolean).sort((left, right) => right.length - left.length);
+  for (const prefix of candidates) {
+    if (normalized.toLowerCase().startsWith(prefix.toLowerCase())) {
+      return normalizeReferralPrefix(prefix);
+    }
+  }
+  return resolveReferralPrefix(options, 1);
+}
+
+// Used when no starting value is entered: Referral Numbers already in the source
+// files keep their value when it is valid, and are otherwise completed or
+// shortened to the required length. Duplicates within the run are renumbered.
+function enforceExistingReferralNumbers(data, options = {}) {
+  const used = options.usedReferralNumbers instanceof Set ? options.usedReferralNumbers : new Set();
+  const expectedCount = Math.max(Number(options.expectedReferralCount) || 1, 1);
+
+  function fit(rawValue) {
+    const value = String(rawValue ?? "").trim();
+    if (value.length === REFERRAL_NUMBER_TOTAL_LENGTH && /^[A-Za-z0-9_-]+$/.test(value) && !used.has(value)) {
+      return value;
+    }
+    const prefix = detectReferralPrefix(value, options);
+    const body = cleanReferralBody(value, prefix) || "1";
+    const layout = buildReferralLayout(body, prefix, expectedCount);
+    let sequenceIndex = 1;
+    let candidate = formatReferralFromLayout(prefix, layout, sequenceIndex);
+    while (used.has(candidate)) {
+      sequenceIndex += 1;
+      candidate = formatReferralFromLayout(prefix, layout, sequenceIndex);
+    }
+    return candidate;
   }
 
-  const suffixMatch = normalizedBody.match(/(\d+)$/);
-  if (suffixMatch) {
-    const suffixDigits = suffixMatch[1];
-    const prefixPart = normalizedBody.slice(0, -suffixDigits.length);
-    const incrementedSuffix = String(BigInt(suffixDigits) + offset).padStart(suffixDigits.length, "0");
-    return `${prefix}${prefixPart}${incrementedSuffix}`;
+  function visit(currentData) {
+    if (Array.isArray(currentData)) return currentData.forEach(visit);
+    if (!currentData || typeof currentData !== "object") return;
+    for (const [key, value] of Object.entries(currentData)) {
+      if (key === "ReferralNumber" && (typeof value === "string" || typeof value === "number")) {
+        const fitted = fit(value);
+        used.add(fitted);
+        currentData[key] = fitted;
+      } else {
+        visit(value);
+      }
+    }
   }
 
-  if ((sequenceIndex || 1) === 1) {
-    return `${prefix}${normalizedBody}`;
-  }
-
-  return `${prefix}${normalizedBody}${Math.max(sequenceIndex || 1, 1)}`;
+  visit(data);
 }
 
 function encodeSequenceValue(number, charset) {
@@ -913,6 +1030,16 @@ function ensureSourceVariableFieldsAreUnique(data, overrides = {}) {
   apply(data);
 }
 
+function countReferralNumberFields(data) {
+  if (Array.isArray(data)) return data.reduce((total, item) => total + countReferralNumberFields(item), 0);
+  if (!data || typeof data !== "object") return 0;
+  return Object.entries(data).reduce(
+    (total, [key, value]) =>
+      total + (key === "ReferralNumber" && (typeof value !== "object" || value === null) ? 1 : countReferralNumberFields(value)),
+    0
+  );
+}
+
 function applyReferralNumberOverride(data, startValue, sequenceStart = 1, referralPrefixOptions = REFERRAL_NUMBER_PREFIX) {
   let replacementsUsed = 0;
 
@@ -933,7 +1060,8 @@ function applyReferralNumberOverride(data, startValue, sequenceStart = 1, referr
       data[key] = generateReferralNumber(
         startValue,
         currentSequence,
-        resolveReferralPrefix(referralPrefixOptions, currentSequence)
+        resolveReferralPrefix(referralPrefixOptions, currentSequence),
+        typeof referralPrefixOptions === "object" ? referralPrefixOptions?.expectedReferralCount : 1
       );
       replacementsUsed += 1;
     } else {
@@ -1013,12 +1141,24 @@ function modifyContent(
   const data = JSON.parse(content);
   let referralNumbersUsed = 0;
   if (referralReplacementCode) {
+    const referralOptions = {
+      ...identityOptions,
+      expectedReferralCount:
+        identityOptions.expectedReferralCount ||
+        Math.max(Number(referralSequenceStart) || 1, 1) - 1 + countReferralNumberFields(data),
+    };
     referralNumbersUsed = applyReferralNumberOverride(
       data,
       referralReplacementCode,
       referralSequenceStart,
-      identityOptions
+      referralOptions
     );
+  } else {
+    enforceExistingReferralNumbers(data, {
+      ...identityOptions,
+      expectedReferralCount: identityOptions.expectedReferralCount || countReferralNumberFields(data),
+      usedReferralNumbers: identityOptions.usedReferralNumbers || new Set(),
+    });
   }
   const patientIdentitiesUsed = updatePatientIdentity(data, ssnValue.trim(), icnSettings, icnSequenceStart, identityOptions);
   if (optionalOverrides && Object.keys(optionalOverrides).length > 0) {
@@ -1056,8 +1196,10 @@ module.exports = {
   LIST_DATE_FORMAT,
   PAYMENT_AUTHORITY_CODE_LENGTH,
   PAYMENT_AUTHORITY_CODE_MAX,
+  CUSTOM_REFERRAL_PREFIX_MAX_LENGTH,
   REFERRAL_NUMBER_DIGIT_COUNT,
   REFERRAL_NUMBER_PREFIX,
+  REFERRAL_NUMBER_TOTAL_LENGTH,
   REFERRAL_PREFIX_MODES,
   NETWORK_VALUES,
   applySelectedNetworks,
@@ -1070,6 +1212,7 @@ module.exports = {
   generateIcnFromReferralNumber,
   generateRandomDob,
   generateRandomSsn,
+  enforceExistingReferralNumbers,
   generateReferralNumber,
   modifyContent,
   normalizePaymentAuthorityCode,
